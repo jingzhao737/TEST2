@@ -201,11 +201,15 @@ if (items.length > 0) {
       scrub: 1.0,            // Highly responsive scroll scrub
       snap: {
         snapTo: (value) => {
+          console.log("[SHOWCASE SNAP] Input progress:", value);
           if (value < 0.58) {
             const snaps = [0, 0.25, 0.5];
-            return snaps.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+            const target = snaps.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+            console.log("[SHOWCASE SNAP] Snapping to card progress:", target);
+            return target;
           }
-          return value; // No snap for exit zone
+          console.log("[SHOWCASE SNAP] Snapping to Motion (1.0)");
+          return 1.0; // Snap to Motion page!
         },
         duration: { min: 0.2, max: 0.6 },
         delay: 0.08,
