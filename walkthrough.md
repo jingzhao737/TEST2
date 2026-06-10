@@ -136,3 +136,19 @@ The compilation successfully bound and bundled the local packages, compiling all
 ### Resolution
 - **GSAP Native Pin Spacing (`pinSpacing: true`)**: Changed the desktop ScrollTrigger setup in [showcase.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/showcase.js) to use `pinSpacing: true` (which is standard for pinned stacks). This tells GSAP to automatically add bottom padding spacing equal to the scroll distance inside the pin-wrapper.
 - **Eliminated Manual Spacing and Visibility Hacks**: Removed the manual `marginTop` calculations and the `onUpdate` visibility toggles from both desktop and mobile branches. The next sibling (Motion page) now stays naturally positioned below the pinned section and scrolls in seamlessly only *after* the Showcase animation finishes and unpins. This completely resolves the horizontal layout jumping when scrolling back up and prevents any section overlapping/collisions.
+
+---
+
+## 🛠️ Hotfix: Restored Showcase Depth-of-Field & Stacked Deck Effects
+
+### Problem
+- **Mobile Stacked Deck & Depth-of-Field Bypassed**: In a previous commit, the stacked deck card animation (scale, overlay, and 3D positioning) and the depth-of-field blur effects were completely disabled on mobile (screen widths `< 768px`) in favor of a standard vertical list flow to avoid mobile pinning jitter. The user wanted these premium stacked deck and depth-of-field blur effects restored on mobile.
+- **Desktop Cards Vanished Too Early**: In the previous layout fix, the cards faded out to `opacity: 0` in the timeline (Step 3). With `pinSpacing: true`, this caused the cards to disappear completely before the section unpinned, leaving a blank black space for 33% of the scroll.
+- **CSS Transition Conflicts**: The cards were styled with the `.anim-up` and `.anim-done` classes, which applied a `transition: transform 0.8s, opacity 0.75s` CSS rule. When GSAP tried to scrub card transforms and scale dynamically on scroll, the CSS transition intercepted the updates, causing the cards to lag behind the scroll, stutter, and jump horizontally when scrolling up.
+
+### Resolution
+- **Unified Stacked Deck animations**: Re-enabled the stacked deck layout and the ScrollTrigger pinning/depth-of-field timeline on mobile. Desktop and mobile now share the same premium animation engine, restoring the depth-of-field blur and layered stacking on all devices.
+- **Mobile Height Locking**: Added a JavaScript height lock at script initialization on mobile (`showcaseSection.style.height = window.innerHeight + 'px'`). Together with fixed responsive heights for `.showcase-grid.is-stacked` (`320px`/`260px`), this locks the container and card sizes. This completely prevents viewport height shifts when the mobile browser address bar shows/hides, eliminating scrolling jitter.
+- **Removed Early Card Fade-Out**: Removed Step 3 (the cards fading out) from the timeline. The cards now complete their stack and remain fully visible and layered in their final beautiful stacked state. The container then unpins and the entire stacked deck scrolls up together, keeping the depth-of-field and layering effects visible at all times.
+- **Disabled conflicting CSS Transitions**: Added `.showcase-item { transition: none !important; }` in [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css). This disables the `.anim-up.anim-done` transition for showcase items, resolving the CSS-JS conflict and ensuring buttery-smooth GSAP scroll scrubbing.
+
