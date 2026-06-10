@@ -35,7 +35,7 @@ window.revealHeroTitle = function() {
 
   // ── Timeline ───────────────────────────────────────────────────────────────
   const tl = gsap.timeline({
-    defaults: { ease: 'power4.out', duration: 1.8 },
+    defaults: { ease: 'power4.out', duration: 1.3 },
     repeat: -1,
     repeatDelay: 0
   });
@@ -43,30 +43,28 @@ window.revealHeroTitle = function() {
 
   // ── ENTRANCE ───────────────────────────────────────────────────────────────
 
-  // 1. Eyebrow: char-by-char stagger slide from below, parent DoF blur
+  // 1. Eyebrow: char-by-char stagger from below + parent DoF blur
   if (eyebrow && eyebrowChars && eyebrowChars.length > 0) {
-    // Parent: visible immediately, cinematic blur resolves slowly
     tl.set(eyebrow, { opacity: 1 }, 0);
     tl.fromTo(eyebrow,
       { filter: 'blur(12px)' },
-      { filter: 'blur(0px)', duration: 1.8, ease: 'power2.out' },
-      0.85
+      { filter: 'blur(0px)', duration: 1.3, ease: 'power2.out' },
+      0.6
     );
-    // Each char slides up with stagger — identical feel to CRESCENT chars
     tl.fromTo(eyebrowChars,
       { opacity: 0, y: '110%' },
       {
         opacity: 1,
         y: '0%',
-        duration: 1.1,
+        duration: 0.75,
         ease: 'power4.out',
-        stagger: { each: 0.028, from: 'start' }
+        stagger: { each: 0.022, from: 'start' }
       },
-      0.85
+      0.6
     );
   }
 
-  // 2. Big title: group by line, char-level stagger with deep DoF blur on parent
+  // 2. Big title: char-level stagger with deep DoF blur on parent
   const lines = document.querySelectorAll('.hero-title-line');
   lines.forEach((line, index) => {
     const isBold = line.querySelector('.word-bold') !== null;
@@ -76,29 +74,26 @@ window.revealHeroTitle = function() {
       if (chars.length === 0) return;
       const boldWords = line.querySelectorAll('.hero-title-word.word-bold');
 
-      // Parent: visible immediately, deep cinema DoF blur resolves
       tl.set(boldWords, { opacity: 1, y: '0%' }, 0);
       tl.fromTo(boldWords,
         { filter: 'blur(16px)' },
-        { filter: 'blur(0px)', duration: 2.2, ease: 'power2.out' },
-        0.15 + (index * 0.12)
+        { filter: 'blur(0px)', duration: 1.6, ease: 'power2.out' },
+        0.1 + (index * 0.1)
       );
-      // Chars: clean vertical slide + subtle scale
       tl.fromTo(chars,
         { opacity: 0, y: '80%', scale: 0.94 },
         {
           y: '0%',
           scale: 1,
           opacity: 1,
-          duration: 1.9,
+          duration: 1.4,
           ease: 'power4.out',
-          stagger: { each: 0.06, from: 'start' }
+          stagger: { each: 0.05, from: 'start' }
         },
-        0.15 + (index * 0.12)
+        0.1 + (index * 0.1)
       );
 
     } else {
-      // Outline words (VISUAL / LAB): unified slide + DoF blur
       const wordsInLine = line.querySelectorAll('.hero-title-word');
       if (wordsInLine.length === 0) return;
       tl.fromTo(wordsInLine,
@@ -108,69 +103,69 @@ window.revealHeroTitle = function() {
           scale: 1,
           opacity: 1,
           filter: 'blur(0px)',
-          duration: 2.0,
+          duration: 1.5,
           ease: 'power4.out'
         },
-        0.15 + (index * 0.12)
+        0.1 + (index * 0.1)
       );
     }
   });
 
-  // 3. Tech divider line: elegant width reveal
+  // 3. Tech divider line
   if (dividerLine) {
     tl.fromTo(dividerLine,
       { scaleX: 0, opacity: 0 },
-      { scaleX: 1, opacity: 1, duration: 1.0, ease: 'power3.out' },
-      0.55
+      { scaleX: 1, opacity: 1, duration: 0.75, ease: 'power3.out' },
+      0.4
     );
   }
 
-  // 4. Divider meta tags: gentle fade-slide
+  // 4. Divider meta tags
   if (metas.length > 0) {
     tl.fromTo(metas,
       { opacity: 0, y: 6 },
-      { opacity: 1, y: 0, stagger: 0.1, duration: 0.9, ease: 'power3.out' },
-      0.85
+      { opacity: 1, y: 0, stagger: 0.08, duration: 0.7, ease: 'power3.out' },
+      0.65
     );
   }
 
-  // 5. Hero subtitle: soft float-in
+  // 5. Hero subtitle
   if (subtitle) {
     tl.fromTo(subtitle,
-      { opacity: 0, y: 18, filter: 'blur(4px)' },
-      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.1, ease: 'power3.out' },
-      0.95
+      { opacity: 0, y: 14, filter: 'blur(4px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.85, ease: 'power3.out' },
+      0.72
     );
   }
 
-  // 6. Scroll hint: delayed reveal
+  // 6. Scroll hint
   if (scrollHint) {
     tl.fromTo(scrollHint,
       { opacity: 0, y: 8 },
-      { opacity: 1, y: 0, duration: 1.0, ease: 'power2.out' },
-      1.3
+      { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' },
+      1.0
     );
   }
 
   // ── HOLD ───────────────────────────────────────────────────────────────────
-  tl.add('hold', '+=6.0');
+  tl.add('hold', '+=4.5');
 
   // ── EXIT ───────────────────────────────────────────────────────────────────
 
-  // 1. Eyebrow exit: chars slide back up staggered, parent re-blurs
+  // 1. Eyebrow exit: chars slide back up
   if (eyebrow && eyebrowChars && eyebrowChars.length > 0) {
     tl.fromTo(eyebrow,
       { filter: 'blur(0px)' },
-      { filter: 'blur(10px)', duration: 0.55, ease: 'power2.in' },
-      'hold+=0.05'
+      { filter: 'blur(10px)', duration: 0.45, ease: 'power2.in' },
+      'hold+=0.04'
     );
     tl.to(eyebrowChars, {
       y: '-100%',
       opacity: 0,
-      duration: 0.5,
+      duration: 0.42,
       ease: 'power3.in',
-      stagger: { each: 0.02, from: 'start' }
-    }, 'hold+=0.05');
+      stagger: { each: 0.016, from: 'start' }
+    }, 'hold+=0.04');
   }
 
   // 2. Title exit
@@ -184,17 +179,17 @@ window.revealHeroTitle = function() {
 
       tl.fromTo(boldWords,
         { filter: 'blur(0px)' },
-        { filter: 'blur(14px)', duration: 0.7, ease: 'power2.in' },
-        `hold+=${index * 0.04}`
+        { filter: 'blur(14px)', duration: 0.55, ease: 'power2.in' },
+        `hold+=${index * 0.03}`
       );
       tl.to(chars, {
         y: '-75%',
         scale: 0.96,
         opacity: 0,
-        duration: 0.75,
+        duration: 0.6,
         ease: 'power3.in',
-        stagger: { each: 0.035, from: 'start' }
-      }, `hold+=${index * 0.04}`);
+        stagger: { each: 0.028, from: 'start' }
+      }, `hold+=${index * 0.03}`);
 
     } else {
       const wordsInLine = line.querySelectorAll('.hero-title-word');
@@ -204,17 +199,16 @@ window.revealHeroTitle = function() {
         scale: 0.96,
         opacity: 0,
         filter: 'blur(10px)',
-        duration: 0.7,
+        duration: 0.55,
         ease: 'power3.in'
-      }, `hold+=${index * 0.04}`);
+      }, `hold+=${index * 0.03}`);
     }
   });
 
-  // Supporting elements exit
-  if (dividerLine) tl.to(dividerLine, { scaleX: 0, opacity: 0, duration: 0.45, ease: 'power2.in' }, 'hold+=0.12');
-  if (metas.length > 0) tl.to(metas, { opacity: 0, y: -5, duration: 0.4, ease: 'power2.in' }, 'hold+=0.08');
-  if (subtitle) tl.to(subtitle, { opacity: 0, y: -16, filter: 'blur(4px)', duration: 0.5, ease: 'power2.in' }, 'hold+=0.18');
-  if (scrollHint) tl.to(scrollHint, { opacity: 0, duration: 0.4, ease: 'power2.in' }, 'hold+=0.22');
+  if (dividerLine) tl.to(dividerLine, { scaleX: 0, opacity: 0, duration: 0.38, ease: 'power2.in' }, 'hold+=0.1');
+  if (metas.length > 0) tl.to(metas, { opacity: 0, y: -5, duration: 0.32, ease: 'power2.in' }, 'hold+=0.06');
+  if (subtitle) tl.to(subtitle, { opacity: 0, y: -14, filter: 'blur(4px)', duration: 0.4, ease: 'power2.in' }, 'hold+=0.14');
+  if (scrollHint) tl.to(scrollHint, { opacity: 0, duration: 0.32, ease: 'power2.in' }, 'hold+=0.18');
 };
 
 // Handle race condition: if loader finished before this script was loaded
