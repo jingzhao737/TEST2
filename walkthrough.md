@@ -89,3 +89,20 @@ dist/assets/index-DfQ5XNW0.js                                        875.52 kB
 ✓ built in 227ms
 ```
 The compilation successfully bound and bundled the local packages, compiling all custom shaders into minified production assets.
+
+---
+
+## 🛠️ Hotfix: iOS Safari Italic Character Clipping
+
+### Problem
+- On iOS Safari (WebKit engine), italic words that are wrapped in hardware-accelerated containers (`will-change: transform` or undergoing active 3D GPU animations like `skewY` in GSAP) are rendered on separate graphics compositing layers.
+- The GPU layer boundary is strictly constrained by the element's layout bounding box (the `border-box` boundary).
+- Since italic glyphs tilt to the right, they naturally overflow this `border-box` boundary. On WebKit, this causes the rightmost parts of characters (such as the upper-right corner of slanted letters) to be clipped.
+- In mobile viewports (`<= 768px`), individual characters `.hero-char` inside the bold title `CRESCENT` are changed to `display: block; flex: 0 0 50%; max-width: 50%` and forced into a fixed `border-box` box model. This removed the `0.08em` padding safeguard defined on desktop, causing prominent character clipping on iPhones.
+
+### Resolution
+- **Expanded Render Boundaries**: Configured `.hero-title-word.word-bold .hero-char` on mobile viewports to use `box-sizing: content-box !important`, `padding-right: 0.22em !important`, and `margin-right: -0.22em !important`. 
+  - Changing to `content-box` and adding `padding-right` expands the layout box. This reserves a 22% font-size buffer on the right, providing a safe gutter for the slanted italic glyphs to tilt into.
+  - The negative `margin-right` offsets this width increase, ensuring the Flex layout columns still resolve to a clean `50%` each without wrapping.
+- **De-prioritized Synthetic Layers**: Overrode `will-change: auto !important` on these characters in mobile viewports to prevent WebKit from unnecessarily keeping them as independent GPU layers when they are not animating.
+- **Verified Deployment**: Recompiled and pushed directly to production. The layout columns stay structurally centered while giving Safari's rendering engine ample box width to draw the characters fully without truncation.
