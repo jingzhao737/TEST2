@@ -675,7 +675,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .showcase-header, .showcase-grid{width:100%;max-width:1440px;margin-left:auto;margin-right:auto;box-sizing:border-box}
 .showcase-header{padding:0 64px;margin-bottom:80px}
 .showcase-grid{display:flex;flex-direction:column;gap:12px;padding:0 64px}
-.showcase-grid.is-stacked{position:relative;height:55vh}
+.showcase-grid.is-stacked{position:relative;height:55vh;perspective:2000px;transform-style:preserve-3d}
 .showcase-grid.is-stacked .showcase-item{position:absolute;top:0;left:64px;right:64px;width:auto;height:100%;margin:0;will-change:transform,opacity}
 @media(max-width:1024px){
   .showcase-grid.is-stacked .showcase-item{left:40px;right:40px}
@@ -689,6 +689,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .showcase-grid.is-stacked .showcase-item{left:12px;right:12px}
 }
 .showcase-item{position:relative;height:55vh;overflow:hidden;border-radius:20px;display:flex;align-items:flex-end;padding:48px 64px;transform-style:preserve-3d;border-top:1px solid rgba(255,255,255,0.18);border-left:1px solid rgba(255,255,255,0.05);box-shadow:0 -10px 40px rgba(0,0,0,0.5),0 20px 40px rgba(0,0,0,0.5);filter:blur(0px);will-change:transform,opacity,filter;transition:none !important}
+.showcase-sheen{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(circle 350px at var(--sheen-x, 50%) var(--sheen-y, 50%), rgba(255,255,255,0.08), transparent 70%);opacity:0;transition:opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);will-change:background,opacity}
+.showcase-item:hover .showcase-sheen{opacity:1}
 /* Invisible hit area — larger than card, doesn't tilt, prevents edge flicker */
 .showcase-hit{position:absolute;inset:-30px;z-index:0;pointer-events:none}
 .showcase-item::before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.03) 50%,transparent 65%);transform:translateX(-100%);transition:transform .7s var(--ease-out-expo)}
@@ -1655,7 +1657,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .showcase-info h3{font-size:1.7rem}
   .showcase-info .section-tag{font-size:.78rem}
   .showcase-info p{font-size:.78rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-  .motion-section{padding:130px 32px 220px}
+  .motion-section{padding:60px 32px 140px}
   .motion-specs {
     margin-top: 60px;
     padding: 24px;
@@ -1746,7 +1748,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .showcase-item{padding:24px 20px;margin:0 12px 10px;border-radius:12px}
   .showcase-info h3{font-size:1.45rem}
   .showcase-info .section-tag{font-size:.7rem}
-  .motion-section{padding:100px 28px 180px}
+  .motion-section{padding:40px 28px 120px}
   .motion-specs {
     margin-top: 45px;
     padding: 20px;
