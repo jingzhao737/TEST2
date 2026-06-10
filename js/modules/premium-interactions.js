@@ -344,10 +344,10 @@ if (!isMobileDevice) {
       let firstCardRect = cards[0].getBoundingClientRect();
       let lastCardRect = cards[cards.length - 1].getBoundingClientRect();
       
-      // Show preview when the top of Card 1 rises past 70% height (enters screen)
-      // Hide preview when the bottom of Card 4 rises past 30% height (leaves screen)
-      let showLineY = window.innerHeight * 0.70;
-      let hideLineY = window.innerHeight * 0.30;
+      // Show preview when the top of Card 1 rises past 85% height (enters screen)
+      // Hide preview when the bottom of Card 4 rises past 15% height (leaves screen)
+      let showLineY = window.innerHeight * 0.85;
+      let hideLineY = window.innerHeight * 0.15;
       
       let isWithinWorksRange = (firstCardRect.top <= showLineY) && (lastCardRect.bottom >= hideLineY);
       
