@@ -198,6 +198,7 @@ if (items.length > 0) {
       end: () => `+=${window.innerWidth < 768 ? 160 : 200}%`, // Scroll distance (shorter on mobile)
       pin: true,
       pinSpacing: false,     // Allow subsequent elements to scroll up immediately
+      pinType: window.innerWidth < 768 ? "transform" : "fixed", // Prevent layout shift / jump on mobile address bar change
       zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
       scrub: 0.3,            // Tight, premium scroll scrub (300ms catch up instead of 1.0s)
       onUpdate: (self) => {
