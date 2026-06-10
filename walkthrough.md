@@ -101,8 +101,8 @@ The compilation successfully bound and bundled the local packages, compiling all
 - In mobile viewports (`<= 768px`), individual characters `.hero-char` inside the bold title `CRESCENT` are changed to `display: block; flex: 0 0 50%; max-width: 50%` and forced into a fixed `border-box` box model. This removed the `0.08em` padding safeguard defined on desktop, causing prominent character clipping on iPhones.
 
 ### Resolution
-- **Expanded Render Boundaries**: Configured `.hero-title-word.word-bold .hero-char` on mobile viewports to use `box-sizing: content-box !important`, `padding-right: 0.22em !important`, and `margin-right: -0.22em !important`. 
-  - Changing to `content-box` and adding `padding-right` expands the layout box. This reserves a 22% font-size buffer on the right, providing a safe gutter for the slanted italic glyphs to tilt into.
-  - The negative `margin-right` offsets this width increase, ensuring the Flex layout columns still resolve to a clean `50%` each without wrapping.
+- **Expanded Render Boundaries**: Configured `.hero-title-word.word-bold .hero-char` on mobile viewports to use `box-sizing: border-box !important` (retaining the exact `50%` width ratio) and added `padding-right: 0.18em !important`.
+  - Keeping `border-box` ensures that the Flex layout handles the 50% split perfectly, restoring the visual 2-column (`C R` / `E S`) configuration.
+  - Setting `padding-right: 0.18em !important` (using a font-size relative `em` unit instead of viewport-relative `vw`) forces the text to align slightly to the left within its 50% container. This creates an internal safe buffer on the right. When the italic characters slant to the right, they tilt into this buffer and never overflow the border-box bounds.
 - **De-prioritized Synthetic Layers**: Overrode `will-change: auto !important` on these characters in mobile viewports to prevent WebKit from unnecessarily keeping them as independent GPU layers when they are not animating.
 - **Verified Deployment**: Recompiled and pushed directly to production. The layout columns stay structurally centered while giving Safari's rendering engine ample box width to draw the characters fully without truncation.
