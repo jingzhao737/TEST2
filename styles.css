@@ -1545,9 +1545,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     display: block;
     flex: 0 0 50%;
     max-width: 50%;
-    box-sizing: content-box !important;
-    padding-right: 0.22em !important;
-    margin-right: -0.22em !important;
+    box-sizing: border-box !important;
+    padding-right: 0.18em !important;
     overflow: visible !important;
     will-change: auto !important;
   }
