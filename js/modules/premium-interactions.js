@@ -348,7 +348,7 @@ if (!isMobileDevice) {
       let lastCardCenter = lastCardRect.top + lastCardRect.height / 2;
       
       // Tight bounds: exits immediately when scrolling past Card 1 or Card 4
-      let upperLimit = window.innerHeight * 0.40;
+      let upperLimit = window.innerHeight * 0.50;
       let lowerLimit = window.innerHeight * 0.60;
       
       let isWithinWorksRange = (firstCardCenter <= lowerLimit) && (lastCardCenter >= upperLimit);
