@@ -1536,7 +1536,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     letter-spacing: 0em;
     line-height: 0.75;
     position: relative;
-    left: -4.5vw;
+    left: -6vw;
     overflow: visible !important;
   }
   .hero-title-word.word-bold .hero-char {
@@ -1566,7 +1566,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .hero-title {
     width: auto;
     margin-left: -40px;
-    margin-right: -10px;
+    margin-right: -40px;
     padding: 0 12px;
     box-sizing: border-box;
     margin-bottom: 16px;
