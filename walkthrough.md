@@ -109,3 +109,19 @@ The compilation successfully bound and bundled the local packages, compiling all
   - This pulls the columns inward by a total of `8vw`, keeping the letter spacing tight and aesthetically cohesive without compromising WebKit clipping safety.
 - **De-prioritized Synthetic Layers**: Overrode `will-change: auto !important` on these characters in mobile viewports to prevent WebKit from unnecessarily keeping them as independent GPU layers when they are not animating.
 - **Verified Deployment**: Recompiled and pushed directly to production. The layout columns stay structurally centered while giving Safari's rendering engine ample box width to draw the characters fully without truncation.
+
+---
+
+## 🛠️ Hotfix: Showcase Page Mobile Scroll Jitter
+
+### Problem
+- On mobile browsers (Safari/Chrome), scrolling through the Showcase section caused violent jittering/shaking.
+- **Dynamic Viewport Height Loops**: The `.showcase` container was styled with `height: 100vh; height: 100dvh` under mobile media queries, and the `.showcase-item` cards used `height: 38vh` or `35vh`. When scrolling on mobile, the address bar retracts/expands, constantly resizing the viewport height. This caused layout shifts, triggering ScrollTrigger recalculations, which scrolled the page, changing the address bar state again, resulting in an infinite scroll-jitter feedback loop.
+- **Mobile Touch-to-Hover Event Pollution**: The cards listened for `mouseenter`, `mousemove`, and `mouseleave` to perform 3D cursor tilts and start an organic fluid shimmer ticker. On mobile touch-screens, touch-to-scroll gestures emulated mouse hover states that got stuck permanently, running active animation tick loops in the background and stuttering the scroll.
+- **ScrollTrigger Animation Overhead**: Mobile cards were animated on entering and leaving (`toggleActions: "play none none reverse"`), causing continuous layout recalculations when scrolling back and forth.
+
+### Resolution
+- **Stable Mobile Dimensions**: Changed `.showcase` on mobile viewports (`<= 768px` and `<= 480px`) to use `height: auto !important` and custom vertical paddings (`100px 0`/`80px 0`). Replaced dynamic card heights (`vh`) with stable pixel values (`280px`/`240px`) to prevent any viewport-size recalculations during scroll.
+- **Hover/Tilt Bypassing for Mobile/Touch**: Moved mouse event listeners, 3D quickTo transitions, and shimmer tickers inside a `!isMobile` conditional check. This prevents emulation triggers and keeps CPU/GPU overhead at zero when scrolling on touch screens.
+- **One-Time Scroll Reveal**: Changed mobile ScrollTrigger to use `once: true` instead of toggle actions. The cards slide and fade in smoothly once, locking into place for a stable, high-performance scrolling flow.
+
