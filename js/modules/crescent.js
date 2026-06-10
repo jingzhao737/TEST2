@@ -26,22 +26,24 @@ window.revealHeroTitle = function() {
 
   // ── ENTRANCE ──────────────────────────────────────────────────────────────
 
-  // 1. Eyebrow: letter-spacing assembly + cinematic blur focus-pull
+  // 1. Eyebrow: cinema-grade entrance — letter-spacing assembly + scale + deep DoF blur
   if (eyebrow) {
     tl.fromTo(eyebrow,
       {
         opacity: 0,
-        y: 12,
-        letterSpacing: '1.4em',
-        filter: 'blur(10px)'
+        y: 14,
+        scale: 0.94,
+        letterSpacing: '1.6em',
+        filter: 'blur(14px)'
       },
       {
         opacity: 1,
         y: 0,
+        scale: 1,
         letterSpacing: isMobile ? '0.22em' : '0.28em',
         filter: 'blur(0px)',
-        duration: 1.8,
-        ease: 'power3.out'
+        duration: 2.0,
+        ease: 'power4.out'
       },
       0.85
     );
@@ -185,11 +187,12 @@ window.revealHeroTitle = function() {
   if (eyebrow) {
     tl.to(eyebrow, {
       opacity: 0,
-      y: -12,
-      letterSpacing: '1.0em',
-      filter: 'blur(8px)',
-      duration: 0.55,
-      ease: 'power2.in'
+      y: -14,
+      scale: 0.94,
+      letterSpacing: '1.2em',
+      filter: 'blur(12px)',
+      duration: 0.6,
+      ease: 'power3.in'
     }, 'hold+=0.08');
   }
   if (dividerLine) tl.to(dividerLine, { scaleX: 0, opacity: 0, duration: 0.45, ease: 'power2.in' }, 'hold+=0.12');
