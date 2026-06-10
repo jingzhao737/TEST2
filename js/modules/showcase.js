@@ -180,17 +180,6 @@ if (items.length > 0) {
     gsap.set(showcaseItems[1], { zIndex: 2, y: "100vh", scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
     gsap.set(showcaseItems[2], { zIndex: 3, y: "100vh", scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
 
-    // Query showcase's next sibling (the divider) and offset it by the pin distance so it scrolls over the stack at the end.
-    const nextSibling = showcaseSection.nextElementSibling;
-    if (nextSibling) {
-      ScrollTrigger.addEventListener("refreshInit", () => {
-        const showcaseHeight = showcaseSection.offsetHeight;
-        gsap.set(nextSibling, { marginTop: showcaseHeight + "px" });
-      });
-      const showcaseHeight = showcaseSection.offsetHeight;
-      gsap.set(nextSibling, { marginTop: showcaseHeight + "px" });
-    }
-
     // Unified cascading timeline
     let mainTimeline;
     mainTimeline = gsap.timeline({
@@ -199,21 +188,9 @@ if (items.length > 0) {
         start: "top top",      // Pin the section when it hits the top of the viewport
         end: () => `+=200%`,   // Scroll distance
         pin: true,
-        pinSpacing: false,     // Allow subsequent elements to scroll up immediately
+        pinSpacing: true,      // Let GSAP handle padding-bottom spacing natively
         zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
-        scrub: 0.3,            // Tight, premium scroll scrub
-        onUpdate: (self) => {
-          const isCovered = self.progress >= 0.67;
-          const currentVisibility = showcaseSection.style.visibility;
-          const targetVisibility = isCovered ? "hidden" : "visible";
-          if (currentVisibility !== targetVisibility) {
-            gsap.set(showcaseSection, { 
-              visibility: targetVisibility,
-              opacity: isCovered ? 0 : 1,
-              pointerEvents: isCovered ? "none" : "auto"
-            });
-          }
-        }
+        scrub: 0.3             // Tight, premium scroll scrub
       }
     });
 
@@ -316,16 +293,7 @@ if (items.length > 0) {
       grid.style.overflow = 'visible';
     }
 
-    // Ensure next sibling doesn't get pushed by desktop margin offsets
-    const nextSibling = showcaseSection.nextElementSibling;
-    if (nextSibling) {
-      gsap.set(nextSibling, { marginTop: "0px" });
-      ScrollTrigger.addEventListener("refreshInit", () => {
-        if (window.innerWidth < 768) {
-          gsap.set(nextSibling, { marginTop: "0px" });
-        }
-      });
-    }
+
 
     // Force default clean styling on items for mobile scroll flow
     gsap.set(showcaseItems, { 
