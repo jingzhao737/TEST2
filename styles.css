@@ -1469,7 +1469,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .work-name{font-size:1.6rem}
   .work-idx{font-size:0.6rem}
-  .showcase{padding:0 0 120px}
+  .showcase{padding:0 !important;height:100vh;height:100dvh;justify-content:center}
   .showcase-header{padding:0 40px;margin-bottom:56px}
   .showcase-item{height:55vh;padding:48px 40px;border-radius:12px;margin-bottom:3px}
   .showcase-grid{padding:0 40px}
@@ -1626,7 +1626,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .ice-container{aspect-ratio:4/3;max-height:65vh}
   .ice-hint{font-size:.65rem;bottom:24px;gap:14px}
   .hero-content{z-index:1}
-  .showcase{padding:100px 0 110px}
+  .showcase{padding:0 !important;height:100vh;height:100dvh;justify-content:center}
   .showcase-header{padding:0 32px;margin-bottom:40px}
   .showcase-item{height:38vh;padding:40px 32px;margin:0 16px 12px;border-radius:16px}
   .showcase-info h3{font-size:1.7rem}
@@ -1719,7 +1719,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     height: 62px !important;
   }
   .work-name{font-size:1.2rem}
-  .showcase{padding:70px 0 80px}
+  .showcase{padding:0 !important;height:100vh;height:100dvh;justify-content:center}
   .showcase-header{padding:0 28px}
   .showcase-item{height:35vh;padding:24px 20px;margin:0 12px 10px;border-radius:12px}
   .showcase-info h3{font-size:1.45rem}
