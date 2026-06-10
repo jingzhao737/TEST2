@@ -1,8 +1,7 @@
 import gsap from 'gsap';
 
-// ═══════════ CRESCENT TITLE AWWWARDS REVEAL (GSAP & GPU-accelerated) ═══════════
+// ═══════════ CRESCENT TITLE — PREMIUM CINEMA REVEAL (GSAP GPU-accelerated) ═══════════
 
-// Reveal function for Loader to trigger on load complete
 window.revealHeroTitle = function() {
   if (window.heroTimeline) {
     window.heroTimeline.kill();
@@ -16,195 +15,190 @@ window.revealHeroTitle = function() {
 
   if (words.length === 0) return;
 
+  const isMobile = window.innerWidth <= 768;
+
   const tl = gsap.timeline({
-    defaults: { ease: 'expo.out', duration: 1.6 },
-    repeat: -1, // Infinite loop
-    repeatDelay: 0 // ZERO delay between cycles for a snappy, seamless conveyor belt feel
+    defaults: { ease: 'power4.out', duration: 1.8 },
+    repeat: -1,
+    repeatDelay: 0
   });
   window.heroTimeline = tl;
 
-  // === ENTRANCE ===
+  // ── ENTRANCE ──────────────────────────────────────────────────────────────
 
-  // 1. Premium letter-spacing assembly + blur focus-pull eyebrow entrance animation (reveals later as a crowning accent)
+  // 1. Eyebrow: letter-spacing assembly + cinematic blur focus-pull
   if (eyebrow) {
-    const isMobile = window.innerWidth <= 768;
-    tl.fromTo(eyebrow, 
-      { 
-        opacity: 0, 
-        y: 15,
-        letterSpacing: '1.2em', // Starts wide
-        filter: 'blur(8px)'     // Starts blurry
-      }, 
-      { 
-        opacity: 1, 
+    tl.fromTo(eyebrow,
+      {
+        opacity: 0,
+        y: 12,
+        letterSpacing: '1.4em',
+        filter: 'blur(10px)'
+      },
+      {
+        opacity: 1,
         y: 0,
-        letterSpacing: isMobile ? '0.22em' : '0.28em', // Resolves to CSS default
-        filter: 'blur(0px)',                           // Resolves to sharp
-        duration: 1.6, 
-        ease: 'power2.out' 
-      }, 
-      0.9 // Delayed entrance to let the title start resolving first
-    );
-  }
-
-  // 2. Line-mask reveal big title words, grouping by line so CRES and CENT move perfectly together
-  const lines = document.querySelectorAll('.hero-title-line');
-  lines.forEach((line, index) => {
-    const isBold = line.querySelector('.word-bold') !== null;
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isBold) {
-      const chars = line.querySelectorAll('.hero-char');
-      if (chars.length === 0) return;
-      
-      const boldWords = line.querySelectorAll('.hero-title-word.word-bold');
-      
-      // 1. Set the parent words' opacity/layout properties instantly, but initialize blur to 8px
-      tl.set(boldWords, { opacity: 1, y: '0%', skewY: 0 }, 0);
-      
-      // 2. Animate the parent words' blur filter (safe on mobile/Safari since they are not flex-items themselves)
-      // Uses power2.out (quadratic ease) instead of steep expo.out to let the focus-pull linger and resolve gradually
-      tl.fromTo(boldWords,
-        { filter: 'blur(8px)' },
-        { filter: 'blur(0px)', duration: 1.8, ease: 'power2.out' },
-        0.2 + (index * 0.15)
-      );
-      
-      // 3. Animate the individual characters staggering in (without individual blurs to avoid Safari layout bug)
-      tl.fromTo(chars, 
-        { opacity: 0, y: '102%', skewY: 8 }, 
-        {
-          y: '0%',
-          skewY: 0,
-          opacity: 1,
-          duration: 1.5, // Majestic but smooth character slide-up
-          ease: 'expo.out',
-          stagger: 0.07 // Elegant cascade 8 letters one-by-one with 0.07s delay on both PC and Mobile
-        }, 
-        0.2 + (index * 0.15)
-      );
-    } else {
-      const wordsInLine = line.querySelectorAll('.hero-title-word');
-      if (wordsInLine.length === 0) return;
-      
-      tl.fromTo(wordsInLine, 
-        { opacity: 0, y: '102%', skewY: 8, filter: 'blur(8px)' }, 
-        {
-          y: '0%',
-          skewY: 0,
-          opacity: 1,
-          filter: 'blur(0px)',
-          duration: 2.0,
-          ease: 'expo.out'
-        }, 
-        0.2 + (index * 0.15)
-      );
-    }
-  });
-
-  // 3. Extend tech divider line from center (scaleX 0 -> 1) with skew sync
-  if (dividerLine) {
-    tl.fromTo(dividerLine, 
-      { scaleX: 0, skewY: 6 }, 
-      { scaleX: 1, skewY: 0, duration: 1.1, ease: 'power3.out' }, 
-      0.55
-    );
-  }
-
-  // 4. Fade in divider meta tags with skew sync
-  if (metas.length > 0) {
-    tl.fromTo(metas, 
-      { opacity: 0, skewY: 6 }, 
-      { opacity: 1, skewY: 0, stagger: 0.1, duration: 0.8, ease: 'power2.out' }, 
+        letterSpacing: isMobile ? '0.22em' : '0.28em',
+        filter: 'blur(0px)',
+        duration: 1.8,
+        ease: 'power3.out'
+      },
       0.85
     );
   }
 
-  // 5. Smoothly reveal hero subtitle with synchronized skew
-  if (subtitle) {
-    tl.fromTo(subtitle, 
-      { opacity: 0, y: 20, skewY: 6 }, 
-      { opacity: 1, y: 0, skewY: 0, duration: 1.0 }, 
-      0.9
-    );
-  }
-
-  // 6. Smoothly reveal bottom scroll indicator hint
-  if (scrollHint) {
-    tl.fromTo(scrollHint, 
-      { opacity: 0, y: 10 }, 
-      { opacity: 1, y: 0, duration: 1.0 }, 
-      1.2
-    );
-  }
-
-  // === HOLD ===
-  // Hold the resident state for 6 seconds
-  tl.add("hold", "+=6.0");
-
-  // Slide UP and out smoothly, grouped by line
+  // 2. Big title: group by line, char-level staggered slide with deep DoF blur on parent
+  const lines = document.querySelectorAll('.hero-title-line');
   lines.forEach((line, index) => {
     const isBold = line.querySelector('.word-bold') !== null;
-    const isMobile = window.innerWidth <= 768;
-    
+
     if (isBold) {
       const chars = line.querySelectorAll('.hero-char');
       if (chars.length === 0) return;
-      
+
       const boldWords = line.querySelectorAll('.hero-title-word.word-bold');
-      
-      // 1. Animate parent words to blur on exit starting explicitly from blur(0px) to prevent interpolation snapping
-      tl.fromTo(boldWords, 
-        { filter: 'blur(0px)' },
-        {
-          filter: 'blur(8px)',
-          duration: 0.8,
-          ease: 'expo.in'
-        }, 
-        `hold+=${index * 0.05}`
+
+      // Parent visible immediately, deep cinematic DoF blur resolves slowly
+      tl.set(boldWords, { opacity: 1, y: '0%' }, 0);
+      tl.fromTo(boldWords,
+        { filter: 'blur(16px)' },
+        { filter: 'blur(0px)', duration: 2.2, ease: 'power2.out' },
+        0.15 + (index * 0.12)
       );
-      
-      // 2. Animate individual characters sliding up/out staggered
-      tl.to(chars, {
-        y: '-102%',
-        skewY: -8,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'expo.in',
-        stagger: 0.04 // Uniform stagger out on both PC and Mobile
-      }, `hold+=${index * 0.05}`);
+
+      // Individual chars: clean vertical slide + subtle scale, NO skewY
+      tl.fromTo(chars,
+        { opacity: 0, y: '80%', scale: 0.94 },
+        {
+          y: '0%',
+          scale: 1,
+          opacity: 1,
+          duration: 1.9,
+          ease: 'power4.out',
+          stagger: { each: 0.06, from: 'start' }
+        },
+        0.15 + (index * 0.12)
+      );
+
     } else {
+      // Outline words (VISUAL / LAB): unified slide + DoF blur
       const wordsInLine = line.querySelectorAll('.hero-title-word');
       if (wordsInLine.length === 0) return;
-      
-      tl.to(wordsInLine, {
-        y: '-102%',
-        skewY: -8,
-        opacity: 0,
-        filter: 'blur(8px)',
-        duration: 0.8,
-        ease: 'expo.in'
-      }, `hold+=${index * 0.05}`);
+
+      tl.fromTo(wordsInLine,
+        { opacity: 0, y: '75%', scale: 0.96, filter: 'blur(12px)' },
+        {
+          y: '0%',
+          scale: 1,
+          opacity: 1,
+          filter: 'blur(0px)',
+          duration: 2.0,
+          ease: 'power4.out'
+        },
+        0.15 + (index * 0.12)
+      );
     }
   });
 
-  if (eyebrow) {
-    tl.to(eyebrow, { 
-      opacity: 0, 
-      y: -15, 
-      letterSpacing: '0.8em', // Spread out on exit
-      filter: 'blur(6px)',    // Dissolve into blur
-      duration: 0.6, 
-      ease: 'power2.in' 
-    }, "hold+=0.1");
+  // 3. Tech divider line: elegant width reveal
+  if (dividerLine) {
+    tl.fromTo(dividerLine,
+      { scaleX: 0, opacity: 0 },
+      { scaleX: 1, opacity: 1, duration: 1.0, ease: 'power3.out' },
+      0.55
+    );
   }
-  if (dividerLine) tl.to(dividerLine, { scaleX: 0, duration: 0.5, ease: 'power2.in' }, "hold+=0.15");
-  if (metas.length > 0) tl.to(metas, { opacity: 0, duration: 0.4, ease: 'power2.in' }, "hold+=0.1");
-  if (subtitle) tl.to(subtitle, { opacity: 0, y: -20, duration: 0.5, ease: 'power2.in' }, "hold+=0.2");
-  if (scrollHint) tl.to(scrollHint, { opacity: 0, duration: 0.5, ease: 'power2.in' }, "hold+=0.25");
+
+  // 4. Divider meta tags: gentle fade-slide
+  if (metas.length > 0) {
+    tl.fromTo(metas,
+      { opacity: 0, y: 6 },
+      { opacity: 1, y: 0, stagger: 0.1, duration: 0.9, ease: 'power3.out' },
+      0.85
+    );
+  }
+
+  // 5. Hero subtitle: soft float-in
+  if (subtitle) {
+    tl.fromTo(subtitle,
+      { opacity: 0, y: 18, filter: 'blur(4px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.1, ease: 'power3.out' },
+      0.95
+    );
+  }
+
+  // 6. Scroll hint: delayed reveal
+  if (scrollHint) {
+    tl.fromTo(scrollHint,
+      { opacity: 0, y: 8 },
+      { opacity: 1, y: 0, duration: 1.0, ease: 'power2.out' },
+      1.3
+    );
+  }
+
+  // ── HOLD ──────────────────────────────────────────────────────────────────
+  tl.add('hold', '+=6.0');
+
+  // ── EXIT ──────────────────────────────────────────────────────────────────
+
+  lines.forEach((line, index) => {
+    const isBold = line.querySelector('.word-bold') !== null;
+
+    if (isBold) {
+      const chars = line.querySelectorAll('.hero-char');
+      if (chars.length === 0) return;
+      const boldWords = line.querySelectorAll('.hero-title-word.word-bold');
+
+      // Parent: re-blur on exit (start explicitly from 0 to prevent snap)
+      tl.fromTo(boldWords,
+        { filter: 'blur(0px)' },
+        { filter: 'blur(14px)', duration: 0.7, ease: 'power2.in' },
+        `hold+=${index * 0.04}`
+      );
+
+      // Chars: clean upward slide + subtle scale-down, NO skewY
+      tl.to(chars, {
+        y: '-75%',
+        scale: 0.96,
+        opacity: 0,
+        duration: 0.75,
+        ease: 'power3.in',
+        stagger: { each: 0.035, from: 'start' }
+      }, `hold+=${index * 0.04}`);
+
+    } else {
+      const wordsInLine = line.querySelectorAll('.hero-title-word');
+      if (wordsInLine.length === 0) return;
+
+      tl.to(wordsInLine, {
+        y: '-65%',
+        scale: 0.96,
+        opacity: 0,
+        filter: 'blur(10px)',
+        duration: 0.7,
+        ease: 'power3.in'
+      }, `hold+=${index * 0.04}`);
+    }
+  });
+
+  // Supporting elements exit
+  if (eyebrow) {
+    tl.to(eyebrow, {
+      opacity: 0,
+      y: -12,
+      letterSpacing: '1.0em',
+      filter: 'blur(8px)',
+      duration: 0.55,
+      ease: 'power2.in'
+    }, 'hold+=0.08');
+  }
+  if (dividerLine) tl.to(dividerLine, { scaleX: 0, opacity: 0, duration: 0.45, ease: 'power2.in' }, 'hold+=0.12');
+  if (metas.length > 0) tl.to(metas, { opacity: 0, y: -5, duration: 0.4, ease: 'power2.in' }, 'hold+=0.08');
+  if (subtitle) tl.to(subtitle, { opacity: 0, y: -16, filter: 'blur(4px)', duration: 0.5, ease: 'power2.in' }, 'hold+=0.18');
+  if (scrollHint) tl.to(scrollHint, { opacity: 0, duration: 0.4, ease: 'power2.in' }, 'hold+=0.22');
 };
 
-// Handle race condition: if loader finished before this script was loaded, reveal immediately
+// Handle race condition: if loader finished before this script was loaded
 if (window.loaderFinished) {
   window.revealHeroTitle();
 }
