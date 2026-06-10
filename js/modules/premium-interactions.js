@@ -185,6 +185,8 @@ if (!isMobileDevice) {
   if (workList && cards.length > 0) {
     let activeSrc = null;
     let isVisible = false;
+    let isCurrentlyShowing = false;
+    let isObservedIntersecting = false;
     
     // Create Mobile DOM
     const wrapper = document.createElement('div');
@@ -200,46 +202,90 @@ if (!isMobileDevice) {
     wrapper.appendChild(imgContainer);
     document.body.appendChild(wrapper);
     
-    // Initial State
-    gsap.set(wrapper, { autoAlpha: 0 });
+    // Initial State - Set up 3D tilts and blur for premium entry
+    gsap.set(wrapper, { 
+      autoAlpha: 0, 
+      yPercent: -50, 
+      scale: 0.7, 
+      rotation: -8, 
+      x: 30, 
+      filter: 'blur(10px)' 
+    });
     gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)' });
     gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)' });
     
-    // Intersection Observer to show/hide the floating mobile preview container
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          isVisible = true;
-          gsap.killTweensOf([wrapper, curtain, imgContainer]);
-          gsap.to(wrapper, { autoAlpha: 1, duration: 0.3, overwrite: true });
-          gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: 0.5, ease: 'power2.out', overwrite: true });
-          gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: 0.5, ease: 'power2.out', delay: 0.1, overwrite: true });
-        } else {
+    function showMobilePreview() {
+      if (isCurrentlyShowing) return;
+      isCurrentlyShowing = true;
+      isVisible = true;
+      
+      gsap.killTweensOf([wrapper, curtain, imgContainer]);
+      
+      // Organic entrance: elastic spring scale-up, slight rotation spin back, blur dissipation
+      gsap.to(wrapper, { 
+        autoAlpha: 1, 
+        scale: 1, 
+        rotation: 0, 
+        x: 0, 
+        filter: 'blur(0px)',
+        duration: 0.6, 
+        ease: 'back.out(1.4)', 
+        overwrite: true 
+      });
+      gsap.to(curtain, { 
+        clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', 
+        duration: 0.5, 
+        ease: 'power3.out', 
+        overwrite: true 
+      });
+      gsap.to(imgContainer, { 
+        clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', 
+        duration: 0.5, 
+        ease: 'power3.out', 
+        delay: 0.08, 
+        overwrite: true 
+      });
+      
+      // Update image immediately upon entering
+      updateActiveImage();
+    }
+    
+    function hideMobilePreview() {
+      if (!isCurrentlyShowing) return;
+      isCurrentlyShowing = false;
+      
+      gsap.killTweensOf([wrapper, curtain, imgContainer]);
+      
+      // Snappy exit: scale down, rotate away, slide right, and fade with gaussian blur
+      gsap.to(wrapper, { 
+        autoAlpha: 0, 
+        scale: 0.65, 
+        rotation: 8, 
+        x: 40, 
+        filter: 'blur(10px)',
+        duration: 0.35, 
+        ease: 'power3.in', 
+        overwrite: true,
+        onComplete: () => {
           isVisible = false;
           activeSrc = null;
-          gsap.killTweensOf([wrapper, curtain, imgContainer]);
-          gsap.to(wrapper, { autoAlpha: 0, duration: 0.3, overwrite: true });
-          gsap.to(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', duration: 0.4, ease: 'power2.in', overwrite: true });
-          gsap.to(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', duration: 0.4, ease: 'power2.in', overwrite: true });
         }
       });
-    }, { threshold: 0.05, rootMargin: '-10% 0px -10% 0px' });
+      gsap.to(curtain, { 
+        clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', 
+        duration: 0.35, 
+        ease: 'power3.in', 
+        overwrite: true 
+      });
+      gsap.to(imgContainer, { 
+        clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', 
+        duration: 0.35, 
+        ease: 'power3.in', 
+        overwrite: true 
+      });
+    }
     
-    observer.observe(workList);
-    
-    // Scroll tracking for active card and velocity-based deformation
-    let lastScrollY = window.scrollY;
-    let scrollVel = 0;
-    let currentVel = 0;
-    
-    window.addEventListener('scroll', () => {
-      let curScrollY = window.scrollY;
-      scrollVel = curScrollY - lastScrollY;
-      lastScrollY = curScrollY;
-      
-      if (!isVisible) return;
-      
-      // Find the card closest to the active zone (45% viewport height)
+    function updateActiveImage() {
       let activeZoneY = window.innerHeight * 0.45;
       let closestCard = null;
       let minDistance = Infinity;
@@ -254,7 +300,6 @@ if (!isMobileDevice) {
         }
       });
       
-      // Update image if card changes
       if (closestCard) {
         const src = closestCard.dataset.image;
         if (src && src !== activeSrc) {
@@ -268,9 +313,10 @@ if (!isMobileDevice) {
           
           if (!hasExistingImg) {
             gsap.set(newImg, { clipPath: 'none', y: 0 });
+            imgContainer.innerHTML = '';
             imgContainer.appendChild(newImg);
           } else {
-            // Premium sliding clip-path switch animation
+            // Sliding clip-path animation between images
             gsap.set(newImg, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 20 });
             imgContainer.appendChild(newImg);
             
@@ -292,6 +338,59 @@ if (!isMobileDevice) {
           }
         }
       }
+    }
+    
+    const checkVisibility = () => {
+      let firstCardRect = cards[0].getBoundingClientRect();
+      let lastCardRect = cards[cards.length - 1].getBoundingClientRect();
+      
+      let firstCardCenter = firstCardRect.top + firstCardRect.height / 2;
+      let lastCardCenter = lastCardRect.top + lastCardRect.height / 2;
+      
+      // Tight bounds: exits immediately when scrolling past Card 1 or Card 4
+      let upperLimit = window.innerHeight * 0.22;
+      let lowerLimit = window.innerHeight * 0.68;
+      
+      let isWithinWorksRange = (firstCardCenter <= lowerLimit) && (lastCardCenter >= upperLimit);
+      
+      if (isWithinWorksRange) {
+        showMobilePreview();
+      } else {
+        hideMobilePreview();
+      }
+    };
+    
+    // Intersection Observer as high-level guard for performance
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isObservedIntersecting = entry.isIntersecting;
+        if (!isObservedIntersecting) {
+          hideMobilePreview();
+        } else {
+          checkVisibility();
+        }
+      });
+    }, { threshold: 0.01, rootMargin: '100px 0px 100px 0px' });
+    
+    observer.observe(workList);
+    
+    // Scroll tracking for active card and velocity-based deformation
+    let lastScrollY = window.scrollY;
+    let scrollVel = 0;
+    let currentVel = 0;
+    
+    window.addEventListener('scroll', () => {
+      let curScrollY = window.scrollY;
+      scrollVel = curScrollY - lastScrollY;
+      lastScrollY = curScrollY;
+      
+      if (!isObservedIntersecting) return;
+      
+      checkVisibility();
+      
+      if (!isCurrentlyShowing) return;
+      
+      updateActiveImage();
     }, { passive: true });
     
     // Animation loop for scroll deformation (squash & stretch + tilt)
