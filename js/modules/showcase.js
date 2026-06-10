@@ -179,13 +179,13 @@ if (items.length > 0) {
     ScrollTrigger.addEventListener("refreshInit", () => {
       const showcaseHeight = showcaseSection.offsetHeight;
       const currentIsMobile = window.innerWidth < 768;
-      const currentSpacerFactor = currentIsMobile ? 1.5 : 2.4;
+      const currentSpacerFactor = currentIsMobile ? 0.6 : 1.0;
       gsap.set(nextSibling, { marginTop: (showcaseHeight * currentSpacerFactor) + "px" });
     });
     // Set initial margin
     const showcaseHeight = showcaseSection.offsetHeight;
     const isMobile = window.innerWidth < 768;
-    const spacerFactor = isMobile ? 1.5 : 2.4;
+    const spacerFactor = isMobile ? 0.6 : 1.0;
     gsap.set(nextSibling, { marginTop: (showcaseHeight * spacerFactor) + "px" });
   }
 
@@ -194,11 +194,11 @@ if (items.length > 0) {
     scrollTrigger: {
       trigger: showcaseSection,
       start: "top top",      // Pin the section when it hits the top of the viewport
-      end: () => `+=${window.innerWidth < 768 ? 250 : 340}%`, // Scroll distance (shorter on mobile)
+      end: () => `+=${window.innerWidth < 768 ? 160 : 200}%`, // Scroll distance (shorter on mobile)
       pin: true,
       pinSpacing: false,     // Allow subsequent elements to scroll up immediately
       zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
-      scrub: 1.0,            // Highly responsive scroll scrub
+      scrub: 0.3,            // Tight, premium scroll scrub (300ms catch up instead of 1.0s)
       snap: {
         snapTo: (value) => {
           console.log("[SHOWCASE SNAP] Input progress:", value);
@@ -211,17 +211,15 @@ if (items.length > 0) {
           console.log("[SHOWCASE SNAP] Snapping to Motion (1.0)");
           return 1.0; // Snap to Motion page!
         },
-        duration: { min: 0.2, max: 0.6 },
-        delay: 0.08,
-        ease: "power2.out"
+        duration: { min: 0.1, max: 0.35 }, // Faster, snappier snap speed (max 350ms instead of 600ms)
+        delay: 0.02,                      // Near-instant snapping trigger on scroll stop (20ms instead of 80ms)
+        ease: "power3.out"                // Energetic ease for responsive feedback
       },
       onUpdate: (self) => {
         // High performance visibility toggle using state-change tracking to avoid layout thrashing.
-        // Hides showcase completely when next section enters (60% on mobile, 70% on desktop).
-        // Restores visibility on up-scroll.
-        const isMobile = window.innerWidth < 768;
-        const threshold = isMobile ? 0.60 : 0.70;
-        const isCovered = self.progress >= threshold;
+        // Hides showcase completely at 67% progress (when cards are fully transparent).
+        // Restores visibility at <=67% progress (during up-scroll).
+        const isCovered = self.progress >= 0.67;
         const currentVisibility = showcaseSection.style.visibility;
         const targetVisibility = isCovered ? "hidden" : "visible";
         if (currentVisibility !== targetVisibility) {
