@@ -190,7 +190,8 @@ if (items.length > 0) {
   }
 
   // Unified cascading timeline
-  const mainTimeline = gsap.timeline({
+  let mainTimeline;
+  mainTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: showcaseSection,
       start: "top top",      // Pin the section when it hits the top of the viewport
@@ -201,15 +202,32 @@ if (items.length > 0) {
       scrub: 0.3,            // Tight, premium scroll scrub (300ms catch up instead of 1.0s)
       snap: {
         snapTo: (value) => {
-          console.log("[SHOWCASE SNAP] Input progress:", value);
-          if (value < 0.58) {
-            const snaps = [0, 0.25, 0.5];
-            const target = snaps.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
-            console.log("[SHOWCASE SNAP] Snapping to card progress:", target);
-            return target;
+          const self = mainTimeline ? mainTimeline.scrollTrigger : null;
+          const dir = self ? self.direction : 1;
+          console.log("[SHOWCASE SNAP] Input progress:", value, "Direction:", dir);
+          
+          if (dir === -1) {
+            // Scrolling up: do NOT snap forward to 1.0 (prevent the snap-back scroll trap).
+            // If user scrolls up close to the card deck, snap to card 3 (0.5). Otherwise let them scroll freely.
+            if (value < 0.75) {
+              const snaps = [0, 0.25, 0.5];
+              const target = snaps.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+              console.log("[SHOWCASE SNAP] Scrolling up, snapping to:", target);
+              return target;
+            }
+            console.log("[SHOWCASE SNAP] Scrolling up, free scroll at:", value);
+            return value; // No snap, scroll freely
+          } else {
+            // Scrolling down: snap to cards, or snap forward to 1.0 to transition to Motion page.
+            if (value < 0.58) {
+              const snaps = [0, 0.25, 0.5];
+              const target = snaps.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+              console.log("[SHOWCASE SNAP] Scrolling down, snapping to card:", target);
+              return target;
+            }
+            console.log("[SHOWCASE SNAP] Scrolling down, snapping to Motion (1.0)");
+            return 1.0; // Snap to Motion page!
           }
-          console.log("[SHOWCASE SNAP] Snapping to Motion (1.0)");
-          return 1.0; // Snap to Motion page!
         },
         duration: { min: 0.1, max: 0.35 }, // Faster, snappier snap speed (max 350ms instead of 600ms)
         delay: 0.02,                      // Near-instant snapping trigger on scroll stop (20ms instead of 80ms)
