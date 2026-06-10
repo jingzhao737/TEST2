@@ -200,16 +200,24 @@ if (items.length > 0) {
       zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
       scrub: 1.0,            // Highly responsive scroll scrub
       snap: {
-        snapTo: "labels",
+        snapTo: (value) => {
+          if (value < 0.58) {
+            const snaps = [0, 0.25, 0.5];
+            return snaps.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+          }
+          return value; // No snap for exit zone
+        },
         duration: { min: 0.2, max: 0.6 },
         delay: 0.08,
         ease: "power2.out"
       },
       onUpdate: (self) => {
         // High performance visibility toggle using state-change tracking to avoid layout thrashing.
-        // Hides showcase completely at 67% progress (when fully faded out).
-        // Restores visibility at <=67% progress (during up-scroll).
-        const isCovered = self.progress >= 0.67;
+        // Hides showcase completely when next section enters (60% on mobile, 70% on desktop).
+        // Restores visibility on up-scroll.
+        const isMobile = window.innerWidth < 768;
+        const threshold = isMobile ? 0.60 : 0.70;
+        const isCovered = self.progress >= threshold;
         const currentVisibility = showcaseSection.style.visibility;
         const targetVisibility = isCovered ? "hidden" : "visible";
         if (currentVisibility !== targetVisibility) {
