@@ -153,178 +153,101 @@ if (items.length > 0) {
   const showcaseHeader = showcaseSection.querySelector('.showcase-header');
   const grid = document.querySelector('.showcase-grid');
 
-  if (!isMobile) {
-    // ═══════════════ DESKTOP: PINNED STACKED DECK EFFECT ═══════════════
-    if (grid) {
-      grid.classList.add('is-stacked');
-      grid.style.overflow = 'visible';
-    }
-
-    // Pre-query overlays and blurred backgrounds for unified timeline
-    const overlays = [];
-    const blurredBgs = [];
-    const infos = [];
-    
-    showcaseItems.forEach(item => {
-      overlays.push(item.querySelector('.showcase-overlay'));
-      blurredBgs.push(item.querySelector('.showcase-bg-blurred'));
-      infos.push(item.querySelector('.showcase-info'));
-    });
-
-    // Set initial absolute positioning and opacity states to bypass GSAP initial value locks
-    gsap.set(showcaseHeader, { opacity: 1, y: 0 });
-    gsap.set(infos, { opacity: 1 });
-
-    // Card 1 starts at active (y:0), Cards 2 & 3 start completely below viewport (y: 100vh)
-    gsap.set(showcaseItems[0], { zIndex: 1, y: 0, scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
-    gsap.set(showcaseItems[1], { zIndex: 2, y: "100vh", scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
-    gsap.set(showcaseItems[2], { zIndex: 3, y: "100vh", scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
-
-    // Unified cascading timeline
-    let mainTimeline;
-    mainTimeline = gsap.timeline({
-      scrollTrigger: {
-        trigger: showcaseSection,
-        start: "top top",      // Pin the section when it hits the top of the viewport
-        end: () => `+=200%`,   // Scroll distance
-        pin: true,
-        pinSpacing: true,      // Let GSAP handle padding-bottom spacing natively
-        zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
-        scrub: 0.3             // Tight, premium scroll scrub
-      }
-    });
-
-    // Step 1: Card 2 slides up to front, Card 1 recedes (Duration: 0.6)
-    mainTimeline.addLabel("step1")
-      .to(showcaseItems[1], { y: "4vh", filter: "blur(0px)", ease: "power1.inOut", duration: 0.6 }, "step1")
-      .to(showcaseItems[0], { 
-        y: 0,
-        scale: 0.93, 
-        z: -100, 
-        rotationX: 3, 
-        filter: "blur(6px)",
-        transformOrigin: "top center",
-        ease: "power1.inOut",
-        duration: 0.6
-      }, "step1")
-      .to(blurredBgs[0], { opacity: 1, ease: "power1.inOut", duration: 0.6 }, "step1")
-      .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power1.inOut", duration: 0.6 }, "step1")
-      .to(infos[0], { opacity: 0.35, ease: "power1.inOut", duration: 0.6 }, "step1");
-
-    // Step 2: Card 3 slides up to front, Card 2 recedes, Card 1 recedes deeper (Duration: 0.6)
-    mainTimeline.addLabel("step2")
-      .to(showcaseItems[2], { y: "8vh", filter: "blur(0px)", ease: "power1.inOut", duration: 0.6 }, "step2")
-      .to(showcaseItems[1], { 
-        y: "4vh",
-        scale: 0.93, 
-        z: -100, 
-        rotationX: 3, 
-        filter: "blur(6px)",
-        transformOrigin: "top center",
-        ease: "power1.inOut",
-        duration: 0.6
-      }, "step2")
-      .to(blurredBgs[1], { opacity: 1, ease: "power1.inOut", duration: 0.6 }, "step2")
-      .to(overlays[1], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power1.inOut", duration: 0.6 }, "step2")
-      .to(infos[1], { opacity: 0.35, ease: "power1.inOut", duration: 0.6 }, "step2")
-      
-      // Card 1 sinks deeper
-      .to(showcaseItems[0], { 
-        y: 0,
-        scale: 0.86, 
-        z: -200, 
-        rotationX: 6, 
-        filter: "blur(12px)",
-        transformOrigin: "top center",
-        ease: "power1.inOut",
-        duration: 0.6
-      }, "step2")
-      .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.75)", ease: "power1.inOut", duration: 0.6 }, "step2")
-      .to(infos[0], { opacity: 0.15, ease: "power1.inOut", duration: 0.6 }, "step2");
-
-    // Step 3: Damping / Retention zone (Duration: 0.4)
-    mainTimeline.addLabel("step3")
-      .to(showcaseHeader, {
-        y: "-50px",
-        opacity: 0,
-        ease: "power1.inOut",
-        duration: 0.4
-      }, "step3")
-      .to(showcaseItems[2], { 
-        y: "-15vh",
-        scale: 0.9, 
-        opacity: 0,
-        z: -30, 
-        rotationX: 1, 
-        filter: "blur(10px)",
-        transformOrigin: "top center",
-        ease: "power1.inOut",
-        duration: 0.4
-      }, "step3")
-      .to(showcaseItems[1], { 
-        y: "-20vh",
-        scale: 0.85, 
-        opacity: 0,
-        z: -130, 
-        rotationX: 4, 
-        filter: "blur(14px)",
-        transformOrigin: "top center",
-        ease: "power1.inOut",
-        duration: 0.4
-      }, "step3")
-      .to(showcaseItems[0], { 
-        y: "-25vh",
-        scale: 0.8, 
-        opacity: 0,
-        z: -230, 
-        rotationX: 7, 
-        filter: "blur(18px)",
-        transformOrigin: "top center",
-        ease: "power1.inOut",
-        duration: 0.4
-      }, "step3")
-      .addLabel("exit")
-      .to({}, { duration: 0.8 }) // Empty transition zone
-      .addLabel("end");
-  } else {
-    // ═══════════════ MOBILE: SMOOTH NATIVE FLOW + SCROLL REVEAL ═══════════════
-    if (grid) {
-      grid.classList.remove('is-stacked');
-      grid.style.overflow = 'visible';
-    }
-
-
-
-    // Force default clean styling on items for mobile scroll flow
-    gsap.set(showcaseItems, { 
-      zIndex: "auto", 
-      y: 0, 
-      scale: 1, 
-      z: 0, 
-      rotationX: 0, 
-      filter: "blur(0px)", 
-      opacity: 0, // Starts transparent for ScrollTrigger fade-in
-      transformOrigin: "center center"
-    });
-
-    // Animate each item individually as it enters the viewport
-    showcaseItems.forEach((item, idx) => {
-      gsap.fromTo(item, {
-        opacity: 0,
-        y: 40,
-        scale: 0.96
-      }, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.7,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: item,
-          start: "top 88%", // Trigger slightly before it enters middle viewport
-          once: true
-        }
-      });
-    });
+  // Lock container height on mobile load to prevent address-bar scrolling jitter
+  if (isMobile && showcaseSection) {
+    showcaseSection.style.height = `${window.innerHeight}px`;
   }
+
+  // ═══════════════ UNIFIED PINNED STACKED DECK EFFECT ═══════════════
+  if (grid) {
+    grid.classList.add('is-stacked');
+    grid.style.overflow = 'visible';
+  }
+
+  // Pre-query overlays and blurred backgrounds for unified timeline
+  const overlays = [];
+  const blurredBgs = [];
+  const infos = [];
+  
+  showcaseItems.forEach(item => {
+    overlays.push(item.querySelector('.showcase-overlay'));
+    blurredBgs.push(item.querySelector('.showcase-bg-blurred'));
+    infos.push(item.querySelector('.showcase-info'));
+  });
+
+  // Set initial absolute positioning and opacity states to bypass GSAP initial value locks
+  gsap.set(showcaseHeader, { opacity: 1, y: 0 });
+  gsap.set(infos, { opacity: 1 });
+
+  // Card 1 starts at active (y:0), Cards 2 & 3 start completely below viewport (y: 100vh)
+  gsap.set(showcaseItems[0], { zIndex: 1, y: 0, scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
+  gsap.set(showcaseItems[1], { zIndex: 2, y: "100vh", scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
+  gsap.set(showcaseItems[2], { zIndex: 3, y: "100vh", scale: 1, z: 0, rotationX: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
+
+  // Unified cascading timeline
+  let mainTimeline;
+  mainTimeline = gsap.timeline({
+    scrollTrigger: {
+      trigger: showcaseSection,
+      start: "top top",      // Pin the section when it hits the top of the viewport
+      end: () => `+=150%`,   // Scroll distance
+      pin: true,
+      pinSpacing: true,      // Let GSAP handle padding-bottom spacing natively
+      zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
+      scrub: 0.3             // Tight, premium scroll scrub
+    }
+  });
+
+  // Step 1: Card 2 slides up to front, Card 1 recedes (Duration: 0.6)
+  mainTimeline.addLabel("step1")
+    .to(showcaseItems[1], { y: "4vh", filter: "blur(0px)", ease: "power1.inOut", duration: 0.6 }, "step1")
+    .to(showcaseItems[0], { 
+      y: 0,
+      scale: 0.93, 
+      z: -100, 
+      rotationX: 3, 
+      filter: "blur(6px)",
+      transformOrigin: "top center",
+      ease: "power1.inOut",
+      duration: 0.6
+    }, "step1")
+    .to(blurredBgs[0], { opacity: 1, ease: "power1.inOut", duration: 0.6 }, "step1")
+    .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power1.inOut", duration: 0.6 }, "step1")
+    .to(infos[0], { opacity: 0.35, ease: "power1.inOut", duration: 0.6 }, "step1");
+
+  // Step 2: Card 3 slides up to front, Card 2 recedes, Card 1 recedes deeper (Duration: 0.6)
+  mainTimeline.addLabel("step2")
+    .to(showcaseItems[2], { y: "8vh", filter: "blur(0px)", ease: "power1.inOut", duration: 0.6 }, "step2")
+    .to(showcaseItems[1], { 
+      y: "4vh",
+      scale: 0.93, 
+      z: -100, 
+      rotationX: 3, 
+      filter: "blur(6px)",
+      transformOrigin: "top center",
+      ease: "power1.inOut",
+      duration: 0.6
+    }, "step2")
+    .to(blurredBgs[1], { opacity: 1, ease: "power1.inOut", duration: 0.6 }, "step2")
+    .to(overlays[1], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power1.inOut", duration: 0.6 }, "step2")
+    .to(infos[1], { opacity: 0.35, ease: "power1.inOut", duration: 0.6 }, "step2")
+    
+    // Card 1 sinks deeper
+    .to(showcaseItems[0], { 
+      y: 0,
+      scale: 0.86, 
+      z: -200, 
+      rotationX: 6, 
+      filter: "blur(12px)",
+      transformOrigin: "top center",
+      ease: "power1.inOut",
+      duration: 0.6
+    }, "step2")
+    .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.75)", ease: "power1.inOut", duration: 0.6 }, "step2")
+    .to(infos[0], { opacity: 0.15, ease: "power1.inOut", duration: 0.6 }, "step2")
+    
+    // Small hold duration so the final stacked state is visible before unpinning
+    .addLabel("hold")
+    .to({}, { duration: 0.3 }, "hold")
+    .addLabel("end");
 }
