@@ -6,6 +6,7 @@ window.revealHeroTitle = function() {
   if (window.heroTimeline) {
     window.heroTimeline.kill();
   }
+
   const words = document.querySelectorAll('.hero-title-word');
   const dividerLine = document.querySelector('.divider-line');
   const metas = document.querySelectorAll('.divider-meta');
@@ -17,6 +18,22 @@ window.revealHeroTitle = function() {
 
   const isMobile = window.innerWidth <= 768;
 
+  // ── Split eyebrow into individual char spans (only on first call) ──────────
+  let eyebrowChars = null;
+  if (eyebrow) {
+    if (!eyebrow.dataset.charSplit) {
+      const raw = eyebrow.textContent;
+      eyebrow.innerHTML = raw.split('').map(ch =>
+        ch === ' '
+          ? `<span class="eyebrow-char" style="display:inline-block;white-space:pre"> </span>`
+          : `<span class="eyebrow-char" style="display:inline-block">${ch}</span>`
+      ).join('');
+      eyebrow.dataset.charSplit = '1';
+    }
+    eyebrowChars = eyebrow.querySelectorAll('.eyebrow-char');
+  }
+
+  // ── Timeline ───────────────────────────────────────────────────────────────
   const tl = gsap.timeline({
     defaults: { ease: 'power4.out', duration: 1.8 },
     repeat: -1,
@@ -24,32 +41,32 @@ window.revealHeroTitle = function() {
   });
   window.heroTimeline = tl;
 
-  // ── ENTRANCE ──────────────────────────────────────────────────────────────
+  // ── ENTRANCE ───────────────────────────────────────────────────────────────
 
-  // 1. Eyebrow: cinema-grade entrance — letter-spacing assembly + scale + deep DoF blur
-  if (eyebrow) {
+  // 1. Eyebrow: char-by-char stagger slide from below, parent DoF blur
+  if (eyebrow && eyebrowChars && eyebrowChars.length > 0) {
+    // Parent: visible immediately, cinematic blur resolves slowly
+    tl.set(eyebrow, { opacity: 1 }, 0);
     tl.fromTo(eyebrow,
-      {
-        opacity: 0,
-        y: 14,
-        scale: 0.94,
-        letterSpacing: '1.6em',
-        filter: 'blur(14px)'
-      },
+      { filter: 'blur(12px)' },
+      { filter: 'blur(0px)', duration: 1.8, ease: 'power2.out' },
+      0.85
+    );
+    // Each char slides up with stagger — identical feel to CRESCENT chars
+    tl.fromTo(eyebrowChars,
+      { opacity: 0, y: '110%' },
       {
         opacity: 1,
-        y: 0,
-        scale: 1,
-        letterSpacing: isMobile ? '0.22em' : '0.28em',
-        filter: 'blur(0px)',
-        duration: 2.0,
-        ease: 'power4.out'
+        y: '0%',
+        duration: 1.1,
+        ease: 'power4.out',
+        stagger: { each: 0.028, from: 'start' }
       },
       0.85
     );
   }
 
-  // 2. Big title: group by line, char-level staggered slide with deep DoF blur on parent
+  // 2. Big title: group by line, char-level stagger with deep DoF blur on parent
   const lines = document.querySelectorAll('.hero-title-line');
   lines.forEach((line, index) => {
     const isBold = line.querySelector('.word-bold') !== null;
@@ -57,18 +74,16 @@ window.revealHeroTitle = function() {
     if (isBold) {
       const chars = line.querySelectorAll('.hero-char');
       if (chars.length === 0) return;
-
       const boldWords = line.querySelectorAll('.hero-title-word.word-bold');
 
-      // Parent visible immediately, deep cinematic DoF blur resolves slowly
+      // Parent: visible immediately, deep cinema DoF blur resolves
       tl.set(boldWords, { opacity: 1, y: '0%' }, 0);
       tl.fromTo(boldWords,
         { filter: 'blur(16px)' },
         { filter: 'blur(0px)', duration: 2.2, ease: 'power2.out' },
         0.15 + (index * 0.12)
       );
-
-      // Individual chars: clean vertical slide + subtle scale, NO skewY
+      // Chars: clean vertical slide + subtle scale
       tl.fromTo(chars,
         { opacity: 0, y: '80%', scale: 0.94 },
         {
@@ -86,7 +101,6 @@ window.revealHeroTitle = function() {
       // Outline words (VISUAL / LAB): unified slide + DoF blur
       const wordsInLine = line.querySelectorAll('.hero-title-word');
       if (wordsInLine.length === 0) return;
-
       tl.fromTo(wordsInLine,
         { opacity: 0, y: '75%', scale: 0.96, filter: 'blur(12px)' },
         {
@@ -138,11 +152,28 @@ window.revealHeroTitle = function() {
     );
   }
 
-  // ── HOLD ──────────────────────────────────────────────────────────────────
+  // ── HOLD ───────────────────────────────────────────────────────────────────
   tl.add('hold', '+=6.0');
 
-  // ── EXIT ──────────────────────────────────────────────────────────────────
+  // ── EXIT ───────────────────────────────────────────────────────────────────
 
+  // 1. Eyebrow exit: chars slide back up staggered, parent re-blurs
+  if (eyebrow && eyebrowChars && eyebrowChars.length > 0) {
+    tl.fromTo(eyebrow,
+      { filter: 'blur(0px)' },
+      { filter: 'blur(10px)', duration: 0.55, ease: 'power2.in' },
+      'hold+=0.05'
+    );
+    tl.to(eyebrowChars, {
+      y: '-100%',
+      opacity: 0,
+      duration: 0.5,
+      ease: 'power3.in',
+      stagger: { each: 0.02, from: 'start' }
+    }, 'hold+=0.05');
+  }
+
+  // 2. Title exit
   lines.forEach((line, index) => {
     const isBold = line.querySelector('.word-bold') !== null;
 
@@ -151,14 +182,11 @@ window.revealHeroTitle = function() {
       if (chars.length === 0) return;
       const boldWords = line.querySelectorAll('.hero-title-word.word-bold');
 
-      // Parent: re-blur on exit (start explicitly from 0 to prevent snap)
       tl.fromTo(boldWords,
         { filter: 'blur(0px)' },
         { filter: 'blur(14px)', duration: 0.7, ease: 'power2.in' },
         `hold+=${index * 0.04}`
       );
-
-      // Chars: clean upward slide + subtle scale-down, NO skewY
       tl.to(chars, {
         y: '-75%',
         scale: 0.96,
@@ -171,7 +199,6 @@ window.revealHeroTitle = function() {
     } else {
       const wordsInLine = line.querySelectorAll('.hero-title-word');
       if (wordsInLine.length === 0) return;
-
       tl.to(wordsInLine, {
         y: '-65%',
         scale: 0.96,
@@ -184,17 +211,6 @@ window.revealHeroTitle = function() {
   });
 
   // Supporting elements exit
-  if (eyebrow) {
-    tl.to(eyebrow, {
-      opacity: 0,
-      y: -14,
-      scale: 0.94,
-      letterSpacing: '1.2em',
-      filter: 'blur(12px)',
-      duration: 0.6,
-      ease: 'power3.in'
-    }, 'hold+=0.08');
-  }
   if (dividerLine) tl.to(dividerLine, { scaleX: 0, opacity: 0, duration: 0.45, ease: 'power2.in' }, 'hold+=0.12');
   if (metas.length > 0) tl.to(metas, { opacity: 0, y: -5, duration: 0.4, ease: 'power2.in' }, 'hold+=0.08');
   if (subtitle) tl.to(subtitle, { opacity: 0, y: -16, filter: 'blur(4px)', duration: 0.5, ease: 'power2.in' }, 'hold+=0.18');
