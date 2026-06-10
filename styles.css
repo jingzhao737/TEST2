@@ -1649,9 +1649,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .ice-container{aspect-ratio:4/3;max-height:65vh}
   .ice-hint{font-size:.65rem;bottom:24px;gap:14px}
   .hero-content{z-index:1}
-  .showcase{padding:0 !important;height:100vh;height:100dvh;justify-content:center}
+  .showcase{padding:100px 0 !important;height:auto !important;min-height:auto !important;justify-content:flex-start}
   .showcase-header{padding:0 32px;margin-bottom:40px}
-  .showcase-item{height:38vh;padding:40px 32px;margin:0 16px 12px;border-radius:16px}
+  .showcase-item{height:280px;padding:40px 32px;margin:0 16px 12px;border-radius:16px}
   .showcase-info h3{font-size:1.7rem}
   .showcase-info .section-tag{font-size:.78rem}
   .showcase-info p{font-size:.78rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
@@ -1741,9 +1741,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     height: 116px !important;
   }
   .work-name{font-size:1.2rem}
-  .showcase{padding:0 !important;height:100vh;height:100dvh;justify-content:center}
+  .showcase{padding:80px 0 !important;height:auto !important;min-height:auto !important;justify-content:flex-start}
   .showcase-header{padding:0 28px}
-  .showcase-item{height:35vh;padding:24px 20px;margin:0 12px 10px;border-radius:12px}
+  .showcase-item{height:240px;padding:24px 20px;margin:0 12px 10px;border-radius:12px}
   .showcase-info h3{font-size:1.45rem}
   .showcase-info .section-tag{font-size:.7rem}
   .motion-section{padding:100px 28px 180px}
