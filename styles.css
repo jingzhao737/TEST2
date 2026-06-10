@@ -1528,12 +1528,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     width: 100%;
   }
   .hero-title-word.word-bold {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
-    box-sizing: content-box !important;
-    padding-right: 0.18em !important; /* Expand the layout bounding box of the composite layer to prevent WebKit clipping */
-    margin-right: -0.18em !important; /* Offset padding to prevent any layout shifts */
+    box-sizing: border-box !important;
     font-size: clamp(5.0rem, 34vw, 24rem);
     letter-spacing: 0em;
     line-height: 0.75;
@@ -1543,8 +1541,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .hero-title-word.word-bold .hero-char {
     display: block;
-    flex: 0 0 50%;
-    max-width: 50%;
+    width: 100%;
     box-sizing: border-box !important;
     padding-right: 0.18em !important;
     overflow: visible !important;
