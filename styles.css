@@ -634,7 +634,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .work-preview.visible{opacity:1;transform:scale(1);filter:blur(0);border-radius:3px}
 
 /* ══════�?3D ICE CRYSTAL ══════�?*/
-.ice-section{padding:200px 64px 200px;max-width:1440px;margin:0 auto;position:relative;z-index:1}
+.ice-section{padding:200px 64px 80px;max-width:1440px;margin:0 auto;position:relative;z-index:1}
 .ice-section::after{content:"";position:absolute;bottom:0;left:-10%;width:50%;height:70%;border:1px solid var(--border);border-radius:50%;pointer-events:none;z-index:0;opacity:.4}
 .ice-header{margin-bottom:60px}
 .ice-header .section-heading{margin-bottom:0}
@@ -1621,7 +1621,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   :root.light .nav .theme-toggle { border-color: rgba(255,255,255,.35) !important; background: rgba(0,0,0,.6) !important; }
   :root.light .nav .theme-toggle-icon::before { background: #fafaf7 !important; }
   :root.light .nav-menu-btn{border-color:rgba(255,255,255,.2)}
-  .ice-section{padding:140px 40px 120px}
+  .ice-section{padding:140px 40px 60px}
   .ice-header{margin-bottom:40px}
   .ice-container{aspect-ratio:4/3;max-height:65vh}
   .ice-hint{font-size:.65rem;bottom:24px;gap:14px}
@@ -1746,7 +1746,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .marquee-item{font-size:1.7rem}
   .marquee-track{gap:24px}
   .marquee-section{padding:80px 0}
-  .ice-section{padding:100px 28px 80px}
+  .ice-section{padding:100px 28px 40px}
   .ice-header{margin-bottom:32px}
   .ice-container{aspect-ratio:3/4;max-height:55vh}
   .ice-hint{font-size:.6rem;bottom:24px;gap:10px;flex-direction:column}
