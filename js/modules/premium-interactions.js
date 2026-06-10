@@ -344,14 +344,10 @@ if (!isMobileDevice) {
       let firstCardRect = cards[0].getBoundingClientRect();
       let lastCardRect = cards[cards.length - 1].getBoundingClientRect();
       
-      let firstCardCenter = firstCardRect.top + firstCardRect.height / 2;
-      let lastCardCenter = lastCardRect.top + lastCardRect.height / 2;
-      
-      // Tight bounds: exits immediately when scrolling past Card 1 or Card 4
-      let upperLimit = window.innerHeight * 0.50;
-      let lowerLimit = window.innerHeight * 0.60;
-      
-      let isWithinWorksRange = (firstCardCenter <= lowerLimit) && (lastCardCenter >= upperLimit);
+      // The active selection zone is at 45% of the viewport height.
+      // We show the preview when this reference line is inside the Works list (from top of Card 1 to bottom of Card 4).
+      let activeZoneY = window.innerHeight * 0.45;
+      let isWithinWorksRange = (firstCardRect.top <= activeZoneY) && (lastCardRect.bottom >= activeZoneY);
       
       if (isWithinWorksRange) {
         showMobilePreview();
