@@ -1644,10 +1644,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .motion-header{margin-bottom:24px}
   .motion-carousel-track{aspect-ratio:16/9}
-  .motion-slide-info{padding:8px 20px 14px}
-  .motion-slide-info h3{font-size:1.25rem}
-  .motion-slide-tag{font-size:0.55rem}
-  .motion-slide-sub{font-size:0.68rem}
+  .motion-slide-info{padding:10px 18px 12px;gap:4px}
+  .motion-slide-info h3{font-size:0.95rem}
+  .motion-slide-tag{font-size:0.48rem}
+  .motion-slide-sub{font-size:0.6rem}
   .motion-play-btn{width:48px;height:48px}
   .motion-play-btn::after{border-left-width:12px;border-top-width:7px;border-bottom-width:7px}
   .about-grid{grid-template-columns:1fr;gap:40px}
@@ -1738,9 +1738,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     font-size: 0.95rem;
   }
   .motion-header{margin-bottom:20px}
-  .motion-slide-info h3{font-size:1.1rem}
-  .motion-slide-tag{font-size:0.5rem}
-  .motion-slide-sub{font-size:0.6rem}
+  .motion-slide-info{padding:8px 14px 10px;gap:3px}
+  .motion-slide-info h3{font-size:0.85rem}
+  .motion-slide-tag{font-size:0.45rem}
+  .motion-slide-sub{font-size:0.55rem}
   .poetry-section{padding:110px 20px}
   .poetry-sidebar{padding-bottom:24px;margin-bottom:40px}
   .poetry-title-vertical{font-size:clamp(1.5rem, 8.5vw, 1.9rem);gap:6px 12px}
