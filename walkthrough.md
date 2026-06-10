@@ -125,3 +125,14 @@ The compilation successfully bound and bundled the local packages, compiling all
 - **Hover/Tilt Bypassing for Mobile/Touch**: Moved mouse event listeners, 3D quickTo transitions, and shimmer tickers inside a `!isMobile` conditional check. This prevents emulation triggers and keeps CPU/GPU overhead at zero when scrolling on touch screens.
 - **One-Time Scroll Reveal**: Changed mobile ScrollTrigger to use `once: true` instead of toggle actions. The cards slide and fade in smoothly once, locking into place for a stable, high-performance scrolling flow.
 
+---
+
+## 🛠️ Hotfix: Desktop Showcase Horizontal Jump & Overlap Bug
+
+### Problem
+- **Horizontal Jitter / Jump when Scrolling UP**: On desktop viewports, when scrolling back up through the Showcase section, the cards would suddenly jump to the right. This was caused by `pinSpacing: false` combined with an `onUpdate` scroll listener that toggled `.showcaseSection.style.visibility` to `"hidden"` / `"visible"` at progress `0.67`. The layout switch and the removal of the pin-wrapper's fixed state triggered sudden horizontal width recalculations (especially with scrollbars present), resulting in a layout jump.
+- **Overlap Collision with next section (Moving/Motion Section)**: Because `pinSpacing: false` was used, the next sibling (Motion page) was allowed to scroll up immediately while the Showcase cards were still animating their stacked sequence. The timing was offset using a manual `marginTop` of `100vh` on the next sibling. However, since the Showcase section pins for a scroll distance of `200vh` (`+=200%`), the next sibling would reach the top of the screen at progress `0.5` (scroll distance of `100vh`), completely covering the cards before the third card finished animating or Step 3 could run, creating a messy overlap collision.
+
+### Resolution
+- **GSAP Native Pin Spacing (`pinSpacing: true`)**: Changed the desktop ScrollTrigger setup in [showcase.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/showcase.js) to use `pinSpacing: true` (which is standard for pinned stacks). This tells GSAP to automatically add bottom padding spacing equal to the scroll distance inside the pin-wrapper.
+- **Eliminated Manual Spacing and Visibility Hacks**: Removed the manual `marginTop` calculations and the `onUpdate` visibility toggles from both desktop and mobile branches. The next sibling (Motion page) now stays naturally positioned below the pinned section and scrolls in seamlessly only *after* the Showcase animation finishes and unpins. This completely resolves the horizontal layout jumping when scrolling back up and prevents any section overlapping/collisions.
