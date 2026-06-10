@@ -1,0 +1,17 @@
+# Cursor Rules — Portfolio v2
+
+Read the following files before doing ANY work:
+1. `AGENTS.md` — Workflow rules, backup commands, and behavioral guidelines
+2. `PROJECT.md` — Full project architecture, design decisions, and user preferences
+
+# ✦ Active State Checkpoint ✦
+- Current Backup Step: **step_109** (Completed poetry page sidebar & divider line adjustments)
+- Latest Walkthrough: [walkthrough.md](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v2/walkthrough.md)
+- Task Tracker: [task.md](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v2/task.md)
+
+# ✦ Token-Saving Context Guidelines ✦
+1. **Never read entire files from memory.** ONLY view_file the specific lines needed for code edits (limit range to 20-50 lines).
+2. **Refer to walkthrough.md for historical context.** Do not ask the user for past conversation details.
+3. **Avoid running commands that output large logs** (e.g. use clean filters, suppress npm verbose output).
+4. **Use Subagents for research.** Delegate heavy searching tasks to `research` subagent to isolate context window usage.
+
