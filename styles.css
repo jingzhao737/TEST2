@@ -1549,11 +1549,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .hero-title-word.word-bold .hero-char:nth-child(odd) {
     text-align: right;
-    padding-right: 0.5vw;
+    position: relative;
+    left: 4vw !important;
   }
   .hero-title-word.word-bold .hero-char:nth-child(even) {
     text-align: left;
     padding-left: 0.5vw;
+    position: relative;
+    left: -4vw !important;
   }
   .hero-title-word.word-outline {
     font-size: clamp(1.4rem, 9.5vw, 6rem);
