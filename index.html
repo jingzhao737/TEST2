@@ -17,6 +17,19 @@
 @font-face{font-family:'Google Sans';src:url('Font/Google_Sans/GoogleSans-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
 </style>
 <link rel="stylesheet" href="styles.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+    "three/": "https://unpkg.com/three@0.170.0/",
+    "three/examples/": "https://unpkg.com/three@0.170.0/examples/",
+    "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/",
+    "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm",
+    "gsap/ScrollTrigger": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/ScrollTrigger.js/+esm",
+    "gsap/Flip": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/Flip.js/+esm"
+  }
+}
+</script>
 </head>
 <body>
 <div class="scroll-bar" id="scrollBar"><div class="scroll-thumb" id="scrollThumb"></div><div class="scroll-dot-marker" data-target="#home"></div><div class="scroll-dot-marker" data-target="#work"></div><div class="scroll-dot-marker" data-target="#ice"></div><div class="scroll-dot-marker" data-target="#showcase"></div><div class="scroll-dot-marker" data-target="#motion"></div><div class="scroll-dot-marker" data-target="#about"></div></div>
