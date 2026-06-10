@@ -1530,7 +1530,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     display: flex;
     flex-wrap: wrap;
     width: 100%;
-    font-size: clamp(5.0rem, 37vw, 24rem);
+    font-size: clamp(5.0rem, 34vw, 24rem);
     letter-spacing: 0em;
     line-height: 0.75;
     position: relative;
@@ -1558,7 +1558,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .hero-title {
     width: auto;
     margin-left: -40px;
-    margin-right: -20px;
+    margin-right: -10px;
     padding: 0 12px;
     box-sizing: border-box;
     margin-bottom: 16px;
