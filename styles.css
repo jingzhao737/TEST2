@@ -1536,7 +1536,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     letter-spacing: 0em;
     line-height: 0.75;
     position: relative;
-    left: -7vw;
+    left: -5.8vw;
     overflow: visible !important;
   }
   .hero-title-word.word-bold .hero-char {
