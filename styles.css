@@ -816,7 +816,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   bottom: -800px; /* Extends down to cover specs and section bottom */
   left: -50vw;
   right: -50vw;
-  background: var(--bg);
+  background: transparent;
   z-index: -1;
   pointer-events: none;
 }

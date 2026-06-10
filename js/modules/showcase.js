@@ -313,5 +313,6 @@ if (items.length > 0) {
       duration: 0.4
     }, "step3")
     .addLabel("exit")
-    .to({}, { duration: 0.8 }); // Empty transition zone to hold the pinned transparent state before next section enters
+    .to({}, { duration: 0.8 }) // Empty transition zone to hold the pinned transparent state before next section enters
+    .addLabel("end");
 }
