@@ -1,12 +1,5 @@
 [
   {
-    "step": 5,
-    "timestamp": "2026-06-11 21:29:54",
-    "description": "Adjust return-to-upright hold delay to 400ms",
-    "folder": "step_005_Adjust_return-to-upright_hold_delay_to_400ms",
-    "is_auto": false
-  },
-  {
     "step": 6,
     "timestamp": "2026-06-11 21:33:15",
     "description": "Upgrade custom cursor hover state to premium fanning-out twist and barrel-roll spin",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:10:45",
     "description": "Move targetZSpacing declaration before snapping logic to resolve TDZ reference error crash",
     "folder": "step_024_Move_targetZSpacing_declaration_before_snapping_logic_to_resolve_TDZ_reference_error_crash",
+    "is_auto": false
+  },
+  {
+    "step": 25,
+    "timestamp": "2026-06-11 22:10:56",
+    "description": "Fix targetZSpacing initialization order ReferenceError crash",
+    "folder": "step_025_Fix_targetZSpacing_initialization_order_ReferenceError_crash",
     "is_auto": false
   }
 ]

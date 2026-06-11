@@ -173,6 +173,7 @@
     // 4. Hover states scale calculation (using Spring Physics for organic bounce/overshoot)
     const targetScale = isHovered ? 0.78 : 0.67; // Slightly scale up, fanning handles the rest
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
+    const targetZSpacing = isHovered ? 4.5 : 1.0; // Target spacing for 3D extrusion
     
     const tension = 0.28; // Spring stiffness
     const damping = 0.64; // Bounciness/friction
@@ -236,7 +237,6 @@
     cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, -10%)`;
 
     // Dynamic Z-depth expansion LERP (spacing goes from 1px to 4.5px on hover, expanding 3D crystal thickness)
-    const targetZSpacing = isHovered ? 4.5 : 1.0;
     currentZSpacing += (targetZSpacing - currentZSpacing) * 0.12;
 
     // Apply Z-translates and torsional twist on the 5 stacked 3D layers to create dynamic extrusion expansion
