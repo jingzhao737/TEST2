@@ -111,6 +111,7 @@
     // Smooth the velocity components only for steering angle calculation to filter high-frequency noise
     fVx += (vx - fVx) * 0.25;
     fVy += (vy - fVy) * 0.25;
+    const fSpeed = Math.sqrt(fVx * fVx + fVy * fVy);
     
     // Save current mouse coordinates for next frame velocity calculation
     lastMouseX = mouseX;
@@ -128,7 +129,7 @@
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
     // Otherwise, delay for 400ms before returning to upright (-90 degrees).
-    if (speed > 1.5) {
+    if (fSpeed > 1.6) {
       targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
@@ -162,9 +163,9 @@
     if (isReturningUpright) {
       angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide
     } else {
-      if (speed < 6.0) {
-        const clampedSpeed = Math.max(1.5, speed); // Clamp at 1.5 to prevent negative easing factors
-        angleEase = 0.02 + ((clampedSpeed - 1.5) / 4.5) * 0.11; // Scales down smoothly at low speeds (0.02 to 0.13)
+      if (fSpeed < 6.0) {
+        const clampedSpeed = Math.max(1.6, fSpeed); // Clamp at 1.6 to prevent negative easing factors
+        angleEase = 0.02 + ((clampedSpeed - 1.6) / 4.4) * 0.11; // Scales down smoothly at low speeds (0.02 to 0.13)
       }
     }
     currentAngle += diff * angleEase;
