@@ -233,6 +233,10 @@ if (items.length > 0) {
       console.log(`[Showcase] onEnter: activeIndex=${activeIndex}, scrollY=${window.scrollY}`);
       gsap.killTweensOf(mainTimeline);
       gsap.to(mainTimeline, { time: 0, duration: 0.4, ease: "power2.out" });
+      const self = ScrollTrigger.getById("showcasePin");
+      if (self) {
+        window.scrollTo({ top: self.start, behavior: 'instant' });
+      }
     },
     onEnterBack: () => {
       if (ignoreScrollCallbacks) return;
@@ -241,6 +245,10 @@ if (items.length > 0) {
       console.log(`[Showcase] onEnterBack: activeIndex=${activeIndex}, scrollY=${window.scrollY}`);
       gsap.killTweensOf(mainTimeline);
       gsap.to(mainTimeline, { time: 1.2, duration: 0.4, ease: "power2.out" });
+      const self = ScrollTrigger.getById("showcasePin");
+      if (self) {
+        window.scrollTo({ top: self.start, behavior: 'instant' });
+      }
     },
     onLeave: () => {
       const st = ScrollTrigger.getById("showcasePin");
@@ -390,7 +398,6 @@ if (items.length > 0) {
     if (isAnimatingScroll) {
       console.log(`[Showcase] wheel ignored: isAnimatingScroll=true`);
       e.preventDefault();
-      window.scrollTo({ top: st.start, behavior: 'instant' });
       return;
     }
 
@@ -417,7 +424,6 @@ if (items.length > 0) {
     }
 
     e.preventDefault();
-    window.scrollTo({ top: st.start, behavior: 'instant' });
     handleScrollAction(isDown ? 1 : -1);
   }, { passive: false });
 
@@ -446,7 +452,6 @@ if (items.length > 0) {
 
     if (isAnimatingScroll) {
       e.preventDefault();
-      window.scrollTo({ top: st.start, behavior: 'instant' });
       return;
     }
 
@@ -475,7 +480,6 @@ if (items.length > 0) {
       }
 
       e.preventDefault();
-      window.scrollTo({ top: st.start, behavior: 'instant' });
 
       if (!hasFlippedInCurrentTouch && Math.abs(diffY) > 40) {
         hasFlippedInCurrentTouch = true;
@@ -521,7 +525,6 @@ if (items.length > 0) {
       }
 
       e.preventDefault();
-      window.scrollTo({ top: st.start, behavior: 'instant' });
 
       if (isAnimatingScroll) return;
 
