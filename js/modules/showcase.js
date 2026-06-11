@@ -196,8 +196,7 @@ if (items.length > 0) {
   gsap.set(showcaseItems[2], { zIndex: 3, y: "100vh", scale: 1.05, z: 100, rotationX: -22, rotationY: 0, rotationZ: 4, filter: "blur(4px)", transformOrigin: "top center", opacity: 1 });
 
   // Determine configuration parameters based on device
-  const scrollDistance = isMobile ? "+=85%" : "+=110%";
-  const scrubValue = isMobile ? 0.5 : 1.0;
+  const scrollDistance = "+=1000";
   const holdDuration = isMobile ? 0.01 : 0.04;
 
   // Unified cascading timeline & Scroll-jacking state
@@ -206,37 +205,68 @@ if (items.length > 0) {
   let isAnimatingScroll = false;
   let lastScrollTime = 0;
   const cooldown = 600; // ms cooldown between scroll events
+  let ignoreScrollCallbacks = false;
 
-  mainTimeline = gsap.timeline({
-    scrollTrigger: {
-      trigger: showcaseSection,
-      start: "top top",      // Pin the section when it hits the top of the viewport
-      end: () => scrollDistance,   // Scroll distance
-      pin: true,
-      pinSpacing: true,      // Let GSAP handle padding-bottom spacing natively
-      zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
-      scrub: 0.15,           // Snappy scrub to respond instantly to programmatically controlled scroll
-      onUpdate: (self) => {
-        if (isAnimatingScroll) return;
-        
-        // Synchronize activeIndex if scrollbar is dragged manually
-        const progress = self.progress;
-        const cardProgresses = [
-          0,
-          0.6 / (1.2 + holdDuration),
-          1.2 / (1.2 + holdDuration)
-        ];
-        
-        let closestIndex = 0;
-        let minDiff = Infinity;
-        cardProgresses.forEach((cp, idx) => {
-          const diff = Math.abs(progress - cp);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closestIndex = idx;
-          }
-        });
-        activeIndex = closestIndex;
+  // Create a standalone paused timeline
+  mainTimeline = gsap.timeline({ paused: true });
+
+  // Create ScrollTrigger to handle pinning and entering/leaving state
+  ScrollTrigger.create({
+    id: "showcasePin",
+    trigger: showcaseSection,
+    start: "top top",      // Pin the section when it hits the top of the viewport
+    end: () => scrollDistance,   // Short scroll trigger space for snappy exit
+    pin: true,
+    pinSpacing: true,      // Let GSAP handle padding-bottom spacing natively
+    zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
+    onRefresh: (self) => {
+      const currentScroll = window.scrollY;
+      if (currentScroll >= self.start && currentScroll <= self.end) {
+        ignoreScrollCallbacks = true;
+        console.log(`[Showcase] onRefresh: inside trigger, ignoreScrollCallbacks=${ignoreScrollCallbacks}, scrollY=${currentScroll}`);
+      }
+    },
+    onEnter: () => {
+      if (ignoreScrollCallbacks) return;
+      ignoreScrollCallbacks = true;
+      activeIndex = 0;
+      console.log(`[Showcase] onEnter: activeIndex=${activeIndex}, scrollY=${window.scrollY}`);
+      gsap.killTweensOf(mainTimeline);
+      gsap.to(mainTimeline, { time: 0, duration: 0.4, ease: "power2.out" });
+    },
+    onEnterBack: () => {
+      if (ignoreScrollCallbacks) return;
+      ignoreScrollCallbacks = true;
+      activeIndex = 2;
+      console.log(`[Showcase] onEnterBack: activeIndex=${activeIndex}, scrollY=${window.scrollY}`);
+      gsap.killTweensOf(mainTimeline);
+      gsap.to(mainTimeline, { time: 1.2, duration: 0.4, ease: "power2.out" });
+    },
+    onLeave: () => {
+      const st = ScrollTrigger.getById("showcasePin");
+      if (st && (window.scrollY > st.end + 20)) {
+        ignoreScrollCallbacks = false;
+      }
+      console.log(`[Showcase] onLeave: ignoreScrollCallbacks=${ignoreScrollCallbacks}, scrollY=${window.scrollY}`);
+    },
+    onLeaveBack: () => {
+      const st = ScrollTrigger.getById("showcasePin");
+      if (st && (window.scrollY < st.start - 20)) {
+        ignoreScrollCallbacks = false;
+      }
+      console.log(`[Showcase] onLeaveBack: ignoreScrollCallbacks=${ignoreScrollCallbacks}, scrollY=${window.scrollY}`);
+    }
+  });
+
+  // Scroll listener to reset flag when far away
+  window.addEventListener('scroll', () => {
+    const st = ScrollTrigger.getById("showcasePin");
+    if (!st) return;
+    const currentScroll = window.scrollY;
+    if (currentScroll < st.start - 50 || currentScroll > st.end + 50) {
+      if (ignoreScrollCallbacks) {
+        ignoreScrollCallbacks = false;
+        console.log(`[Showcase] scroll reset ignoreScrollCallbacks=false, scrollY=${currentScroll}`);
       }
     }
   });
@@ -298,6 +328,7 @@ if (items.length > 0) {
 
   // ── Scroll-jacking Implementation: One scroll = One card ──
   function handleScrollAction(direction) {
+    ignoreScrollCallbacks = true;
     const now = Date.now();
     if (now - lastScrollTime < cooldown) return false;
     
@@ -318,25 +349,19 @@ if (items.length > 0) {
 
     lastScrollTime = now;
     isAnimatingScroll = true;
+    activeIndex = targetIndex; // Update immediately to prevent race conditions during animation!
 
-    const targetLabel = targetIndex === 0 ? "card1" : (targetIndex === 1 ? "card2" : "card3");
-    const targetScroll = ScrollTrigger.labelToScroll(mainTimeline, targetLabel);
+    const targetTime = targetIndex === 0 ? 0 : (targetIndex === 1 ? 0.6 : 1.2);
+    console.log(`[Showcase] handleScrollAction: direction=${direction}, transition to ${activeIndex} (targetTime=${targetTime})`);
 
-    const scrollObj = { y: window.scrollY };
-    gsap.killTweensOf(scrollObj);
-    gsap.to(scrollObj, {
-      y: targetScroll,
-      duration: 0.75,
+    gsap.killTweensOf(mainTimeline);
+    gsap.to(mainTimeline, {
+      time: targetTime,
+      duration: 0.6,
       ease: "power2.out",
-      onUpdate: () => {
-        window.scrollTo(0, scrollObj.y);
-      },
       onComplete: () => {
         isAnimatingScroll = false;
-        activeIndex = targetIndex;
-      },
-      onOverwrite: () => {
-        isAnimatingScroll = false;
+        console.log(`[Showcase] Transition complete: activeIndex=${activeIndex}`);
       }
     });
 
@@ -345,7 +370,7 @@ if (items.length > 0) {
 
   // Wheel listener with active check
   window.addEventListener('wheel', (e) => {
-    const st = mainTimeline && mainTimeline.scrollTrigger;
+    const st = ScrollTrigger.getById("showcasePin");
     if (!st) return;
 
     // Don't intercept if work detail page is open
@@ -353,23 +378,46 @@ if (items.length > 0) {
     if (detailEl && detailEl.classList.contains('open')) return;
 
     const currentScroll = window.scrollY;
-    // Check if we are within the pinned showcase area
-    const isInRange = currentScroll >= st.start - 2 && currentScroll <= st.end + 2;
+    const isInRange = currentScroll >= st.start - 5 && currentScroll <= st.end + 5;
+    
+    console.log(`[Showcase] wheel event: deltaY=${e.deltaY}, isInRange=${isInRange}, activeIndex=${activeIndex}, scrollY=${currentScroll}, st.start=${st.start}, st.end=${st.end}`);
+
     if (!isInRange) return;
 
     const direction = e.deltaY;
     if (direction === 0) return;
 
     if (isAnimatingScroll) {
+      console.log(`[Showcase] wheel ignored: isAnimatingScroll=true`);
       e.preventDefault();
+      window.scrollTo({ top: st.start, behavior: 'instant' });
       return;
     }
 
     const isDown = direction > 0;
-    if (isDown && activeIndex === 2) return; // scroll down naturally
-    if (!isDown && activeIndex === 0) return; // scroll up normally
+    if (isDown && activeIndex === 2) {
+      console.log(`[Showcase] wheel boundary: scroll down to next section`);
+      const nextSection = document.querySelector('#motion');
+      if (nextSection) {
+        const nextY = nextSection.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: nextY, behavior: 'smooth' });
+      }
+      ignoreScrollCallbacks = false;
+      return;
+    }
+    if (!isDown && activeIndex === 0) {
+      console.log(`[Showcase] wheel boundary: scroll up to prev section`);
+      const prevSection = document.querySelector('#ice');
+      if (prevSection) {
+        const prevY = prevSection.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: prevY, behavior: 'smooth' });
+      }
+      ignoreScrollCallbacks = false;
+      return;
+    }
 
     e.preventDefault();
+    window.scrollTo({ top: st.start, behavior: 'instant' });
     handleScrollAction(isDown ? 1 : -1);
   }, { passive: false });
 
@@ -385,7 +433,7 @@ if (items.length > 0) {
   }, { passive: true });
 
   window.addEventListener('touchmove', (e) => {
-    const st = mainTimeline && mainTimeline.scrollTrigger;
+    const st = ScrollTrigger.getById("showcasePin");
     if (!st) return;
 
     // Don't intercept if work detail page is open
@@ -393,11 +441,12 @@ if (items.length > 0) {
     if (detailEl && detailEl.classList.contains('open')) return;
 
     const currentScroll = window.scrollY;
-    const isInRange = currentScroll >= st.start - 2 && currentScroll <= st.end + 2;
+    const isInRange = currentScroll >= st.start - 5 && currentScroll <= st.end + 5;
     if (!isInRange) return;
 
     if (isAnimatingScroll) {
       e.preventDefault();
+      window.scrollTo({ top: st.start, behavior: 'instant' });
       return;
     }
 
@@ -406,10 +455,27 @@ if (items.length > 0) {
       const diffY = touchStartY - touchCurrentY; // positive = swipe up = scroll down
       const isDown = diffY > 0;
       
-      const isAtBoundary = (isDown && activeIndex === 2) || (!isDown && activeIndex === 0);
-      if (isAtBoundary) return; // Scroll naturally
+      if (isDown && activeIndex === 2) {
+        const nextSection = document.querySelector('#motion');
+        if (nextSection) {
+          const nextY = nextSection.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: nextY, behavior: 'smooth' });
+        }
+        ignoreScrollCallbacks = false;
+        return;
+      }
+      if (!isDown && activeIndex === 0) {
+        const prevSection = document.querySelector('#ice');
+        if (prevSection) {
+          const prevY = prevSection.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: prevY, behavior: 'smooth' });
+        }
+        ignoreScrollCallbacks = false;
+        return;
+      }
 
       e.preventDefault();
+      window.scrollTo({ top: st.start, behavior: 'instant' });
 
       if (!hasFlippedInCurrentTouch && Math.abs(diffY) > 40) {
         hasFlippedInCurrentTouch = true;
@@ -417,4 +483,49 @@ if (items.length > 0) {
       }
     }
   }, { passive: false });
+
+  // Keydown listener for keyboard scrolling
+  const keysToPrevent = [32, 33, 34, 35, 36, 38, 40];
+  window.addEventListener('keydown', (e) => {
+    const st = ScrollTrigger.getById("showcasePin");
+    if (!st) return;
+
+    // Don't intercept if work detail page is open
+    const detailEl = document.getElementById('workDetail');
+    if (detailEl && detailEl.classList.contains('open')) return;
+
+    const currentScroll = window.scrollY;
+    const isInRange = currentScroll >= st.start - 5 && currentScroll <= st.end + 5;
+    if (!isInRange) return;
+
+    if (keysToPrevent.includes(e.keyCode)) {
+      const isDown = [32, 34, 35, 40].includes(e.keyCode);
+      
+      if (isDown && activeIndex === 2) {
+        const nextSection = document.querySelector('#motion');
+        if (nextSection) {
+          const nextY = nextSection.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: nextY, behavior: 'smooth' });
+        }
+        ignoreScrollCallbacks = false;
+        return;
+      }
+      if (!isDown && activeIndex === 0) {
+        const prevSection = document.querySelector('#ice');
+        if (prevSection) {
+          const prevY = prevSection.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: prevY, behavior: 'smooth' });
+        }
+        ignoreScrollCallbacks = false;
+        return;
+      }
+
+      e.preventDefault();
+      window.scrollTo({ top: st.start, behavior: 'instant' });
+
+      if (isAnimatingScroll) return;
+
+      handleScrollAction(isDown ? 1 : -1);
+    }
+  });
 }
