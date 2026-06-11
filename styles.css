@@ -68,10 +68,42 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 @keyframes skeletonPulse{0%,100%{opacity:.04}50%{opacity:.1}}
 .skeleton{background:var(--sk-bg);animation:skeletonPulse 1.8s ease-in-out infinite;border-radius:var(--sk-radius)}
 
-/* 鈺愨晲鈺愨晲鈺愨晲锟?CURSOR 鈺愨晲鈺愨晲鈺愨晲锟?*/
-.cursor-dot{position:fixed;width:7px;height:7px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:10001;will-change:left,top}
-.cursor-dot.expanded{width:56px;height:56px;opacity:.18;background:rgba(0,212,104,.15);margin-left:-24px;margin-top:-24px}
-.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(255,255,255,.12);border-radius:50%;pointer-events:none;z-index:10001;will-change:left,top}
+/* ═══════ CURSOR ═══════ */
+.cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10001;
+  left: 0;
+  top: 0;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: transform, opacity;
+  transition: opacity 0.3s var(--ease-out-expo), width 0.3s var(--ease-out-expo), height 0.3s var(--ease-out-expo);
+}
+.cursor-dot.hovered {
+  opacity: 0; /* Fade out dot on hover to clear visual focus */
+}
+.cursor-ring {
+  position: fixed;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(232, 124, 80, 0.35); /* Match orange accent with low opacity */
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10001;
+  left: 0;
+  top: 0;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: transform, border-color, background-color;
+  transition: border-color 0.3s var(--ease-out-expo), background-color 0.3s var(--ease-out-expo), opacity 0.3s var(--ease-out-expo);
+}
+.cursor-ring.hovered {
+  border-color: rgba(232, 124, 80, 0.85); /* Brighten border */
+  background-color: rgba(232, 124, 80, 0.06); /* Soft internal glow */
+}
 
 /* 鈺愨晲鈺愨晲鈺愨晲?PAGE TRANSITION 鈺愨晲鈺愨晲鈺愨晲?*/
 .page-transition{position:fixed;inset:0;z-index:999;background:var(--fg);transform:scaleY(0);transform-origin:top;pointer-events:none;transition:background .6s var(--ease-out-expo)}
@@ -2177,8 +2209,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 /* 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲锟?   LIGHT THEME OVERRIDES
    鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲锟?*/
-:root.light .cursor-ring{border-color:rgba(0,0,0,.15)}
-:root.light .cursor-dot.expanded{background:rgba(232,124,80,.1)}
+:root.light .cursor-ring{border-color:rgba(232,124,80,.4)}
+:root.light .cursor-ring.hovered{border-color:rgba(232,124,80,.95);background-color:rgba(232,124,80,.08)}
 :root.light .skeleton{background:rgba(0,0,0,.06)}
 
 :root.light .nav{background:#206759;border-bottom:1px solid rgba(255,255,255,.15)}
