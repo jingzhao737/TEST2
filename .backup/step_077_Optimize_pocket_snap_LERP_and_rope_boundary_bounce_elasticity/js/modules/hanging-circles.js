@@ -40,7 +40,7 @@
   })();
 
   let springK = 0.05;
-  let damping = 0.98;
+  let damping = 0.993;
   let gravity = 0.35;
 
   let thumbs = [];
@@ -409,9 +409,9 @@
           let dx = latchSX - t.x;
           let dy = latchSY2 - t.y;
           
-          // Instantly drop the lerp factor to 0.055 (10% faster than 0.05) so the first frame doesn't jump, then settle at 0.09
-          if (t._lerp > 0.09) t._lerp = 0.055; 
-          else t._lerp += (0.09 - t._lerp) * 0.1;
+          // Instantly drop the lerp factor to 0.22 so the first frame doesn't jump, then settle at 0.32
+          if (t._lerp > 0.32) t._lerp = 0.22; 
+          else t._lerp += (0.32 - t._lerp) * 0.1;
           
           t.x += dx * t._lerp;
           t.y += dy * t._lerp;
@@ -429,7 +429,7 @@
           if (t._wasInZone) {
             t._wasInZone = false;
             t._rippedOut = true;
-            t._lerp = 0.055; // Instantly drop to match entry speed!
+            t._lerp = 0.22; // Instantly drop to match entry speed!
           }
           
           let distToMouse = Math.sqrt(Math.pow(rawTargetX - t.x, 2) + Math.pow(rawTargetY - t.y, 2));
@@ -438,10 +438,10 @@
           }
           
           if (t._rippedOut) {
-            if (t._lerp > 0.09) t._lerp = 0.055;
-            else t._lerp += (0.09 - t._lerp) * 0.1;
+            if (t._lerp > 0.32) t._lerp = 0.22;
+            else t._lerp += (0.32 - t._lerp) * 0.1;
           } else {
-            t._lerp += (0.35 - t._lerp) * 0.1; // Smoothly recover normal drag
+            t._lerp += (0.52 - t._lerp) * 0.1; // Smoothly recover normal drag
           }
           
           t.x += (rawTargetX - t.x) * t._lerp; 
@@ -453,8 +453,8 @@
         t._swayV += swayForce * 0.2;  // spring constant for drag
         t._swayV *= 0.82;             // damping for drag
         t._sway += t._swayV;
-        t.vx *= 0.85;
-        t.vy *= 0.85;
+        t.vx *= 0.98;
+        t.vy *= 0.98;
         continue;
       }
 
@@ -483,8 +483,8 @@
         // Remove outward radial velocity (rope can't push, only pull)
         let vradial = t.vx * nx + t.vy * ny;
         if (vradial > 0) {
-          t.vx -= vradial * nx * 1.35;
-          t.vy -= vradial * ny * 1.35;
+          t.vx -= vradial * nx * 1.65;
+          t.vy -= vradial * ny * 1.65;
           if (vradial > 2.5) {
             t._swayV += (Math.random() - 0.5) * 0.08;
           }
@@ -795,8 +795,8 @@
     mouseCanvasX = mx;
     mouseCanvasY = my;
     let t = thumbs[draggedIdx];
-    t.vx = (mx - prevMouseX) * 0.28;
-    t.vy = (my - prevMouseY) * 0.28;
+    t.vx = (mx - prevMouseX) * 0.50;
+    t.vy = (my - prevMouseY) * 0.50;
     prevMouseX = mx;
     prevMouseY = my;
   });

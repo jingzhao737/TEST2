@@ -1,12 +1,5 @@
 [
   {
-    "step": 57,
-    "timestamp": "2026-06-12 00:28:06",
-    "description": "Prepare to adjust grab circle scale and grabbing compression values",
-    "folder": "step_057_Prepare_to_adjust_grab_circle_scale_and_grabbing_compression_values",
-    "is_auto": false
-  },
-  {
     "step": 58,
     "timestamp": "2026-06-12 00:28:18",
     "description": "Tweak grab circle scale to 0.72 and compress scale to 0.48 on grabbing state",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:05:23",
     "description": "Optimize magnetic pocket LERP and boundary rebound bounce to resolve sticky damping",
     "folder": "step_076_Optimize_magnetic_pocket_LERP_and_boundary_rebound_bounce_to_resolve_sticky_damping",
+    "is_auto": false
+  },
+  {
+    "step": 77,
+    "timestamp": "2026-06-12 01:05:39",
+    "description": "Optimize pocket snap LERP and rope boundary bounce elasticity",
+    "folder": "step_077_Optimize_pocket_snap_LERP_and_rope_boundary_bounce_elasticity",
     "is_auto": false
   }
 ]
