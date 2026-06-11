@@ -82,5 +82,12 @@
     "description": "Balance layer twist symmetries and snap stationary rotations to zero to prevent tilt",
     "folder": "step_012_Balance_layer_twist_symmetries_and_snap_stationary_rotations_to_zero_to_prevent_tilt",
     "is_auto": false
+  },
+  {
+    "step": 13,
+    "timestamp": "2026-06-11 21:55:21",
+    "description": "Balance layer twist symmetries and snap stationary rotations to zero to prevent tilt",
+    "folder": "step_013_Balance_layer_twist_symmetries_and_snap_stationary_rotations_to_zero_to_prevent_tilt",
+    "is_auto": false
   }
 ]
