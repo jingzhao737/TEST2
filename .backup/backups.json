@@ -1,12 +1,5 @@
 [
   {
-    "step": 21,
-    "timestamp": "2026-06-11 21:59:45",
-    "description": "Hide cursor until snapped on load and re-entry to fix twitch, and expand stationary snap thresholds to prevent tilt",
-    "folder": "step_021_Hide_cursor_until_snapped_on_load_and_re-entry_to_fix_twitch,_and_expand_stationary_snap_thresholds_to_prevent_tilt",
-    "is_auto": false
-  },
-  {
     "step": 22,
     "timestamp": "2026-06-11 22:00:38",
     "description": "Fix (0,0) entry warp twitch and scale return-to-upright deformation by cursorSpeed to prevent static tilt and stretch",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:34:29",
     "description": "Restore clean return-to-upright glide and reduce hover layer Z-spacing to 1.8 for tighter 3D stack",
     "folder": "step_040_Restore_clean_return-to-upright_glide_and_reduce_hover_layer_Z-spacing_to_1.8_for_tighter_3D_stack",
+    "is_auto": false
+  },
+  {
+    "step": 41,
+    "timestamp": "2026-06-11 22:35:23",
+    "description": "Smooth return-to-upright glide easing to 0.03 for a longer, gentler animation",
+    "folder": "step_041_Smooth_return-to-upright_glide_easing_to_0.03_for_a_longer,_gentler_animation",
     "is_auto": false
   }
 ]

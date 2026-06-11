@@ -143,7 +143,7 @@
     const isReturningUpright = (targetAngle === -90);
     let angleEase = 0.13;
     if (isReturningUpright) {
-      angleEase = cursorSpeed < 0.5 ? 0.08 : 0.035; // Return upright faster if stationary to prevent static lean lag
+      angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide
     } else {
       if (speed < 6.0) {
         const clampedSpeed = Math.max(1.5, speed); // Clamp at 1.5 to prevent negative easing factors
