@@ -1,12 +1,5 @@
 [
   {
-    "step": 38,
-    "timestamp": "2026-06-11 22:30:13",
-    "description": "Fix return-to-upright premature snapping conflict to eliminate two-stage jerkiness",
-    "folder": "step_038_Fix_return-to-upright_premature_snapping_conflict_to_eliminate_two-stage_jerkiness",
-    "is_auto": false
-  },
-  {
     "step": 39,
     "timestamp": "2026-06-11 22:31:51",
     "description": "Enhance return-to-upright 3D volumetric deformation by swelling layer Z-spacing and banking roll",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:28:06",
     "description": "Prepare to adjust grab circle scale and grabbing compression values",
     "folder": "step_057_Prepare_to_adjust_grab_circle_scale_and_grabbing_compression_values",
+    "is_auto": false
+  },
+  {
+    "step": 58,
+    "timestamp": "2026-06-12 00:28:18",
+    "description": "Tweak grab circle scale to 0.72 and compress scale to 0.48 on grabbing state",
+    "folder": "step_058_Tweak_grab_circle_scale_to_0.72_and_compress_scale_to_0.48_on_grabbing_state",
     "is_auto": false
   }
 ]

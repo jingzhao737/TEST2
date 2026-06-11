@@ -239,9 +239,20 @@
     let targetScale = isHovered ? 0.82 : 0.67;
     let targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
+    // Symmetrical circle fills more box area, so we scale it down slightly to 0.72 on hover to match visual weight of the triangle
+    if (isGrabState && !isClicked) {
+      targetScale = 0.72;
+      targetZSpacing = 1.4;
+    }
+    
     if (isClicked) {
-      targetScale = isHovered ? 0.62 : 0.52; // Press down scale compression
-      targetZSpacing = isHovered ? 0.6 : 0.3;  // Compress 3D layers closer to screen
+      if (isGrabState) {
+        targetScale = 0.48; // Circle shrinks down to a tight, tiny 3D ball on active drag/grabbing
+        targetZSpacing = 0.25; // Tightly flattened 3D layers
+      } else {
+        targetScale = isHovered ? 0.62 : 0.52; // Press down scale compression
+        targetZSpacing = isHovered ? 0.6 : 0.3;  // Compress 3D layers closer to screen
+      }
     }
     
     const targetTrailScale = isHovered ? 0 : (isClicked ? 0.67 * 0.4 : 0.67 * 0.6);

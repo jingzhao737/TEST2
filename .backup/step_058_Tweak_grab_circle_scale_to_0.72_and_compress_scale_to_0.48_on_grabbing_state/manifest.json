@@ -29,7 +29,7 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "599de913b92fabd780623a4806f8b32eb2bde8339461b5c614630e4118315a88"
+    "hash": "eef72b35e0ec9f578f5656112a57b5fcdd67d8dd2be6be7c726dc83b6a702688"
   },
   "task.md": {
     "type": "code",
@@ -85,15 +85,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "6b5d8ac0bb3c10662a80434dcb33e120184bd28f7b2b7e46a5ac1da73fde5ad3"
+    "hash": "6ebe79e0c075bd1e55fb0ecd4d0d89490fce8778cb0f9b1089bd7dae53ac8017"
   },
-  "dist\\assets\\index-BKQXXfA7.css": {
+  "dist\\assets\\index-BGy2AmkY.css": {
     "type": "code",
-    "hash": "d89140000e688c9eb579c10ee618a75fd8cf977a3dba935fef737b43880276c4"
+    "hash": "ffc78b7845e9f5b7930c1cacdce9860fca90402df0dd3d05f361eeb6eb0bdbb2"
   },
-  "dist\\assets\\index-LuQeTJKz.js": {
+  "dist\\assets\\index-CohmoWi-.js": {
     "type": "code",
-    "hash": "acffc877d362914fb59425e111b0abc2d37d243a48c60f7e15ce6353052aa0b1"
+    "hash": "8d08d948ce6fe2f20c82a57f6eaf70b51b7100048fb9664d190d5ffe611d2f7d"
   },
   "images\\index.txt": {
     "type": "code",
@@ -129,7 +129,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "4690ac767017acc5fa8471dd5597c1f5a4c3d650ef45763ac3fc975be4cecdf2"
+    "hash": "3a59fb54180b6824be0848bb9bb69329471f1a4b1c53cf4ea8e5ac796abf511e"
   },
   "js\\modules\\data.js": {
     "type": "code",
