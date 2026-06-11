@@ -139,7 +139,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   filter: drop-shadow(0 0 6px rgba(255, 141, 161, 0.7)) drop-shadow(0 0 12px rgba(112, 230, 210, 0.5));
   transition: opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s, 
               transform 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s,
-              transform-origin 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s;
+              transform-origin 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s,
+              filter 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s; /* Smooth filter fade-in/out */
 }
 .cursor-circle-wrapper {
   width: 100%;
@@ -149,16 +150,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border-radius: 50%;
   overflow: hidden;
   transform-origin: 50% 50%;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
   opacity: 0;
   transform: scale(0.3);
-  filter: drop-shadow(0 0 6px rgba(255, 141, 161, 0.7)) drop-shadow(0 0 12px rgba(112, 230, 210, 0.5));
   transition: opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s, 
               transform 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s,
               transform-origin 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s;
 }
-.cursor-dot.hovered .cursor-arrow-wrapper,
-.cursor-dot.hovered .cursor-circle-wrapper {
+.cursor-dot.hovered .cursor-arrow-wrapper {
   filter: drop-shadow(0 0 10px rgba(255, 141, 161, 0.95)) drop-shadow(0 0 20px rgba(112, 230, 210, 0.75));
 }
 
