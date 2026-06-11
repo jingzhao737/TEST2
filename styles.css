@@ -94,19 +94,35 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   position: fixed;
   width: 28px;
   height: 28px;
-  border: 1px solid rgba(232, 124, 80, 0.35); /* Match orange accent with low opacity */
-  border-radius: 50%;
+  background: transparent;
   pointer-events: none;
   z-index: 10001;
   left: 0;
   top: 0;
   transform: translate3d(-50%, -50%, 0);
-  will-change: transform, border-color, background-color;
-  transition: border-color 0.3s var(--ease-out-expo), background-color 0.3s var(--ease-out-expo), opacity 0.3s var(--ease-out-expo);
+  will-change: transform, background-color;
+  transition: background-color 0.3s var(--ease-out-expo), opacity 0.3s var(--ease-out-expo);
 }
 .cursor-ring.hovered {
-  border-color: rgba(232, 124, 80, 0.85); /* Brighten border */
   background-color: rgba(232, 124, 80, 0.06); /* Soft internal glow */
+  border-radius: 50%;
+}
+.cursor-ring-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cursor-ring circle {
+  stroke: var(--accent);
+  stroke-width: 1px;
+  opacity: 0.35;
+  will-change: stroke-dasharray, stroke-width, opacity;
+  transition: stroke-dasharray 0.35s var(--ease-out-expo), stroke-width 0.35s var(--ease-out-expo), opacity 0.3s var(--ease-out-expo);
+}
+.cursor-ring.hovered circle {
+  stroke-width: 1.5px;
+  opacity: 0.85;
+  stroke-dasharray: 82 0; /* Join segments together into a solid circular border on hover! */
 }
 
 /* 鈺愨晲鈺愨晲鈺愨晲?PAGE TRANSITION 鈺愨晲鈺愨晲鈺愨晲?*/
@@ -2213,8 +2229,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 /* 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲锟?   LIGHT THEME OVERRIDES
    鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲锟?*/
-:root.light .cursor-ring{border-color:rgba(232,124,80,.4)}
-:root.light .cursor-ring.hovered{border-color:rgba(232,124,80,.95);background-color:rgba(232,124,80,.08)}
+:root.light .cursor-ring circle {
+  stroke: var(--accent);
+  opacity: 0.45;
+}
+:root.light .cursor-ring.hovered circle {
+  opacity: 0.95;
+}
 :root.light .skeleton{background:rgba(0,0,0,.06)}
 
 :root.light .nav{background:#206759;border-bottom:1px solid rgba(255,255,255,.15)}
