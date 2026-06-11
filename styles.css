@@ -750,10 +750,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   z-index: 2;
   display: flex;
   flex-direction: column;
+  padding-top: 25vh;    /* Add top travel buffer for sticky card alignment */
+  padding-bottom: 25vh; /* Add bottom travel buffer for sticky card alignment */
 }
 
 .showcase-text-item {
-  height: 90vh; /* Each text card takes up 90% of viewport height to prolong sticky range and ensure aligned start/end positions */
+  height: 75vh; /* Keep item height tight (75vh) for closer element spacing */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -965,6 +967,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .showcase-left-text-track {
     width: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
   }
   .showcase-text-item {
     height: auto;
