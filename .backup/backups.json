@@ -1,12 +1,5 @@
 [
   {
-    "step": 25,
-    "timestamp": "2026-06-11 22:10:56",
-    "description": "Fix targetZSpacing initialization order ReferenceError crash",
-    "folder": "step_025_Fix_targetZSpacing_initialization_order_ReferenceError_crash",
-    "is_auto": false
-  },
-  {
     "step": 26,
     "timestamp": "2026-06-11 22:15:53",
     "description": "Tweak hover animations to be extremely subtle and restrained",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:51:54",
     "description": "Add follow delay by reducing cX/cY LERP factor to 0.09",
     "folder": "step_044_Add_follow_delay_by_reducing_cX_cY_LERP_factor_to_0.09",
+    "is_auto": false
+  },
+  {
+    "step": 45,
+    "timestamp": "2026-06-11 23:01:58",
+    "description": "Add speed-based cursor scale and Z-depth thickness swell to simulate paper airplane lift",
+    "folder": "step_045_Add_speed-based_cursor_scale_and_Z-depth_thickness_swell_to_simulate_paper_airplane_lift",
     "is_auto": false
   }
 ]

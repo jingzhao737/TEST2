@@ -171,13 +171,19 @@
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
 
-    // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
-    const targetScale = isHovered ? 0.82 : 0.67; // Swell smoothly like a soft 3D sticker
+    // 4. Hover & Speed-based scale calculation (Swells when moving fast, like a paper airplane gaining lift and flying high)
+    const baseTargetScale = isHovered ? 0.82 : 0.67;
+    const speedScaleBoost = Math.min(cursorSpeed * 0.015, 0.20); // Swells up to +0.20 scale at high speed
+    const targetScale = baseTargetScale + speedScaleBoost;
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
-    const targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
+    
+    // Dynamic Z-depth thickness: expands on hover, and swells dynamically based on speed to represent flight altitude
+    const speedZBoost = Math.min(cursorSpeed * 0.08, 1.2); // Expands layer Z-spacing up to +1.2px at high speed
+    const targetZSpacing = (isHovered ? 1.8 : 0.8) + speedZBoost;
     
     currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
+
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
