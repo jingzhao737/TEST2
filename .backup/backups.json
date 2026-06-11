@@ -131,5 +131,12 @@
     "description": "Snap initial cursor coordinates and window entry to prevent warp fly twitching",
     "folder": "step_019_Snap_initial_cursor_coordinates_and_window_entry_to_prevent_warp_fly_twitching",
     "is_auto": false
+  },
+  {
+    "step": 20,
+    "timestamp": "2026-06-11 21:58:17",
+    "description": "Document initial coordinate snapping in walkthrough.md",
+    "folder": "step_020_Document_initial_coordinate_snapping_in_walkthrough.md",
+    "is_auto": false
   }
 ]
