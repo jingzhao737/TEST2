@@ -200,13 +200,13 @@ if (items.length > 0) {
 
   // Card 1 starts at active (y:0), Cards 2 & 3 start completely below viewport with 3D orientation
   gsap.set(showcaseItems[0], { zIndex: 1, y: 0, scale: 1, z: 0, rotationX: 0, rotationY: 0, rotationZ: 0, filter: "blur(0px)", transformOrigin: "top center", opacity: 1 });
-  gsap.set(showcaseItems[1], { zIndex: 2, y: "95vh", scale: 1.05, z: 100, rotationX: -22, rotationY: 0, rotationZ: -4, filter: "blur(4px)", transformOrigin: "top center", opacity: 1 });
-  gsap.set(showcaseItems[2], { zIndex: 3, y: "95vh", scale: 1.05, z: 100, rotationX: -22, rotationY: 0, rotationZ: 4, filter: "blur(4px)", transformOrigin: "top center", opacity: 1 });
+  gsap.set(showcaseItems[1], { zIndex: 2, y: "100vh", scale: 1.05, z: 100, rotationX: -22, rotationY: 0, rotationZ: -4, filter: "blur(4px)", transformOrigin: "top center", opacity: 1 });
+  gsap.set(showcaseItems[2], { zIndex: 3, y: "100vh", scale: 1.05, z: 100, rotationX: -22, rotationY: 0, rotationZ: 4, filter: "blur(4px)", transformOrigin: "top center", opacity: 1 });
 
   // Determine configuration parameters based on device
-  const scrollDistance = isMobile ? "+=90%" : "+=120%";
+  const scrollDistance = isMobile ? "+=85%" : "+=110%";
   const scrubValue = isMobile ? 0.5 : 1.0;
-  const holdDuration = isMobile ? 0.02 : 0.08;
+  const holdDuration = isMobile ? 0.01 : 0.04;
 
   // Unified cascading timeline
   let mainTimeline;
@@ -220,7 +220,7 @@ if (items.length > 0) {
       zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
       scrub: scrubValue,     // Smooth scroll scrub with momentum
       snap: {
-        snapTo: [0, 0.5, 1.0], // Snap precisely to Card 1, Card 2, and Card 3 active states
+        snapTo: "labels",     // Snap precisely to card1, card2, and card3 labels
         duration: { min: 0.3, max: 0.6 },
         delay: 0.05,
         ease: "power2.out"
@@ -229,8 +229,8 @@ if (items.length > 0) {
   });
 
   // Step 1: Card 2 slides up to front, Card 1 recedes (Duration: 0.6)
-  mainTimeline.addLabel("step1")
-    .to(showcaseItems[1], { y: "4vh", scale: 1.0, rotationX: 0, rotationZ: 0, z: 0, filter: "blur(0px)", ease: "power2.inOut", duration: 0.6 }, "step1")
+  mainTimeline.addLabel("card1")
+    .to(showcaseItems[1], { y: "4vh", scale: 1.0, rotationX: 0, rotationZ: 0, z: 0, filter: "blur(0px)", ease: "power2.inOut", duration: 0.6 }, "card1")
     .to(showcaseItems[0], { 
       y: 0,
       scale: 0.91, 
@@ -241,14 +241,14 @@ if (items.length > 0) {
       transformOrigin: "top center",
       ease: "power2.inOut",
       duration: 0.6
-    }, "step1")
-    .to(blurredBgs[0], { opacity: 1, ease: "power2.inOut", duration: 0.6 }, "step1")
-    .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power2.inOut", duration: 0.6 }, "step1")
-    .to(infos[0], { opacity: 0.35, ease: "power2.inOut", duration: 0.6 }, "step1");
+    }, "card1")
+    .to(blurredBgs[0], { opacity: 1, ease: "power2.inOut", duration: 0.6 }, "card1")
+    .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power2.inOut", duration: 0.6 }, "card1")
+    .to(infos[0], { opacity: 0.35, ease: "power2.inOut", duration: 0.6 }, "card1");
 
   // Step 2: Card 3 slides up to front, Card 2 recedes, Card 1 recedes deeper (Duration: 0.6)
-  mainTimeline.addLabel("step2")
-    .to(showcaseItems[2], { y: "8vh", scale: 1.0, rotationX: 0, rotationZ: 0, z: 0, filter: "blur(0px)", ease: "power2.inOut", duration: 0.6 }, "step2")
+  mainTimeline.addLabel("card2")
+    .to(showcaseItems[2], { y: "8vh", scale: 1.0, rotationX: 0, rotationZ: 0, z: 0, filter: "blur(0px)", ease: "power2.inOut", duration: 0.6 }, "card2")
     .to(showcaseItems[1], { 
       y: "4vh",
       scale: 0.91, 
@@ -259,10 +259,10 @@ if (items.length > 0) {
       transformOrigin: "top center",
       ease: "power2.inOut",
       duration: 0.6
-    }, "step2")
-    .to(blurredBgs[1], { opacity: 1, ease: "power2.inOut", duration: 0.6 }, "step2")
-    .to(overlays[1], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power2.inOut", duration: 0.6 }, "step2")
-    .to(infos[1], { opacity: 0.35, ease: "power2.inOut", duration: 0.6 }, "step2")
+    }, "card2")
+    .to(blurredBgs[1], { opacity: 1, ease: "power2.inOut", duration: 0.6 }, "card2")
+    .to(overlays[1], { backgroundColor: "rgba(0,0,0,0.55)", ease: "power2.inOut", duration: 0.6 }, "card2")
+    .to(infos[1], { opacity: 0.35, ease: "power2.inOut", duration: 0.6 }, "card2")
     
     // Card 1 sinks deeper
     .to(showcaseItems[0], { 
@@ -275,12 +275,11 @@ if (items.length > 0) {
       transformOrigin: "top center",
       ease: "power2.inOut",
       duration: 0.6
-    }, "step2")
-    .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.75)", ease: "power2.inOut", duration: 0.6 }, "step2")
-    .to(infos[0], { opacity: 0.15, ease: "power2.inOut", duration: 0.6 }, "step2")
+    }, "card2")
+    .to(overlays[0], { backgroundColor: "rgba(0,0,0,0.75)", ease: "power2.inOut", duration: 0.6 }, "card2")
+    .to(infos[0], { opacity: 0.15, ease: "power2.inOut", duration: 0.6 }, "card2")
     
     // Small hold duration so the final stacked state is visible before unpinning
-    .addLabel("hold")
-    .to({}, { duration: holdDuration }, "hold")
-    .addLabel("end");
+    .addLabel("card3")
+    .to({}, { duration: holdDuration }, "card3");
 }
