@@ -18,6 +18,7 @@
   let fVx = 0, fVy = 0; // Filtered velocity components for smooth steering direction
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
+  let isClicked = false;
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -61,6 +62,15 @@
     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
+    isClicked = false;  // Reset click state
+  });
+
+  // Click States
+  document.addEventListener('mousedown', function() {
+    isClicked = true;
+  });
+  document.addEventListener('mouseup', function() {
+    isClicked = false;
   });
 
   // Hover States (Event Delegation on Document for dynamic elements)
@@ -174,12 +184,26 @@
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
 
-    // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
-    const targetScale = isHovered ? 0.82 : 0.67; // Swell smoothly like a soft 3D sticker
-    const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
-    const targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
+    // 4. Hover & Click states scale calculation (using Creamy LERP for soft visual swell)
+    let targetScale = isHovered ? 0.82 : 0.67;
+    let targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
-    currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
+    if (isClicked) {
+      targetScale = isHovered ? 0.62 : 0.52; // Press down scale compression
+      targetZSpacing = isHovered ? 0.6 : 0.3;  // Compress 3D layers closer to screen
+    }
+    
+    const targetTrailScale = isHovered ? 0 : (isClicked ? 0.67 * 0.4 : 0.67 * 0.6);
+    
+    // Choose dynamic LERP easing factor to make click/release feel tactile and snappy
+    let scaleEase = 0.08; // Normal creamy hover LERP
+    if (isClicked) {
+      scaleEase = 0.20; // Fast responsive press
+    } else if (currentScale < targetScale) {
+      scaleEase = 0.16; // Snappy recovery on release
+    }
+    
+    currentScale += (targetScale - currentScale) * scaleEase;
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp

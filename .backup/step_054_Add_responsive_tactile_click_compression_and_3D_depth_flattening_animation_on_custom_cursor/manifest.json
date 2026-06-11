@@ -85,15 +85,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "9f67b56cf3dace1295393044d50a941fdc19fe845d763778dbbd6f28bf866467"
+    "hash": "ba1e82d41914fa9bf1cd4631719349e7ac226d8e9ef7974b5de2462b2188242b"
   },
   "dist\\assets\\index-BKQXXfA7.css": {
     "type": "code",
     "hash": "d89140000e688c9eb579c10ee618a75fd8cf977a3dba935fef737b43880276c4"
   },
-  "dist\\assets\\index-pYdUnsU3.js": {
+  "dist\\assets\\index-c5g3XXTi.js": {
     "type": "code",
-    "hash": "23d531426ede0e823392c7c20f3cd97c80675b5a7660f66bb1b4d960f9938db7"
+    "hash": "09e4177d5d5b646a45076248bb5c07c3cf7aa4aa3b7be237a3a14acbd3b9be18"
   },
   "images\\index.txt": {
     "type": "code",
@@ -129,7 +129,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "cf1d64914051ffd335a7990870ffceac6a561f5a2f99ee3f9a7f01f8a8e1cc4a"
+    "hash": "faf8f77b6e3d07e61ab4781d4b8abd47195e9466fe4cf7704fbb09308e52876a"
   },
   "js\\modules\\data.js": {
     "type": "code",
