@@ -47,5 +47,12 @@
     "description": "Upgrade custom cursor to premium 3D torsional fanning-out twist and spring-loaded barrel roll trigger on hover",
     "folder": "step_007_Upgrade_custom_cursor_to_premium_3D_torsional_fanning-out_twist_and_spring-loaded_barrel_roll_trigger_on_hover",
     "is_auto": false
+  },
+  {
+    "step": 8,
+    "timestamp": "2026-06-11 21:34:18",
+    "description": "Update walkthrough.md with premium cursor details",
+    "folder": "step_008_Update_walkthrough.md_with_premium_cursor_details",
+    "is_auto": false
   }
 ]
