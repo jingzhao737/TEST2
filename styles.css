@@ -717,103 +717,158 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 .showcase-info p{font-size:.78rem;color:rgba(255,255,255,.55);line-height:1.7;letter-spacing:.05em;font-weight:300}
 
-/* ════════════ CINEMATIC HORIZONTAL PANEL SHOWCASE ═══════════ */
+/* ════════════ VERTICAL 3D STICKY SHOWCASE ═══════════ */
 
-.showcase.is-cinematic {
-  height: 100vh !important;
-  height: 100dvh !important;
-  width: 100vw !important;
-  max-width: none !important;
-  padding: 0 !important;
-  margin: 120px 0 0 0; /* Remove !important so ScrollTrigger can override margins during pinning */
-  overflow: hidden !important;
+.showcase {
   position: relative;
-  background: #000 !important;
-}
-
-.showcase.is-cinematic::after { display: none !important; }
-
-/* Floating brand header - aligned with other pages' headings */
-.showcase-header.is-cinematic {
-  position: absolute;
-  top: clamp(60px, 8vh, 100px);
-  left: 50%;
-  transform: translateX(-50%) !important;
-  width: 100% !important;
-  max-width: 1440px !important;
-  padding: 0 64px !important;
-  box-sizing: border-box;
-  z-index: 10;
-  margin: 0;
-  pointer-events: none;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-/* Removed font overrides and visibility overrides for section-tag and section-heading so they use 'Climate Crisis' font and are hidden in HTML on desktop to render on WebGL like other pages */
-
-/* ── Horizontal track: JS sets total width = N × 100vw ── */
-.showcase-grid.is-cinematic {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  height: 100% !important;
-  /* width is set dynamically by JS */
-  padding: 0 !important;
-  margin: 0 !important;
+  width: 100vw;
   max-width: none !important;
+  padding: 0 !important;
+  margin: 120px 0 0 0;
+  background: #000;
+  overflow: visible !important; /* Allow sticky positioning to work */
+}
+
+/* Layout Wrapper */
+.showcase-layout-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 64px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Left Column: Vertical scrolling text track */
+.showcase-left-text-track {
+  width: 55%;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.showcase-text-item {
+  height: 100vh; /* Each text card takes up full viewport height for scroll track */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: 80px;
+  box-sizing: border-box;
+}
+
+.showcase-text-item .section-tag {
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.showcase-text-item .section-tag::before {
+  content: '';
+  width: 14px;
+  height: 1px;
+  background: var(--accent);
+  display: block;
+}
+
+.showcase-text-item .showcase-title {
+  font-family: 'Google Sans', sans-serif;
+  font-size: clamp(2.2rem, 3.5vw, 4.0rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-style: italic;
+  color: #ffffff !important;
+  margin: 0 0 24px;
+}
+
+.showcase-text-item .showcase-desc {
+  font-size: clamp(0.78rem, 1.2vw, 0.9rem);
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  font-weight: 300;
+  max-width: 480px;
+}
+
+/* Right Column: Sticky 3D preview zone */
+.showcase-right-sticky-zone {
+  width: 45%;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.showcase-sticky-preview-wrapper {
+  perspective: 1200px;
+  width: 100%;
+  max-width: 460px; /* Standard premium desktop preview size */
+  aspect-ratio: 16/11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.showcase-sticky-preview-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  transform-style: preserve-3d;
   will-change: transform;
-  overflow: visible !important;
+  pointer-events: auto;
+  box-shadow: 
+    0 30px 80px rgba(0, 0, 0, 0.70), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  overflow: visible;
+  transition: box-shadow 0.5s var(--ease-out-expo);
 }
 
-/* ── Each panel: 100vw × 100% ── */
-.showcase-grid.is-cinematic .showcase-item {
-  flex: 0 0 100vw !important;
-  width: 100vw !important;
-  height: 100% !important;
-  min-height: 100vh !important;
-  min-height: 100dvh !important;
-  position: relative !important;
-  /* neutralise scroll-reveal.js (removed opacity !important so GSAP can animate fade-in) */
-  transform: none;               /* NOT !important so GSAP chars can animate */
-  border-radius: 0 !important;
-  margin: 0 !important;
-  padding: clamp(32px, 8vw, 120px) !important;
-  display: flex !important;
-  align-items: flex-end !important;
-  justify-content: flex-start !important;
-  overflow: hidden !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* Background: oversized for parallax */
-.showcase-grid.is-cinematic .showcase-bg {
-  position: absolute;
-  top: -8%;
-  left: -8%;
-  width: 116%;
-  height: 116%;
-  background-size: cover;
-  background-position: center;
-  will-change: transform;
-}
-
-/* Heavy bottom gradient */
-.showcase-grid.is-cinematic .showcase-overlay {
+.showcase-sticky-preview-curtain {
   position: absolute;
   inset: 0;
+  background: var(--accent);
+  border-radius: 12px;
   z-index: 1;
-  background: linear-gradient(
-    to top,
-    rgba(0,0,0,0.84) 0%,
-    rgba(0,0,0,0.40) 40%,
-    rgba(0,0,0,0.10) 65%,
-    transparent 100%
-  ) !important;
+  transform-style: preserve-3d;
+  will-change: transform, clip-path;
 }
 
-/* Film grain overlay */
-.showcase-grain {
+.showcase-sticky-preview-img-container {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0d0d0f;
+  z-index: 2;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, clip-path;
+}
+
+.showcase-sticky-preview-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform, clip-path;
+}
+
+.showcase-sticky-preview-grain {
   position: absolute;
   inset: 0;
   z-index: 4;
@@ -823,70 +878,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 128px 128px;
+  border-radius: 12px;
 }
 
-/* Kill old card shimmer */
-.showcase-grid.is-cinematic .showcase-item::before { display: none !important; }
-
-/* Character split for title */
-.showcase-title .char {
-  display: inline-block;
-  will-change: transform, opacity;
-}
-
-/* Info block: bottom-left */
-.showcase-grid.is-cinematic .showcase-info {
-  position: relative;
-  z-index: 5;
-  max-width: clamp(300px, 50vw, 650px);
-  text-align: left;
-  pointer-events: none;
-}
-.showcase-grid.is-cinematic .showcase-info .section-tag {
-  font-size: 0.6rem;
-  letter-spacing: 0.25em;
-  color: rgba(255,255,255,0.5);
-  margin-bottom: 12px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.showcase-grid.is-cinematic .showcase-info .section-tag::before {
-  content: '';
-  width: 14px;
-  height: 1px;
-  background: var(--accent);
-  display: block;
-}
-.showcase-grid.is-cinematic .showcase-title {
-  font-family: 'Google Sans', sans-serif;
-  font-size: clamp(2.2rem, 5vw, 4.5rem);
-  font-weight: 300;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  font-style: italic;
-  color: #ffffff !important;
-  margin: 0 0 16px;
-  overflow: hidden;
-}
-.showcase-grid.is-cinematic .showcase-info p {
-  font-size: clamp(0.75rem, 1.2vw, 0.9rem);
-  color: rgba(255,255,255,0.6);
-  line-height: 1.6;
-  letter-spacing: 0.04em;
-  font-weight: 300;
-  max-width: 480px;
-}
-
-/* ── Rolling Pager (Bottom-Right) ── */
+/* ── Rolling Pager (Bottom-Right of the Right Column) ── */
 .showcase-global-ticker {
   position: absolute;
-  bottom: clamp(32px, 8vw, 120px);
-  right: clamp(32px, 8vw, 120px);
+  bottom: 60px;
+  right: 0;
   z-index: 10;
   font-family: 'Google Sans', sans-serif;
-  font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
   font-weight: 300;
   color: #fff;
   display: flex;
@@ -913,10 +915,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .showcase-global-ticker .ticker-sep { opacity: 0.35; font-weight: 200; }
 .showcase-global-ticker .ticker-total { opacity: 0.45; font-weight: 200; }
 
-/* ── Vertical Progress (Left-center) ── */
+/* ── Vertical Progress (Left-center of the Right Column) ── */
 .showcase-global-progress {
   position: absolute;
-  left: clamp(24px, 4vw, 72px);
+  left: 0;
   top: 50%;
   transform: translateY(-50%);
   height: 180px;
@@ -942,31 +944,62 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .showcase-global-progress {
     display: none;
   }
+  .showcase-sticky-preview-wrapper {
+    max-width: 380px;
+  }
+  .showcase-layout-wrapper {
+    padding: 0 40px;
+  }
 }
 
 @media(max-width:768px) {
-  .showcase-header.is-cinematic {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
-    padding: 0 24px !important;
-    margin-bottom: 40px !important;
+  .showcase {
+    margin-top: 60px;
+    overflow: visible !important;
   }
-  .showcase-grid.is-cinematic .showcase-item {
-    padding: 24px !important;
+  .showcase-layout-wrapper {
+    flex-direction: column-reverse; /* Put sticky image at the top of flow */
+    padding: 0 24px;
   }
-  .showcase-grid.is-cinematic .showcase-title {
+  .showcase-left-text-track {
+    width: 100%;
+  }
+  .showcase-text-item {
+    height: auto;
+    padding: 60px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .showcase-text-item:last-child {
+    border-bottom: none;
+  }
+  .showcase-text-item .showcase-title {
     font-size: 2.2rem;
   }
+  
+  .showcase-right-sticky-zone {
+    width: 100%;
+    height: auto;
+    position: relative; /* Not sticky on mobile, scrolls in flow */
+    top: auto;
+    margin-bottom: 40px;
+    justify-content: center;
+  }
+  .showcase-sticky-preview-wrapper {
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 16/11;
+  }
   .showcase-global-ticker {
-    bottom: 24px;
-    right: 24px;
+    position: relative;
+    bottom: auto;
+    right: auto;
+    margin-top: 20px;
+    justify-content: center;
     font-size: 1.2rem;
   }
 }
 
-:root.light .showcase.is-cinematic {
+:root.light .showcase {
   background: #0d0d0c !important; /* Keep a very dark background in light mode to maintain contrast of cinematic photos */
 }
 

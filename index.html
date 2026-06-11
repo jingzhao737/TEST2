@@ -173,39 +173,48 @@
   <div class="crosshair crosshair-right">+</div>
 </div>
 
-<!-- 鈺愨晲鈺愨晲鈺?FEATURED SHOWCASE (parallax) 鈺愨晲鈺愨晲鈺?-->
+<!-- ✦✦ FEATURED SHOWCASE (vertical 3D layout) ✦✦ -->
 <section class="showcase" id="showcase">
   <div class="showcase-header anim-up">
     <p class="section-tag">Featured</p>
     <h2 class="section-heading">HIGHLIGHTS</h2>
   </div>
-  <div class="showcase-grid">
-    <div class="showcase-item anim-up" data-parallax="true">
-      <div class="showcase-bg" style="background-image:url(images/showcase/bg1.webp)"></div>
-      <div class="showcase-overlay"></div>
-      <div class="showcase-info">
+  
+  <div class="showcase-layout-wrapper">
+    <!-- Left text items scroll vertically -->
+    <div class="showcase-left-text-track stagger-children">
+      <div class="showcase-text-item anim-up" data-index="0" data-image="images/showcase/bg1.webp" style="--stagger-delay:0s">
         <p class="section-tag">Color Series &middot; 2024&ndash;2026</p>
         <h3 class="showcase-title">Chromatic Flux</h3>
+        <p class="showcase-desc">A deep exploration of fluid color fields, shifting pigments, and visual resonance. This series captures the transition of organic dyes under refractive light, creating a dynamic dialogue between material limits and chromatic depth.</p>
       </div>
-    </div>
-    <div class="showcase-item anim-up" data-parallax="true">
-      <div class="showcase-bg" style="background-image:url(images/showcase/bg2.webp)"></div>
-      <div class="showcase-overlay"></div>
-      <div class="showcase-info">
+      <div class="showcase-text-item anim-up" data-index="1" data-image="images/showcase/bg2.webp" style="--stagger-delay:0.1s">
         <p class="section-tag">Generative Series &middot; 2025</p>
         <h3 class="showcase-title">The Shape of Silence</h3>
+        <p class="showcase-desc">Generative digital paintings exploring quiet geometry, mathematical emptiness, and subtle noise. Using custom pixel-sorting and noise algorithms, each frame acts as a visual meditation on modern digital friction.</p>
       </div>
-    </div>
-    <div class="showcase-item anim-up" data-parallax="true">
-      <div class="showcase-bg" style="background-image:url(images/showcase/bg3.webp)"></div>
-      <div class="showcase-overlay"></div>
-      <div class="showcase-info">
+      <div class="showcase-text-item anim-up" data-index="2" data-image="images/showcase/bg3.webp" style="--stagger-delay:0.2s">
         <p class="section-tag">Installation &middot; 2023&ndash;Present</p>
         <h3 class="showcase-title">Neon Liturgy</h3>
+        <p class="showcase-desc">Site-specific light art installations utilizing glass neon tubes, structural steel, and reflective mirrors. A sacred architecture built with gas and electricity, celebrating the tension between historic ritual and industrial waste.</p>
+      </div>
+    </div>
+    
+    <!-- Right floating 3D preview card -->
+    <div class="showcase-right-sticky-zone">
+      <div class="showcase-sticky-preview-wrapper">
+        <div class="showcase-sticky-preview-card">
+          <div class="showcase-sticky-preview-curtain"></div>
+          <div class="showcase-sticky-preview-img-container">
+            <!-- Images will be loaded dynamically by JS -->
+          </div>
+          <div class="showcase-sticky-preview-grain"></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
+
 
 <div class="h-grid-divider" aria-hidden="true">
   <div class="crosshair crosshair-left">+</div>

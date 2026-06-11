@@ -3,276 +3,218 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ══════════════════════════════════════════════════════════════
-//  PREMIUM CINEMATIC SHOWCASE — Horizontal Panel Slide
-//  Cards sit side-by-side in a wide flex track.
-//  ScrollTrigger pins the section and scrubs the x-translate.
-// ══════════════════════════════════════════════════════════════
-
 function initShowcase() {
-const items   = gsap.utils.toArray('.showcase-item');
-const section = document.querySelector('.showcase');
-const grid    = document.querySelector('.showcase-grid');
+  const items = gsap.utils.toArray('.showcase-text-item');
+  const section = document.querySelector('.showcase');
+  const wrapper = document.querySelector('.showcase-layout-wrapper');
 
-if (!items.length || !section || !grid) return;
+  if (!items.length || !section || !wrapper) return;
 
-const N        = items.length;
-const VW       = window.innerWidth;
-const VH       = window.innerHeight;
-const isMobile = VW < 768;
+  const N = items.length;
+  const isMobile = window.innerWidth <= 768;
 
-// ── 1. Activate cinematic mode ──────────────────────────────
-section.classList.add('is-cinematic');
-grid.classList.add('is-cinematic');
-// Setup header
-const header = section.querySelector('.showcase-header');
-if (header) {
-  header.classList.add('is-cinematic');
-  header.classList.remove('anim-up', 'anim-done');
-  header.style.opacity = '1';
-  header.style.transform = 'none';
-}
-
-// Remove stale morph elements from previous non-cinematic mode
-section.querySelectorAll('.morph-bg-color,.morph-color-ring,.morph-indicator,.morph-dots')
-  .forEach(el => el.remove());
-
-// ── 2. Wipe scroll-reveal.js interference ───────────────────
-// scroll-reveal.js adds .anim-up which sets opacity:0 / translateY.
-// We must neutralise this BEFORE GSAP initialises.
-items.forEach(item => {
-  item.classList.remove('anim-up', 'anim-done');
-  item.style.opacity  = '';
-  item.style.transform = '';
-});
-
-// ── 3. Text: split into characters ──────────────────────────
-const wrapChars = (el) => {
-  const text = el.textContent.trim();
-  el.setAttribute('aria-label', text);
-  el.innerHTML = '';
-  [...text].forEach(ch => {
-    if (ch === ' ') {
-      el.appendChild(document.createTextNode('\u00A0'));
-    } else {
-      const s = document.createElement('span');
-      s.className = 'char';
-      s.textContent = ch;
-      s.setAttribute('aria-hidden', 'true');
-      el.appendChild(s);
-    }
-  });
-  return el.querySelectorAll('.char');
-};
-
-// ── 4. Inject global UI ─────────────────────────────────────
-// Film grain per card
-items.forEach(item => {
-  const g = document.createElement('div');
-  g.className = 'showcase-grain';
-  item.appendChild(g);
-});
-
-// Rolling digit pager (bottom-right, outside the grid, inside section)
-const pager = document.createElement('div');
-pager.className = 'showcase-global-ticker';
-pager.innerHTML = `
-  <div class="ticker-digit-wrap">
-    <div class="ticker-digit-track">
-      ${items.map((_, i) => `<div class="ticker-digit">${String(i + 1).padStart(2, '0')}</div>`).join('')}
-    </div>
-  </div>
-  <div class="ticker-sep">/</div>
-  <div class="ticker-total">${String(N).padStart(2, '0')}</div>
-`;
-section.appendChild(pager);
-const tickerTrack = pager.querySelector('.ticker-digit-track');
-
-// Vertical progress bar (left-center, desktop only)
-let progressFill = null;
-if (!isMobile) {
-  const bar = document.createElement('div');
-  bar.className = 'showcase-global-progress';
-  bar.innerHTML = '<div class="showcase-global-progress-fill"></div>';
-  section.appendChild(bar);
-  progressFill = bar.querySelector('.showcase-global-progress-fill');
-}
-
-// ── 5. Lay out the horizontal track ─────────────────────────
-// The grid becomes N × 100vw wide; items are flex children.
-gsap.set(grid, {
-  width: N * VW,
-  x: 0,
-});
-
-// ── 6. Per-card initial states + char splitting ──────────────
-const cardData = items.map((item, i) => {
-  const bg    = item.querySelector('.showcase-bg');
-  const title = item.querySelector('.showcase-title');
-  const tag   = item.querySelector('.showcase-info .section-tag');
-  const desc  = item.querySelector('.showcase-info p');
-  const chars = title ? wrapChars(title) : [];
-
-  if (i === 0) {
-    if (bg) gsap.set(bg, { x: 0, scale: 1.0 });
-    gsap.set(chars, { y: 0, opacity: 1 });
-    if (tag)  gsap.set(tag,  { y: 0, opacity: 1 });
-    if (desc) gsap.set(desc, { y: 0, opacity: 1 });
-  } else {
-    if (bg) gsap.set(bg, { x: 40, scale: 1.06 });
-    gsap.set(chars, { y: 32, opacity: 0 });
-    if (tag)  gsap.set(tag,  { y: 20, opacity: 0 });
-    if (desc) gsap.set(desc, { y: 20, opacity: 0 });
+  // ── 1. Clean up stale classes and structures ──────────────────
+  section.classList.remove('is-cinematic');
+  const header = section.querySelector('.showcase-header');
+  if (header) {
+    header.classList.remove('is-cinematic');
   }
 
-  return { item, bg, title, chars, tag, desc };
-});
+  // ── 2. Inject global UI into sticky zone ──────────────────────
+  const stickyZone = document.querySelector('.showcase-right-sticky-zone');
+  if (stickyZone) {
+    // Rolling digit pager
+    const pager = document.createElement('div');
+    pager.className = 'showcase-global-ticker';
+    pager.innerHTML = `
+      <div class="ticker-digit-wrap">
+        <div class="ticker-digit-track">
+          ${items.map((_, i) => `<div class="ticker-digit">${String(i + 1).padStart(2, '0')}</div>`).join('')}
+        </div>
+      </div>
+      <div class="ticker-sep">/</div>
+      <div class="ticker-total">${String(N).padStart(2, '0')}</div>
+    `;
+    stickyZone.appendChild(pager);
 
-// ── 7. Build scrubbed GSAP timeline ─────────────────────────
-// BUFFER = time units reserved at each end for fade-in / fade-out.
-// Total timeline duration = BUFFER + (N-1) + BUFFER.
-// Total pin scroll distance = TL_DURATION × VH.
-const SCRUB      = isMobile ? 0.35 : 0.5;
-const BUFFER     = 0.45;                              // ~40% VH of "breathing room"
-const TL_DUR     = BUFFER + (N - 1) + BUFFER;         // 2.9 for 3 cards
-const PIN_END    = `+=${TL_DUR * VH}`;
+    // Vertical progress bar (desktop only)
+    let progressFill = null;
+    if (!isMobile) {
+      const bar = document.createElement('div');
+      bar.className = 'showcase-global-progress';
+      bar.innerHTML = '<div class="showcase-global-progress-fill"></div>';
+      stickyZone.appendChild(bar);
+      progressFill = bar.querySelector('.showcase-global-progress-fill');
+    }
 
-// Card 0 starts slightly scaled and faded for a smooth entrance
-const c0 = cardData[0];
-if (c0) {
-  if (c0.bg) gsap.set(c0.bg, { scale: 1.15 });
-  gsap.set(c0.item, { opacity: 0 }); // Hidden initially to fade in during buffer
-}
+    // ── 3. Image switching function with diagonal clip-path ──
+    const imgContainer = document.querySelector('.showcase-sticky-preview-img-container');
+    const curtain = document.querySelector('.showcase-sticky-preview-curtain');
+    const tickerTrack = pager.querySelector('.ticker-digit-track');
 
-const tl = gsap.timeline({
-  scrollTrigger: {
-    trigger: section,
-    start: 'top top',
-    end: PIN_END,
-    pin: true,
-    anticipatePin: 0,     // disabled — avoids premature pin jump
-    scrub: SCRUB,
-    onUpdate: (self) => {
-      // Normalise progress to the SLIDE zone (BUFFER … BUFFER + N-1)
-      const slideProgress = Math.max(0, Math.min(1,
-        (self.progress * TL_DUR - BUFFER) / (N - 1)
-      ));
-      const raw    = slideProgress * (N - 1);
-      const active = Math.round(raw);
-      const digitH = 1.2;
-      gsap.to(tickerTrack, {
-        y: -(active * digitH) + 'em',
-        duration: 0.35,
-        ease: 'power2.out',
-        overwrite: 'auto',
-      });
-      if (progressFill) {
-        gsap.to(progressFill, {
-          height: `${slideProgress * 100}%`,
-          duration: 0.1,
-          ease: 'none',
-          overwrite: 'auto',
+    function changePreviewImage(idx, src) {
+      if (!imgContainer || !curtain) return;
+
+      const newImg = document.createElement('img');
+      newImg.className = 'showcase-sticky-preview-img';
+      newImg.src = src;
+
+      const currentImgs = imgContainer.querySelectorAll('.showcase-sticky-preview-img');
+      if (currentImgs.length === 0) {
+        // First load: place image directly
+        newImg.style.clipPath = 'none';
+        imgContainer.appendChild(newImg);
+      } else {
+        // Slide transition: push new image on top and animate clip-path
+        imgContainer.appendChild(newImg);
+
+        // Reset positions
+        gsap.set(newImg, {
+          clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)',
+          y: 40,
+          scale: 1.06
+        });
+        gsap.set(curtain, {
+          clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)',
+          scale: 1.06
+        });
+
+        // Animate curtain
+        gsap.to(curtain, {
+          clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+          scale: 1,
+          duration: 0.5,
+          ease: 'power3.out'
+        });
+
+        // Animate image
+        gsap.to(newImg, {
+          clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'expo.out',
+          delay: 0.05,
+          onComplete: () => {
+            // Remove old image to clean DOM
+            const imgsAfter = imgContainer.querySelectorAll('.showcase-sticky-preview-img');
+            if (imgsAfter.length > 1) {
+              for (let i = 0; i < imgsAfter.length - 1; i++) {
+                imgsAfter[i].remove();
+              }
+            }
+          }
         });
       }
-    },
-  },
-});
 
-// ── 7a. Entry transition: Fade in & scale down Card 0 ─────────
-if (c0) {
-  tl.to(c0.item, { opacity: 1, duration: BUFFER, ease: 'power2.out' }, 0);
-  if (c0.bg) tl.to(c0.bg, { scale: 1.0, duration: BUFFER, ease: 'power2.out' }, 0);
-}
+      // Update pager
+      if (tickerTrack) {
+        gsap.to(tickerTrack, {
+          y: -(idx * 1.2) + 'em',
+          duration: 0.35,
+          ease: 'power2.out',
+          overwrite: 'auto'
+        });
+      }
+    }
 
-// ── 7b. Main horizontal slide (starts AFTER buffer) ───────────
-tl.to(grid, {
-  x: -(N - 1) * VW,
-  ease: 'none',
-  duration: N - 1,
-}, BUFFER);
+    // ── 4. Setup ScrollTrigger for active card detection ─────────
+    let activeIndex = -1;
+    items.forEach((item, index) => {
+      const src = item.dataset.image;
+      ScrollTrigger.create({
+        trigger: item,
+        start: 'top 55%',
+        end: 'bottom 55%',
+        onToggle: (self) => {
+          if (self.isActive && activeIndex !== index) {
+            activeIndex = index;
+            changePreviewImage(index, src);
+          }
+        }
+      });
+    });
 
-// ── 7c. Exit transition: Fade out the entire grid ─────────────
-tl.to(grid, {
-  opacity: 0,
-  ease: 'power2.in',
-  duration: BUFFER,
-}, BUFFER + (N - 1));
+    // ── 5. Setup ScrollTrigger for velocity 3D deformation ─────
+    const card = document.querySelector('.showcase-sticky-preview-card');
+    
+    let targetScrollRotX = 0;
+    let currentScrollRotX = 0;
+    
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: (self) => {
+        // Sync progress bar
+        if (progressFill) {
+          progressFill.style.height = `${self.progress * 100}%`;
+        }
 
-// ── 7d. Per-card parallax + text animations ──────────────────
-// All timeline positions are offset by BUFFER so they fall inside
-// the horizontal slide zone, not the fade buffers.
-cardData.forEach(({ bg, chars, tag, desc }, i) => {
-  // BG parallax: moves slower than the card — creates depth.
-  if (bg) {
-    const startX = i === 0 ? 0   : 50;
-    const endX   =           -50;
-    tl.fromTo(bg,
-      { x: startX },
-      { x: endX, ease: 'none', duration: 1 },
-      BUFFER + (i === 0 ? 0 : i - 1)
-    );
-  }
+        // Calculate velocity-based tilt
+        const velocity = self.getVelocity(); // pixels/sec
+        const maxVel = 3000;
+        const normVel = gsap.utils.clamp(-maxVel, maxVel, velocity);
+        targetScrollRotX = -(normVel / maxVel) * 12; // max 12 deg tilt
+      }
+    });
 
-  // Each card's text entrance calculation
-  // Card 0 text enters during the initial BUFFER (entry zone).
-  // Other cards' text enters 55% of the way into the previous horizontal segment.
-  const enter = i === 0 ? (BUFFER * 0.3) : (BUFFER + i - 0.55);
+    // ── 6. Setup Mouse Move 3D Parallax (Desktop only) ───────────
+    let targetMouseX = 0, targetMouseY = 0;
+    let currentMouseX = 0, currentMouseY = 0;
 
-  if (chars.length) {
-    tl.fromTo(chars,
-      { y: 32, opacity: 0 },
-      { y: 0, opacity: 1, stagger: 0.022, duration: 0.50, ease: 'power3.out' },
-      enter
-    );
-  }
-  if (tag) {
-    tl.fromTo(tag,
-      { y: 18, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.42, ease: 'power3.out' },
-      enter - 0.05
-    );
-  }
-  if (desc) {
-    tl.fromTo(desc,
-      { y: 18, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.42, ease: 'power3.out' },
-      enter + 0.10
-    );
-  }
-});
+    if (!isMobile && card) {
+      wrapper.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenterX = rect.left + rect.width / 2;
+        const cardCenterY = rect.top + rect.height / 2;
+        const dx = e.clientX - cardCenterX;
+        const dy = e.clientY - cardCenterY;
 
-// ── 8. Ambient mouse parallax (desktop only) ─────────────────
-if (!isMobile) {
-  window.addEventListener('mousemove', (e) => {
-    // Determine which card is currently in frame based on grid x
-    const gridX    = gsap.getProperty(grid, 'x');
-    const activeIdx = Math.round(-gridX / VW);
-    const card      = cardData[Math.max(0, Math.min(activeIdx, N - 1))];
-    if (!card) return;
+        // Convert offset to rotation angle
+        targetMouseY = (dx / (window.innerWidth / 2)) * 14;
+        targetMouseX = -(dy / (window.innerHeight / 2)) * 14;
+      });
 
-    const rx = (e.clientX / VW - 0.5);
-    const ry = (e.clientY / VH - 0.5);
-
-    if (card.bg) {
-      gsap.to(card.bg, {
-        x: `+=${-rx * 18}`,
-        y: `+=${-ry * 12}`,
-        duration: 1.8,
-        ease: 'power2.out',
-        overwrite: 'auto',
+      wrapper.addEventListener('mouseleave', () => {
+        targetMouseX = 0;
+        targetMouseY = 0;
       });
     }
-    if (card.desc) {
-      gsap.to(card.desc, {
-        x: rx * 10,
-        y: ry * 6,
-        duration: 2.0,
-        ease: 'power2.out',
-        overwrite: 'auto',
-      });
-    }
-  });
-}
-} // end initShowcase
 
+    // ── 7. Unified Physics LERP Animation Loop ───────────────────
+    function updateCardPhysics() {
+      // Smooth LERP for mouse rotation
+      currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+      currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+
+      // Smooth LERP for scroll rotation
+      currentScrollRotX += (targetScrollRotX - currentScrollRotX) * 0.08;
+
+      // Decay scroll rotation target back to 0 when scroll stops
+      targetScrollRotX *= 0.92;
+
+      if (card) {
+        gsap.set(card, {
+          rotationX: currentMouseX + currentScrollRotX,
+          rotationY: currentMouseY,
+          skewY: currentScrollRotX * 0.12,
+          scale: 1 - Math.abs(currentScrollRotX) * 0.004,
+          overwrite: 'auto'
+        });
+      }
+
+      requestAnimationFrame(updateCardPhysics);
+    }
+    
+    // Start physics loop
+    requestAnimationFrame(updateCardPhysics);
+  }
+}
+
+// Initialize on load
 initShowcase();
+window.addEventListener('resize', () => {
+  // Simple refresh of ScrollTriggers on window resize
+  ScrollTrigger.refresh();
+});
