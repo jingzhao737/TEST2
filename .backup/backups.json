@@ -1,12 +1,5 @@
 [
   {
-    "step": 37,
-    "timestamp": "2026-06-11 22:29:20",
-    "description": "Restore organic turn deformation and banking roll during return-to-upright",
-    "folder": "step_037_Restore_organic_turn_deformation_and_banking_roll_during_return-to-upright",
-    "is_auto": false
-  },
-  {
     "step": 38,
     "timestamp": "2026-06-11 22:30:13",
     "description": "Fix return-to-upright premature snapping conflict to eliminate two-stage jerkiness",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:26:13",
     "description": "Implement smooth morphing transition from triangle to circle during drag/grab state",
     "folder": "step_056_Implement_smooth_morphing_transition_from_triangle_to_circle_during_drag_grab_state",
+    "is_auto": false
+  },
+  {
+    "step": 57,
+    "timestamp": "2026-06-12 00:28:06",
+    "description": "Prepare to adjust grab circle scale and grabbing compression values",
+    "folder": "step_057_Prepare_to_adjust_grab_circle_scale_and_grabbing_compression_values",
     "is_auto": false
   }
 ]

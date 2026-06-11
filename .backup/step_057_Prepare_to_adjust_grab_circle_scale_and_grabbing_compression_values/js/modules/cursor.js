@@ -15,8 +15,11 @@
   let t1X = 0, t1Y = 0; // Trail 1 position
   
   let lastMouseX = 0, lastMouseY = 0;
+  let fVx = 0, fVy = 0; // Filtered velocity components for smooth steering direction
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
+  let isClicked = false;
+  let isGrabState = false;
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -33,6 +36,7 @@
   let currentRoll = 0;
   let currentStretchX = 1;
   let currentStretchY = 1;
+  let currentTranslateY = -10; // Smoothly slide hotspot center between triangle tip (-10%) and circle center (-50%)
 
   // Track mouse coordinates
   document.addEventListener('mousemove', function(e) {
@@ -60,6 +64,42 @@
     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
+    isClicked = false;  // Reset click state
+    isGrabState = false; // Reset grab state
+    cursorDot.classList.remove('grab-state');
+    cursorTrail1.classList.remove('grab-state');
+  });
+
+  // Click States
+  document.addEventListener('mousedown', function(e) {
+    isClicked = true;
+    
+    // Lock grab state during active dragging
+    const target = e.target.closest(hoverSelector) || e.target;
+    const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                   window.getComputedStyle(target).cursor === 'grab' || 
+                   window.getComputedStyle(target).cursor === 'grabbing';
+    if (isGrab) {
+      isGrabState = true;
+      cursorDot.classList.add('grab-state');
+      cursorTrail1.classList.add('grab-state');
+    }
+  });
+
+  document.addEventListener('mouseup', function() {
+    isClicked = false;
+    
+    // Check if we are still hovering over a grabbable element after release
+    const hoveredElement = document.elementFromPoint(mouseX, mouseY);
+    const target = hoveredElement ? hoveredElement.closest(hoverSelector) : null;
+    const isGrab = target ? (target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                   window.getComputedStyle(target).cursor === 'grab' || 
+                   window.getComputedStyle(target).cursor === 'grabbing') : false;
+    if (!isGrab) {
+      isGrabState = false;
+      cursorDot.classList.remove('grab-state');
+      cursorTrail1.classList.remove('grab-state');
+    }
   });
 
   // Hover States (Event Delegation on Document for dynamic elements)
@@ -72,6 +112,16 @@
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
         isHovered = true;
         cursorDot.classList.add('hovered');
+
+        // Check if hovering over a grabbable element
+        const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                       window.getComputedStyle(target).cursor === 'grab' || 
+                       window.getComputedStyle(target).cursor === 'grabbing';
+        if (isGrab) {
+          isGrabState = true;
+          cursorDot.classList.add('grab-state');
+          cursorTrail1.classList.add('grab-state');
+        }
       }
     }
   });
@@ -86,6 +136,16 @@
           isHovered = false;
           cursorDot.classList.remove('hovered');
         }
+
+        // Check if leaving grabbable boundary
+        const relatedGrab = related ? (related.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                            window.getComputedStyle(related).cursor === 'grab' || 
+                            window.getComputedStyle(related).cursor === 'grabbing') : false;
+        if (!relatedGrab) {
+          isGrabState = false;
+          cursorDot.classList.remove('grab-state');
+          cursorTrail1.classList.remove('grab-state');
+        }
       }
     }
   });
@@ -93,9 +153,10 @@
   // Animation Loop
   (function loop() {
     // 1. Position follow with LERP delay
-    // Main triangle follows mouse with significant delay (0.12)
-    cX += (mouseX - cX) * 0.12;
-    cY += (mouseY - cY) * 0.12;
+    // Main triangle follows mouse with significant delay (0.09)
+    cX += (mouseX - cX) * 0.09;
+    cY += (mouseY - cY) * 0.09;
+
     
     // Trail triangle follows main triangle with additional lag (0.08)
     t1X += (cX - t1X) * 0.08;
@@ -105,6 +166,11 @@
     const vx = mouseX - lastMouseX;
     const vy = mouseY - lastMouseY;
     const speed = Math.sqrt(vx * vx + vy * vy);
+    
+    // Smooth the velocity components only for steering angle calculation to filter high-frequency noise
+    fVx += (vx - fVx) * 0.25;
+    fVy += (vy - fVy) * 0.25;
+    const fSpeed = Math.sqrt(fVx * fVx + fVy * fVy);
     
     // Save current mouse coordinates for next frame velocity calculation
     lastMouseX = mouseX;
@@ -121,14 +187,19 @@
 
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
-    // Otherwise, delay for 600ms before returning to upright (-90 degrees).
-    if (speed > 1.5) {
-      targetAngle = Math.atan2(vy, vx) * 180 / Math.PI;
+    // Otherwise, delay for 400ms before returning to upright (-90 degrees).
+    if (isGrabState) {
+      targetAngle = -90; // Symmetrical circle points straight up
+    } else if (fSpeed > 1.6) {
+      targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (Date.now() - lastMoveTime < 600) {
+      if (isHovered || Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
+        if (isHovered) {
+          lastMoveTime = Date.now(); // Reset timer so return-to-upright countdown starts ONLY after hover ends
+        }
       } else {
         // Smoothly ease targetAngle to -90 to prevent step-jump twitches
         let targetDiff = -90 - targetAngle;
@@ -137,12 +208,10 @@
         if (Math.abs(targetDiff) < 1.0) {
           targetAngle = -90;
         } else {
-          targetAngle += targetDiff * 0.15;
+          targetAngle += targetDiff * 0.08; // Gentle transition of targetAngle
         }
       }
     }
-
-
 
     // Shortest path interpolation (resolve wrapping at 180/-180 boundary)
     let diff = targetAngle - currentAngle;
@@ -150,14 +219,14 @@
     while (diff > 180) diff -= 360;
 
     // Gentle steering delay when flying, dynamic low-speed dampening to prevent angular flutter
-    const isReturningUpright = (targetAngle === -90);
+    const isReturningUpright = !isHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
-      angleEase = cursorSpeed < 0.5 ? 0.08 : 0.035; // Return upright faster if stationary to prevent static lean lag
+      angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide
     } else {
-      if (speed < 6.0) {
-        const clampedSpeed = Math.max(1.5, speed); // Clamp at 1.5 to prevent negative easing factors
-        angleEase = 0.02 + ((clampedSpeed - 1.5) / 4.5) * 0.11; // Scales down smoothly at low speeds (0.02 to 0.13)
+      if (fSpeed < 6.0) {
+        const clampedSpeed = Math.max(1.6, fSpeed); // Clamp at 1.6 to prevent negative easing factors
+        angleEase = 0.02 + ((clampedSpeed - 1.6) / 4.4) * 0.11; // Scales down smoothly at low speeds (0.02 to 0.13)
       }
     }
     currentAngle += diff * angleEase;
@@ -166,35 +235,47 @@
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
 
-    // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
-    const targetScale = isHovered ? 0.82 : 0.67; // Swell smoothly like a soft 3D sticker
-
-    const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
-    const targetZSpacing = isHovered ? 3.0 : 1.0; // Dynamic Z-depth spacing for 3D sticker thickness
+    // 4. Hover & Click states scale calculation (using Creamy LERP for soft visual swell)
+    let targetScale = isHovered ? 0.82 : 0.67;
+    let targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
-    currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
+    if (isClicked) {
+      targetScale = isHovered ? 0.62 : 0.52; // Press down scale compression
+      targetZSpacing = isHovered ? 0.6 : 0.3;  // Compress 3D layers closer to screen
+    }
+    
+    const targetTrailScale = isHovered ? 0 : (isClicked ? 0.67 * 0.4 : 0.67 * 0.6);
+    
+    // Choose dynamic LERP easing factor to make click/release feel tactile and snappy
+    let scaleEase = 0.08; // Normal creamy hover LERP
+    if (isClicked) {
+      scaleEase = 0.20; // Fast responsive press
+    } else if (currentScale < targetScale) {
+      scaleEase = 0.16; // Snappy recovery on release
+    }
+    
+    currentScale += (targetScale - currentScale) * scaleEase;
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
     const basePitch = isReturningUpright 
-      ? Math.min(Math.abs(diff) * 0.35, 18) 
+      ? Math.min(Math.abs(diff) * 0.25, 12) 
       : Math.min(cursorSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
-      ? Math.max(-30, Math.min(30, diff * 0.8)) // Driven smoothly by LERPing targetAngle
+      ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12)) // Driven smoothly by LERPing targetAngle
+      ? (1 - Math.min(Math.abs(diff) * 0.0015, 0.08)) // Subtle squish (max 8%)
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18)) // Driven smoothly by LERPing targetAngle
+      ? (1 + Math.min(Math.abs(diff) * 0.0025, 0.12)) // Subtle stretch (max 12%)
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
-
 
     // Smooth physics LERP (faster response rate of 0.15)
     currentPitch += (targetPitch - currentPitch) * 0.15;
@@ -204,16 +285,25 @@
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
     if (cursorSpeed < 0.1 && speed < 0.1) {
-      if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
-      if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
-      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      if (targetAngle === -90) {
+        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+        if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
+        if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      }
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
 
+
+
+
+    // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
+    const targetTranslateY = isGrabState ? -50 : -10;
+    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.12;
+
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
-    cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, -10%)`;
-    cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, -10%)`;
+    cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;
+    cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, ${currentTranslateY}%)`;
 
     // Dynamic Z-depth expansion LERP (spacing goes from 1px to 3.0px on hover, expanding 3D crystal thickness)
     currentZSpacing += (targetZSpacing - currentZSpacing) * 0.08; // Match the creamy scale LERP speed
