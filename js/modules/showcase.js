@@ -12,6 +12,7 @@ function initShowcase() {
 
   const N = items.length;
   const isMobile = window.innerWidth <= 768;
+  let currentSrc = ''; // Prevent redundant image transitions
 
   // ── 1. Clean up stale classes and structures ──────────────────
   section.classList.remove('is-cinematic');
@@ -54,21 +55,46 @@ function initShowcase() {
 
     function changePreviewImage(idx, src) {
       if (!imgContainer || !curtain) return;
+      if (src === currentSrc) return; // Prevent duplicate transition triggers
+      currentSrc = src;
+
+      // Kill active tweens of curtain and any existing images to prevent overlap races
+      gsap.killTweensOf(curtain);
+      
+      const currentImgs = Array.from(imgContainer.querySelectorAll('.showcase-sticky-preview-img'));
+      
+      if (currentImgs.length > 0) {
+        const lastImg = currentImgs[currentImgs.length - 1];
+        
+        // Kill active tweens on existing images
+        currentImgs.forEach(img => gsap.killTweensOf(img));
+        
+        // Remove all old images except the last active one (acts as stable background)
+        currentImgs.forEach(img => {
+          if (img !== lastImg) {
+            img.remove();
+          }
+        });
+
+        // Force snap the background image to its final transitioned state
+        gsap.set(lastImg, {
+          clipPath: 'none',
+          y: 0,
+          scale: 1
+        });
+      }
 
       const newImg = document.createElement('img');
       newImg.className = 'showcase-sticky-preview-img';
       newImg.src = src;
+      imgContainer.appendChild(newImg);
 
-      const currentImgs = imgContainer.querySelectorAll('.showcase-sticky-preview-img');
-      if (currentImgs.length === 0) {
+      const currentImgsAfterAppend = imgContainer.querySelectorAll('.showcase-sticky-preview-img');
+      if (currentImgsAfterAppend.length === 1) {
         // First load: place image directly
         newImg.style.clipPath = 'none';
-        imgContainer.appendChild(newImg);
       } else {
         // Slide transition: push new image on top and animate clip-path
-        imgContainer.appendChild(newImg);
-
-        // Reset positions
         gsap.set(newImg, {
           clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)',
           y: 40,
@@ -96,7 +122,7 @@ function initShowcase() {
           ease: 'expo.out',
           delay: 0.05,
           onComplete: () => {
-            // Remove old image to clean DOM
+            // Remove old background image now that the new one is fully visible
             const imgsAfter = imgContainer.querySelectorAll('.showcase-sticky-preview-img');
             if (imgsAfter.length > 1) {
               for (let i = 0; i < imgsAfter.length - 1; i++) {
@@ -195,13 +221,11 @@ function initShowcase() {
       targetScrollRotX *= 0.92;
 
       if (card) {
-        gsap.set(card, {
-          rotationX: currentMouseX + currentScrollRotX,
-          rotationY: currentMouseY,
-          skewY: currentScrollRotX * 0.12,
-          scale: 1 - Math.abs(currentScrollRotX) * 0.004,
-          overwrite: 'auto'
-        });
+        const rotX = currentMouseX + currentScrollRotX;
+        const rotY = currentMouseY;
+        const skewY = currentScrollRotX * 0.12;
+        const scale = 1 - Math.abs(currentScrollRotX) * 0.004;
+        card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) skewY(${skewY}deg) scale(${scale})`;
       }
 
       requestAnimationFrame(updateCardPhysics);
