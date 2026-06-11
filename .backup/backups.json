@@ -1,12 +1,5 @@
 [
   {
-    "step": 36,
-    "timestamp": "2026-06-11 22:28:44",
-    "description": "Set return-to-upright delay to 600ms",
-    "folder": "step_036_Set_return-to-upright_delay_to_600ms",
-    "is_auto": false
-  },
-  {
     "step": 37,
     "timestamp": "2026-06-11 22:29:20",
     "description": "Restore organic turn deformation and banking roll during return-to-upright",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:25:39",
     "description": "Prepare to implement custom cursor morphing from triangle to circle during drag state",
     "folder": "step_055_Prepare_to_implement_custom_cursor_morphing_from_triangle_to_circle_during_drag_state",
+    "is_auto": false
+  },
+  {
+    "step": 56,
+    "timestamp": "2026-06-12 00:26:13",
+    "description": "Implement smooth morphing transition from triangle to circle during drag/grab state",
+    "folder": "step_056_Implement_smooth_morphing_transition_from_triangle_to_circle_during_drag_grab_state",
     "is_auto": false
   }
 ]

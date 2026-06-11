@@ -19,6 +19,7 @@
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
   let isClicked = false;
+  let isGrabState = false;
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -35,6 +36,7 @@
   let currentRoll = 0;
   let currentStretchX = 1;
   let currentStretchY = 1;
+  let currentTranslateY = -10; // Smoothly slide hotspot center between triangle tip (-10%) and circle center (-50%)
 
   // Track mouse coordinates
   document.addEventListener('mousemove', function(e) {
@@ -63,14 +65,41 @@
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
     isClicked = false;  // Reset click state
+    isGrabState = false; // Reset grab state
+    cursorDot.classList.remove('grab-state');
+    cursorTrail1.classList.remove('grab-state');
   });
 
   // Click States
-  document.addEventListener('mousedown', function() {
+  document.addEventListener('mousedown', function(e) {
     isClicked = true;
+    
+    // Lock grab state during active dragging
+    const target = e.target.closest(hoverSelector) || e.target;
+    const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                   window.getComputedStyle(target).cursor === 'grab' || 
+                   window.getComputedStyle(target).cursor === 'grabbing';
+    if (isGrab) {
+      isGrabState = true;
+      cursorDot.classList.add('grab-state');
+      cursorTrail1.classList.add('grab-state');
+    }
   });
+
   document.addEventListener('mouseup', function() {
     isClicked = false;
+    
+    // Check if we are still hovering over a grabbable element after release
+    const hoveredElement = document.elementFromPoint(mouseX, mouseY);
+    const target = hoveredElement ? hoveredElement.closest(hoverSelector) : null;
+    const isGrab = target ? (target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                   window.getComputedStyle(target).cursor === 'grab' || 
+                   window.getComputedStyle(target).cursor === 'grabbing') : false;
+    if (!isGrab) {
+      isGrabState = false;
+      cursorDot.classList.remove('grab-state');
+      cursorTrail1.classList.remove('grab-state');
+    }
   });
 
   // Hover States (Event Delegation on Document for dynamic elements)
@@ -83,6 +112,16 @@
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
         isHovered = true;
         cursorDot.classList.add('hovered');
+
+        // Check if hovering over a grabbable element
+        const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                       window.getComputedStyle(target).cursor === 'grab' || 
+                       window.getComputedStyle(target).cursor === 'grabbing';
+        if (isGrab) {
+          isGrabState = true;
+          cursorDot.classList.add('grab-state');
+          cursorTrail1.classList.add('grab-state');
+        }
       }
     }
   });
@@ -96,6 +135,16 @@
         if (!related) {
           isHovered = false;
           cursorDot.classList.remove('hovered');
+        }
+
+        // Check if leaving grabbable boundary
+        const relatedGrab = related ? (related.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                            window.getComputedStyle(related).cursor === 'grab' || 
+                            window.getComputedStyle(related).cursor === 'grabbing') : false;
+        if (!relatedGrab) {
+          isGrabState = false;
+          cursorDot.classList.remove('grab-state');
+          cursorTrail1.classList.remove('grab-state');
         }
       }
     }
@@ -139,7 +188,9 @@
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
     // Otherwise, delay for 400ms before returning to upright (-90 degrees).
-    if (fSpeed > 1.6) {
+    if (isGrabState) {
+      targetAngle = -90; // Symmetrical circle points straight up
+    } else if (fSpeed > 1.6) {
       targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
@@ -246,9 +297,13 @@
 
 
 
+    // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
+    const targetTranslateY = isGrabState ? -50 : -10;
+    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.12;
+
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
-    cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, -10%)`;
-    cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, -10%)`;
+    cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;
+    cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, ${currentTranslateY}%)`;
 
     // Dynamic Z-depth expansion LERP (spacing goes from 1px to 3.0px on hover, expanding 3D crystal thickness)
     currentZSpacing += (targetZSpacing - currentZSpacing) * 0.08; // Match the creamy scale LERP speed
