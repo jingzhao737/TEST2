@@ -79,7 +79,7 @@
           lastHoveredElement = target;
           // Only trigger spin if it's not the first move to prevent entering jump/twitch
           if (!isFirstMove) {
-            spinRoll = -360;
+            spinRoll = -25; // Subtle micro-rotation kick
             spinVelocity = 0;
           }
         }
@@ -171,9 +171,9 @@
     const arrowRotation = currentAngle + 90;
 
     // 4. Hover states scale calculation (using Spring Physics for organic bounce/overshoot)
-    const targetScale = isHovered ? 0.78 : 0.67; // Slightly scale up, fanning handles the rest
+    const targetScale = isHovered ? 0.74 : 0.67; // Minimal, refined scale up
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
-    const targetZSpacing = isHovered ? 4.5 : 1.0; // Target spacing for 3D extrusion
+    const targetZSpacing = isHovered ? 2.2 : 1.0; // Subtle Z-spacing depth expansion
     
     const tension = 0.28; // Spring stiffness
     const damping = 0.64; // Bounciness/friction
@@ -250,10 +250,10 @@
         // Front layer (4) does not twist (maintains accurate pointing tip).
         // Back layers twist progressively in alternating directions to fan out.
         let layerTwist = 0;
-        if (idx === 3) layerTwist = -10 * currentTwist;
-        else if (idx === 2) layerTwist = 10 * currentTwist;
-        else if (idx === 1) layerTwist = -20 * currentTwist;
-        else if (idx === 0) layerTwist = 20 * currentTwist;
+        if (idx === 3) layerTwist = -3 * currentTwist;
+        else if (idx === 2) layerTwist = 3 * currentTwist;
+        else if (idx === 1) layerTwist = -6 * currentTwist;
+        else if (idx === 0) layerTwist = 6 * currentTwist;
 
         layer.style.transform = `translateZ(${zVal}px) rotate(${layerTwist}deg)`;
       });

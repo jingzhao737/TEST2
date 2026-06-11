@@ -1,12 +1,5 @@
 [
   {
-    "step": 7,
-    "timestamp": "2026-06-11 21:33:53",
-    "description": "Upgrade custom cursor to premium 3D torsional fanning-out twist and spring-loaded barrel roll trigger on hover",
-    "folder": "step_007_Upgrade_custom_cursor_to_premium_3D_torsional_fanning-out_twist_and_spring-loaded_barrel_roll_trigger_on_hover",
-    "is_auto": false
-  },
-  {
     "step": 8,
     "timestamp": "2026-06-11 21:34:18",
     "description": "Update walkthrough.md with premium cursor details",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:15:53",
     "description": "Tweak hover animations to be extremely subtle and restrained",
     "folder": "step_026_Tweak_hover_animations_to_be_extremely_subtle_and_restrained",
+    "is_auto": false
+  },
+  {
+    "step": 27,
+    "timestamp": "2026-06-11 22:16:15",
+    "description": "Tune down custom cursor hover animations to make them extremely subtle and restrained",
+    "folder": "step_027_Tune_down_custom_cursor_hover_animations_to_make_them_extremely_subtle_and_restrained",
     "is_auto": false
   }
 ]
