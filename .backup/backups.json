@@ -1,12 +1,5 @@
 [
   {
-    "step": 30,
-    "timestamp": "2026-06-11 22:18:49",
-    "description": "Restore smooth creamy LERP hover scaling like a 3D soft sticker, removing twist layers and spins",
-    "folder": "step_030_Restore_smooth_creamy_LERP_hover_scaling_like_a_3D_soft_sticker,_removing_twist_layers_and_spins",
-    "is_auto": false
-  },
-  {
     "step": 31,
     "timestamp": "2026-06-11 22:19:03",
     "description": "Finalize walkthrough.md for creamy LERP soft sticker hover style",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 23:32:05",
     "description": "Prepare to bypass return-to-upright when custom cursor is hovered on active pointer elements",
     "folder": "step_049_Prepare_to_bypass_return-to-upright_when_custom_cursor_is_hovered_on_active_pointer_elements",
+    "is_auto": false
+  },
+  {
+    "step": 50,
+    "timestamp": "2026-06-11 23:32:16",
+    "description": "Bypass return-to-upright when custom cursor is hovered on active pointer elements",
+    "folder": "step_050_Bypass_return-to-upright_when_custom_cursor_is_hovered_on_active_pointer_elements",
     "is_auto": false
   }
 ]

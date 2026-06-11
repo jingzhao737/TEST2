@@ -132,10 +132,12 @@
       targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
-    }
- else {
-      if (Date.now() - lastMoveTime < 400) {
+    } else {
+      if (isHovered || Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
+        if (isHovered) {
+          lastMoveTime = Date.now(); // Reset timer so return-to-upright countdown starts ONLY after hover ends
+        }
       } else {
         // Smoothly ease targetAngle to -90 to prevent step-jump twitches
         let targetDiff = -90 - targetAngle;
@@ -155,7 +157,7 @@
     while (diff > 180) diff -= 360;
 
     // Gentle steering delay when flying, dynamic low-speed dampening to prevent angular flutter
-    const isReturningUpright = (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
+    const isReturningUpright = !isHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
       angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide

@@ -306,38 +306,26 @@ The compilation successfully bound and bundled the local packages, compiling all
 
 ## 🚀 Premium 3D Custom Cursor Hover Animations
 
-We have upgraded the custom cursor hover (pointer) state animations from a simple, default scale zoom to a highly sophisticated, multi-layered 3D interactive reaction.
+We have upgraded the custom cursor hover (pointer) state animations from a simple, default scale zoom to a highly sophisticated, multi-layered 3D interactive reaction that swells smoothly like a soft 3D sticker.
 
 ### Key Enhancements
 
-1. **Snappy Flat Spin Trigger (Spring-decayed Z-rotation)**:
-   - When the cursor enters a new interactive hover target, it triggers a very subtle, instantaneous **rotational click kick** (`-25` degrees) around its Z-axis.
-   - The kick snaps back in ~200ms with a clean spring bounce (`tension: 0.35`, `damping: 0.48`), creating a tactile "tick" physical feedback that aligns with the visual hover event without being distracting or exaggerated.
-   - The event listeners utilize boundary filtering (`!e.relatedTarget || !target.contains(e.relatedTarget)`) to ignore child elements, preventing repeat spins inside a button.
-   - The hover listener tracks `lastHoveredElement` to trigger a fresh spin when moving directly between buttons.
-   - Added `will-change: filter` in [styles.css](file:///D:/webprojext/styles.css) on `.cursor-dot` to promote the filter to a persistent GPU layer, eliminating any repaint stutters during hover filter swaps.
+1. **Creamy Viscous LERP Scale-Up (Zero Spring Wobble)**:
+   - When the cursor enters a new interactive hover target, it swells in scale from a base of `0.67` to a prominent **`1.15`** (giving it a satisfying sticker expansion feel).
+   - Rather than clicky spring physics, the scale-up uses a viscous **LERP transition** (`currentScale += (targetScale - currentScale) * 0.08`). This makes it swell smoothly and softly like cream or gel, completely free of high-frequency metallic wobble.
 
-2. **Torsional Wing-Sweep (Multi-layered Twist)**:
-   - On hover, the 5 stacked 3D layers of the crystal delta wing delta-deform by fanning out (twisting) around the pointer tip.
-   - The fanning is parameterized on a LERP factor (`currentTwist`) that interpolates smoothly between `0` and `1`.
-   - The front layer (`idx = 4`) remains static at `0` rotation to guarantee pixel-precise pointer alignment.
-   - The lower layers fan out progressively in alternating directions to remain **perfectly balanced and symmetrical** (net rotation offset is `0`), scaled down to a highly restrained, subtle fanning spread (maximum `6` degrees):
-     - `Layer 3 (mid-1)`: `-3deg`
-     - `Layer 2 (mid-2)`: `+3deg`
-     - `Layer 1 (mid-3)`: `-6deg`
-     - `Layer 0 (back)`: `+6deg`
-   - This creates a gorgeous, subtle iridescent geometric prism structure on hover while maintaining a centered visual balance.
+2. **3D Soft Sticker Thickness Swell (Solid Extrusion)**:
+   - To create a 3D "soft sticker" look, the 5 layers of the crystal delta wing remain perfectly aligned (no fanning-out rotation or twist, maintaining a unified solid shape).
+   - On hover, the spacing between these 5 stacked 3D layers expands from `1.0px` to **`3.0px`** with the same creamy LERP speed (`0.08`). Under `perspective: 45px`, this creates a rich, solid 3D extrusion thickness.
+   - Combined with CSS hovered brightness gradients on the sides, the cursor looks like a thick, premium 3D gel sticker.
 
 3. **Subpixel Snapping & Initial Coordinate Snapping (Zero Drift & Zero Warp)**:
-   - **Static Snap**: Added active snapping checks in the animation loop. When both mouse speed and cursor speed fall below `0.1px/frame`, all physics variables snap exactly to their resting values (`currentAngle = -90`, `currentRoll = 0`, `currentPitch = hovered ? 22 : 0`, `spinRoll = 0`, `currentTwist = targetTwist`, `currentZSpacing = targetZSpacing`, `currentScale = targetScale`). The expanded snapping thresholds guarantee that the cursor locks into a perfectly centered, flat, and symmetrical flight wing shape instantly after stopping.
+   - **Static Snap**: Added active snapping checks in the animation loop. When both mouse speed and cursor speed fall below `0.1px/frame`, all physics variables snap exactly to their resting values (`currentAngle = -90`, `currentRoll = 0`, `currentPitch = hovered ? 22 : 0`, `currentZSpacing = targetZSpacing`, `currentScale = targetScale`). The expanded snapping thresholds guarantee that the cursor locks into a perfectly centered, flat, and symmetrical flight wing shape instantly after stopping.
    - **Velocity-Scaled Return-to-Upright**: Modified the return-to-upright roll and stretch equations to be scaled by `Math.min(cursorSpeed / 3.0, 1.0)`. This ensures that when the cursor is stationary (`cursorSpeed = 0`), the roll angle is strictly `0` and stretch factor is strictly `1`. This completely eliminates the sudden visual tilt, squish, and stretch twitch that was occurring at the 400ms mark when the alignment timer fired on a stationary cursor.
    - **Default CSS Hidden Style & Snap Visibility**: Configured `.cursor-dot` with `opacity: 0` in [styles.css](file:///D:/webprojext/styles.css) by default. The javascript listener reveals it (`style.opacity = '1'`) only *after* the first `mousemove` event has successfully snapped the coordinates. This ensures that the cursor is never rendered at `(0, 0)` on load or re-entry, completely eliminating entry coordinate jumps.
-   - **First-Move Spin Bypass**: Bypassed the spring-loaded flat spin trigger during the first move to prevent the cursor from doing a sudden rotational spin the moment it wakes up over an interactive button.
 
-4. **3D Extrusion Depth Expansion**:
-   - The dynamic Z-depth spacing between the 5 stacked layers expands from `1.0px` to a very subtle `2.2px` on hover.
-   - With the cursor container's `perspective` set at `45px` in [styles.css](file:///D:/webprojext/styles.css), this creates a refined 3D thickness expansion, making the crystal look three-dimensional and solid without looking over-stretched or distorted.
+4. **3D Press-Down Pitch Reaction**:
+   - On hover, the cursor tilts nose-down by `22` degrees into the screen, making the soft 3D sticker look like it's pressing down or pointing into the hovered button.
+   - Added `will-change: filter` in [styles.css](file:///D:/webprojext/styles.css) on `.cursor-dot` to promote the filter to a persistent GPU layer, eliminating any repaint stutters during hover filter swaps.
 
-5. **Tuned Scale Integration**:
-   - The hover scale factor is tuned to a very moderate `0.74` (compared to the baseline `0.67`). The minimal scale-up preserves absolute restraint, letting the subtle 3D fanning and depth expansion serve as the primary interactive reactions.
 
