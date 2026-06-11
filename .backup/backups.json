@@ -1,12 +1,5 @@
 [
   {
-    "step": 55,
-    "timestamp": "2026-06-12 00:25:39",
-    "description": "Prepare to implement custom cursor morphing from triangle to circle during drag state",
-    "folder": "step_055_Prepare_to_implement_custom_cursor_morphing_from_triangle_to_circle_during_drag_state",
-    "is_auto": false
-  },
-  {
     "step": 56,
     "timestamp": "2026-06-12 00:26:13",
     "description": "Implement smooth morphing transition from triangle to circle during drag/grab state",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:03:02",
     "description": "Reduce damping to make record swings last longer and feel freer",
     "folder": "step_074_Reduce_damping_to_make_record_swings_last_longer_and_feel_freer",
+    "is_auto": false
+  },
+  {
+    "step": 75,
+    "timestamp": "2026-06-12 01:03:15",
+    "description": "Further reduce record swing damping to 0.993 and active drag damping to 0.98",
+    "folder": "step_075_Further_reduce_record_swing_damping_to_0.993_and_active_drag_damping_to_0.98",
     "is_auto": false
   }
 ]
