@@ -1,12 +1,5 @@
 [
   {
-    "step": 8,
-    "timestamp": "2026-06-11 21:34:18",
-    "description": "Update walkthrough.md with premium cursor details",
-    "folder": "step_008_Update_walkthrough.md_with_premium_cursor_details",
-    "is_auto": false
-  },
-  {
     "step": 9,
     "timestamp": "2026-06-11 21:42:09",
     "description": "Fix cursor hover transition flickering and optimize barrel roll spring coefficients",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:16:15",
     "description": "Tune down custom cursor hover animations to make them extremely subtle and restrained",
     "folder": "step_027_Tune_down_custom_cursor_hover_animations_to_make_them_extremely_subtle_and_restrained",
+    "is_auto": false
+  },
+  {
+    "step": 28,
+    "timestamp": "2026-06-11 22:16:34",
+    "description": "Update walkthrough.md with refined subtle hover values",
+    "folder": "step_028_Update_walkthrough.md_with_refined_subtle_hover_values",
     "is_auto": false
   }
 ]
