@@ -13,7 +13,7 @@
   },
   "index.html": {
     "type": "code",
-    "hash": "cef6c45fa2eedca3316482ec3f2be0e8d71e0b3a94262a1c67ec0efd895e0775"
+    "hash": "50703c335d26a3718dde4d969a11908d25823a7657a190ac012e77d065af7374"
   },
   "package-lock.json": {
     "type": "code",
@@ -29,7 +29,7 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "70122a763a71466ea52d1e6177423475a4544e124d48bd1a99bb9f009881ecd5"
+    "hash": "f5fc28ecc5a33ab7a4f3656b6992245bd5190ac669c01226a8ad94a1af65819a"
   },
   "task.md": {
     "type": "code",
@@ -85,15 +85,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "208b49376eadf78b0d0fd447a79405335ad563849f4876b2e25d521413b8658a"
+    "hash": "bc4565a27e34859cd9997e62982baea762577885f82bfdaf06fbefddcf551428"
   },
-  "dist\\assets\\index-BSeJtVNu.js": {
+  "dist\\assets\\index-B27hZB4S.css": {
     "type": "code",
-    "hash": "a65da114e5b33453ce388c883f09dc929cd1d8866ae2d348ae826ddd852a8ecd"
+    "hash": "37750153a9adf65ef474f3908dfd380469865a3a0d9ca928628293876fab2dd1"
   },
-  "dist\\assets\\index-Dhd63Nsy.css": {
+  "dist\\assets\\index-DVL10OLi.js": {
     "type": "code",
-    "hash": "9d42b64e8ae91c3c6adfa5951f554ea849d7d075b1559ecf9078684bf6b50325"
+    "hash": "08deabcd5eaefb2ac674cab9e3a384a6f7cad81d7b40f986c41bb7c0fd085fcd"
   },
   "images\\index.txt": {
     "type": "code",
@@ -129,7 +129,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "e6537eb5ea06f970e5246d85ce5502cc48ccbe831d2911b2c82071a15469e9e6"
+    "hash": "71e64e50c8d6a28f4aa681b6c951ce674f40014d65bd68531007b49acf7f85b3"
   },
   "js\\modules\\data.js": {
     "type": "code",
@@ -137,7 +137,7 @@
   },
   "js\\modules\\hanging-circles.js": {
     "type": "code",
-    "hash": "526f4b93cc05cd19d69f33259e57b4652d73775befc24007e3934a636786bac6"
+    "hash": "6cad419f66ed7f2a16d1624d82db3a50c92dc26f85229b39d3bae1ec9e9c72be"
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
@@ -149,7 +149,7 @@
   },
   "js\\modules\\motion-carousel.js": {
     "type": "code",
-    "hash": "ca2e8217913bb50ceb7148d4190f98b62d703f54dba4e1544ad2dd0e4c1a11d7"
+    "hash": "8e72640239cb44719c85dff9a87c0b63181c887b336fda8338af590435d406e0"
   },
   "js\\modules\\nav-waveform.js": {
     "type": "code",
@@ -173,7 +173,7 @@
   },
   "js\\modules\\showcase.js": {
     "type": "code",
-    "hash": "6a6daacff52fea2d9edbc52ea16d319b9cbd8811876bef23a627bc468c51df95"
+    "hash": "108151cf5cc0edc4d8cdbc13f438ad977ecb6d668fbb604055694853a49d7748"
   },
   "js\\modules\\sound-effects.js": {
     "type": "code",

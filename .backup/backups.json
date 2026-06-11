@@ -1,12 +1,5 @@
 [
   {
-    "step": 60,
-    "timestamp": "2026-06-12 00:30:26",
-    "description": "Fix canvas record hover grab state by adding framesCanvas to hide list and implementing dynamic mousemove grab detection",
-    "folder": "step_060_Fix_canvas_record_hover_grab_state_by_adding_framesCanvas_to_hide_list_and_implementing_dynamic_mousemove_grab_detection",
-    "is_auto": false
-  },
-  {
     "step": 61,
     "timestamp": "2026-06-12 00:31:46",
     "description": "Fix computed cursor override by using explicit selector matching and inline style checks",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:07:12",
     "description": "Roll back record physics changes to Step 75",
     "folder": "step_079_Roll_back_record_physics_changes_to_Step_75",
+    "is_auto": false
+  },
+  {
+    "step": 80,
+    "timestamp": "2026-06-12 01:08:13",
+    "description": "Implement global interactive click sound effects using event delegation",
+    "folder": "step_080_Implement_global_interactive_click_sound_effects_using_event_delegation",
     "is_auto": false
   }
 ]
