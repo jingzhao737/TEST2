@@ -17,7 +17,6 @@
   let lastMouseX = 0, lastMouseY = 0;
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
-  let isPressed = false;
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -25,9 +24,8 @@
   let lastActiveAngle = -90;
   let lastMoveTime = 0;
 
-  // Scale Physics (Spring-based overshoot and rebound to swell like a soft 3D sticker)
+  // Scale Physics (Creamy LERP to swell smoothly like a soft 3D sticker)
   let currentScale = 0.67;
-  let scaleVelocity = 0;
   let currentTrailScale = 0.67 * 0.6;
 
   // 3D & Deformation Physics
@@ -62,20 +60,6 @@
     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
-    isPressed = false; // Reset clicked state when mouse leaves window
-  });
-
-  // Track click state (left mouse button only)
-  document.addEventListener('mousedown', function(e) {
-    if (e.button === 0) {
-      isPressed = true;
-    }
-  });
-
-  window.addEventListener('mouseup', function(e) {
-    if (e.button === 0) {
-      isPressed = false;
-    }
   });
 
   // Hover States (Event Delegation on Document for dynamic elements)
@@ -172,34 +156,25 @@
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
 
-    // 4. Hover states scale calculation (using Spring physics for creamy overshoot & rebound)
-    const baseTargetScale = isHovered ? 1.15 : 0.67;
-    const targetScale = baseTargetScale * (isPressed ? 0.60 : 1.0); // Compress scale down by 40% on click
-    const targetTrailScale = isHovered ? 0 : (0.67 * 0.6) * (isPressed ? 0.60 : 1.0);
-    const targetZSpacing = isPressed ? 0.2 : (isHovered ? 3.0 : 1.0); // Squeeze 3D thickness on click
+    // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
+    const targetScale = isHovered ? 1.15 : 0.67; // Swell smoothly like a soft 3D sticker
+    const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
+    const targetZSpacing = isHovered ? 3.0 : 1.0; // Dynamic Z-depth spacing for 3D sticker thickness
     
-    // Spring physics: overshoot and rebound back to target
-    const tension = 0.25; // Spring stiffness
-    const damping = 0.70; // Viscous damping
-    const scaleForce = (targetScale - currentScale) * tension;
-    scaleVelocity += scaleForce;
-    scaleVelocity *= damping;
-    currentScale += scaleVelocity;
-
+    currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
-    // When pressed, the sticker lies flat on the screen (0 pitch and 0 roll).
     const basePitch = isReturningUpright 
       ? Math.min(Math.abs(diff) * 0.35, 18) 
       : Math.min(cursorSpeed * 1.5, 30);
-    const targetPitch = isPressed ? 0 : (basePitch + (isHovered ? 22 : 0));
+    const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
-    const targetRoll = isPressed ? 0 : (isReturningUpright 
-      ? Math.max(-30, Math.min(30, diff * 0.8)) * Math.min(cursorSpeed / 3.0, 1.0)
-      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0));
+    const targetRoll = isReturningUpright 
+      ? Math.max(-30, Math.min(30, diff * 0.8)) * Math.min(cursorSpeed / 3.0, 1.0) // Scale by cursorSpeed to prevent static tilt
+      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright, scaled by cursorSpeed to prevent static stretch)
     const targetStretchX = isReturningUpright 
@@ -219,13 +194,9 @@
     if (cursorSpeed < 0.1 && speed < 0.1) {
       if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
       if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
-      const restingPitch = isPressed ? 0 : (isHovered ? 22 : 0);
-      if (Math.abs(currentPitch - restingPitch) < 1.0) currentPitch = restingPitch;
+      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
-      if (Math.abs(currentScale - targetScale) < 0.005 && Math.abs(scaleVelocity) < 0.001) {
-        currentScale = targetScale;
-        scaleVelocity = 0;
-      }
+      if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)

@@ -1,12 +1,5 @@
 [
   {
-    "step": 14,
-    "timestamp": "2026-06-11 21:55:44",
-    "description": "Clean up walkthrough.md duplicates",
-    "folder": "step_014_Clean_up_walkthrough.md_duplicates",
-    "is_auto": false
-  },
-  {
     "step": 15,
     "timestamp": "2026-06-11 21:56:26",
     "description": "Change barrel roll spin from Y-axis rotation to Z-axis flat spin to eliminate edge-on disappearing flash",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:24:45",
     "description": "Implement satisfying spring click bounce and squash animations",
     "folder": "step_033_Implement_satisfying_spring_click_bounce_and_squash_animations",
+    "is_auto": false
+  },
+  {
+    "step": 34,
+    "timestamp": "2026-06-11 22:26:49",
+    "description": "Revert cursor.js scale physics back to creamy LERP zoom",
+    "folder": "step_034_Revert_cursor.js_scale_physics_back_to_creamy_LERP_zoom",
     "is_auto": false
   }
 ]
