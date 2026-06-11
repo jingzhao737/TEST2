@@ -103,5 +103,12 @@
     "description": "Change barrel roll spin from Y-axis rotation to Z-axis flat spin to eliminate edge-on disappearing flash",
     "folder": "step_015_Change_barrel_roll_spin_from_Y-axis_rotation_to_Z-axis_flat_spin_to_eliminate_edge-on_disappearing_flash",
     "is_auto": false
+  },
+  {
+    "step": 16,
+    "timestamp": "2026-06-11 21:56:38",
+    "description": "Change barrel roll to flat spin and add will-change filter to prevent hover flash",
+    "folder": "step_016_Change_barrel_roll_to_flat_spin_and_add_will-change_filter_to_prevent_hover_flash",
+    "is_auto": false
   }
 ]
