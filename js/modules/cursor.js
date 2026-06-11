@@ -157,7 +157,8 @@
     const arrowRotation = currentAngle + 90;
 
     // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
-    const targetScale = isHovered ? 1.15 : 0.67; // Swell smoothly like a soft 3D sticker
+    const targetScale = isHovered ? 0.82 : 0.67; // Swell smoothly like a soft 3D sticker
+
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
     const targetZSpacing = isHovered ? 3.0 : 1.0; // Dynamic Z-depth spacing for 3D sticker thickness
     

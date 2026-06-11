@@ -1,12 +1,5 @@
 [
   {
-    "step": 15,
-    "timestamp": "2026-06-11 21:56:26",
-    "description": "Change barrel roll spin from Y-axis rotation to Z-axis flat spin to eliminate edge-on disappearing flash",
-    "folder": "step_015_Change_barrel_roll_spin_from_Y-axis_rotation_to_Z-axis_flat_spin_to_eliminate_edge-on_disappearing_flash",
-    "is_auto": false
-  },
-  {
     "step": 16,
     "timestamp": "2026-06-11 21:56:38",
     "description": "Change barrel roll to flat spin and add will-change filter to prevent hover flash",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:26:49",
     "description": "Revert cursor.js scale physics back to creamy LERP zoom",
     "folder": "step_034_Revert_cursor.js_scale_physics_back_to_creamy_LERP_zoom",
+    "is_auto": false
+  },
+  {
+    "step": 35,
+    "timestamp": "2026-06-11 22:27:52",
+    "description": "Adjust hover target scale from 1.15 to 0.82 for more subtle zoom",
+    "folder": "step_035_Adjust_hover_target_scale_from_1.15_to_0.82_for_more_subtle_zoom",
     "is_auto": false
   }
 ]
