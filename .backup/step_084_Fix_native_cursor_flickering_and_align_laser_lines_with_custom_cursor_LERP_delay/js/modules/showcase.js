@@ -166,10 +166,6 @@ function initShowcase() {
     
     let targetScrollRotX = 0;
     let currentScrollRotX = 0;
-
-    // Vertical inertia lag variables (scroll delay)
-    let targetScrollYOffset = 0;
-    let currentScrollYOffset = 0;
     
     ScrollTrigger.create({
       trigger: wrapper, // Align trigger lifecycle exactly with CSS sticky zone boundaries
@@ -196,10 +192,6 @@ function initShowcase() {
         }
 
         targetScrollRotX = -(normVel / maxVel) * 12 * boundaryFade; // max 12 deg tilt with boundary fade
-
-        // Calculate vertical inertia lag (drag card in opposite direction of scroll movement)
-        // Clamp lag offset to [-60px, 60px] to ensure visual stability
-        targetScrollYOffset = gsap.utils.clamp(-60, 60, -velocity * 0.025);
       }
     });
 
@@ -238,18 +230,12 @@ function initShowcase() {
       // Decay scroll rotation target back to 0 when scroll stops
       targetScrollRotX *= 0.92;
 
-      // LERP the vertical offset for smooth inertia lag
-      currentScrollYOffset += (targetScrollYOffset - currentScrollYOffset) * 0.06;
-      
-      // Decay target offset back to 0 when scroll stops
-      targetScrollYOffset *= 0.90;
-
       if (card) {
         const rotX = currentMouseX + currentScrollRotX;
         const rotY = currentMouseY;
         const skewY = currentScrollRotX * 0.12;
         const scale = 1 - Math.abs(currentScrollRotX) * 0.004;
-        card.style.transform = `translateY(${currentScrollYOffset}px) rotateX(${rotX}deg) rotateY(${rotY}deg) skewY(${skewY}deg) scale(${scale})`;
+        card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) skewY(${skewY}deg) scale(${scale})`;
       }
 
       requestAnimationFrame(updateCardPhysics);

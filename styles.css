@@ -58,9 +58,7 @@ html::-webkit-scrollbar{display:none}
 body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip;letter-spacing:-.01em;transition:background .6s var(--ease-out-expo),color .6s var(--ease-out-expo);position:relative;container-type:inline-size}
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,var(--dot-color) 1px,transparent 1px);background-size:28px 28px;opacity:1;transition:opacity .6s var(--ease-out-expo)}
 @media(pointer:fine){
-  body, a, button, [role="button"], input, select, textarea, .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper,
-  .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .lightbox-nav, .lightbox-close, .theme-pull-wrapper, .motion-hero,
-  .scroll-bar, .scroll-thumb, .scroll-bubble, #framesCanvas {
+  * {
     cursor: none !important;
   }
 }

@@ -58,9 +58,7 @@ html::-webkit-scrollbar{display:none}
 body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip;letter-spacing:-.01em;transition:background .6s var(--ease-out-expo),color .6s var(--ease-out-expo);position:relative;container-type:inline-size}
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,var(--dot-color) 1px,transparent 1px);background-size:28px 28px;opacity:1;transition:opacity .6s var(--ease-out-expo)}
 @media(pointer:fine){
-  body, a, button, [role="button"], input, select, textarea, .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper,
-  .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .lightbox-nav, .lightbox-close, .theme-pull-wrapper, .motion-hero,
-  .scroll-bar, .scroll-thumb, .scroll-bubble, #framesCanvas {
+  * {
     cursor: none !important;
   }
 }
@@ -135,9 +133,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   will-change: transform, opacity;
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), 
-              transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
-              transform-origin 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s, 
+              transform 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s,
+              transform-origin 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s;
 }
 .cursor-circle-wrapper {
   width: 100%;
@@ -150,9 +148,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   will-change: transform, opacity;
   opacity: 0;
   transform: scale(0.3);
-  transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), 
-              transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
-              transform-origin 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s, 
+              transform 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s,
+              transform-origin 0.55s cubic-bezier(0.25, 1, 0.5, 1) 0.05s;
 }
 
 /* Grab state morphing to 3D circular button */
@@ -1852,7 +1850,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 /* 鈺愨晲鈺愨晲鈺愨晲锟?MENU PANEL 鈺愨晲鈺愨晲鈺愨晲锟?*/
 .menu-panel{position:fixed;inset:0;z-index:600;pointer-events:none;opacity:0;transition:opacity .2s var(--ease-out-expo) .2s}
-.menu-panel.open{pointer-events:all;opacity:1;transition:opacity .2s var(--ease-out-expo);cursor:auto}
+.menu-panel.open{pointer-events:all;opacity:1;transition:opacity .2s var(--ease-out-expo);cursor:none}
 .menu-panel-bg{position:absolute;inset:0;background:#fafaf7;clip-path:circle(0% at calc(100% - 50px) 48px);transition:clip-path .5s var(--ease-power4-out)}
 .menu-panel.open .menu-panel-bg{clip-path:circle(150% at calc(100% - 50px) 48px);transition:clip-path .5s var(--ease-power4-out)}
 .menu-panel:not(.open) .menu-panel-bg{transition:clip-path .35s var(--ease-power4-out)}
