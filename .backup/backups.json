@@ -19,5 +19,12 @@
     "description": "Final integrated 3D cursor on baseline version",
     "folder": "step_003_Final_integrated_3D_cursor_on_baseline_version",
     "is_auto": false
+  },
+  {
+    "step": 4,
+    "timestamp": "2026-06-11 21:29:37",
+    "description": "Backup before changing return-to-upright delay to 400ms",
+    "folder": "step_004_Backup_before_changing_return-to-upright_delay_to_400ms",
+    "is_auto": false
   }
 ]
