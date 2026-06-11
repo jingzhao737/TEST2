@@ -168,9 +168,9 @@ function initShowcase() {
     let currentScrollRotX = 0;
     
     ScrollTrigger.create({
-      trigger: section,
-      start: 'top top',
-      end: 'bottom bottom',
+      trigger: wrapper, // Align trigger lifecycle exactly with CSS sticky zone boundaries
+      start: 'top 12.5vh',
+      end: 'bottom 87.5vh',
       onUpdate: (self) => {
         // Sync progress bar
         if (progressFill) {
@@ -181,7 +181,17 @@ function initShowcase() {
         const velocity = self.getVelocity(); // pixels/sec
         const maxVel = 3000;
         const normVel = gsap.utils.clamp(-maxVel, maxVel, velocity);
-        targetScrollRotX = -(normVel / maxVel) * 12; // max 12 deg tilt
+        
+        // Smoothly fade out tilt near the top/bottom boundaries to prevent initial velocity spikes and stick-transitions twitching
+        const progress = self.progress;
+        let boundaryFade = 1;
+        if (progress < 0.08) {
+          boundaryFade = progress / 0.08;
+        } else if (progress > 0.92) {
+          boundaryFade = (1 - progress) / 0.08;
+        }
+
+        targetScrollRotX = -(normVel / maxVel) * 12 * boundaryFade; // max 12 deg tilt with boundary fade
       }
     });
 
