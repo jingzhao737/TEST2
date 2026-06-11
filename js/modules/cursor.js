@@ -204,12 +204,15 @@
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
     if (cursorSpeed < 0.1 && speed < 0.1) {
-      if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
-      if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
-      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      if (targetAngle === -90) {
+        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+        if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
+        if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      }
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
+
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, -10%)`;

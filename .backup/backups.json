@@ -1,12 +1,5 @@
 [
   {
-    "step": 18,
-    "timestamp": "2026-06-11 21:57:53",
-    "description": "Snap cursor coordinates on first mousemove and re-entry to prevent warped flying and twitching",
-    "folder": "step_018_Snap_cursor_coordinates_on_first_mousemove_and_re-entry_to_prevent_warped_flying_and_twitching",
-    "is_auto": false
-  },
-  {
     "step": 19,
     "timestamp": "2026-06-11 21:58:04",
     "description": "Snap initial cursor coordinates and window entry to prevent warp fly twitching",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:29:20",
     "description": "Restore organic turn deformation and banking roll during return-to-upright",
     "folder": "step_037_Restore_organic_turn_deformation_and_banking_roll_during_return-to-upright",
+    "is_auto": false
+  },
+  {
+    "step": 38,
+    "timestamp": "2026-06-11 22:30:13",
+    "description": "Fix return-to-upright premature snapping conflict to eliminate two-stage jerkiness",
+    "folder": "step_038_Fix_return-to-upright_premature_snapping_conflict_to_eliminate_two-stage_jerkiness",
     "is_auto": false
   }
 ]
