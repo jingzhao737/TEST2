@@ -1,12 +1,5 @@
 [
   {
-    "step": 6,
-    "timestamp": "2026-06-11 21:33:15",
-    "description": "Upgrade custom cursor hover state to premium fanning-out twist and barrel-roll spin",
-    "folder": "step_006_Upgrade_custom_cursor_hover_state_to_premium_fanning-out_twist_and_barrel-roll_spin",
-    "is_auto": false
-  },
-  {
     "step": 7,
     "timestamp": "2026-06-11 21:33:53",
     "description": "Upgrade custom cursor to premium 3D torsional fanning-out twist and spring-loaded barrel roll trigger on hover",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:10:56",
     "description": "Fix targetZSpacing initialization order ReferenceError crash",
     "folder": "step_025_Fix_targetZSpacing_initialization_order_ReferenceError_crash",
+    "is_auto": false
+  },
+  {
+    "step": 26,
+    "timestamp": "2026-06-11 22:15:53",
+    "description": "Tweak hover animations to be extremely subtle and restrained",
+    "folder": "step_026_Tweak_hover_animations_to_be_extremely_subtle_and_restrained",
     "is_auto": false
   }
 ]
