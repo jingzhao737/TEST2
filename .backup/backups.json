@@ -1,12 +1,5 @@
 [
   {
-    "step": 73,
-    "timestamp": "2026-06-12 01:00:58",
-    "description": "Relax record drag damping and increase velocity scaling to make flinging freer",
-    "folder": "step_073_Relax_record_drag_damping_and_increase_velocity_scaling_to_make_flinging_freer",
-    "is_auto": false
-  },
-  {
     "step": 74,
     "timestamp": "2026-06-12 01:03:02",
     "description": "Reduce damping to make record swings last longer and feel freer",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:34:44",
     "description": "Fix cursor flickering bug",
     "folder": "step_092_Fix_cursor_flickering_bug",
+    "is_auto": false
+  },
+  {
+    "step": 93,
+    "timestamp": "2026-06-12 01:36:43",
+    "description": "Fix 3D cursor rendering flicker by moving drop-shadow filter to leaf wrapper elements",
+    "folder": "step_093_Fix_3D_cursor_rendering_flicker_by_moving_drop-shadow_filter_to_leaf_wrapper_elements",
     "is_auto": false
   }
 ]

@@ -40,7 +40,7 @@
   })();
 
   let springK = 0.05;
-  let damping = 0.98;
+  let damping = 0.993;
   let gravity = 0.35;
 
   let thumbs = [];
@@ -453,8 +453,8 @@
         t._swayV += swayForce * 0.2;  // spring constant for drag
         t._swayV *= 0.82;             // damping for drag
         t._sway += t._swayV;
-        t.vx *= 0.94;
-        t.vy *= 0.94;
+        t.vx *= 0.98;
+        t.vy *= 0.98;
         continue;
       }
 
