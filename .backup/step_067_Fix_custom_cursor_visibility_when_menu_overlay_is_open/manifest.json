@@ -13,7 +13,7 @@
   },
   "index.html": {
     "type": "code",
-    "hash": "cef6c45fa2eedca3316482ec3f2be0e8d71e0b3a94262a1c67ec0efd895e0775"
+    "hash": "50703c335d26a3718dde4d969a11908d25823a7657a190ac012e77d065af7374"
   },
   "package-lock.json": {
     "type": "code",
@@ -29,7 +29,7 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "599de913b92fabd780623a4806f8b32eb2bde8339461b5c614630e4118315a88"
+    "hash": "f5fc28ecc5a33ab7a4f3656b6992245bd5190ac669c01226a8ad94a1af65819a"
   },
   "task.md": {
     "type": "code",
@@ -85,15 +85,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "37429830c44a4d74a92d9fca6761f8c71b6cf0c67c8f0e8d4b28cacb57153a06"
+    "hash": "4423d52949fc0158f09668ae60c593e784bc1c1f2d56200dc29c98652b2ee42d"
   },
-  "dist\\assets\\index-B2EI9x8e.js": {
+  "dist\\assets\\index-B27hZB4S.css": {
     "type": "code",
-    "hash": "946bf52127b37786a7e540d6fd676b3c1655fad5a7207ce530c16f256ee9886c"
+    "hash": "37750153a9adf65ef474f3908dfd380469865a3a0d9ca928628293876fab2dd1"
   },
-  "dist\\assets\\index-BKQXXfA7.css": {
+  "dist\\assets\\index-Br3uWJMA.js": {
     "type": "code",
-    "hash": "d89140000e688c9eb579c10ee618a75fd8cf977a3dba935fef737b43880276c4"
+    "hash": "cb1b87b7f89ac6485a5d206261952ef1bdafe5a51fefa2553fabd3acc9911e5f"
   },
   "images\\index.txt": {
     "type": "code",
@@ -129,7 +129,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "efda9d3fc59036090c086adbaa78537b270c6441beaacd4951023eba1513f586"
+    "hash": "7913e56375aeee94de7810fdc5ae8c7cfcec212ad719a2e9b760c726723ee8be"
   },
   "js\\modules\\data.js": {
     "type": "code",
@@ -149,7 +149,7 @@
   },
   "js\\modules\\motion-carousel.js": {
     "type": "code",
-    "hash": "ca2e8217913bb50ceb7148d4190f98b62d703f54dba4e1544ad2dd0e4c1a11d7"
+    "hash": "8e72640239cb44719c85dff9a87c0b63181c887b336fda8338af590435d406e0"
   },
   "js\\modules\\nav-waveform.js": {
     "type": "code",

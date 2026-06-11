@@ -1,12 +1,5 @@
 [
   {
-    "step": 47,
-    "timestamp": "2026-06-11 23:26:45",
-    "description": "Add nose-dive forward pitch and gradual LERP transition rates during return-to-upright",
-    "folder": "step_047_Add_nose-dive_forward_pitch_and_gradual_LERP_transition_rates_during_return-to-upright",
-    "is_auto": false
-  },
-  {
     "step": 48,
     "timestamp": "2026-06-11 23:27:48",
     "description": "Revert last two features speed-based scaling and return-to-upright nose-dive",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:41:46",
     "description": "Remove custom cursor hiding logic from menu panel and set cursor none",
     "folder": "step_066_Remove_custom_cursor_hiding_logic_from_menu_panel_and_set_cursor_none",
+    "is_auto": false
+  },
+  {
+    "step": 67,
+    "timestamp": "2026-06-12 00:42:09",
+    "description": "Fix custom cursor visibility when menu overlay is open",
+    "folder": "step_067_Fix_custom_cursor_visibility_when_menu_overlay_is_open",
     "is_auto": false
   }
 ]
