@@ -339,10 +339,17 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowUp') { e.preventDefault(); window.scrollBy({ top: -window.innerHeight * 0.7, behavior: 'smooth' }); }
 });
 
+const workDetailCard = document.getElementById('workDetailCard');
+if (workDetailCard) {
+  workDetailCard.addEventListener('wheel', function(e) {
+    e.stopPropagation();
+    let atTop = workDetailCard.scrollTop <= 0, atBottom = workDetailCard.scrollTop + workDetailCard.clientHeight >= workDetailCard.scrollHeight - 2;
+    if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) e.preventDefault();
+  }, { passive: false });
+}
+
 workDetail.addEventListener('wheel', function(e) {
-  e.stopPropagation();
-  let atTop = workDetail.scrollTop <= 0, atBottom = workDetail.scrollTop + workDetail.clientHeight >= workDetail.scrollHeight - 2;
-  if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) e.preventDefault();
+  e.preventDefault();
 }, { passive: false });
 
 window.openDetail = openDetail;

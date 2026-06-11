@@ -364,6 +364,11 @@
     if (dragging) return;
     // Don't interfere with bubble-click lerp animation
     if (lerpActive && bubbleLerpStartTime > 0) return;
+
+    // Skip if details modal is open
+    const detail = document.getElementById('workDetail');
+    if (detail && detail.classList.contains('open')) return;
+
     e.preventDefault();
     let totalH = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     if (!wheelRaf) {
