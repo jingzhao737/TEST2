@@ -750,8 +750,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   z-index: 2;
   display: flex;
   flex-direction: column;
-  padding-top: 25vh;    /* Add top travel buffer for sticky card alignment */
-  padding-bottom: 25vh; /* Add bottom travel buffer for sticky card alignment */
 }
 
 .showcase-text-item {
@@ -805,10 +803,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 /* Right Column: Sticky 3D preview zone */
 .showcase-right-sticky-zone {
   width: 45%;
-  height: 100vh;
+  height: 75vh;            /* Set height exactly equal to text items (75vh) for co-planar boundaries */
   position: sticky;
-  top: 0;
-  align-self: flex-start; /* Prevent flex stretch so sticky can slide */
+  top: 12.5vh;             /* Vertically center the 75vh zone inside the 100vh viewport */
+  align-self: flex-start;  /* Prevent flex stretch so sticky can slide */
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -967,8 +965,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .showcase-left-text-track {
     width: 100%;
-    padding-top: 0;
-    padding-bottom: 0;
   }
   .showcase-text-item {
     height: auto;
