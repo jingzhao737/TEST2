@@ -1,12 +1,5 @@
 [
   {
-    "step": 3,
-    "timestamp": "2026-06-11 21:25:16",
-    "description": "Final integrated 3D cursor on baseline version",
-    "folder": "step_003_Final_integrated_3D_cursor_on_baseline_version",
-    "is_auto": false
-  },
-  {
     "step": 4,
     "timestamp": "2026-06-11 21:29:37",
     "description": "Backup before changing return-to-upright delay to 400ms",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:00:38",
     "description": "Fix (0,0) entry warp twitch and scale return-to-upright deformation by cursorSpeed to prevent static tilt and stretch",
     "folder": "step_022_Fix_(0,0)_entry_warp_twitch_and_scale_return-to-upright_deformation_by_cursorSpeed_to_prevent_static_tilt_and_stretch",
+    "is_auto": false
+  },
+  {
+    "step": 23,
+    "timestamp": "2026-06-11 22:00:51",
+    "description": "Finalize walkthrough.md for physics and entry coordinate snap",
+    "folder": "step_023_Finalize_walkthrough.md_for_physics_and_entry_coordinate_snap",
     "is_auto": false
   }
 ]
