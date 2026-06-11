@@ -1,12 +1,5 @@
 [
   {
-    "step": 48,
-    "timestamp": "2026-06-11 23:27:48",
-    "description": "Revert last two features speed-based scaling and return-to-upright nose-dive",
-    "folder": "step_048_Revert_last_two_features_speed-based_scaling_and_return-to-upright_nose-dive",
-    "is_auto": false
-  },
-  {
     "step": 49,
     "timestamp": "2026-06-11 23:32:05",
     "description": "Prepare to bypass return-to-upright when custom cursor is hovered on active pointer elements",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:42:09",
     "description": "Fix custom cursor visibility when menu overlay is open",
     "folder": "step_067_Fix_custom_cursor_visibility_when_menu_overlay_is_open",
+    "is_auto": false
+  },
+  {
+    "step": 68,
+    "timestamp": "2026-06-12 00:46:06",
+    "description": "Increase custom cursor scale in grab state",
+    "folder": "step_068_Increase_custom_cursor_scale_in_grab_state",
     "is_auto": false
   }
 ]
