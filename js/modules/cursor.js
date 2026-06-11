@@ -15,6 +15,7 @@
   let t1X = 0, t1Y = 0; // Trail 1 position
   
   let lastMouseX = 0, lastMouseY = 0;
+  let fVx = 0, fVy = 0; // Filtered velocity components for smooth steering direction
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
 
@@ -106,6 +107,10 @@
     const vy = mouseY - lastMouseY;
     const speed = Math.sqrt(vx * vx + vy * vy);
     
+    // Smooth the velocity components only for steering angle calculation to filter high-frequency noise
+    fVx += (vx - fVx) * 0.25;
+    fVy += (vy - fVy) * 0.25;
+    
     // Save current mouse coordinates for next frame velocity calculation
     lastMouseX = mouseX;
     lastMouseY = mouseY;
@@ -123,10 +128,11 @@
     // If mouse moves, calculate target heading direction instantly (no turning delay).
     // Otherwise, delay for 400ms before returning to upright (-90 degrees).
     if (speed > 1.5) {
-      targetAngle = Math.atan2(vy, vx) * 180 / Math.PI;
+      targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
-    } else {
+    }
+ else {
       if (Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
       } else {

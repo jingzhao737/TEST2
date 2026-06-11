@@ -41,7 +41,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "5d9c522b5e70c772e225563eaf1c050b82d7c01e349fbc94834d1b4b8c07c63f"
+    "hash": "7df43f466ed5084ebcaff9259d655eef762479650aff9fdb6d5af242f4481d77"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -85,15 +85,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "7bb14af25ec5d2bc562d0b6b6b6fa8d9843254d9194f4ad33639d3b5f9581d94"
-  },
-  "dist\\assets\\index-B7-GBcRt.js": {
-    "type": "code",
-    "hash": "262413a3e98be5d19da7c5c8ff6804236cf518fa98d2a0443b5542ec947ac4e2"
+    "hash": "19081f956ea636d0f9498817df02599644f4a56f85c54e8e39ee7907b278bc5e"
   },
   "dist\\assets\\index-BKQXXfA7.css": {
     "type": "code",
     "hash": "d89140000e688c9eb579c10ee618a75fd8cf977a3dba935fef737b43880276c4"
+  },
+  "dist\\assets\\index-DPYLKI1Y.js": {
+    "type": "code",
+    "hash": "eff952e7b149dc118e702a2f089071a485ebdc58f0b5a0b0f0c9c8f393397389"
   },
   "images\\index.txt": {
     "type": "code",
@@ -129,7 +129,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "320681f46632fac78ceb14ea38a424c48c99f453b4726e80917e7f215b4ce7ef"
+    "hash": "d309c190b20a3ccd733d1c94dc8259433b0196d59cda2232b15395d64be43d5d"
   },
   "js\\modules\\data.js": {
     "type": "code",

@@ -1,12 +1,5 @@
 [
   {
-    "step": 23,
-    "timestamp": "2026-06-11 22:00:51",
-    "description": "Finalize walkthrough.md for physics and entry coordinate snap",
-    "folder": "step_023_Finalize_walkthrough.md_for_physics_and_entry_coordinate_snap",
-    "is_auto": false
-  },
-  {
     "step": 24,
     "timestamp": "2026-06-11 22:10:45",
     "description": "Move targetZSpacing declaration before snapping logic to resolve TDZ reference error crash",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:42:58",
     "description": "Implement subtle return-to-upright banking roll and shape deformation",
     "folder": "step_042_Implement_subtle_return-to-upright_banking_roll_and_shape_deformation",
+    "is_auto": false
+  },
+  {
+    "step": 43,
+    "timestamp": "2026-06-11 22:44:22",
+    "description": "Filter velocity inputs for smooth jitter-free movement steering while keeping 1.5 speed threshold",
+    "folder": "step_043_Filter_velocity_inputs_for_smooth_jitter-free_movement_steering_while_keeping_1.5_speed_threshold",
     "is_auto": false
   }
 ]
