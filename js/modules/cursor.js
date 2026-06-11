@@ -121,18 +121,19 @@
 
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
-    // Otherwise, delay for 400ms before returning to upright (-90 degrees).
+    // Otherwise, delay for 600ms before returning to upright (-90 degrees).
     if (speed > 1.5) {
       targetAngle = Math.atan2(vy, vx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (Date.now() - lastMoveTime < 400) {
+      if (Date.now() - lastMoveTime < 600) {
         targetAngle = lastActiveAngle;
       } else {
         targetAngle = -90; // Align upright
       }
     }
+
 
     // Shortest path interpolation (resolve wrapping at 180/-180 boundary)
     let diff = targetAngle - currentAngle;

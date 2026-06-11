@@ -1,12 +1,5 @@
 [
   {
-    "step": 16,
-    "timestamp": "2026-06-11 21:56:38",
-    "description": "Change barrel roll to flat spin and add will-change filter to prevent hover flash",
-    "folder": "step_016_Change_barrel_roll_to_flat_spin_and_add_will-change_filter_to_prevent_hover_flash",
-    "is_auto": false
-  },
-  {
     "step": 17,
     "timestamp": "2026-06-11 21:56:51",
     "description": "Finalize walkthrough.md and deploy",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:27:52",
     "description": "Adjust hover target scale from 1.15 to 0.82 for more subtle zoom",
     "folder": "step_035_Adjust_hover_target_scale_from_1.15_to_0.82_for_more_subtle_zoom",
+    "is_auto": false
+  },
+  {
+    "step": 36,
+    "timestamp": "2026-06-11 22:28:44",
+    "description": "Set return-to-upright delay to 600ms",
+    "folder": "step_036_Set_return-to-upright_delay_to_600ms",
     "is_auto": false
   }
 ]
