@@ -370,16 +370,8 @@ if (!isMobileDevice) {
     
     observer.observe(workList);
     
-    // Scroll tracking for active card and velocity-based deformation
-    let lastScrollY = window.scrollY;
-    let scrollVel = 0;
-    let currentVel = 0;
-    
+    // Scroll tracking for active card
     window.addEventListener('scroll', () => {
-      let curScrollY = window.scrollY;
-      scrollVel = curScrollY - lastScrollY;
-      lastScrollY = curScrollY;
-      
       if (!isObservedIntersecting) return;
       
       checkVisibility();
@@ -388,38 +380,6 @@ if (!isMobileDevice) {
       
       updateActiveImage();
     }, { passive: true });
-    
-    // Animation loop for scroll deformation (squash & stretch + tilt)
-    (function animateMobilePreview() {
-      if (isVisible || gsap.getProperty(wrapper, "opacity") > 0.01) {
-        currentVel += (scrollVel - currentVel) * 0.08; // Lerp velocity
-        scrollVel *= 0.88; // Decay velocity
-        
-        // Deformations: rotationX (tilt), skewY, and scaleY (stretch)
-        let tiltX = gsap.utils.clamp(-25, 25, currentVel * 0.18);
-        let skewY = gsap.utils.clamp(-10, 10, currentVel * 0.04);
-        let scaleY = 1 + gsap.utils.clamp(0, 0.2, Math.abs(currentVel) * 0.003);
-        let scaleX = 1 - gsap.utils.clamp(0, 0.08, Math.abs(currentVel) * 0.001); // Squash X slightly to preserve volume
-        
-        gsap.set(curtain, {
-          transformPerspective: 800,
-          rotationX: tiltX,
-          skewY: skewY,
-          scaleY: scaleY,
-          scaleX: scaleX
-        });
-        
-        gsap.set(imgContainer, {
-          transformPerspective: 800,
-          rotationX: tiltX,
-          skewY: skewY,
-          scaleY: scaleY,
-          scaleX: scaleX
-        });
-      }
-      
-      requestAnimationFrame(animateMobilePreview);
-    })();
   }
 }
 

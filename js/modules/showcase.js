@@ -29,9 +29,7 @@ if (items.length > 0) {
 
     if (!isMobile) {
       // Create highly optimized GSAP quickTo functions for 60fps+ hardware-accelerated rendering
-      // Both crisp and blurred backgrounds move in perfect sync during 3D parallax hover
-      const xTo      = gsap.quickTo(item, "rotationY", { duration: 0.8, ease: "power3.out" });
-      const yTo      = gsap.quickTo(item, "rotationX", { duration: 0.8, ease: "power3.out" });
+      // Both crisp and blurred backgrounds move in perfect sync during 2D parallax hover
       const bgXTo    = gsap.quickTo([bg, bgBlurred], "x",         { duration: 0.9, ease: "power3.out" });
       const bgYTo    = gsap.quickTo([bg, bgBlurred], "y",         { duration: 0.9, ease: "power3.out" });
       const bgScXTo  = gsap.quickTo([bg, bgBlurred], "scaleX",    { duration: 0.8, ease: "power3.out" });
@@ -134,10 +132,6 @@ if (items.length > 0) {
         const relX = (e.clientX - rect.left) / rect.width;
         const relY = (e.clientY - rect.top)  / rect.height;
 
-        // Apply 3D tilt to the card itself
-        xTo((relX - 0.5) * 12);
-        yTo((relY - 0.5) * -12);
-
         // Update sheen position
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -151,8 +145,6 @@ if (items.length > 0) {
       });
 
       item.addEventListener("mouseleave", () => {
-        xTo(0);
-        yTo(0);
         bgXTo(0); bgYTo(0);
         bgScXTo(1); bgScYTo(1);
         infoXTo(0); infoYTo(0);
@@ -208,8 +200,13 @@ if (items.length > 0) {
   const scrubValue = isMobile ? 0.5 : 1.0;
   const holdDuration = isMobile ? 0.01 : 0.04;
 
-  // Unified cascading timeline
+  // Unified cascading timeline & Scroll-jacking state
   let mainTimeline;
+  let activeIndex = 0;
+  let isAnimatingScroll = false;
+  let lastScrollTime = 0;
+  const cooldown = 600; // ms cooldown between scroll events
+
   mainTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: showcaseSection,
@@ -218,12 +215,28 @@ if (items.length > 0) {
       pin: true,
       pinSpacing: true,      // Let GSAP handle padding-bottom spacing natively
       zIndex: 1,             // Lower z-index for pinned container so overlaying elements stack on top
-      scrub: scrubValue,     // Smooth scroll scrub with momentum
-      snap: {
-        snapTo: "labels",     // Snap precisely to card1, card2, and card3 labels
-        duration: { min: 0.3, max: 0.6 },
-        delay: 0.05,
-        ease: "power2.out"
+      scrub: 0.15,           // Snappy scrub to respond instantly to programmatically controlled scroll
+      onUpdate: (self) => {
+        if (isAnimatingScroll) return;
+        
+        // Synchronize activeIndex if scrollbar is dragged manually
+        const progress = self.progress;
+        const cardProgresses = [
+          0,
+          0.6 / (1.2 + holdDuration),
+          1.2 / (1.2 + holdDuration)
+        ];
+        
+        let closestIndex = 0;
+        let minDiff = Infinity;
+        cardProgresses.forEach((cp, idx) => {
+          const diff = Math.abs(progress - cp);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIndex = idx;
+          }
+        });
+        activeIndex = closestIndex;
       }
     }
   });
@@ -282,4 +295,126 @@ if (items.length > 0) {
     // Small hold duration so the final stacked state is visible before unpinning
     .addLabel("card3")
     .to({}, { duration: holdDuration }, "card3");
+
+  // ── Scroll-jacking Implementation: One scroll = One card ──
+  function handleScrollAction(direction) {
+    const now = Date.now();
+    if (now - lastScrollTime < cooldown) return false;
+    
+    let targetIndex = activeIndex;
+    if (direction > 0) {
+      if (activeIndex < 2) {
+        targetIndex = activeIndex + 1;
+      } else {
+        return false; // already at card 3, let scroll down naturally
+      }
+    } else {
+      if (activeIndex > 0) {
+        targetIndex = activeIndex - 1;
+      } else {
+        return false; // already at card 1, let scroll up naturally
+      }
+    }
+
+    lastScrollTime = now;
+    isAnimatingScroll = true;
+
+    const targetLabel = targetIndex === 0 ? "card1" : (targetIndex === 1 ? "card2" : "card3");
+    const targetScroll = ScrollTrigger.labelToScroll(mainTimeline, targetLabel);
+
+    const scrollObj = { y: window.scrollY };
+    gsap.killTweensOf(scrollObj);
+    gsap.to(scrollObj, {
+      y: targetScroll,
+      duration: 0.75,
+      ease: "power2.out",
+      onUpdate: () => {
+        window.scrollTo(0, scrollObj.y);
+      },
+      onComplete: () => {
+        isAnimatingScroll = false;
+        activeIndex = targetIndex;
+      },
+      onOverwrite: () => {
+        isAnimatingScroll = false;
+      }
+    });
+
+    return true;
+  }
+
+  // Wheel listener with active check
+  window.addEventListener('wheel', (e) => {
+    const st = mainTimeline && mainTimeline.scrollTrigger;
+    if (!st) return;
+
+    // Don't intercept if work detail page is open
+    const detailEl = document.getElementById('workDetail');
+    if (detailEl && detailEl.classList.contains('open')) return;
+
+    const currentScroll = window.scrollY;
+    // Check if we are within the pinned showcase area
+    const isInRange = currentScroll >= st.start - 2 && currentScroll <= st.end + 2;
+    if (!isInRange) return;
+
+    const direction = e.deltaY;
+    if (direction === 0) return;
+
+    if (isAnimatingScroll) {
+      e.preventDefault();
+      return;
+    }
+
+    const isDown = direction > 0;
+    if (isDown && activeIndex === 2) return; // scroll down naturally
+    if (!isDown && activeIndex === 0) return; // scroll up normally
+
+    e.preventDefault();
+    handleScrollAction(isDown ? 1 : -1);
+  }, { passive: false });
+
+  // Touch swipe listeners for mobile
+  let touchStartY = 0;
+  let hasFlippedInCurrentTouch = false;
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+      touchStartY = e.touches[0].clientY;
+      hasFlippedInCurrentTouch = false;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    const st = mainTimeline && mainTimeline.scrollTrigger;
+    if (!st) return;
+
+    // Don't intercept if work detail page is open
+    const detailEl = document.getElementById('workDetail');
+    if (detailEl && detailEl.classList.contains('open')) return;
+
+    const currentScroll = window.scrollY;
+    const isInRange = currentScroll >= st.start - 2 && currentScroll <= st.end + 2;
+    if (!isInRange) return;
+
+    if (isAnimatingScroll) {
+      e.preventDefault();
+      return;
+    }
+
+    if (e.touches.length > 0) {
+      const touchCurrentY = e.touches[0].clientY;
+      const diffY = touchStartY - touchCurrentY; // positive = swipe up = scroll down
+      const isDown = diffY > 0;
+      
+      const isAtBoundary = (isDown && activeIndex === 2) || (!isDown && activeIndex === 0);
+      if (isAtBoundary) return; // Scroll naturally
+
+      e.preventDefault();
+
+      if (!hasFlippedInCurrentTouch && Math.abs(diffY) > 40) {
+        hasFlippedInCurrentTouch = true;
+        handleScrollAction(isDown ? 1 : -1);
+      }
+    }
+  }, { passive: false });
 }
