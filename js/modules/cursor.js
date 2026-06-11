@@ -38,10 +38,37 @@
   let currentStretchY = 1;
   let currentTranslateY = -10; // Smoothly slide hotspot center between triangle tip (-10%) and circle center (-50%)
 
-  // Track mouse coordinates
+  // Hover Selector definition
+  const hoverSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble';
+
+  // Track mouse coordinates and dynamically update grab state based on hover target styles
   document.addEventListener('mousemove', function(e) {
     mouseX = e.clientX;
     mouseY = e.clientY;
+
+    if (!isFirstMove) {
+      const target = e.target;
+      if (target) {
+        const computedCursor = window.getComputedStyle(target).cursor;
+        const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                       computedCursor === 'grab' || 
+                       computedCursor === 'grabbing';
+        if (isGrab) {
+          if (!isGrabState) {
+            isGrabState = true;
+            cursorDot.classList.add('grab-state');
+            cursorTrail1.classList.add('grab-state');
+          }
+        } else {
+          if (isGrabState && !isClicked) {
+            isGrabState = false;
+            cursorDot.classList.remove('grab-state');
+            cursorTrail1.classList.remove('grab-state');
+          }
+        }
+      }
+    }
+
     if (isFirstMove) {
       cX = mouseX;
       cY = mouseY;
@@ -86,25 +113,24 @@
     }
   });
 
-  document.addEventListener('mouseup', function() {
+  document.addEventListener('mouseup', function(e) {
     isClicked = false;
     
     // Check if we are still hovering over a grabbable element after release
-    const hoveredElement = document.elementFromPoint(mouseX, mouseY);
-    const target = hoveredElement ? hoveredElement.closest(hoverSelector) : null;
-    const isGrab = target ? (target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
-                   window.getComputedStyle(target).cursor === 'grab' || 
-                   window.getComputedStyle(target).cursor === 'grabbing') : false;
-    if (!isGrab) {
-      isGrabState = false;
-      cursorDot.classList.remove('grab-state');
-      cursorTrail1.classList.remove('grab-state');
+    const target = e.target;
+    if (target) {
+      const computedCursor = window.getComputedStyle(target).cursor;
+      const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
+                     computedCursor === 'grab' || 
+                     computedCursor === 'grabbing';
+      if (!isGrab) {
+        isGrabState = false;
+        cursorDot.classList.remove('grab-state');
+        cursorTrail1.classList.remove('grab-state');
+      }
     }
   });
 
-  // Hover States (Event Delegation on Document for dynamic elements)
-  const hoverSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble';
-  
   document.addEventListener('mouseover', function(e) {
     const target = e.target.closest(hoverSelector);
     if (target) {
@@ -112,16 +138,6 @@
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
         isHovered = true;
         cursorDot.classList.add('hovered');
-
-        // Check if hovering over a grabbable element
-        const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
-                       window.getComputedStyle(target).cursor === 'grab' || 
-                       window.getComputedStyle(target).cursor === 'grabbing';
-        if (isGrab) {
-          isGrabState = true;
-          cursorDot.classList.add('grab-state');
-          cursorTrail1.classList.add('grab-state');
-        }
       }
     }
   });
@@ -135,16 +151,6 @@
         if (!related) {
           isHovered = false;
           cursorDot.classList.remove('hovered');
-        }
-
-        // Check if leaving grabbable boundary
-        const relatedGrab = related ? (related.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
-                            window.getComputedStyle(related).cursor === 'grab' || 
-                            window.getComputedStyle(related).cursor === 'grabbing') : false;
-        if (!relatedGrab) {
-          isGrabState = false;
-          cursorDot.classList.remove('grab-state');
-          cursorTrail1.classList.remove('grab-state');
         }
       }
     }

@@ -60,7 +60,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 @media(pointer:fine){
   body, a, button, [role="button"], input, select, textarea, .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper,
   .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .lightbox-nav, .lightbox-close, .theme-pull-wrapper, .motion-hero,
-  .scroll-bar, .scroll-thumb, .scroll-bubble {
+  .scroll-bar, .scroll-thumb, .scroll-bubble, #framesCanvas {
     cursor: none !important;
   }
 }

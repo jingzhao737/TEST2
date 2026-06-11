@@ -1,12 +1,5 @@
 [
   {
-    "step": 40,
-    "timestamp": "2026-06-11 22:34:29",
-    "description": "Restore clean return-to-upright glide and reduce hover layer Z-spacing to 1.8 for tighter 3D stack",
-    "folder": "step_040_Restore_clean_return-to-upright_glide_and_reduce_hover_layer_Z-spacing_to_1.8_for_tighter_3D_stack",
-    "is_auto": false
-  },
-  {
     "step": 41,
     "timestamp": "2026-06-11 22:35:23",
     "description": "Smooth return-to-upright glide easing to 0.03 for a longer, gentler animation",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:30:00",
     "description": "Prepare to hide native grab cursor on framesCanvas and implement dynamic mousemove grab detection",
     "folder": "step_059_Prepare_to_hide_native_grab_cursor_on_framesCanvas_and_implement_dynamic_mousemove_grab_detection",
+    "is_auto": false
+  },
+  {
+    "step": 60,
+    "timestamp": "2026-06-12 00:30:26",
+    "description": "Fix canvas record hover grab state by adding framesCanvas to hide list and implementing dynamic mousemove grab detection",
+    "folder": "step_060_Fix_canvas_record_hover_grab_state_by_adding_framesCanvas_to_hide_list_and_implementing_dynamic_mousemove_grab_detection",
     "is_auto": false
   }
 ]
