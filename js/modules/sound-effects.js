@@ -97,8 +97,8 @@
     // Interactive element selector — clicking these uses the heavier click sound
     const interactiveSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble, #framesCanvas';
 
-    // Global click — fires on EVERY click anywhere on the page
-    document.addEventListener('click', (e) => {
+    // Global mousedown — fires instantly on press (not on release like 'click')
+    document.addEventListener('mousedown', (e) => {
       const target = e.target;
       if (!target) return;
       // Check if clicking an interactive element (louder click) vs. blank area (lighter hover tone)
