@@ -165,12 +165,13 @@
     // Our SVG points UP (which matches -90 degrees in math). 
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
-
     // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
     const targetScale = isHovered ? 0.82 : 0.67; // Swell smoothly like a soft 3D sticker
-
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
-    const targetZSpacing = isHovered ? 3.0 : 1.0; // Dynamic Z-depth spacing for 3D sticker thickness
+    
+    // Dynamic Z-depth thickness: expands on hover, and swells dynamically during turns to emphasize 3D volume
+    const turnZBoost = Math.min(Math.abs(diff) * 0.04, 1.2);
+    const targetZSpacing = (isHovered ? 3.0 : 1.0) + turnZBoost;
     
     currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
@@ -178,21 +179,21 @@
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
     const basePitch = isReturningUpright 
-      ? Math.min(Math.abs(diff) * 0.35, 18) 
+      ? Math.min(Math.abs(diff) * 0.5, 24) 
       : Math.min(cursorSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
-      ? Math.max(-30, Math.min(30, diff * 0.8)) // Driven smoothly by LERPing targetAngle
+      ? Math.max(-42, Math.min(42, diff * 1.2)) // Driven smoothly by LERPing targetAngle (exposes 3D layers)
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12)) // Driven smoothly by LERPing targetAngle
+      ? (1 - Math.min(Math.abs(diff) * 0.0035, 0.16)) // Driven smoothly by LERPing targetAngle
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18)) // Driven smoothly by LERPing targetAngle
+      ? (1 + Math.min(Math.abs(diff) * 0.0055, 0.24)) // Driven smoothly by LERPing targetAngle
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
 
 

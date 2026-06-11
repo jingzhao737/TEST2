@@ -17,10 +17,6 @@
   let lastMouseX = 0, lastMouseY = 0;
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
-  let lastHoveredElement = null; // Track hover target for new enter transitions
-  let currentTwist = 0;          // Dynamic layer twist/fanning interpolation (0 to 1)
-  let spinRoll = 0;              // Dynamic one-time 3D barrel roll rotation angle
-  let spinVelocity = 0;          // Spring velocity for barrel roll rotation
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -28,10 +24,9 @@
   let lastActiveAngle = -90;
   let lastMoveTime = 0;
 
-  // Scale Physics (LERP to prevent abrupt jumps and raster blur)
+  // Scale Physics (Creamy LERP to swell smoothly like a soft 3D sticker)
   let currentScale = 0.67;
   let currentTrailScale = 0.67 * 0.6;
-  let scaleVelocity = 0; // Spring physics velocity accumulator
 
   // 3D & Deformation Physics
   let currentPitch = 0;
@@ -53,6 +48,10 @@
       lastCX = cX;
       lastCY = cY;
       isFirstMove = false;
+      
+      // Make visible ONLY after first snap to prevent coordinate jump
+      cursorDot.style.opacity = '1';
+      cursorTrail1.style.opacity = '0.65';
     }
   }, { passive: true });
 
@@ -61,10 +60,6 @@
     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
-  });
-  document.addEventListener('mouseenter', function() {
-    cursorDot.style.opacity = '';
-    cursorTrail1.style.opacity = '';
   });
 
   // Hover States (Event Delegation on Document for dynamic elements)
@@ -75,14 +70,6 @@
     if (target) {
       // Only trigger if entering from outside the target element itself
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
-        if (target !== lastHoveredElement) {
-          lastHoveredElement = target;
-          // Only trigger spin if it's not the first move to prevent entering jump/twitch
-          if (!isFirstMove) {
-            spinRoll = -360;
-            spinVelocity = 0;
-          }
-        }
         isHovered = true;
         cursorDot.classList.add('hovered');
       }
@@ -96,7 +83,6 @@
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
         const related = e.relatedTarget ? e.relatedTarget.closest(hoverSelector) : null;
         if (!related) {
-          lastHoveredElement = null;
           isHovered = false;
           cursorDot.classList.remove('hovered');
         }
@@ -135,18 +121,28 @@
 
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
-    // Otherwise, delay for 400ms before returning to upright (-90 degrees).
+    // Otherwise, delay for 600ms before returning to upright (-90 degrees).
     if (speed > 1.5) {
       targetAngle = Math.atan2(vy, vx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (Date.now() - lastMoveTime < 400) {
+      if (Date.now() - lastMoveTime < 600) {
         targetAngle = lastActiveAngle;
       } else {
-        targetAngle = -90; // Align upright
+        // Smoothly ease targetAngle to -90 to prevent step-jump twitches
+        let targetDiff = -90 - targetAngle;
+        while (targetDiff < -180) targetDiff += 360;
+        while (targetDiff > 180) targetDiff -= 360;
+        if (Math.abs(targetDiff) < 1.0) {
+          targetAngle = -90;
+        } else {
+          targetAngle += targetDiff * 0.15;
+        }
       }
     }
+
+
 
     // Shortest path interpolation (resolve wrapping at 180/-180 boundary)
     let diff = targetAngle - currentAngle;
@@ -157,7 +153,7 @@
     const isReturningUpright = (targetAngle === -90);
     let angleEase = 0.13;
     if (isReturningUpright) {
-      angleEase = 0.035; // Slower upright alignment (~300ms glide duration) to let deformation be visible
+      angleEase = cursorSpeed < 0.5 ? 0.08 : 0.035; // Return upright faster if stationary to prevent static lean lag
     } else {
       if (speed < 6.0) {
         const clampedSpeed = Math.max(1.5, speed); // Clamp at 1.5 to prevent negative easing factors
@@ -169,50 +165,37 @@
     // Our SVG points UP (which matches -90 degrees in math). 
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
-
-    // 4. Hover states scale calculation (using Spring Physics for organic bounce/overshoot)
-    const targetScale = isHovered ? 0.78 : 0.67; // Slightly scale up, fanning handles the rest
+    // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
+    const targetScale = isHovered ? 0.82 : 0.67; // Swell smoothly like a soft 3D sticker
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
     
-    const tension = 0.28; // Spring stiffness
-    const damping = 0.64; // Bounciness/friction
-    const scaleForce = (targetScale - currentScale) * tension;
-    scaleVelocity += scaleForce;
-    scaleVelocity *= damping;
-    currentScale += scaleVelocity;
+    // Dynamic Z-depth thickness: expands on hover, and swells dynamically during turns to emphasize 3D volume
+    const turnZBoost = Math.min(Math.abs(diff) * 0.04, 1.2);
+    const targetZSpacing = (isHovered ? 3.0 : 1.0) + turnZBoost;
     
+    currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
-
-    // LERP dynamic layer twist/fanning factor
-    const targetTwist = isHovered ? 1.0 : 0.0;
-    currentTwist += (targetTwist - currentTwist) * 0.12;
-
-    // Decay the 3D barrel roll using spring physics pulling it back to 0
-    // Decay the 3D barrel roll using optimized spring physics (tension=0.35, damping=0.48 for snappiness with zero wobble)
-    const spinForce = (0 - spinRoll) * 0.35; // Spring stiffness
-    spinVelocity += spinForce;
-    spinVelocity *= 0.48; // Bounciness/damping
-    spinRoll += spinVelocity;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
     const basePitch = isReturningUpright 
-      ? Math.min(Math.abs(diff) * 0.35, 18) 
+      ? Math.min(Math.abs(diff) * 0.5, 24) 
       : Math.min(cursorSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
-      ? Math.max(-30, Math.min(30, diff * 0.8)) 
+      ? Math.max(-42, Math.min(42, diff * 1.2)) // Driven smoothly by LERPing targetAngle (exposes 3D layers)
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12)) // Dynamic squish on return-to-upright (12% max)
+      ? (1 - Math.min(Math.abs(diff) * 0.0035, 0.16)) // Driven smoothly by LERPing targetAngle
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18)) // Dynamic stretch on return-to-upright (18% max)
+      ? (1 + Math.min(Math.abs(diff) * 0.0055, 0.24)) // Driven smoothly by LERPing targetAngle
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
+
 
     // Smooth physics LERP (faster response rate of 0.15)
     currentPitch += (targetPitch - currentPitch) * 0.15;
@@ -220,45 +203,38 @@
     currentStretchX += (targetStretchX - currentStretchX) * 0.15;
     currentStretchY += (targetStretchY - currentStretchY) * 0.15;
 
-    // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving
-    if (cursorSpeed < 0.05 && speed < 0.05) {
-      if (Math.abs(currentAngle - (-90)) < 0.1) currentAngle = -90;
-      if (Math.abs(currentRoll) < 0.1) currentRoll = 0;
-      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 0.1) currentPitch = isHovered ? 22 : 0;
-      if (Math.abs(spinRoll) < 0.1) spinRoll = 0;
+    // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
+    if (cursorSpeed < 0.1 && speed < 0.1) {
+      if (targetAngle === -90) {
+        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+        if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
+        if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      }
+      if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
+      if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
+
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, -10%)`;
     cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, -10%)`;
 
-    // Dynamic Z-depth expansion LERP (spacing goes from 1px to 4.5px on hover, expanding 3D crystal thickness)
-    const targetZSpacing = isHovered ? 4.5 : 1.0;
-    currentZSpacing += (targetZSpacing - currentZSpacing) * 0.12;
+    // Dynamic Z-depth expansion LERP (spacing goes from 1px to 3.0px on hover, expanding 3D crystal thickness)
+    currentZSpacing += (targetZSpacing - currentZSpacing) * 0.08; // Match the creamy scale LERP speed
 
-    // Apply Z-translates and torsional twist on the 5 stacked 3D layers to create dynamic extrusion expansion
+    // Apply Z-translates on the 5 stacked 3D layers to create solid 3D extrusion thickness (no fanning/twist)
     if (cursorLayers) {
       cursorLayers.forEach((layer, idx) => {
         // idx goes from 0 (layer-back) to 4 (layer-front)
         // Layer Z offset = -(4 - idx) * currentZSpacing
         const zVal = -(4 - idx) * currentZSpacing;
-        
-        // Calculate torsional twist rotation for each layer:
-        // Front layer (4) does not twist (maintains accurate pointing tip).
-        // Back layers twist progressively in alternating directions to fan out.
-        let layerTwist = 0;
-        if (idx === 3) layerTwist = -10 * currentTwist;
-        else if (idx === 2) layerTwist = 10 * currentTwist;
-        else if (idx === 1) layerTwist = -20 * currentTwist;
-        else if (idx === 0) layerTwist = 20 * currentTwist;
-
-        layer.style.transform = `translateZ(${zVal}px) rotate(${layerTwist}deg)`;
+        layer.style.transform = `translateZ(${zVal}px)`;
       });
     }
 
-    // Apply 3D tilt, rotation, and dynamic scale warping on the child 3D containers
+    // Apply 3D tilt, rotation, and dynamic scale warping on the child 3D containers (no spinRoll)
     if (cursor3dContainer) {
-      cursor3dContainer.style.transform = `rotate(${arrowRotation + spinRoll}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentScale * currentStretchX}, ${currentScale * currentStretchY})`;
+      cursor3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentScale * currentStretchX}, ${currentScale * currentStretchY})`;
     }
     if (trail3dContainer) {
       trail3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentTrailScale * currentStretchX}, ${currentTrailScale * currentStretchY})`;
