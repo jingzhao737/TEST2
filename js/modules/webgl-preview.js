@@ -68,18 +68,20 @@ import gsap from 'gsap';
         uv.x = (uv.x - 0.5) * ratio + 0.5;
       }
 
-      // Liquid noise at transition midpoint
+      // Liquid noise at transition midpoint (multi-layered warp)
       float wave = uTransition * (1.0 - uTransition);
       if (wave > 0.0) {
-        float n = noise(uv * 10.0 + uTransition * 5.0);
-        uv += (n - 0.5) * 0.04 * wave;
+        float n1 = noise(uv * 8.0 + vec2(0.0, uTransition * 4.0));
+        float n2 = noise(uv * 15.0 - vec2(uTransition * 6.0, 0.0));
+        uv.x += (n1 - 0.5) * 0.12 * wave;
+        uv.y += (n2 - 0.5) * 0.12 * wave;
       }
 
-      // Subtle chromatic aberration
-      float shift = abs(uVelocity) * 0.0003 + wave * 0.012;
-      vec4 r = texture2D(uTexture, uv + vec2(shift, 0.0));
+      // Subtle chromatic aberration (diagonal split)
+      float shift = abs(uVelocity) * 0.0004 + wave * 0.022;
+      vec4 r = texture2D(uTexture, uv + vec2(shift, shift * 0.5));
       vec4 g = texture2D(uTexture, uv);
-      vec4 b = texture2D(uTexture, uv - vec2(shift, 0.0));
+      vec4 b = texture2D(uTexture, uv - vec2(shift, shift * 0.5));
 
       gl_FragColor = vec4(r.r, g.g, b.b, 1.0);
     }
@@ -228,16 +230,16 @@ import gsap from 'gsap';
       top: targetRect.top,
       width: targetRect.width,
       height: targetRect.height,
-      duration: 0.9,
-      ease: 'power4.inOut'
+      duration: 0.85,
+      ease: 'power3.inOut'
     });
 
     // Animate liquid transition
     gsap.killTweensOf(material.uniforms.uTransition);
     gsap.to(material.uniforms.uTransition, {
       value: 1.0,
-      duration: 0.9,
-      ease: 'power4.inOut',
+      duration: 0.85,
+      ease: 'power3.inOut',
       onComplete: () => {
         isMorphing = false;
         mesh.visible = false;

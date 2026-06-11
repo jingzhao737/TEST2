@@ -1519,7 +1519,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   inset: 0;
   z-index: 500;
   background: transparent;
-  overflow-y: auto;
+  display: flex;
+  align-items: flex-end; /* Align card to the bottom of viewport */
+  justify-content: center;
   visibility: hidden;
   pointer-events: none;
 }
@@ -1530,23 +1532,142 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .work-detail-bg {
   position: fixed;
   inset: 0;
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
   z-index: -1;
   opacity: 0;
-  transition: opacity 0.6s var(--ease-out-expo);
+  transition: opacity 0.6s var(--ease-out-expo), backdrop-filter 0.6s var(--ease-out-expo);
   pointer-events: none;
 }
-/* work-detail-bg opacity is now controlled entirely by GSAP, not CSS class triggers */
-.detail-close{position:fixed;top:40px;right:64px;z-index:502;width:52px;height:52px;border-radius:50%;border:1px solid var(--border);background:var(--card-bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--fg);transition:all .3s var(--ease-out-expo)}
-.detail-close:hover{background:var(--fg);color:var(--bg);border-color:var(--fg);transform:rotate(90deg)}
-.detail-hero{height:65vh;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.detail-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.detail-hero-dim{position:absolute;inset:0;background:#000;opacity:0;z-index:1;pointer-events:none}
-.detail-hero-content{position:relative;z-index:2;text-align:center;color:var(--fg)}
-.detail-hero-content .section-tag{color:var(--accent)}
-.detail-hero-content h1{font-family:'Climate Crisis',sans-serif;font-size:clamp(2.8rem,5.5vw,5rem);letter-spacing:.02em;margin:20px 0 16px;font-weight:700}
-.detail-hero-content p{color:rgba(255,255,255,.45);font-size:1rem;letter-spacing:0}
-.detail-body{max-width:860px;margin:0 auto;padding:100px 64px 140px}
+:root.light .work-detail-bg {
+  background: rgba(245, 240, 232, 0.65);
+}
+
+.work-detail-card {
+  position: relative;
+  width: calc(100% - 48px); /* Small gaps on left and right */
+  max-width: 1320px;
+  height: calc(100vh - 32px); /* Small gap on top, no gap on bottom */
+  background: var(--card-bg);
+  border-top-left-radius: 24px; /* Round top corners only */
+  border-top-right-radius: 24px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border: 1px solid var(--border);
+  border-bottom: none; /* No border at the bottom screen edge */
+  box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  pointer-events: auto;
+}
+.work-detail-card::-webkit-scrollbar {
+  display: none;
+}
+
+.detail-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 502;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--fg);
+  transition: all 0.3s var(--ease-out-expo);
+}
+.detail-close:hover {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+  transform: rotate(90deg);
+}
+
+.detail-hero {
+  height: 60vh; /* Premium visual scale */
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 23px; /* Match card top rounding */
+  border-top-right-radius: 23px;
+}
+.detail-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-top-left-radius: 23px;
+  border-top-right-radius: 23px;
+}
+.detail-hero-dim {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.detail-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: var(--fg);
+}
+.detail-hero-content .section-tag {
+  color: var(--accent);
+}
+.detail-hero-content h1 {
+  font-family: 'Climate Crisis', sans-serif;
+  font-size: clamp(2.8rem, 5.5vw, 5rem);
+  letter-spacing: 0.02em;
+  margin: 20px 0 16px;
+  font-weight: 700;
+}
+.detail-hero-content p {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+@media (max-width: 768px) {
+  .work-detail-card {
+    width: calc(100% - 24px); /* Smaller gap on mobile */
+    height: calc(100vh - 20px);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+  .detail-hero {
+    height: 45vh;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  .detail-hero-img {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  .detail-close {
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.detail-body {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 80px 64px 100px;
+}
 .detail-body h2{font-family:'Google Sans',sans-serif;font-size:1.8rem;margin:64px 0 20px;letter-spacing:-.02em;font-weight:700}
 .detail-body h2:first-child{margin-top:0}
 .detail-body p{font-size:.95rem;color:var(--muted);line-height:2;margin-bottom:24px;letter-spacing:0}

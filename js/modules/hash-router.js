@@ -9,6 +9,7 @@ const pageTransition = document.getElementById('pageTransition');
 const ROUTE_PREFIX = '#/work/';
 let detailOpenedFromHash = false;
 let savedScrollY = 0;
+let isRouteTransitioning = false;
 
 function buildGalleryHTML(gallery) {
   if (!gallery || !gallery.length) return '';
@@ -68,6 +69,9 @@ function getActivePreviewContainer() {
 }
 
 function openDetail(data, heroImg, pushState) {
+  if (isRouteTransitioning) return;
+  isRouteTransitioning = true;
+
   if (pushState === undefined) pushState = true;
   savedScrollY = window.scrollY;
   if (pushState && data.slug) {
@@ -79,145 +83,88 @@ function openDetail(data, heroImg, pushState) {
   const detailHeroImg = document.getElementById('detailHeroImg');
   const detailHeroDim = document.getElementById('detailHeroDim');
   const previewContainer = getActivePreviewContainer();
+  const detailCard = document.getElementById('workDetailCard');
 
-  if (previewContainer && detailHeroImg) {
-    const webgl = window.__worksWebGL;
-
-    if (webgl && webgl.isActive) {
-      // ── 1. Capture preview rect BEFORE any DOM mutation ──
-      const previewRect = previewContainer.getBoundingClientRect();
-
-      // ── 2. Smooth fade out the preview card ──
-      gsap.to(previewContainer, { opacity: 0, duration: 0.25, ease: 'power2.out' });
-
-      // ── 3. Prepare detail overlay (visible but transparent, no .open yet) ──
-      workDetail.style.display = 'block';
-      workDetail.scrollTop = 0;
-      document.body.style.overflow = 'hidden';
-
-      // ── 4. Hide DOM image, dim overlay, and all text ──
-      gsap.set(detailHeroImg, { opacity: 0 });
-      if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
-      if (detailBg) gsap.set(detailBg, { opacity: 0 });
-
-      const detailBody = workDetail.querySelector('.detail-body');
-      const detailClose = document.getElementById('detailClose');
-      const detailHeroContent = workDetail.querySelector('.detail-hero-content');
-      const detailTag = document.getElementById('detailTag');
-      const detailTitle = document.getElementById('detailTitle');
-      const detailSubtitle = document.getElementById('detailSubtitle');
-      gsap.set([detailBody, detailClose, detailHeroContent], { opacity: 0, y: 0 });
-      gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 24 });
-
-      // ── 5. Get target rect (.detail-hero section bounds) ──
-      const heroSection = workDetail.querySelector('.detail-hero');
-      const targetRect = heroSection.getBoundingClientRect();
-
-      // ── 6. Start WebGL morph (canvas renders the image expanding) ──
-      webgl.morphTo(previewRect, targetRect, heroImg, () => {
-        // ── 7. Morph complete → hand off to DOM ──
-        gsap.set(detailHeroImg, { opacity: 1 });
-
-        // Dim overlay fades in (replaces old brightness filter)
-        if (detailHeroDim) {
-          gsap.to(detailHeroDim, { opacity: 0.72, duration: 0.45, ease: 'power2.out' });
-        }
-
-        // ── 8. Show page chrome ──
-        workDetail.classList.add('open');
-
-        // Backdrop
-        if (detailBg) {
-          gsap.to(detailBg, { opacity: 1, duration: 0.5, ease: 'power2.out' });
-        }
-
-        // Close button
-        gsap.to(detailClose, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.05 });
-
-        // Hero text stagger
-        gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.15 });
-        gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.28 });
-        gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.42 });
-
-        // Body content
-        gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.3 });
-
-        initGalleryLightbox();
-      });
-
-    } else {
-      // --- Fallback: DOM-based GSAP Flip transition ---
-      const previewRect = previewContainer.getBoundingClientRect();
-      gsap.set(previewContainer, { opacity: 0 });
-
-      workDetail.style.display = 'block';
-      workDetail.scrollTop = 0;
-      document.body.style.overflow = 'hidden';
-
-      if (detailBg) {
-        gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' });
-      }
-
-      // Temporarily fit the detailHeroImg exactly inside the bounds of the previewContainer
-      gsap.set(detailHeroImg, {
-        position: 'fixed',
-        left: previewRect.left,
-        top: previewRect.top,
-        width: previewRect.width,
-        height: previewRect.height,
-        borderRadius: '6px',
-        zIndex: 100,
-        objectFit: 'cover'
-      });
-
-      const state = Flip.getState(detailHeroImg);
-
-      gsap.set(detailHeroImg, {
-        position: '',
-        left: '',
-        top: '',
-        width: '',
-        height: '',
-        borderRadius: '',
-        zIndex: '',
-        objectFit: ''
-      });
-
-      workDetail.classList.add('open');
-
-      const detailBody = workDetail.querySelector('.detail-body');
-      const detailClose = document.getElementById('detailClose');
-      const detailHeroContent = workDetail.querySelector('.detail-hero-content');
-      gsap.set([detailBody, detailClose, detailHeroContent], { opacity: 0, y: 20 });
-      gsap.to([detailBody, detailClose, detailHeroContent], {
-        opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.3
-      });
-
-      Flip.from(state, {
-        duration: 0.85,
-        ease: 'power4.out',
-        clearProps: true,
-        onComplete: function() {
-          initGalleryLightbox();
-        }
-      });
-    }
-  } else {
-    // Fallback if missing elements
-    pageTransition.classList.add('active');
-    setTimeout(function() { pageTransition.classList.remove('active'); }, 1000);
-    document.body.style.overflow = 'hidden';
-    workDetail.style.display = 'block';
-    workDetail.scrollTop = 0;
-    requestAnimationFrame(function() {
-      workDetail.classList.add('open');
-      initGalleryLightbox();
-    });
+  // ── 1. Smooth fade out the hover preview card ──
+  if (previewContainer) {
+    gsap.to(previewContainer, { opacity: 0, duration: 0.25, ease: 'power2.out' });
   }
+
+  // ── 2. Slide and fade out original works page elements immediately ──
+  gsap.to('#nav', { opacity: 0, y: -30, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.works-header', { opacity: 0, y: -40, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.work-card', { opacity: 0, y: 50, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
+
+  // ── 3. Prepare detail overlay (visible but transparent, no .open yet) ──
+  workDetail.style.display = 'flex';
+  workDetail.style.visibility = 'visible';
+  if (detailCard) {
+    detailCard.scrollTop = 0;
+  }
+  document.body.style.overflow = 'hidden';
+
+  // ── 4. Set initial content and parallax values ──
+  gsap.set(detailHeroImg, { opacity: 1, y: -80, scale: 1.15 });
+  if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
+  
+  // Backdrop fades in immediately in sync with card slide-up
+  if (detailBg) {
+    gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power2.out' });
+  }
+
+  const detailBody = workDetail.querySelector('.detail-body');
+  const detailClose = document.getElementById('detailClose');
+  const detailHeroContent = workDetail.querySelector('.detail-hero-content');
+  const detailTag = document.getElementById('detailTag');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailSubtitle = document.getElementById('detailSubtitle');
+  
+  gsap.set([detailBody, detailClose], { opacity: 0, y: 30 });
+  gsap.set(detailHeroContent, { opacity: 1, y: 0 });
+  gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
+
+  // ── 5. Slide up the card panel from the bottom ──
+  if (detailCard) {
+    gsap.fromTo(detailCard, {
+      y: '100%',
+      opacity: 0.5
+    }, {
+      y: 0,
+      opacity: 1,
+      duration: 0.85,
+      ease: 'power3.out',
+      onComplete: () => {
+        workDetail.classList.add('open');
+        isRouteTransitioning = false;
+        initGalleryLightbox();
+      }
+    });
+  } else {
+    workDetail.classList.add('open');
+    isRouteTransitioning = false;
+  }
+
+  // ── 6. Run parallax image sliding ──
+  gsap.to(detailHeroImg, {
+    y: 0,
+    scale: 1.0,
+    duration: 0.9,
+    ease: 'power2.out'
+  });
+
+  // ── 7. Stagger text content animations ──
+  gsap.to(detailClose, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.3 });
+  gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.4 });
+  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.5 });
+  gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.6 });
+  gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.55 });
 }
 
 function closeDetail(popState) {
+  if (isRouteTransitioning) return;
   if (!workDetail.classList.contains('open')) return;
+  isRouteTransitioning = true;
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');
@@ -225,10 +172,12 @@ function closeDetail(popState) {
   const detailHero = workDetail.querySelector('.detail-hero');
   const detailBody = workDetail.querySelector('.detail-body');
   const detailHeroDim = document.getElementById('detailHeroDim');
+  const detailCard = document.getElementById('workDetailCard');
+  const detailHeroImg = document.getElementById('detailHeroImg');
 
   // Fade out backdrop smoothly
   if (detailBg) {
-    gsap.to(detailBg, { opacity: 0, duration: 0.5, ease: 'power2.inOut' });
+    gsap.to(detailBg, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
   }
 
   // Fade original preview container back in smoothly
@@ -236,41 +185,54 @@ function closeDetail(popState) {
     gsap.to(previewContainer, { opacity: 1, duration: 0.5, ease: 'power2.out' });
   }
 
-  // Slide up and fade out details page content
-  gsap.to([detailClose, detailHero, detailBody], {
-    y: -80,
-    opacity: 0,
-    duration: 0.5,
-    ease: 'power3.in',
-    onComplete: function() {
-      workDetail.classList.remove('open');
-      workDetail.style.display = 'none';
-      document.body.style.overflow = '';
+  // Restore works page elements immediately in sync with detail close
+  gsap.to('#nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.works-header', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.work-card', { opacity: 1, y: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.6, ease: 'power2.out', clearProps: 'all' });
 
-      // Reset ALL inline styles for next open cycle
-      gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
+  // Slide down the entire card panel to the bottom!
+  if (detailCard) {
+    gsap.to(detailCard, {
+      y: '100%',
+      duration: 0.65,
+      ease: 'power3.inOut',
+      onComplete: function() {
+        workDetail.classList.remove('open');
+        workDetail.style.display = 'none';
+        workDetail.style.visibility = 'hidden';
+        document.body.style.overflow = '';
 
-      // Reset dim overlay
-      if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
+        // Reset ALL inline styles for next open cycle
+        gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
+        if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1 });
+        if (detailHeroImg) gsap.set(detailHeroImg, { y: 0, scale: 1 });
 
-      // Reset text elements to hidden start state
-      const detailTag = document.getElementById('detailTag');
-      const detailTitle = document.getElementById('detailTitle');
-      const detailSubtitle = document.getElementById('detailSubtitle');
-      if (detailTag) gsap.set(detailTag, { opacity: 0, y: 24 });
-      if (detailTitle) gsap.set(detailTitle, { opacity: 0, y: 24 });
-      if (detailSubtitle) gsap.set(detailSubtitle, { opacity: 0, y: 24 });
+        // Reset dim overlay
+        if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
 
-      // Reset DOM hero image
-      const detailHeroImg = document.getElementById('detailHeroImg');
-      if (detailHeroImg) gsap.set(detailHeroImg, { opacity: 1 });
+        // Reset text elements to hidden start state
+        const detailTag = document.getElementById('detailTag');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailSubtitle = document.getElementById('detailSubtitle');
+        if (detailTag) gsap.set(detailTag, { opacity: 0, y: 24 });
+        if (detailTitle) gsap.set(detailTitle, { opacity: 0, y: 24 });
+        if (detailSubtitle) gsap.set(detailSubtitle, { opacity: 0, y: 24 });
 
-      if (popState) {
-        history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
+        // Reset DOM hero image
+        if (detailHeroImg) gsap.set(detailHeroImg, { opacity: 1 });
+
+        if (popState) {
+          history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
+        }
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+
+        isRouteTransitioning = false;
       }
-      window.scrollTo({ top: savedScrollY, behavior: 'instant' });
-    }
-  });
+    });
+  } else {
+    isRouteTransitioning = false;
+  }
 }
 
 // Lightbox
