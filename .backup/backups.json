@@ -117,5 +117,12 @@
     "description": "Finalize walkthrough.md and deploy",
     "folder": "step_017_Finalize_walkthrough.md_and_deploy",
     "is_auto": false
+  },
+  {
+    "step": 18,
+    "timestamp": "2026-06-11 21:57:53",
+    "description": "Snap cursor coordinates on first mousemove and re-entry to prevent warped flying and twitching",
+    "folder": "step_018_Snap_cursor_coordinates_on_first_mousemove_and_re-entry_to_prevent_warped_flying_and_twitching",
+    "is_auto": false
   }
 ]
