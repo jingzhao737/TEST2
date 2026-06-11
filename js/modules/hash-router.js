@@ -128,12 +128,12 @@ function openDetail(data, heroImg, pushState) {
   if (detailCard) {
     gsap.fromTo(detailCard, {
       y: '100%',
-      opacity: 0.5
+      opacity: 1
     }, {
       y: 0,
       opacity: 1,
-      duration: 0.85,
-      ease: 'power3.out',
+      duration: 1.2,
+      ease: 'expo.out',
       onComplete: () => {
         workDetail.classList.add('open');
         isRouteTransitioning = false;
@@ -149,8 +149,8 @@ function openDetail(data, heroImg, pushState) {
   gsap.to(detailHeroImg, {
     y: 0,
     scale: 1.0,
-    duration: 0.9,
-    ease: 'power2.out'
+    duration: 1.2,
+    ease: 'expo.out'
   });
 
   // ── 7. Stagger text content animations ──
