@@ -60,7 +60,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 @media(pointer:fine){
   body, a, button, [role="button"], input, select, textarea, .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper,
   .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .lightbox-nav, .lightbox-close, .theme-pull-wrapper, .motion-hero,
-  .scroll-bar, .scroll-thumb, .scroll-bubble {
+  .scroll-bar, .scroll-thumb, .scroll-bubble, #framesCanvas {
     cursor: none !important;
   }
 }
@@ -115,21 +115,62 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   transform-style: preserve-3d;
   transform-origin: 50% 10%;
   will-change: transform;
+  transition: transform-origin 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .cursor-3d-layer {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
   transform-origin: 50% 10%;
+  transition: transform-origin 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .cursor-arrow-wrapper {
   width: 100%;
   height: 100%;
-  position: relative;
+  position: absolute;
+  inset: 0;
   clip-path: url(#cursorClip);
   overflow: hidden;
   transform-origin: 50% 10%;
-  will-change: transform;
+  will-change: transform, opacity;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), 
+              transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+              transform-origin 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.cursor-circle-wrapper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), 
+              transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+              transform-origin 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Grab state morphing to 3D circular button */
+.cursor-dot.grab-state .cursor-3d-container,
+.cursor-dot.grab-state .cursor-3d-layer,
+.cursor-trail.grab-state .cursor-3d-container,
+.cursor-trail.grab-state .cursor-3d-layer {
+  transform-origin: 50% 50%;
+}
+.cursor-dot.grab-state .cursor-arrow-wrapper,
+.cursor-trail.grab-state .cursor-arrow-wrapper {
+  opacity: 0;
+  transform: scale(0.3);
+}
+.cursor-dot.grab-state .cursor-circle-wrapper,
+.cursor-trail.grab-state .cursor-circle-wrapper {
+  opacity: 1;
+  transform: scale(0.84); /* Concentric circle size visually balanced with triangle */
 }
 .cursor-liquid-flow {
   position: absolute;
