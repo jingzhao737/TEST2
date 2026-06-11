@@ -1,0 +1,298 @@
+{
+  "AGENTS.md": {
+    "type": "code",
+    "hash": "cfdfe25e9878e08964f73580a31843053a632fce439a953b7924bfdac3f6ef12"
+  },
+  "ice.js": {
+    "type": "code",
+    "hash": "2e4a1b8cca97061cbd1bf5a5235588cda3dc872abe1fbf891d36526817f82b46"
+  },
+  "implementation_plan.md": {
+    "type": "code",
+    "hash": "8e4e75f47ccdc8d58852718c309478f74afcf7eb01ae4827a530021b265f5e90"
+  },
+  "index.html": {
+    "type": "code",
+    "hash": "cef6c45fa2eedca3316482ec3f2be0e8d71e0b3a94262a1c67ec0efd895e0775"
+  },
+  "package-lock.json": {
+    "type": "code",
+    "hash": "7da198046be2aa07ab6ee69af2522e4667e48d6b3cd0ca0f40d8f11ab5b2497b"
+  },
+  "package.json": {
+    "type": "code",
+    "hash": "12ba21c219977c899c0b95fc9110ab76904ec77c6ec4dcde662285887c9d63fd"
+  },
+  "PROJECT.md": {
+    "type": "code",
+    "hash": "f97eb29f1ed50ab42869a4318bf98bfc7b744726bd315abd51e7551263bf95a8"
+  },
+  "styles.css": {
+    "type": "code",
+    "hash": "fe9acf7195f1d5b23e2c8dbb7e50d81714bd2e5fd61b45c4dc65b0b0d935cced"
+  },
+  "task.md": {
+    "type": "code",
+    "hash": "96ffe42b5cd91a3690246bc8bfb709c7549a12406674cfca3ee8c1e4613ffe59"
+  },
+  "vite.config.js": {
+    "type": "code",
+    "hash": "98fffd9c2ee7e10f37fb9bc78cd7141ac8b2993f334eb200069e6541b11b565c"
+  },
+  "walkthrough.md": {
+    "type": "code",
+    "hash": "ee08e1e2aad0153171f1356ddb100b6e6a78183ae78292f1519e75b63e285c78"
+  },
+  ".agents\\skills\\llms.txt": {
+    "type": "code",
+    "hash": "04caba62c6d5b15f7a24fc9b9bcb22361acfc49a29ff58b8ae905af33f14e13d"
+  },
+  ".agents\\skills\\gsap-core\\SKILL.md": {
+    "type": "code",
+    "hash": "de938eefd9a5bc6335216a17783788cd21408923ead290cda5871b7d61db66b8"
+  },
+  ".agents\\skills\\gsap-frameworks\\SKILL.md": {
+    "type": "code",
+    "hash": "3d7e8c2f6bddb32ffc1763b17bba9a8a3dcbc3bd5bf6815d921d3c5a4aded85d"
+  },
+  ".agents\\skills\\gsap-performance\\SKILL.md": {
+    "type": "code",
+    "hash": "2dd51f19a7fcabe1c06caee9e61554485696d05003396c528237aba970a959ce"
+  },
+  ".agents\\skills\\gsap-plugins\\SKILL.md": {
+    "type": "code",
+    "hash": "a755f587a107ae5c9f4f35702f6e0d870774c6930e28a082c4e9ebb1d2c7bf06"
+  },
+  ".agents\\skills\\gsap-react\\SKILL.md": {
+    "type": "code",
+    "hash": "fd1ce4fa883a256e6578f13a4271b494a18dffaaa6111ab64ca1bc97d4dd8b21"
+  },
+  ".agents\\skills\\gsap-scrolltrigger\\SKILL.md": {
+    "type": "code",
+    "hash": "e6612777bcce1617d3b9e061b2f671fb0f36379684d0c61f7a1baa06d7f7a989"
+  },
+  ".agents\\skills\\gsap-timeline\\SKILL.md": {
+    "type": "code",
+    "hash": "fbe7a2b9e66e66d2c956f650583d48385498b677ba1292f1dce9d1ffb1a77ea0"
+  },
+  ".agents\\skills\\gsap-utils\\SKILL.md": {
+    "type": "code",
+    "hash": "f71503f423561eeb5567ae8ee41e4363c85fd3970a8feaeac2c2b18309596bab"
+  },
+  ".github\\copilot-instructions.md": {
+    "type": "code",
+    "hash": "45ebf48998563a9c8e14f93988123759a8525d00673f087bb96773ca645d4651"
+  },
+  "dist\\index.html": {
+    "type": "code",
+    "hash": "b32ff078d484ffade8a3fa3a9e809e5ebfd7e8377b8f9dcf321ec17192dd7545"
+  },
+  "dist\\assets\\index-CGRnv57D.css": {
+    "type": "code",
+    "hash": "b4ff06c127d898a5c1c7c1902e1b150c3e38e9aa6b84062d3bc1e380495b4ced"
+  },
+  "dist\\assets\\index-Dwpx5s2b.js": {
+    "type": "code",
+    "hash": "8522ab1487628c412e141084ed62141ef7702f5d75b4c51e0c99e1fd12d7b095"
+  },
+  "images\\index.txt": {
+    "type": "code",
+    "hash": "cd65f62c1f01e155e245bb8a731024666df852430e8071a1e111705097536949"
+  },
+  "images\\README.md": {
+    "type": "code",
+    "hash": "acf4f47a425cfaef8063c46101832b30f03ec4e3d5ffe4b7fbf261eda812aff1"
+  },
+  "images\\detail\\README.md": {
+    "type": "code",
+    "hash": "f0eebab0a58a4f1c264e0eb22504cb97c4826d0691c9ca4507563d1c81dc4d75"
+  },
+  "images\\showcase\\README.md": {
+    "type": "code",
+    "hash": "400f34f3c11d6ce39e96d64ca5c408b51466b4b23ec9366dc434435eb9b29d3f"
+  },
+  "images\\works\\README.md": {
+    "type": "code",
+    "hash": "62db24e724e17235df29dac91a0f11686151d28fc90bc9d3b950d29f70e4ff64"
+  },
+  "js\\modules\\back-to-top.js": {
+    "type": "code",
+    "hash": "4852366aaf648bdae83436e4b6241d44fec1bbc90382a15b61fcc8c55d4e6068"
+  },
+  "js\\modules\\counter.js": {
+    "type": "code",
+    "hash": "5b20bd89d653da923dd074a383f9bfe6a70fae9758b288af851af35d452b782d"
+  },
+  "js\\modules\\crescent.js": {
+    "type": "code",
+    "hash": "84372482e622dadb65402156d543f6dfeb306c4e47848a9dfbac16bbfa625130"
+  },
+  "js\\modules\\cursor.js": {
+    "type": "code",
+    "hash": "579096d8471157bef1ba4574246fb416c852994298437c6fb3c7c3923ef70401"
+  },
+  "js\\modules\\data.js": {
+    "type": "code",
+    "hash": "d5e0618f3620fdc95bdaabc9db1f581e72d89aa31cf0de9d5035d7cf42c66278"
+  },
+  "js\\modules\\hanging-circles.js": {
+    "type": "code",
+    "hash": "526f4b93cc05cd19d69f33259e57b4652d73775befc24007e3934a636786bac6"
+  },
+  "js\\modules\\hash-router.js": {
+    "type": "code",
+    "hash": "ce8a6667be6eadf49927ea33d73f5a7dec9f1325c4ec5a7e98c80d35daf07f45"
+  },
+  "js\\modules\\loader.js": {
+    "type": "code",
+    "hash": "f242aa00f6811d45823e4913c43b7da365bf981b6596c427c6e2613fca532033"
+  },
+  "js\\modules\\motion-carousel.js": {
+    "type": "code",
+    "hash": "ca2e8217913bb50ceb7148d4190f98b62d703f54dba4e1544ad2dd0e4c1a11d7"
+  },
+  "js\\modules\\nav-waveform.js": {
+    "type": "code",
+    "hash": "20f3efccad34f20335dde02374057d2c0ae13bd7511d634be488360407ea790d"
+  },
+  "js\\modules\\nav.js": {
+    "type": "code",
+    "hash": "fb0f0e7628027b095bdaefcf67fe78089238fe36109c68169103c2afde502f8b"
+  },
+  "js\\modules\\poetry.js": {
+    "type": "code",
+    "hash": "330ecc64dab0c043d4ffde0ac7d17eb7b918935dac121d8c3f5296a3151a32be"
+  },
+  "js\\modules\\premium-interactions.js": {
+    "type": "code",
+    "hash": "35e81cb822b3e196130ef046cd06160eaab8e86e9bee82761fe29619d1493f3e"
+  },
+  "js\\modules\\scroll-reveal.js": {
+    "type": "code",
+    "hash": "b4b5c9f3678e0db04a09badf5b726900d92de7c4cc0f188cb89793c5dea1d060"
+  },
+  "js\\modules\\showcase.js": {
+    "type": "code",
+    "hash": "6a6daacff52fea2d9edbc52ea16d319b9cbd8811876bef23a627bc468c51df95"
+  },
+  "js\\modules\\sound-effects.js": {
+    "type": "code",
+    "hash": "c23f0b0a6dc2d81772121202631522b3aea7819829ad2c99a2a9e655e5104320"
+  },
+  "js\\modules\\stars.js": {
+    "type": "code",
+    "hash": "f2ccb63287290b561b09fe38b14bdc5c8bb6d8bd85cb83b6a4b99aa50ec545a7"
+  },
+  "js\\modules\\theme.js": {
+    "type": "code",
+    "hash": "8c5b68a936f4d33fe03be62ca895d914ed4bdc3ff8ac6fdce9e69fb2434e1a9a"
+  },
+  "js\\modules\\webgl-preview.js": {
+    "type": "code",
+    "hash": "969a3935f0bbca36b77ea2cc2335141617760fb8c42ebf0ba9054943b5a8a81c"
+  },
+  "js\\modules\\work-detail.js": {
+    "type": "code",
+    "hash": "58ab17323f317e7ad00f63e3f8fafa912bbaa18697e7efcfa70b7c5290037243"
+  },
+  "scratch\\capture_showcase_steps.js": {
+    "type": "code",
+    "hash": "44e522d556d48b8a013a358f188682e3c50bf74167b3987a68ce55dc1ff9f75d"
+  },
+  "scratch\\capture_works_details.js": {
+    "type": "code",
+    "hash": "341929ace929c4043f1c619de9d070094dfeec1fb466af7da123b6ea56dada3b"
+  },
+  "scratch\\check_layout.js": {
+    "type": "code",
+    "hash": "750848320063b16d82a847f91a8b79ff93d528624c8345bbf4e67eb5168b7367"
+  },
+  "scratch\\check_opacity.js": {
+    "type": "code",
+    "hash": "c330832e9686db85275dbdcfdf7ef0924cca172ae6629595ea9ac3f94b03832d"
+  },
+  "scratch\\cleanup_css.js": {
+    "type": "code",
+    "hash": "9ae98aefce2c1477746aa507ddbab3212cd045dde1fde01c6d13d76105b884ed"
+  },
+  "scratch\\debug_all_infos.js": {
+    "type": "code",
+    "hash": "683d8690ab75a8cd453739476cc150576fcb817ef8fa8ef8fedea5172537dcac"
+  },
+  "scratch\\debug_all_sections.js": {
+    "type": "code",
+    "hash": "1bc3143bf2dcaf12831723bcb7525462e0dcb5b260a5ca6f9f320b51d73c416b"
+  },
+  "scratch\\debug_dims.js": {
+    "type": "code",
+    "hash": "581d484deca556f50dc14d4d815c01d4091310b32a84db1d747e60ced66780ee"
+  },
+  "scratch\\debug_layout.js": {
+    "type": "code",
+    "hash": "29825c9314d1960c684246bdb8670acc0706156f8de1676130342907a1b07ec9"
+  },
+  "scratch\\debug_showcase.js": {
+    "type": "code",
+    "hash": "9b2be6cf850e01bbf95c35023b602b9ee5e82541d0129f6ab37f8dcb1c0450a0"
+  },
+  "scratch\\debug_showcase2.js": {
+    "type": "code",
+    "hash": "a7880c5089fabc6625ebffc1d2e42b5b91e2dcc2d5a1ad1d71c8359d334d4cf1"
+  },
+  "scratch\\debug_showcase_full.js": {
+    "type": "code",
+    "hash": "888859bdceff7af737640cf9a98e417c92a0f6ed8042c4bc75591a568e574e38"
+  },
+  "scratch\\debug_zindex.js": {
+    "type": "code",
+    "hash": "47e05b924e5f81aa7e1ab3034ea23a1792099592fb6790dbf4964b3c5457f04c"
+  },
+  "scratch\\inspect_layout.js": {
+    "type": "code",
+    "hash": "50318ebe28764185d7c927b8f609dc5ff721b2810a409f1809689b99849c7ee5"
+  },
+  "scratch\\take_screenshots.js": {
+    "type": "code",
+    "hash": "df3b994132be7812d6ff60df6097b15e61a2fb14c59eb21c4a6b9f0aeea5844d"
+  },
+  "scratch\\test_cdn.js": {
+    "type": "code",
+    "hash": "1683135ca2631393ae9bcdf73b63557f337541640693a9e042a183de695c5a7d"
+  },
+  "scratch\\test_cdn_gsap.js": {
+    "type": "code",
+    "hash": "553fe1e58aaf70ed65a853ce7c0de6f829836040780f0d2b99fa894b70e9714b"
+  },
+  "scratch\\test_live.js": {
+    "type": "code",
+    "hash": "97216b7fd4e56de1967e5e952087fc3fdbc579796ffbaafde2269ee99ed91d05"
+  },
+  "scratch\\test_next_sibling.js": {
+    "type": "code",
+    "hash": "20602c7a1685930b577eca209d0c5f84233ae0b2e68289bd18f8a07b5d0b7df8"
+  },
+  "scratch\\test_scroll_showcase.js": {
+    "type": "code",
+    "hash": "2782ae6bd89bbad68d630bbeb035bf1b5926927fe8d2501a1af411d4715131eb"
+  },
+  "scratch\\test_scroll_snap_motion.js": {
+    "type": "code",
+    "hash": "6dfd56457c9110f18e68cbdaf6fe2d75075427d442d596101a092648cafbba74"
+  },
+  "scratch\\test_showcase.js": {
+    "type": "code",
+    "hash": "b4b78a846cdf314d3cbc057ab7768d5398db241c3bb3d3001731a819dd2c9d19"
+  },
+  "scratch\\test_showcase_vertical.js": {
+    "type": "code",
+    "hash": "0d27728e314f7fc38a6fcbf8f323d81bf9e667c9e1507e323bdfd00cb28873e9"
+  },
+  "scratch\\test_works_transition.js": {
+    "type": "code",
+    "hash": "b6783aa04cfb926bd2ef8ad2d3255c2b6dd4bc06cc76d5584157f5363c7e50ce"
+  },
+  "videos\\README.md": {
+    "type": "code",
+    "hash": "2fada11000175d04d147ab07b693e5f36ce953a7e70e1e52752c94d800df8f0d"
+  }
+}

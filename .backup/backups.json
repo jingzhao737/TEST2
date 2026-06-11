@@ -110,5 +110,12 @@
     "description": "Change barrel roll to flat spin and add will-change filter to prevent hover flash",
     "folder": "step_016_Change_barrel_roll_to_flat_spin_and_add_will-change_filter_to_prevent_hover_flash",
     "is_auto": false
+  },
+  {
+    "step": 17,
+    "timestamp": "2026-06-11 21:56:51",
+    "description": "Finalize walkthrough.md and deploy",
+    "folder": "step_017_Finalize_walkthrough.md_and_deploy",
+    "is_auto": false
   }
 ]
