@@ -1,12 +1,5 @@
 [
   {
-    "step": 51,
-    "timestamp": "2026-06-11 23:52:54",
-    "description": "Prepare to filter out micro-movement cursor steering flips using filtered velocity threshold",
-    "folder": "step_051_Prepare_to_filter_out_micro-movement_cursor_steering_flips_using_filtered_velocity_threshold",
-    "is_auto": false
-  },
-  {
     "step": 52,
     "timestamp": "2026-06-11 23:53:04",
     "description": "Use filtered speed threshold fSpeed for steering angle update to eliminate 180-degree flips during micro-movements",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:50:20",
     "description": "Remove vertical inertia lag delay on showcase card",
     "folder": "step_070_Remove_vertical_inertia_lag_delay_on_showcase_card",
+    "is_auto": false
+  },
+  {
+    "step": 71,
+    "timestamp": "2026-06-12 00:50:34",
+    "description": "Remove vertical inertia lag translateY delay on showcase preview card",
+    "folder": "step_071_Remove_vertical_inertia_lag_translateY_delay_on_showcase_preview_card",
     "is_auto": false
   }
 ]
