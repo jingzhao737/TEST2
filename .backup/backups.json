@@ -1,12 +1,5 @@
 [
   {
-    "step": 70,
-    "timestamp": "2026-06-12 00:50:20",
-    "description": "Remove vertical inertia lag delay on showcase card",
-    "folder": "step_070_Remove_vertical_inertia_lag_delay_on_showcase_card",
-    "is_auto": false
-  },
-  {
     "step": 71,
     "timestamp": "2026-06-12 00:50:34",
     "description": "Remove vertical inertia lag translateY delay on showcase preview card",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:23:26",
     "description": "Change sound effect trigger from click to mousedown for instant press feedback",
     "folder": "step_089_Change_sound_effect_trigger_from_click_to_mousedown_for_instant_press_feedback",
+    "is_auto": false
+  },
+  {
+    "step": 90,
+    "timestamp": "2026-06-12 01:24:57",
+    "description": "Before premium laser effect upgrade",
+    "folder": "step_090_Before_premium_laser_effect_upgrade",
     "is_auto": false
   }
 ]
