@@ -1,12 +1,5 @@
 [
   {
-    "step": 44,
-    "timestamp": "2026-06-11 22:51:54",
-    "description": "Add follow delay by reducing cX/cY LERP factor to 0.09",
-    "folder": "step_044_Add_follow_delay_by_reducing_cX_cY_LERP_factor_to_0.09",
-    "is_auto": false
-  },
-  {
     "step": 45,
     "timestamp": "2026-06-11 23:01:58",
     "description": "Add speed-based cursor scale and Z-depth thickness swell to simulate paper airplane lift",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:32:58",
     "description": "Implement dual-shape cross-fade morphing system for custom cursor",
     "folder": "step_063_Implement_dual-shape_cross-fade_morphing_system_for_custom_cursor",
+    "is_auto": false
+  },
+  {
+    "step": 64,
+    "timestamp": "2026-06-12 00:33:49",
+    "description": "Prepare to slow down morph transitions and add delays to custom cursor",
+    "folder": "step_064_Prepare_to_slow_down_morph_transitions_and_add_delays_to_custom_cursor",
     "is_auto": false
   }
 ]
