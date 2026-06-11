@@ -1,12 +1,5 @@
 [
   {
-    "step": 46,
-    "timestamp": "2026-06-11 23:22:25",
-    "description": "Fix syntax error and finalize asymmetric flying speed filter for paper airplane glide",
-    "folder": "step_046_Fix_syntax_error_and_finalize_asymmetric_flying_speed_filter_for_paper_airplane_glide",
-    "is_auto": false
-  },
-  {
     "step": 47,
     "timestamp": "2026-06-11 23:26:45",
     "description": "Add nose-dive forward pitch and gradual LERP transition rates during return-to-upright",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:34:10",
     "description": "Slow down morph transition to 0.55s and translateY LERP to 0.07 with 0.05s delay",
     "folder": "step_065_Slow_down_morph_transition_to_0.55s_and_translateY_LERP_to_0.07_with_0.05s_delay",
+    "is_auto": false
+  },
+  {
+    "step": 66,
+    "timestamp": "2026-06-12 00:41:46",
+    "description": "Remove custom cursor hiding logic from menu panel and set cursor none",
+    "folder": "step_066_Remove_custom_cursor_hiding_logic_from_menu_panel_and_set_cursor_none",
     "is_auto": false
   }
 ]

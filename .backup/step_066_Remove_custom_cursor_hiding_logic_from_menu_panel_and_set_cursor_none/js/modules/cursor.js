@@ -18,6 +18,8 @@
   let fVx = 0, fVy = 0; // Filtered velocity components for smooth steering direction
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
+  let isClicked = false;
+  let isGrabState = false;
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -28,19 +30,44 @@
   // Scale Physics (Creamy LERP to swell smoothly like a soft 3D sticker)
   let currentScale = 0.67;
   let currentTrailScale = 0.67 * 0.6;
-  let flyingSpeed = 0; // Asymmetric physical speed filter for paper airplane lift & float
-
 
   // 3D & Deformation Physics
   let currentPitch = 0;
   let currentRoll = 0;
   let currentStretchX = 1;
   let currentStretchY = 1;
+  let currentTranslateY = -10; // Smoothly slide hotspot center between triangle tip (-10%) and circle center (-50%)
 
-  // Track mouse coordinates
+  // Hover Selector definition
+  const hoverSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble';
+
+  // Track mouse coordinates and dynamically update grab state based on hover target styles
   document.addEventListener('mousemove', function(e) {
     mouseX = e.clientX;
     mouseY = e.clientY;
+
+    if (!isFirstMove) {
+      const target = e.target;
+      if (target) {
+        // Dynamic detection of grabbable elements and inline cursor styles (e.g. #framesCanvas records)
+        const isGrab = target.closest('.motion-hero, .motion-slide, .scroll-thumb, .scroll-bar, .zoom-slider-knob, .zoom-slider-track, .theme-pull-wrapper, .theme-toggle') || 
+                       (target.closest('#framesCanvas') && (target.style.cursor === 'grab' || target.style.cursor === 'grabbing'));
+        if (isGrab) {
+          if (!isGrabState) {
+            isGrabState = true;
+            cursorDot.classList.add('grab-state');
+            cursorTrail1.classList.add('grab-state');
+          }
+        } else {
+          if (isGrabState && !isClicked) {
+            isGrabState = false;
+            cursorDot.classList.remove('grab-state');
+            cursorTrail1.classList.remove('grab-state');
+          }
+        }
+      }
+    }
+
     if (isFirstMove) {
       cX = mouseX;
       cY = mouseY;
@@ -63,11 +90,43 @@
     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
+    isClicked = false;  // Reset click state
+    isGrabState = false; // Reset grab state
+    cursorDot.classList.remove('grab-state');
+    cursorTrail1.classList.remove('grab-state');
   });
 
-  // Hover States (Event Delegation on Document for dynamic elements)
-  const hoverSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble';
-  
+  // Click States
+  document.addEventListener('mousedown', function(e) {
+    isClicked = true;
+    
+    // Lock grab state during active dragging
+    const target = e.target.closest(hoverSelector) || e.target;
+    const isGrab = target.closest('.motion-hero, .motion-slide, .scroll-thumb, .scroll-bar, .zoom-slider-knob, .zoom-slider-track, .theme-pull-wrapper, .theme-toggle') || 
+                   (target.closest('#framesCanvas') && (target.style.cursor === 'grab' || target.style.cursor === 'grabbing'));
+    if (isGrab) {
+      isGrabState = true;
+      cursorDot.classList.add('grab-state');
+      cursorTrail1.classList.add('grab-state');
+    }
+  });
+
+  document.addEventListener('mouseup', function(e) {
+    isClicked = false;
+    
+    // Check if we are still hovering over a grabbable element after release
+    const target = e.target;
+    if (target) {
+      const isGrab = target.closest('.motion-hero, .motion-slide, .scroll-thumb, .scroll-bar, .zoom-slider-knob, .zoom-slider-track, .theme-pull-wrapper, .theme-toggle') || 
+                     (target.closest('#framesCanvas') && (target.style.cursor === 'grab' || target.style.cursor === 'grabbing'));
+      if (!isGrab) {
+        isGrabState = false;
+        cursorDot.classList.remove('grab-state');
+        cursorTrail1.classList.remove('grab-state');
+      }
+    }
+  });
+
   document.addEventListener('mouseover', function(e) {
     const target = e.target.closest(hoverSelector);
     if (target) {
@@ -113,6 +172,7 @@
     // Smooth the velocity components only for steering angle calculation to filter high-frequency noise
     fVx += (vx - fVx) * 0.25;
     fVy += (vy - fVy) * 0.25;
+    const fSpeed = Math.sqrt(fVx * fVx + fVy * fVy);
     
     // Save current mouse coordinates for next frame velocity calculation
     lastMouseX = mouseX;
@@ -130,14 +190,18 @@
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
     // Otherwise, delay for 400ms before returning to upright (-90 degrees).
-    if (speed > 1.5) {
+    if (isGrabState) {
+      targetAngle = -90; // Symmetrical circle points straight up
+    } else if (fSpeed > 1.6) {
       targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
-    }
- else {
-      if (Date.now() - lastMoveTime < 400) {
+    } else {
+      if (isHovered || Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
+        if (isHovered) {
+          lastMoveTime = Date.now(); // Reset timer so return-to-upright countdown starts ONLY after hover ends
+        }
       } else {
         // Smoothly ease targetAngle to -90 to prevent step-jump twitches
         let targetDiff = -90 - targetAngle;
@@ -157,14 +221,14 @@
     while (diff > 180) diff -= 360;
 
     // Gentle steering delay when flying, dynamic low-speed dampening to prevent angular flutter
-    const isReturningUpright = (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
+    const isReturningUpright = !isHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
       angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide
     } else {
-      if (speed < 6.0) {
-        const clampedSpeed = Math.max(1.5, speed); // Clamp at 1.5 to prevent negative easing factors
-        angleEase = 0.02 + ((clampedSpeed - 1.5) / 4.5) * 0.11; // Scales down smoothly at low speeds (0.02 to 0.13)
+      if (fSpeed < 6.0) {
+        const clampedSpeed = Math.max(1.6, fSpeed); // Clamp at 1.6 to prevent negative easing factors
+        angleEase = 0.02 + ((clampedSpeed - 1.6) / 4.4) * 0.11; // Scales down smoothly at low speeds (0.02 to 0.13)
       }
     }
     currentAngle += diff * angleEase;
@@ -172,46 +236,59 @@
     // Our SVG points UP (which matches -90 degrees in math). 
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
-    // Calculate flyingSpeed using asymmetric LERP filter (Fast-Slow-Fast profile)
-    if (cursorSpeed > flyingSpeed) {
-      flyingSpeed += (cursorSpeed - flyingSpeed) * 0.15; // Fast rise
-    } else {
-      const ease = flyingSpeed < 1.5 ? 0.15 : 0.035; // Slow float, then fast landing
-      flyingSpeed += (cursorSpeed - flyingSpeed) * ease;
-    }
 
-    // 4. Hover & Speed-based scale calculation (Swells when moving fast, like a paper airplane gaining lift and flying high)
-    const baseTargetScale = isHovered ? 0.82 : 0.67;
-    const speedScaleBoost = Math.min(flyingSpeed * 0.015, 0.20); // Swells up to +0.20 scale at high speed
-    const targetScale = baseTargetScale + speedScaleBoost;
-    const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
+    // 4. Hover & Click states scale calculation (using Creamy LERP for soft visual swell)
+    let targetScale = isHovered ? 0.82 : 0.67;
+    let targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
-    // Dynamic Z-depth thickness: expands on hover, and swells dynamically based on speed to represent flight altitude
-    const speedZBoost = Math.min(flyingSpeed * 0.08, 1.2); // Expands layer Z-spacing up to +1.2px at high speed
-    const targetZSpacing = (isHovered ? 1.8 : 0.8) + speedZBoost;
+    // Symmetrical circle fills more box area, so we scale it down slightly to 0.72 on hover to match visual weight of the triangle
+    if (isGrabState && !isClicked) {
+      targetScale = 0.72;
+      targetZSpacing = 1.4;
+    }
     
-    currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
+    if (isClicked) {
+      if (isGrabState) {
+        targetScale = 0.48; // Circle shrinks down to a tight, tiny 3D ball on active drag/grabbing
+        targetZSpacing = 0.25; // Tightly flattened 3D layers
+      } else {
+        targetScale = isHovered ? 0.62 : 0.52; // Press down scale compression
+        targetZSpacing = isHovered ? 0.6 : 0.3;  // Compress 3D layers closer to screen
+      }
+    }
+    
+    const targetTrailScale = isHovered ? 0 : (isClicked ? 0.67 * 0.4 : 0.67 * 0.6);
+    
+    // Choose dynamic LERP easing factor to make click/release feel tactile and snappy
+    let scaleEase = 0.08; // Normal creamy hover LERP
+    if (isClicked) {
+      scaleEase = 0.20; // Fast responsive press
+    } else if (currentScale < targetScale) {
+      scaleEase = 0.16; // Snappy recovery on release
+    }
+    
+    currentScale += (targetScale - currentScale) * scaleEase;
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
     const basePitch = isReturningUpright 
       ? Math.min(Math.abs(diff) * 0.25, 12) 
-      : Math.min(flyingSpeed * 1.5, 30);
+      : Math.min(cursorSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
       ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
-      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(flyingSpeed / 6.0, 1.0); // Driven by LERP-smoothed flyingSpeed
+      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
       ? (1 - Math.min(Math.abs(diff) * 0.0015, 0.08)) // Subtle squish (max 8%)
-      : (1 - Math.min(flyingSpeed * 0.0015, 0.06)); // Organic squish driven by flyingSpeed (naturally capped and smoothed)
+      : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
       ? (1 + Math.min(Math.abs(diff) * 0.0025, 0.12)) // Subtle stretch (max 12%)
-      : (1 + Math.min(flyingSpeed * 0.0025, 0.10)); // Organic stretch driven by flyingSpeed (naturally capped and smoothed)
+      : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
 
     // Smooth physics LERP (faster response rate of 0.15)
     currentPitch += (targetPitch - currentPitch) * 0.15;
@@ -220,7 +297,7 @@
     currentStretchY += (targetStretchY - currentStretchY) * 0.15;
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
-    if (cursorSpeed < 0.1 && speed < 0.1 && flyingSpeed < 0.1) {
+    if (cursorSpeed < 0.1 && speed < 0.1) {
       if (targetAngle === -90) {
         if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
         if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
@@ -229,9 +306,17 @@
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
+
+
+
+
+    // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
+    const targetTranslateY = isGrabState ? -50 : -10;
+    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.07;
+
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
-    cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, -10%)`;
-    cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, -10%)`;
+    cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;
+    cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, ${currentTranslateY}%)`;
 
     // Dynamic Z-depth expansion LERP (spacing goes from 1px to 3.0px on hover, expanding 3D crystal thickness)
     currentZSpacing += (targetZSpacing - currentZSpacing) * 0.08; // Match the creamy scale LERP speed
