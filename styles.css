@@ -726,7 +726,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   max-width: none !important;
   padding: 0 !important;
   margin: 120px 0 0 0;
-  background: #000;
+  background: transparent;
   overflow: visible !important; /* Allow sticky positioning to work */
 }
 
@@ -1002,7 +1002,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 :root.light .showcase {
-  background: #0d0d0c !important; /* Keep a very dark background in light mode to maintain contrast of cinematic photos */
+  background: transparent !important; /* Keep transparent in light mode as well */
 }
 
 /* 鈺愨晲鈺愨晲鈺愨晲?MOTION VIDEO CAROUSEL 鈺愨晲鈺愨晲鈺愨晲?*/
