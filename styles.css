@@ -1623,20 +1623,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   text-align: center;
   color: var(--fg);
 }
-.detail-hero-content .section-tag {
-  color: var(--accent);
-}
 .detail-hero-content h1 {
   font-family: 'Climate Crisis', sans-serif;
   font-size: clamp(2.8rem, 5.5vw, 5rem);
   letter-spacing: 0.02em;
-  margin: 20px 0 16px;
+  margin: 0;
   font-weight: 700;
 }
-.detail-hero-content p {
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 1rem;
-  letter-spacing: 0;
+#detailTag,
+#detailSubtitle {
+  display: none !important;
 }
 
 @media (max-width: 768px) {
@@ -2494,9 +2490,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 /* 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?SKELETON SCREEN 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?*/
 .detail-hero-skeleton{position:absolute;inset:0;z-index:2;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s var(--ease-out-expo)}
 .detail-hero-skeleton.hidden{opacity:0;pointer-events:none}
-.detail-hero-skeleton .sk-tag{width:160px;height:16px;margin-bottom:28px}
+.detail-hero-skeleton .sk-tag,
+.detail-hero-skeleton .sk-sub{display:none !important}
 .detail-hero-skeleton .sk-title{width:380px;height:48px;border-radius:6px}
-.detail-hero-skeleton .sk-sub{width:260px;height:18px;margin-top:22px}
 :root.light .detail-hero-skeleton{background:rgba(245,240,232,.9)}
 
 /* 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?GALLERY MASONRY-RHYTHM 鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺愨晲鈺?*/
