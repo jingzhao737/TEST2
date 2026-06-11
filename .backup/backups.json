@@ -1,12 +1,5 @@
 [
   {
-    "step": 52,
-    "timestamp": "2026-06-11 23:53:04",
-    "description": "Use filtered speed threshold fSpeed for steering angle update to eliminate 180-degree flips during micro-movements",
-    "folder": "step_052_Use_filtered_speed_threshold_fSpeed_for_steering_angle_update_to_eliminate_180-degree_flips_during_micro-movements",
-    "is_auto": false
-  },
-  {
     "step": 53,
     "timestamp": "2026-06-12 00:20:11",
     "description": "Prepare to implement tactile click press and release animation on custom cursor",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:50:34",
     "description": "Remove vertical inertia lag translateY delay on showcase preview card",
     "folder": "step_071_Remove_vertical_inertia_lag_translateY_delay_on_showcase_preview_card",
+    "is_auto": false
+  },
+  {
+    "step": 72,
+    "timestamp": "2026-06-12 01:00:44",
+    "description": "Relax drag damping and increase velocity scaling to make record flinging freer",
+    "folder": "step_072_Relax_drag_damping_and_increase_velocity_scaling_to_make_record_flinging_freer",
     "is_auto": false
   }
 ]
