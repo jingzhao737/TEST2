@@ -43,6 +43,9 @@ import * as THREE from 'three';
       '#ice .section-heading',
       '#showcase .section-tag',
       '#showcase .section-heading',
+      '.showcase-text-item .section-tag',
+      '.showcase-text-item .showcase-title',
+      '.showcase-text-item .showcase-desc',
       '#motion .section-tag',
       '#motion .section-heading',
       '#poetry .poetry-sidebar .section-tag',
@@ -721,6 +724,13 @@ import * as THREE from 'three';
                 textCtx.filter = `blur(${blurVal}px)`;
               }
 
+              const paddingLeft = parseFloat(style.paddingLeft) || 0;
+              const paddingRight = parseFloat(style.paddingRight) || 0;
+              const maxWidth = rect.width - paddingLeft - paddingRight;
+
+              // Pre-configure context font for accurate measurements
+              textCtx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+
               let lines = [];
               if (el.classList.contains('section-heading')) {
                 const rawHTML = el.innerHTML;
@@ -729,12 +739,27 @@ import * as THREE from 'three';
                   tmp.innerHTML = str;
                   return tmp.textContent || tmp.innerText || '';
                 });
+              } else if (el.classList.contains('showcase-desc') || el.classList.contains('showcase-title')) {
+                const text = el.textContent || el.innerText || '';
+                const words = text.split(' ');
+                let currentLine = '';
+                for (let n = 0; n < words.length; n++) {
+                  const testLine = currentLine + (currentLine ? ' ' : '') + words[n];
+                  const testWidth = textCtx.measureText(testLine).width;
+                  if (testWidth > maxWidth && n > 0) {
+                    lines.push(currentLine);
+                    currentLine = words[n];
+                  } else {
+                    currentLine = testLine;
+                  }
+                }
+                if (currentLine) {
+                  lines.push(currentLine);
+                }
               } else {
                 lines = [el.textContent || el.innerText || ''];
               }
 
-              textCtx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-              
               const align = style.textAlign || 'left';
               textCtx.textAlign = align;
               textCtx.textBaseline = 'middle';
@@ -756,8 +781,17 @@ import * as THREE from 'three';
               }
               textCtx.fillStyle = color;
 
-              const paddingLeft = parseFloat(style.paddingLeft) || 0;
-              const paddingRight = parseFloat(style.paddingRight) || 0;
+              let isShowcaseTag = false;
+              let tagLineW = 36;
+              let tagPadding = paddingLeft;
+
+              if (el.classList.contains('section-tag')) {
+                if (el.closest && el.closest('.showcase-text-item')) {
+                  isShowcaseTag = true;
+                  tagLineW = 14;
+                  tagPadding = 26; // 14px line + 12px gap
+                }
+              }
 
               let drawX = rect.left;
               if (align === 'right') {
@@ -765,12 +799,12 @@ import * as THREE from 'three';
               } else if (align === 'center') {
                 drawX = rect.left + rect.width / 2 + (paddingLeft - paddingRight) / 2;
               } else {
-                drawX = rect.left + paddingLeft;
+                drawX = rect.left + (isShowcaseTag ? tagPadding : paddingLeft);
               }
 
               if (el.classList.contains('section-tag')) {
                 textCtx.fillStyle = color;
-                textCtx.fillRect(rect.left, rect.top + rect.height / 2 - 0.5, 36, 1);
+                textCtx.fillRect(rect.left, rect.top + rect.height / 2 - 0.5, tagLineW, 1);
               }
 
               const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
