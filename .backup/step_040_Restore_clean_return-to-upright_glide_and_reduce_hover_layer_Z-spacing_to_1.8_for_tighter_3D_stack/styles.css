@@ -87,6 +87,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   transform-origin: 50% 10%; /* Pivots around the triangle tip */
   transform: translate3d(-50%, -10%, 0);
   will-change: transform, opacity, filter;
+  opacity: 0; /* Hidden by default until mousemove snaps position */
   transition: opacity 0.3s var(--ease-out-expo);
   /* Hardware-accelerated holographic neon drop shadow */
   filter: drop-shadow(0 0 6px rgba(255, 141, 161, 0.7)) drop-shadow(0 0 12px rgba(112, 230, 210, 0.5));

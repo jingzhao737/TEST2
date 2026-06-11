@@ -121,28 +121,18 @@
 
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
-    // Otherwise, delay for 600ms before returning to upright (-90 degrees).
+    // Otherwise, delay for 400ms before returning to upright (-90 degrees).
     if (speed > 1.5) {
       targetAngle = Math.atan2(vy, vx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (Date.now() - lastMoveTime < 600) {
+      if (Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
       } else {
-        // Smoothly ease targetAngle to -90 to prevent step-jump twitches
-        let targetDiff = -90 - targetAngle;
-        while (targetDiff < -180) targetDiff += 360;
-        while (targetDiff > 180) targetDiff -= 360;
-        if (Math.abs(targetDiff) < 1.0) {
-          targetAngle = -90;
-        } else {
-          targetAngle += targetDiff * 0.15;
-        }
+        targetAngle = -90; // Align upright
       }
     }
-
-
 
     // Shortest path interpolation (resolve wrapping at 180/-180 boundary)
     let diff = targetAngle - currentAngle;
@@ -165,13 +155,11 @@
     // Our SVG points UP (which matches -90 degrees in math). 
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
+
     // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
     const targetScale = isHovered ? 0.82 : 0.67; // Swell smoothly like a soft 3D sticker
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
-    
-    // Dynamic Z-depth thickness: expands on hover, and swells dynamically during turns to emphasize 3D volume
-    const turnZBoost = Math.min(Math.abs(diff) * 0.04, 1.2);
-    const targetZSpacing = (isHovered ? 3.0 : 1.0) + turnZBoost;
+    const targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
     currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
@@ -179,23 +167,22 @@
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
     const basePitch = isReturningUpright 
-      ? Math.min(Math.abs(diff) * 0.5, 24) 
+      ? Math.min(Math.abs(diff) * 0.35, 18) 
       : Math.min(cursorSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
-      ? Math.max(-42, Math.min(42, diff * 1.2)) // Driven smoothly by LERPing targetAngle (exposes 3D layers)
+      ? Math.max(-30, Math.min(30, diff * 0.8)) * Math.min(cursorSpeed / 3.0, 1.0) // Scale by cursorSpeed to prevent static tilt
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
-    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
+    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright, scaled by cursorSpeed to prevent static stretch)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0035, 0.16)) // Driven smoothly by LERPing targetAngle
+      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.0055, 0.24)) // Driven smoothly by LERPing targetAngle
+      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
-
 
     // Smooth physics LERP (faster response rate of 0.15)
     currentPitch += (targetPitch - currentPitch) * 0.15;
@@ -205,14 +192,13 @@
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
     if (cursorSpeed < 0.1 && speed < 0.1) {
-      if (targetAngle === -90) {
-        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
-        if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
-        if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
-      }
+      if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+      if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
+      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
+
 
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)

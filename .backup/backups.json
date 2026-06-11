@@ -1,12 +1,5 @@
 [
   {
-    "step": 20,
-    "timestamp": "2026-06-11 21:58:17",
-    "description": "Document initial coordinate snapping in walkthrough.md",
-    "folder": "step_020_Document_initial_coordinate_snapping_in_walkthrough.md",
-    "is_auto": false
-  },
-  {
     "step": 21,
     "timestamp": "2026-06-11 21:59:45",
     "description": "Hide cursor until snapped on load and re-entry to fix twitch, and expand stationary snap thresholds to prevent tilt",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:31:51",
     "description": "Enhance return-to-upright 3D volumetric deformation by swelling layer Z-spacing and banking roll",
     "folder": "step_039_Enhance_return-to-upright_3D_volumetric_deformation_by_swelling_layer_Z-spacing_and_banking_roll",
+    "is_auto": false
+  },
+  {
+    "step": 40,
+    "timestamp": "2026-06-11 22:34:29",
+    "description": "Restore clean return-to-upright glide and reduce hover layer Z-spacing to 1.8 for tighter 3D stack",
+    "folder": "step_040_Restore_clean_return-to-upright_glide_and_reduce_hover_layer_Z-spacing_to_1.8_for_tighter_3D_stack",
     "is_auto": false
   }
 ]
