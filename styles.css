@@ -733,39 +733,23 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .showcase.is-cinematic::after { display: none !important; }
 
-/* Floating brand header */
+/* Floating brand header - aligned with other pages' headings */
 .showcase-header.is-cinematic {
   position: absolute;
-  top: clamp(24px, 4vh, 56px);
-  left: clamp(24px, 5vw, 120px);
-  width: auto !important;
-  max-width: none !important;
+  top: clamp(60px, 8vh, 100px);
+  left: 50%;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 1440px !important;
+  padding: 0 64px !important;
+  box-sizing: border-box;
   z-index: 10;
   margin: 0;
-  padding: 0;
   pointer-events: none;
   opacity: 1 !important;
   visibility: visible !important;
-  transform: none !important;
 }
-#showcase .showcase-header.is-cinematic .section-tag,
-#showcase .showcase-header.is-cinematic .section-heading {
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-.showcase-header.is-cinematic .section-tag {
-  color: rgba(255,255,255,0.4);
-  font-size: 0.6rem;
-  letter-spacing: 0.3em;
-  margin-bottom: 4px;
-}
-.showcase-header.is-cinematic .section-heading {
-  color: #fff;
-  font-size: clamp(1rem, 2vw, 1.5rem);
-  font-weight: 300;
-  letter-spacing: 0.15em;
-  line-height: 1.2;
-}
+/* Removed font overrides and visibility overrides for section-tag and section-heading so they use 'Climate Crisis' font and are hidden in HTML on desktop to render on WebGL like other pages */
 
 /* ── Horizontal track: JS sets total width = N × 100vw ── */
 .showcase-grid.is-cinematic {
@@ -962,8 +946,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 @media(max-width:768px) {
   .showcase-header.is-cinematic {
-    top: 24px;
-    left: 24px;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    padding: 0 24px !important;
+    margin-bottom: 40px !important;
   }
   .showcase-grid.is-cinematic .showcase-item {
     padding: 24px !important;
