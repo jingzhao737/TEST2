@@ -1,12 +1,5 @@
 [
   {
-    "step": 65,
-    "timestamp": "2026-06-12 00:34:10",
-    "description": "Slow down morph transition to 0.55s and translateY LERP to 0.07 with 0.05s delay",
-    "folder": "step_065_Slow_down_morph_transition_to_0.55s_and_translateY_LERP_to_0.07_with_0.05s_delay",
-    "is_auto": false
-  },
-  {
     "step": 66,
     "timestamp": "2026-06-12 00:41:46",
     "description": "Remove custom cursor hiding logic from menu panel and set cursor none",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:12:05",
     "description": "Fix native cursor flickering and align laser lines with custom cursor LERP delay",
     "folder": "step_084_Fix_native_cursor_flickering_and_align_laser_lines_with_custom_cursor_LERP_delay",
+    "is_auto": false
+  },
+  {
+    "step": 85,
+    "timestamp": "2026-06-12 01:14:19",
+    "description": "Change laser canvas mix-blend-mode to normal and allow drawing LERP to catch up to release coordinate",
+    "folder": "step_085_Change_laser_canvas_mix-blend-mode_to_normal_and_allow_drawing_LERP_to_catch_up_to_release_coordinate",
     "is_auto": false
   }
 ]
