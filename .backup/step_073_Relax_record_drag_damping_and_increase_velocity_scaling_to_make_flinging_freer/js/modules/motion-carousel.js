@@ -416,8 +416,6 @@ import gsap from 'gsap';
     panel.classList.add('open');
     if (nav) nav.classList.add('menu-open');
     document.body.style.overflow = 'hidden';
-    if (cursorDot)  cursorDot.style.opacity  = '0';
-    if (cursorRing) cursorRing.style.opacity = '0';
     const sb = document.getElementById('scrollBar');
     if (sb) sb.style.display = 'none';
   }
@@ -427,8 +425,6 @@ import gsap from 'gsap';
     panel.classList.remove('open');
     if (nav) nav.classList.remove('menu-open');
     document.body.style.overflow = '';
-    if (cursorDot)  cursorDot.style.opacity  = '0';
-    if (cursorRing) cursorRing.style.opacity = '0';
     const sb = document.getElementById('scrollBar');
     if (sb) sb.style.display = '';
   }
@@ -440,14 +436,6 @@ import gsap from 'gsap';
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && panel.classList.contains('open')) closeMenu();
-  });
-
-  document.addEventListener('mousemove', () => {
-    if (!panel.classList.contains('open') &&
-       (cursorDot?.style.opacity === '0' || cursorRing?.style.opacity === '0')) {
-      if (cursorDot)  cursorDot.style.opacity  = '';
-      if (cursorRing) cursorRing.style.opacity = '';
-    }
   });
 
   panel.querySelectorAll('.menu-nav-link[data-link]').forEach(link => {

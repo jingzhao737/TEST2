@@ -1,12 +1,5 @@
 [
   {
-    "step": 53,
-    "timestamp": "2026-06-12 00:20:11",
-    "description": "Prepare to implement tactile click press and release animation on custom cursor",
-    "folder": "step_053_Prepare_to_implement_tactile_click_press_and_release_animation_on_custom_cursor",
-    "is_auto": false
-  },
-  {
     "step": 54,
     "timestamp": "2026-06-12 00:20:30",
     "description": "Add responsive tactile click compression and 3D depth flattening animation on custom cursor",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:00:44",
     "description": "Relax drag damping and increase velocity scaling to make record flinging freer",
     "folder": "step_072_Relax_drag_damping_and_increase_velocity_scaling_to_make_record_flinging_freer",
+    "is_auto": false
+  },
+  {
+    "step": 73,
+    "timestamp": "2026-06-12 01:00:58",
+    "description": "Relax record drag damping and increase velocity scaling to make flinging freer",
+    "folder": "step_073_Relax_record_drag_damping_and_increase_velocity_scaling_to_make_flinging_freer",
     "is_auto": false
   }
 ]
