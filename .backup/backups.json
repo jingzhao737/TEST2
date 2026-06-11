@@ -1,12 +1,5 @@
 [
   {
-    "step": 11,
-    "timestamp": "2026-06-11 21:52:39",
-    "description": "Restore walkthrough.md and finalize",
-    "folder": "step_011_Restore_walkthrough.md_and_finalize",
-    "is_auto": false
-  },
-  {
     "step": 12,
     "timestamp": "2026-06-11 21:55:00",
     "description": "Balance layer twist symmetries and snap stationary rotations to zero to prevent tilt",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:18:49",
     "description": "Restore smooth creamy LERP hover scaling like a 3D soft sticker, removing twist layers and spins",
     "folder": "step_030_Restore_smooth_creamy_LERP_hover_scaling_like_a_3D_soft_sticker,_removing_twist_layers_and_spins",
+    "is_auto": false
+  },
+  {
+    "step": 31,
+    "timestamp": "2026-06-11 22:19:03",
+    "description": "Finalize walkthrough.md for creamy LERP soft sticker hover style",
+    "folder": "step_031_Finalize_walkthrough.md_for_creamy_LERP_soft_sticker_hover_style",
     "is_auto": false
   }
 ]
