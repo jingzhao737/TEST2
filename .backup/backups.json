@@ -33,5 +33,12 @@
     "description": "Adjust return-to-upright hold delay to 400ms",
     "folder": "step_005_Adjust_return-to-upright_hold_delay_to_400ms",
     "is_auto": false
+  },
+  {
+    "step": 6,
+    "timestamp": "2026-06-11 21:33:15",
+    "description": "Upgrade custom cursor hover state to premium fanning-out twist and barrel-roll spin",
+    "folder": "step_006_Upgrade_custom_cursor_hover_state_to_premium_fanning-out_twist_and_barrel-roll_spin",
+    "is_auto": false
   }
 ]
