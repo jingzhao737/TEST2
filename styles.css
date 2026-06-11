@@ -725,7 +725,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 100vw !important;
   max-width: none !important;
   padding: 0 !important;
-  margin: 120px 0 0 0 !important; /* Restore top margin to separate from Vision section */
+  margin: 120px 0 0 0; /* Remove !important so ScrollTrigger can override margins during pinning */
   overflow: hidden !important;
   position: relative;
   background: #000 !important;
@@ -789,8 +789,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   min-height: 100vh !important;
   min-height: 100dvh !important;
   position: relative !important;
-  /* neutralise scroll-reveal.js */
-  opacity: 1 !important;
+  /* neutralise scroll-reveal.js (removed opacity !important so GSAP can animate fade-in) */
   transform: none;               /* NOT !important so GSAP chars can animate */
   border-radius: 0 !important;
   margin: 0 !important;
