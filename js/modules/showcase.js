@@ -144,8 +144,8 @@ function initShowcase() {
     // Spring physics state for boundary bounce
     let bounceY = 0;
     let bounceVelocity = 0;
-    const springK = 0.08;   // Spring constant (stiffness)
-    const damping = 0.82;   // Damping constant (friction)
+    const springK = 0.05;   // Softer spring constant (was 0.08)
+    const damping = 0.85;   // Higher damping for smoother, less bouncy return (was 0.82)
     let prevProgress = 0.5; // Tracking scroll progress transitions
     let lastBounceTime = 0; // Cooldown timer to prevent rapid triggers
     
@@ -168,16 +168,16 @@ function initShowcase() {
         const normVel = gsap.utils.clamp(-maxVel, maxVel, velocity);
         targetScrollRotX = -(normVel / maxVel) * 12; // max 12 deg tilt
 
-        // Elastic spring boundary bounce detection on state transition
+        // Elastic spring boundary bounce detection on state transition (gentle overshoot)
         if (now - lastBounceTime > 300) {
           if (progress <= 0 && prevProgress > 0 && velocity < -200) {
-            // Hitting top boundary scrolling up quickly
-            const impulse = gsap.utils.clamp(-120, 0, velocity * 0.05);
+            // Hitting top boundary scrolling up quickly (reduced overshoot to max 40px)
+            const impulse = gsap.utils.clamp(-40, 0, velocity * 0.015);
             bounceVelocity += impulse;
             lastBounceTime = now;
           } else if (progress >= 1 && prevProgress < 1 && velocity > 200) {
-            // Hitting bottom boundary scrolling down quickly
-            const impulse = gsap.utils.clamp(0, 120, velocity * 0.05);
+            // Hitting bottom boundary scrolling down quickly (reduced overshoot to max 40px)
+            const impulse = gsap.utils.clamp(0, 40, velocity * 0.015);
             bounceVelocity += impulse;
             lastBounceTime = now;
           }
