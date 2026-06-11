@@ -1,12 +1,5 @@
 [
   {
-    "step": 71,
-    "timestamp": "2026-06-12 00:50:34",
-    "description": "Remove vertical inertia lag translateY delay on showcase preview card",
-    "folder": "step_071_Remove_vertical_inertia_lag_translateY_delay_on_showcase_preview_card",
-    "is_auto": false
-  },
-  {
     "step": 72,
     "timestamp": "2026-06-12 01:00:44",
     "description": "Relax drag damping and increase velocity scaling to make record flinging freer",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:24:57",
     "description": "Before premium laser effect upgrade",
     "folder": "step_090_Before_premium_laser_effect_upgrade",
+    "is_auto": false
+  },
+  {
+    "step": 91,
+    "timestamp": "2026-06-12 01:31:57",
+    "description": "Upgrade laser lines to premium neon effects with chromatic aberration and starburst particles",
+    "folder": "step_091_Upgrade_laser_lines_to_premium_neon_effects_with_chromatic_aberration_and_starburst_particles",
     "is_auto": false
   }
 ]
