@@ -806,6 +806,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   height: 100vh;
   position: sticky;
   top: 0;
+  align-self: flex-start; /* Prevent flex stretch so sticky can slide */
   display: flex;
   align-items: center;
   justify-content: flex-end;
