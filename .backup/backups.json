@@ -1,12 +1,5 @@
 [
   {
-    "step": 50,
-    "timestamp": "2026-06-11 23:32:16",
-    "description": "Bypass return-to-upright when custom cursor is hovered on active pointer elements",
-    "folder": "step_050_Bypass_return-to-upright_when_custom_cursor_is_hovered_on_active_pointer_elements",
-    "is_auto": false
-  },
-  {
     "step": 51,
     "timestamp": "2026-06-11 23:52:54",
     "description": "Prepare to filter out micro-movement cursor steering flips using filtered velocity threshold",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:46:17",
     "description": "Increase grab state custom cursor circle scale to 0.85",
     "folder": "step_069_Increase_grab_state_custom_cursor_circle_scale_to_0.85",
+    "is_auto": false
+  },
+  {
+    "step": 70,
+    "timestamp": "2026-06-12 00:50:20",
+    "description": "Remove vertical inertia lag delay on showcase card",
+    "folder": "step_070_Remove_vertical_inertia_lag_delay_on_showcase_card",
     "is_auto": false
   }
 ]
