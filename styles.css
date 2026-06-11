@@ -53,9 +53,9 @@
   --work-card-hover-light-bg:#206759;
   --btt-light-bg:#206759;--detail-close-light-bg:#206759;
 }
-html{scroll-behavior:auto;scrollbar-width:none;-ms-overflow-style:none;background:var(--bg);transition:background .6s var(--ease-out-expo);overflow-x:hidden}
+html{scroll-behavior:auto;scrollbar-width:none;-ms-overflow-style:none;background:var(--bg);transition:background .6s var(--ease-out-expo);overflow-x:clip}
 html::-webkit-scrollbar{display:none}
-body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;letter-spacing:-.01em;transition:background .6s var(--ease-out-expo),color .6s var(--ease-out-expo);position:relative;container-type:inline-size}
+body{font-family:'Google Sans',sans-serif;background:var(--bg);color:var(--fg);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip;letter-spacing:-.01em;transition:background .6s var(--ease-out-expo),color .6s var(--ease-out-expo);position:relative;container-type:inline-size}
 body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,var(--dot-color) 1px,transparent 1px);background-size:28px 28px;opacity:1;transition:opacity .6s var(--ease-out-expo)}
 @media(pointer:fine){body{cursor:none}}
 ::selection{background:var(--accent);color:var(--bg)}
