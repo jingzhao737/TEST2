@@ -49,10 +49,9 @@
     if (!isFirstMove) {
       const target = e.target;
       if (target) {
-        const computedCursor = window.getComputedStyle(target).cursor;
-        const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
-                       computedCursor === 'grab' || 
-                       computedCursor === 'grabbing';
+        // Dynamic detection of grabbable elements and inline cursor styles (e.g. #framesCanvas records)
+        const isGrab = target.closest('.motion-hero, .motion-slide, .scroll-thumb, .scroll-bar, .zoom-slider-knob, .zoom-slider-track, .theme-pull-wrapper, .theme-toggle') || 
+                       (target.closest('#framesCanvas') && (target.style.cursor === 'grab' || target.style.cursor === 'grabbing'));
         if (isGrab) {
           if (!isGrabState) {
             isGrabState = true;
@@ -103,9 +102,8 @@
     
     // Lock grab state during active dragging
     const target = e.target.closest(hoverSelector) || e.target;
-    const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
-                   window.getComputedStyle(target).cursor === 'grab' || 
-                   window.getComputedStyle(target).cursor === 'grabbing';
+    const isGrab = target.closest('.motion-hero, .motion-slide, .scroll-thumb, .scroll-bar, .zoom-slider-knob, .zoom-slider-track, .theme-pull-wrapper, .theme-toggle') || 
+                   (target.closest('#framesCanvas') && (target.style.cursor === 'grab' || target.style.cursor === 'grabbing'));
     if (isGrab) {
       isGrabState = true;
       cursorDot.classList.add('grab-state');
@@ -119,10 +117,8 @@
     // Check if we are still hovering over a grabbable element after release
     const target = e.target;
     if (target) {
-      const computedCursor = window.getComputedStyle(target).cursor;
-      const isGrab = target.closest('.motion-hero, .scroll-thumb, .zoom-slider-knob, .zoom-slider-track') || 
-                     computedCursor === 'grab' || 
-                     computedCursor === 'grabbing';
+      const isGrab = target.closest('.motion-hero, .motion-slide, .scroll-thumb, .scroll-bar, .zoom-slider-knob, .zoom-slider-track, .theme-pull-wrapper, .theme-toggle') || 
+                     (target.closest('#framesCanvas') && (target.style.cursor === 'grab' || target.style.cursor === 'grabbing'));
       if (!isGrab) {
         isGrabState = false;
         cursorDot.classList.remove('grab-state');

@@ -1,12 +1,5 @@
 [
   {
-    "step": 41,
-    "timestamp": "2026-06-11 22:35:23",
-    "description": "Smooth return-to-upright glide easing to 0.03 for a longer, gentler animation",
-    "folder": "step_041_Smooth_return-to-upright_glide_easing_to_0.03_for_a_longer,_gentler_animation",
-    "is_auto": false
-  },
-  {
     "step": 42,
     "timestamp": "2026-06-11 22:42:58",
     "description": "Implement subtle return-to-upright banking roll and shape deformation",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:30:26",
     "description": "Fix canvas record hover grab state by adding framesCanvas to hide list and implementing dynamic mousemove grab detection",
     "folder": "step_060_Fix_canvas_record_hover_grab_state_by_adding_framesCanvas_to_hide_list_and_implementing_dynamic_mousemove_grab_detection",
+    "is_auto": false
+  },
+  {
+    "step": 61,
+    "timestamp": "2026-06-12 00:31:46",
+    "description": "Fix computed cursor override by using explicit selector matching and inline style checks",
+    "folder": "step_061_Fix_computed_cursor_override_by_using_explicit_selector_matching_and_inline_style_checks",
     "is_auto": false
   }
 ]
