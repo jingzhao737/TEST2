@@ -130,7 +130,15 @@
       if (Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
       } else {
-        targetAngle = -90; // Align upright
+        // Smoothly ease targetAngle to -90 to prevent step-jump twitches
+        let targetDiff = -90 - targetAngle;
+        while (targetDiff < -180) targetDiff += 360;
+        while (targetDiff > 180) targetDiff -= 360;
+        if (Math.abs(targetDiff) < 1.0) {
+          targetAngle = -90;
+        } else {
+          targetAngle += targetDiff * 0.08; // Gentle transition of targetAngle
+        }
       }
     }
 
@@ -140,7 +148,7 @@
     while (diff > 180) diff -= 360;
 
     // Gentle steering delay when flying, dynamic low-speed dampening to prevent angular flutter
-    const isReturningUpright = (targetAngle === -90);
+    const isReturningUpright = (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
       angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide
@@ -167,21 +175,21 @@
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
     const basePitch = isReturningUpright 
-      ? Math.min(Math.abs(diff) * 0.35, 18) 
+      ? Math.min(Math.abs(diff) * 0.25, 12) 
       : Math.min(cursorSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
-      ? Math.max(-30, Math.min(30, diff * 0.8)) * Math.min(cursorSpeed / 3.0, 1.0) // Scale by cursorSpeed to prevent static tilt
+      ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
-    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright, scaled by cursorSpeed to prevent static stretch)
+    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
+      ? (1 - Math.min(Math.abs(diff) * 0.0015, 0.08)) // Subtle squish (max 8%)
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
+      ? (1 + Math.min(Math.abs(diff) * 0.0025, 0.12)) // Subtle stretch (max 12%)
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
 
     // Smooth physics LERP (faster response rate of 0.15)
@@ -192,12 +200,15 @@
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
     if (cursorSpeed < 0.1 && speed < 0.1) {
-      if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
-      if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
-      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      if (targetAngle === -90) {
+        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+        if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
+        if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      }
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
+
 
 
 

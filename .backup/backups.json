@@ -1,12 +1,5 @@
 [
   {
-    "step": 22,
-    "timestamp": "2026-06-11 22:00:38",
-    "description": "Fix (0,0) entry warp twitch and scale return-to-upright deformation by cursorSpeed to prevent static tilt and stretch",
-    "folder": "step_022_Fix_(0,0)_entry_warp_twitch_and_scale_return-to-upright_deformation_by_cursorSpeed_to_prevent_static_tilt_and_stretch",
-    "is_auto": false
-  },
-  {
     "step": 23,
     "timestamp": "2026-06-11 22:00:51",
     "description": "Finalize walkthrough.md for physics and entry coordinate snap",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:35:23",
     "description": "Smooth return-to-upright glide easing to 0.03 for a longer, gentler animation",
     "folder": "step_041_Smooth_return-to-upright_glide_easing_to_0.03_for_a_longer,_gentler_animation",
+    "is_auto": false
+  },
+  {
+    "step": 42,
+    "timestamp": "2026-06-11 22:42:58",
+    "description": "Implement subtle return-to-upright banking roll and shape deformation",
+    "folder": "step_042_Implement_subtle_return-to-upright_banking_roll_and_shape_deformation",
     "is_auto": false
   }
 ]
