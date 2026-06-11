@@ -28,6 +28,8 @@
   // Scale Physics (Creamy LERP to swell smoothly like a soft 3D sticker)
   let currentScale = 0.67;
   let currentTrailScale = 0.67 * 0.6;
+  let flyingSpeed = 0; // Asymmetric physical speed filter for paper airplane lift & float
+
 
   // 3D & Deformation Physics
   let currentPitch = 0;
@@ -170,40 +172,46 @@
     // Our SVG points UP (which matches -90 degrees in math). 
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
+    // Calculate flyingSpeed using asymmetric LERP filter (Fast-Slow-Fast profile)
+    if (cursorSpeed > flyingSpeed) {
+      flyingSpeed += (cursorSpeed - flyingSpeed) * 0.15; // Fast rise
+    } else {
+      const ease = flyingSpeed < 1.5 ? 0.15 : 0.035; // Slow float, then fast landing
+      flyingSpeed += (cursorSpeed - flyingSpeed) * ease;
+    }
 
     // 4. Hover & Speed-based scale calculation (Swells when moving fast, like a paper airplane gaining lift and flying high)
     const baseTargetScale = isHovered ? 0.82 : 0.67;
-    const speedScaleBoost = Math.min(cursorSpeed * 0.015, 0.20); // Swells up to +0.20 scale at high speed
+    const speedScaleBoost = Math.min(flyingSpeed * 0.015, 0.20); // Swells up to +0.20 scale at high speed
     const targetScale = baseTargetScale + speedScaleBoost;
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
     
     // Dynamic Z-depth thickness: expands on hover, and swells dynamically based on speed to represent flight altitude
-    const speedZBoost = Math.min(cursorSpeed * 0.08, 1.2); // Expands layer Z-spacing up to +1.2px at high speed
+    const speedZBoost = Math.min(flyingSpeed * 0.08, 1.2); // Expands layer Z-spacing up to +1.2px at high speed
     const targetZSpacing = (isHovered ? 1.8 : 0.8) + speedZBoost;
     
     currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
 
-
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
     const basePitch = isReturningUpright 
       ? Math.min(Math.abs(diff) * 0.25, 12) 
-      : Math.min(cursorSpeed * 1.5, 30);
+      : Math.min(flyingSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
       ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
-      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
+      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(flyingSpeed / 6.0, 1.0); // Driven by LERP-smoothed flyingSpeed
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
       ? (1 - Math.min(Math.abs(diff) * 0.0015, 0.08)) // Subtle squish (max 8%)
-      : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
+      : (1 - Math.min(flyingSpeed * 0.0015, 0.06)); // Organic squish driven by flyingSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
       ? (1 + Math.min(Math.abs(diff) * 0.0025, 0.12)) // Subtle stretch (max 12%)
-      : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
+      : (1 + Math.min(flyingSpeed * 0.0025, 0.10)); // Organic stretch driven by flyingSpeed (naturally capped and smoothed)
 
     // Smooth physics LERP (faster response rate of 0.15)
     currentPitch += (targetPitch - currentPitch) * 0.15;
@@ -212,7 +220,7 @@
     currentStretchY += (targetStretchY - currentStretchY) * 0.15;
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
-    if (cursorSpeed < 0.1 && speed < 0.1) {
+    if (cursorSpeed < 0.1 && speed < 0.1 && flyingSpeed < 0.1) {
       if (targetAngle === -90) {
         if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
         if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
@@ -221,10 +229,6 @@
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
-
-
-
-
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, -10%)`;
     cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, -10%)`;
