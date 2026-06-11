@@ -1,63 +1,100 @@
 const { chromium } = require('playwright');
 
 (async () => {
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  const page = await context.newPage();
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.setViewportSize({ width: 1440, height: 900 });
 
-  page.on('console', msg => console.log(`BROWSER [${msg.type()}]: ${msg.text()}`));
-  page.on('pageerror', err => console.log(`BROWSER ERROR: ${err}`));
+  await page.goto("http://localhost:5174/");
+  await page.waitForFunction(() => window.loaderFinished === true, { timeout: 10000 });
 
-  await page.goto("http://localhost:5173");
-  await page.waitForTimeout(2500);
+  console.log("Scrolling to #showcase...");
+  const showcase = page.locator('#showcase');
+  await showcase.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1000);
 
-  // Scroll showcase into view
-  await page.locator('.showcase').scrollIntoViewIfNeeded();
-  await page.waitForTimeout(1200);
-  await page.screenshot({ path: "C:/Users/jackchen/.gemini/antigravity/brain/9b5ba770-9209-4a3b-ab95-fcd04f6ecc9a/sc_state0.png" });
+  // Scroll down a bit to activate the first/second item
+  console.log("Scrolling scrollY to 4200px...");
+  await page.evaluate(() => window.scrollTo(0, 4200));
+  await page.waitForTimeout(1000);
 
-  // Check overall state
-  const info = await page.evaluate(() => {
-    const section = document.querySelector('.showcase');
-    const grid = document.querySelector('.showcase-grid');
-    const items = document.querySelectorAll('.showcase-item');
-    const pager = document.querySelector('.showcase-global-ticker');
-    const progressEl = document.querySelector('.showcase-global-progress');
-    const st = section ? section.getBoundingClientRect() : null;
-    const gt = grid ? grid.getBoundingClientRect() : null;
+  const debugInfo = await page.evaluate(() => {
+    const sec = document.querySelector('#showcase');
+    const wrapper = document.querySelector('.showcase-layout-wrapper');
+    const leftTrack = document.querySelector('.showcase-left-text-track');
+    const stickyZone = document.querySelector('.showcase-right-sticky-zone');
+    const previewWrapper = document.querySelector('.showcase-sticky-preview-wrapper');
+    const card = document.querySelector('.showcase-sticky-preview-card');
+    const imgs = document.querySelectorAll('.showcase-sticky-preview-img');
+    const textItems = document.querySelectorAll('.showcase-text-item');
 
     return {
-      sectionClasses: section?.className,
-      gridClasses: grid?.className,
-      sectionRect: st ? { top: st.top, left: st.left, width: st.width, height: st.height } : null,
-      gridRect: gt ? { top: gt.top, left: gt.left, width: gt.width, height: gt.height } : null,
-      hasPager: !!pager,
-      hasProgress: !!progressEl,
-      items: Array.from(items).map((item, idx) => {
-        const r = item.getBoundingClientRect();
-        const cs = window.getComputedStyle(item);
-        return {
-          idx,
-          title: item.querySelector('.showcase-title')?.textContent?.trim(),
-          top: r.top, left: r.left, width: r.width, height: r.height,
-          position: cs.position,
-          zIndex: cs.zIndex,
-          clipPath: cs.clipPath,
-          opacity: cs.opacity,
-          transform: cs.transform,
-        };
-      })
+      scrollY: window.scrollY,
+      sec: sec ? {
+        className: sec.className,
+        rect: sec.getBoundingClientRect(),
+        style: sec.getAttribute('style'),
+        computedStyle: {
+          display: getComputedStyle(sec).display,
+          position: getComputedStyle(sec).position,
+          overflow: getComputedStyle(sec).overflow,
+        }
+      } : null,
+      wrapper: wrapper ? {
+        rect: wrapper.getBoundingClientRect(),
+        computedStyle: {
+          display: getComputedStyle(wrapper).display,
+          position: getComputedStyle(wrapper).position,
+          height: getComputedStyle(wrapper).height,
+        }
+      } : null,
+      leftTrack: leftTrack ? {
+        rect: leftTrack.getBoundingClientRect(),
+      } : null,
+      stickyZone: stickyZone ? {
+        rect: stickyZone.getBoundingClientRect(),
+        computedStyle: {
+          display: getComputedStyle(stickyZone).display,
+          position: getComputedStyle(stickyZone).position,
+          top: getComputedStyle(stickyZone).top,
+          height: getComputedStyle(stickyZone).height,
+          zIndex: getComputedStyle(stickyZone).zIndex,
+          visibility: getComputedStyle(stickyZone).visibility,
+          opacity: getComputedStyle(stickyZone).opacity,
+        }
+      } : null,
+      previewWrapper: previewWrapper ? {
+        rect: previewWrapper.getBoundingClientRect(),
+        computedStyle: {
+          display: getComputedStyle(previewWrapper).display,
+          visibility: getComputedStyle(previewWrapper).visibility,
+          opacity: getComputedStyle(previewWrapper).opacity,
+        }
+      } : null,
+      card: card ? {
+        rect: card.getBoundingClientRect(),
+        computedStyle: {
+          display: getComputedStyle(card).display,
+          visibility: getComputedStyle(card).visibility,
+          opacity: getComputedStyle(card).opacity,
+          transform: getComputedStyle(card).transform,
+        }
+      } : null,
+      imgs: Array.from(imgs).map(img => ({
+        src: img.getAttribute('src'),
+        rect: img.getBoundingClientRect(),
+        opacity: getComputedStyle(img).opacity,
+        clipPath: getComputedStyle(img).clipPath,
+      })),
+      textItems: Array.from(textItems).map((el, i) => ({
+        index: i,
+        rect: el.getBoundingClientRect(),
+        opacity: getComputedStyle(el).opacity,
+      }))
     };
   });
-  console.log(JSON.stringify(info, null, 2));
 
-  // Slowly scroll through the showcase to see transitions
-  for (let step = 1; step <= 4; step++) {
-    await page.evaluate(() => window.scrollBy(0, 450));
-    await page.waitForTimeout(700);
-    await page.screenshot({ path: `C:/Users/jackchen/.gemini/antigravity/brain/9b5ba770-9209-4a3b-ab95-fcd04f6ecc9a/sc_state${step}.png` });
-  }
+  console.log("Detailed Debug Info:", JSON.stringify(debugInfo, null, 2));
 
   await browser.close();
-  console.log("Done.");
 })();
