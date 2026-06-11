@@ -1,19 +1,5 @@
 [
   {
-    "step": 58,
-    "timestamp": "2026-06-12 00:28:18",
-    "description": "Tweak grab circle scale to 0.72 and compress scale to 0.48 on grabbing state",
-    "folder": "step_058_Tweak_grab_circle_scale_to_0.72_and_compress_scale_to_0.48_on_grabbing_state",
-    "is_auto": false
-  },
-  {
-    "step": 59,
-    "timestamp": "2026-06-12 00:30:00",
-    "description": "Prepare to hide native grab cursor on framesCanvas and implement dynamic mousemove grab detection",
-    "folder": "step_059_Prepare_to_hide_native_grab_cursor_on_framesCanvas_and_implement_dynamic_mousemove_grab_detection",
-    "is_auto": false
-  },
-  {
     "step": 60,
     "timestamp": "2026-06-12 00:30:26",
     "description": "Fix canvas record hover grab state by adding framesCanvas to hide list and implementing dynamic mousemove grab detection",
@@ -137,6 +123,20 @@
     "timestamp": "2026-06-12 01:05:39",
     "description": "Optimize pocket snap LERP and rope boundary bounce elasticity",
     "folder": "step_077_Optimize_pocket_snap_LERP_and_rope_boundary_bounce_elasticity",
+    "is_auto": false
+  },
+  {
+    "step": 78,
+    "timestamp": "2026-06-12 01:07:06",
+    "description": "Auto-backup before rollback to Step 75",
+    "folder": "auto_078_Auto-backup_before_rollback_to_Step_75",
+    "is_auto": true
+  },
+  {
+    "step": 79,
+    "timestamp": "2026-06-12 01:07:12",
+    "description": "Roll back record physics changes to Step 75",
+    "folder": "step_079_Roll_back_record_physics_changes_to_Step_75",
     "is_auto": false
   }
 ]
