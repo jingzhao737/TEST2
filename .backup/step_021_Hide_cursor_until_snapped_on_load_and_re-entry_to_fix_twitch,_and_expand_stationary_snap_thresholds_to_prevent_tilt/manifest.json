@@ -13,7 +13,7 @@
   },
   "index.html": {
     "type": "code",
-    "hash": "c1dd9c65047642126152777d282badc731eb61cc9bf385170a46ffeab9230703"
+    "hash": "cef6c45fa2eedca3316482ec3f2be0e8d71e0b3a94262a1c67ec0efd895e0775"
   },
   "package-lock.json": {
     "type": "code",
@@ -29,7 +29,7 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "3a2beeeeeab16afebb5c8771629c7c01767371745a50f659f1ffad74a73f8624"
+    "hash": "fe9acf7195f1d5b23e2c8dbb7e50d81714bd2e5fd61b45c4dc65b0b0d935cced"
   },
   "task.md": {
     "type": "code",
@@ -41,7 +41,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "721a50c3ab8faabd2ea546c183f3843a250d6633a0c3b4eb267e6baa1ff55f74"
+    "hash": "3680ca3c897d5164365f5fb7ecf8db1576c7b94decc15c297976729bcea677c6"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -85,15 +85,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "a604bfdc5d135607600e4c01527276bbbd701f977cdb6ebf5c4995eef207af63"
+    "hash": "5c219a517199baa580d5dba8d07a4030a3916702ad3f1adf2db0546afab0ddc4"
   },
-  "dist\\assets\\index-CTnGictB.js": {
+  "dist\\assets\\index-CGRnv57D.css": {
     "type": "code",
-    "hash": "d096d4881d3703823cc34a76b67fcb67266d372ac3cabeed24e2325da7bbc599"
+    "hash": "b4ff06c127d898a5c1c7c1902e1b150c3e38e9aa6b84062d3bc1e380495b4ced"
   },
-  "dist\\assets\\index-Zxxgs6C5.css": {
+  "dist\\assets\\index-D1qfW0Ax.js": {
     "type": "code",
-    "hash": "085846519fa89bc52c5d729a506a72a10ecb0acdb8255c815640eb194329dda6"
+    "hash": "7b8f53e968ca48f9bc808e20caddcb676594fd540ece421938edc4e5ff6d8b4e"
   },
   "images\\index.txt": {
     "type": "code",
@@ -129,7 +129,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "6b518db6e09b03feb5f066e5849cea77f104627320c505fe5969fb961166b363"
+    "hash": "41f26e3a4f185a6eb7d9c0994f71accb43a6e96ca419fc07150c764b8d145287"
   },
   "js\\modules\\data.js": {
     "type": "code",

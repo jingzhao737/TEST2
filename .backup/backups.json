@@ -1,12 +1,5 @@
 [
   {
-    "step": 1,
-    "timestamp": "2026-06-11 21:23:56",
-    "description": "Backup before restoring Step 108 custom cursor",
-    "folder": "step_001_Backup_before_restoring_Step_108_custom_cursor",
-    "is_auto": false
-  },
-  {
     "step": 2,
     "timestamp": "2026-06-11 21:24:40",
     "description": "Restore fine-tuned 3D custom cursor (Step 108) on top of baseline repository",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 21:58:17",
     "description": "Document initial coordinate snapping in walkthrough.md",
     "folder": "step_020_Document_initial_coordinate_snapping_in_walkthrough.md",
+    "is_auto": false
+  },
+  {
+    "step": 21,
+    "timestamp": "2026-06-11 21:59:45",
+    "description": "Hide cursor until snapped on load and re-entry to fix twitch, and expand stationary snap thresholds to prevent tilt",
+    "folder": "step_021_Hide_cursor_until_snapped_on_load_and_re-entry_to_fix_twitch,_and_expand_stationary_snap_thresholds_to_prevent_tilt",
     "is_auto": false
   }
 ]
