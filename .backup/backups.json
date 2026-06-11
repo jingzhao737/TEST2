@@ -1,12 +1,5 @@
 [
   {
-    "step": 67,
-    "timestamp": "2026-06-12 00:42:09",
-    "description": "Fix custom cursor visibility when menu overlay is open",
-    "folder": "step_067_Fix_custom_cursor_visibility_when_menu_overlay_is_open",
-    "is_auto": false
-  },
-  {
     "step": 68,
     "timestamp": "2026-06-12 00:46:06",
     "description": "Increase custom cursor scale in grab state",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:17:02",
     "description": "Change laser lines mix-blend-mode to screen in dark mode and multiply in light mode to fix visibility and stacking issues",
     "folder": "step_086_Change_laser_lines_mix-blend-mode_to_screen_in_dark_mode_and_multiply_in_light_mode_to_fix_visibility_and_stacking_issues",
+    "is_auto": false
+  },
+  {
+    "step": 87,
+    "timestamp": "2026-06-12 01:20:47",
+    "description": "Fix laser lines restore sound and hero area drawing",
+    "folder": "step_087_Fix_laser_lines_restore_sound_and_hero_area_drawing",
     "is_auto": false
   }
 ]

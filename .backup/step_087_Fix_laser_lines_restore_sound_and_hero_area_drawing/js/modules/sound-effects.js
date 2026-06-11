@@ -94,12 +94,13 @@
       });
     });
 
-    // Click pop
-    const clicks = document.querySelectorAll('.work-card, #detailClose, .menu-nav-link, .nav-menu-btn');
-    clicks.forEach(el => {
-      el.addEventListener('click', () => {
+    // Click pop (using global event delegation for all interactive elements)
+    const clickSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble, #framesCanvas';
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target && typeof target.closest === 'function' && target.closest(clickSelector)) {
         playClickSound();
-      });
+      }
     });
   }
 
