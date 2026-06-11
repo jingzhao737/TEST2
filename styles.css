@@ -670,7 +670,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 @keyframes grainAnim{0%{transform:translate(0,0)}25%{transform:translate(-1px,0)}50%{transform:translate(0,-1px)}75%{transform:translate(1px,0)}100%{transform:translate(0,1px)}}
 
 /* 鈺愨晲鈺愨晲鈺愨晲锟?FEATURED SHOWCASE 鈺愨晲鈺愨晲鈺愨晲锟?*/
-.showcase{height:100vh;height:100dvh;display:flex;flex-direction:column;justify-content:center;padding:0 !important;width:100%;max-width:none;margin:0;background:transparent;position:relative;z-index:1}
+.showcase{height:auto;display:flex;flex-direction:column;justify-content:center;padding:0 !important;width:100%;max-width:none;margin:0;background:transparent;position:relative;z-index:1}
 .showcase::after{content:"";position:absolute;top:20%;left:50%;transform:translateX(-50%);width:80%;height:60%;border:1px solid var(--border);border-radius:50%;pointer-events:none;z-index:0;opacity:.3}
 .showcase-header, .showcase-grid{width:100%;max-width:1440px;margin-left:auto;margin-right:auto;box-sizing:border-box}
 .showcase-header{padding:0 64px;margin-bottom:80px}
@@ -722,6 +722,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .showcase {
   position: relative;
   width: 100vw;
+  height: auto !important;
   max-width: none !important;
   padding: 0 !important;
   margin: 120px 0 0 0;
