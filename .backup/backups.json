@@ -1,12 +1,5 @@
 [
   {
-    "step": 28,
-    "timestamp": "2026-06-11 22:16:34",
-    "description": "Update walkthrough.md with refined subtle hover values",
-    "folder": "step_028_Update_walkthrough.md_with_refined_subtle_hover_values",
-    "is_auto": false
-  },
-  {
     "step": 29,
     "timestamp": "2026-06-11 22:18:18",
     "description": "Implement creamy smooth LERP scale and 3D solid thickness swell, removing twist fanning and spins",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 23:26:45",
     "description": "Add nose-dive forward pitch and gradual LERP transition rates during return-to-upright",
     "folder": "step_047_Add_nose-dive_forward_pitch_and_gradual_LERP_transition_rates_during_return-to-upright",
+    "is_auto": false
+  },
+  {
+    "step": 48,
+    "timestamp": "2026-06-11 23:27:48",
+    "description": "Revert last two features speed-based scaling and return-to-upright nose-dive",
+    "folder": "step_048_Revert_last_two_features_speed-based_scaling_and_return-to-upright_nose-dive",
     "is_auto": false
   }
 ]
