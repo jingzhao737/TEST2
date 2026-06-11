@@ -183,6 +183,9 @@ function initShowcase() {
     }
 
     // ── 7. Unified Physics LERP Animation Loop ───────────────────
+    let targetTranslateY = 0;
+    let currentTranslateY = 0;
+
     function updateCardPhysics() {
       // Smooth LERP for mouse rotation
       currentMouseX += (targetMouseX - currentMouseX) * 0.05;
@@ -194,10 +197,23 @@ function initShowcase() {
       // Decay scroll rotation target back to 0 when scroll stops
       targetScrollRotX *= 0.92;
 
+      // Dynamic Y Alignment LERP (Desktop only)
+      if (!isMobile && activeIndex !== -1 && items[activeIndex]) {
+        const item = items[activeIndex];
+        const rect = item.getBoundingClientRect();
+        const itemCenter = rect.top + rect.height / 2;
+        const viewportCenter = window.innerHeight / 2;
+        targetTranslateY = itemCenter - viewportCenter;
+      } else {
+        targetTranslateY = 0;
+      }
+      currentTranslateY += (targetTranslateY - currentTranslateY) * 0.08;
+
       if (card) {
         gsap.set(card, {
           rotationX: currentMouseX + currentScrollRotX,
           rotationY: currentMouseY,
+          y: currentTranslateY,
           skewY: currentScrollRotX * 0.12,
           scale: 1 - Math.abs(currentScrollRotX) * 0.004,
           overwrite: 'auto'
