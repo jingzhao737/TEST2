@@ -1,12 +1,5 @@
 [
   {
-    "step": 31,
-    "timestamp": "2026-06-11 22:19:03",
-    "description": "Finalize walkthrough.md for creamy LERP soft sticker hover style",
-    "folder": "step_031_Finalize_walkthrough.md_for_creamy_LERP_soft_sticker_hover_style",
-    "is_auto": false
-  },
-  {
     "step": 32,
     "timestamp": "2026-06-11 22:23:05",
     "description": "Implement smooth spring scale-up and rebound overshoot",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 23:32:16",
     "description": "Bypass return-to-upright when custom cursor is hovered on active pointer elements",
     "folder": "step_050_Bypass_return-to-upright_when_custom_cursor_is_hovered_on_active_pointer_elements",
+    "is_auto": false
+  },
+  {
+    "step": 51,
+    "timestamp": "2026-06-11 23:52:54",
+    "description": "Prepare to filter out micro-movement cursor steering flips using filtered velocity threshold",
+    "folder": "step_051_Prepare_to_filter_out_micro-movement_cursor_steering_flips_using_filtered_velocity_threshold",
     "is_auto": false
   }
 ]
