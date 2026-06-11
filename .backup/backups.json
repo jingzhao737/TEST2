@@ -1,12 +1,5 @@
 [
   {
-    "step": 29,
-    "timestamp": "2026-06-11 22:18:18",
-    "description": "Implement creamy smooth LERP scale and 3D solid thickness swell, removing twist fanning and spins",
-    "folder": "step_029_Implement_creamy_smooth_LERP_scale_and_3D_solid_thickness_swell,_removing_twist_fanning_and_spins",
-    "is_auto": false
-  },
-  {
     "step": 30,
     "timestamp": "2026-06-11 22:18:49",
     "description": "Restore smooth creamy LERP hover scaling like a 3D soft sticker, removing twist layers and spins",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 23:27:48",
     "description": "Revert last two features speed-based scaling and return-to-upright nose-dive",
     "folder": "step_048_Revert_last_two_features_speed-based_scaling_and_return-to-upright_nose-dive",
+    "is_auto": false
+  },
+  {
+    "step": 49,
+    "timestamp": "2026-06-11 23:32:05",
+    "description": "Prepare to bypass return-to-upright when custom cursor is hovered on active pointer elements",
+    "folder": "step_049_Prepare_to_bypass_return-to-upright_when_custom_cursor_is_hovered_on_active_pointer_elements",
     "is_auto": false
   }
 ]
