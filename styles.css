@@ -71,20 +71,24 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 /* ═══════ CURSOR ═══════ */
 .cursor-dot {
   position: fixed;
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  background: transparent;
   pointer-events: none;
   z-index: 10001;
   left: 0;
   top: 0;
   transform: translate3d(-50%, -50%, 0);
   will-change: transform, opacity;
-  transition: opacity 0.3s var(--ease-out-expo), width 0.3s var(--ease-out-expo), height 0.3s var(--ease-out-expo);
+  transition: opacity 0.3s var(--ease-out-expo);
 }
 .cursor-dot.hovered {
   opacity: 0; /* Fade out dot on hover to clear visual focus */
+}
+.cursor-arrow-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 .cursor-ring {
   position: fixed;
