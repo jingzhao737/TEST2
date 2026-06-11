@@ -1,12 +1,5 @@
 [
   {
-    "step": 68,
-    "timestamp": "2026-06-12 00:46:06",
-    "description": "Increase custom cursor scale in grab state",
-    "folder": "step_068_Increase_custom_cursor_scale_in_grab_state",
-    "is_auto": false
-  },
-  {
     "step": 69,
     "timestamp": "2026-06-12 00:46:17",
     "description": "Increase grab state custom cursor circle scale to 0.85",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:20:47",
     "description": "Fix laser lines restore sound and hero area drawing",
     "folder": "step_087_Fix_laser_lines_restore_sound_and_hero_area_drawing",
+    "is_auto": false
+  },
+  {
+    "step": 88,
+    "timestamp": "2026-06-12 01:22:29",
+    "description": "Make click sound play on all clicks globally not just interactive elements",
+    "folder": "step_088_Make_click_sound_play_on_all_clicks_globally_not_just_interactive_elements",
     "is_auto": false
   }
 ]

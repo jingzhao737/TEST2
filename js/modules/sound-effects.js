@@ -86,7 +86,7 @@
 
   // Bind events after DOM is loaded
   function initEvents() {
-    // Hover pop
+    // Hover pop on nav/ui elements
     const hovers = document.querySelectorAll('.nav-links a, .theme-toggle, .hdr-ring, .nav-next-btn');
     hovers.forEach(el => {
       el.addEventListener('mouseenter', () => {
@@ -94,12 +94,20 @@
       });
     });
 
-    // Click pop (using global event delegation for all interactive elements)
-    const clickSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble, #framesCanvas';
+    // Interactive element selector — clicking these uses the heavier click sound
+    const interactiveSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble, #framesCanvas';
+
+    // Global click — fires on EVERY click anywhere on the page
     document.addEventListener('click', (e) => {
       const target = e.target;
-      if (target && typeof target.closest === 'function' && target.closest(clickSelector)) {
+      if (!target) return;
+      // Check if clicking an interactive element (louder click) vs. blank area (lighter hover tone)
+      const isInteractive = typeof target.closest === 'function' && target.closest(interactiveSelector);
+      if (isInteractive) {
         playClickSound();
+      } else {
+        // Lighter, shorter "tap" sound for blank/non-interactive areas
+        playHoverSound();
       }
     });
   }
