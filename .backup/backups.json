@@ -1,12 +1,5 @@
 [
   {
-    "step": 42,
-    "timestamp": "2026-06-11 22:42:58",
-    "description": "Implement subtle return-to-upright banking roll and shape deformation",
-    "folder": "step_042_Implement_subtle_return-to-upright_banking_roll_and_shape_deformation",
-    "is_auto": false
-  },
-  {
     "step": 43,
     "timestamp": "2026-06-11 22:44:22",
     "description": "Filter velocity inputs for smooth jitter-free movement steering while keeping 1.5 speed threshold",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:31:46",
     "description": "Fix computed cursor override by using explicit selector matching and inline style checks",
     "folder": "step_061_Fix_computed_cursor_override_by_using_explicit_selector_matching_and_inline_style_checks",
+    "is_auto": false
+  },
+  {
+    "step": 62,
+    "timestamp": "2026-06-12 00:32:43",
+    "description": "Prepare to implement dual-shape cross-fade morphing system for custom cursor",
+    "folder": "step_062_Prepare_to_implement_dual-shape_cross-fade_morphing_system_for_custom_cursor",
     "is_auto": false
   }
 ]
