@@ -1,12 +1,5 @@
 [
   {
-    "step": 61,
-    "timestamp": "2026-06-12 00:31:46",
-    "description": "Fix computed cursor override by using explicit selector matching and inline style checks",
-    "folder": "step_061_Fix_computed_cursor_override_by_using_explicit_selector_matching_and_inline_style_checks",
-    "is_auto": false
-  },
-  {
     "step": 62,
     "timestamp": "2026-06-12 00:32:43",
     "description": "Prepare to implement dual-shape cross-fade morphing system for custom cursor",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:08:13",
     "description": "Implement global interactive click sound effects using event delegation",
     "folder": "step_080_Implement_global_interactive_click_sound_effects_using_event_delegation",
+    "is_auto": false
+  },
+  {
+    "step": 81,
+    "timestamp": "2026-06-12 01:08:28",
+    "description": "Implement global interactive click sound effects using event delegation",
+    "folder": "step_081_Implement_global_interactive_click_sound_effects_using_event_delegation",
     "is_auto": false
   }
 ]
