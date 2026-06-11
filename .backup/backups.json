@@ -1,12 +1,5 @@
 [
   {
-    "step": 9,
-    "timestamp": "2026-06-11 21:42:09",
-    "description": "Fix cursor hover transition flickering and optimize barrel roll spring coefficients",
-    "folder": "step_009_Fix_cursor_hover_transition_flickering_and_optimize_barrel_roll_spring_coefficients",
-    "is_auto": false
-  },
-  {
     "step": 10,
     "timestamp": "2026-06-11 21:51:52",
     "description": "Fix hover transition jitter and optimize barrel roll spring coefficients",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:16:34",
     "description": "Update walkthrough.md with refined subtle hover values",
     "folder": "step_028_Update_walkthrough.md_with_refined_subtle_hover_values",
+    "is_auto": false
+  },
+  {
+    "step": 29,
+    "timestamp": "2026-06-11 22:18:18",
+    "description": "Implement creamy smooth LERP scale and 3D solid thickness swell, removing twist fanning and spins",
+    "folder": "step_029_Implement_creamy_smooth_LERP_scale_and_3D_solid_thickness_swell,_removing_twist_fanning_and_spins",
     "is_auto": false
   }
 ]
