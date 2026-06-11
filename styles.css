@@ -673,7 +673,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .showcase{height:auto;display:flex;flex-direction:column;justify-content:center;padding:0 !important;width:100%;max-width:none;margin:0;background:transparent;position:relative;z-index:1}
 .showcase::after{content:"";position:absolute;top:20%;left:50%;transform:translateX(-50%);width:80%;height:60%;border:1px solid var(--border);border-radius:50%;pointer-events:none;z-index:0;opacity:.3}
 .showcase-header, .showcase-grid{width:100%;max-width:1440px;margin-left:auto;margin-right:auto;box-sizing:border-box}
-.showcase-header{padding:0 64px;margin-bottom:80px}
+.showcase-header{padding:0 64px;margin-bottom:30px}
 .showcase-grid{display:flex;flex-direction:column;gap:12px;padding:0 64px}
 .showcase-grid.is-stacked{position:relative;height:55vh;perspective:2000px;transform-style:preserve-3d}
 .showcase-grid.is-stacked .showcase-item{position:absolute;top:0;left:64px;right:64px;width:auto;height:100%;margin:0;will-change:transform,opacity}
@@ -753,7 +753,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 .showcase-text-item {
-  height: 100vh; /* Each text card takes up full viewport height for scroll track */
+  height: 75vh; /* Each text card takes up 75% of viewport height for tighter spacing */
   display: flex;
   flex-direction: column;
   justify-content: center;
