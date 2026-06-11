@@ -753,7 +753,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 .showcase-text-item {
-  height: 75vh; /* Each text card takes up 75% of viewport height for tighter spacing */
+  height: 90vh; /* Each text card takes up 90% of viewport height to prolong sticky range and ensure aligned start/end positions */
   display: flex;
   flex-direction: column;
   justify-content: center;
