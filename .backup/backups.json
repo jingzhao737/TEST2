@@ -124,5 +124,12 @@
     "description": "Snap cursor coordinates on first mousemove and re-entry to prevent warped flying and twitching",
     "folder": "step_018_Snap_cursor_coordinates_on_first_mousemove_and_re-entry_to_prevent_warped_flying_and_twitching",
     "is_auto": false
+  },
+  {
+    "step": 19,
+    "timestamp": "2026-06-11 21:58:04",
+    "description": "Snap initial cursor coordinates and window entry to prevent warp fly twitching",
+    "folder": "step_019_Snap_initial_cursor_coordinates_and_window_entry_to_prevent_warp_fly_twitching",
+    "is_auto": false
   }
 ]
