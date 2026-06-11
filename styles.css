@@ -11,7 +11,7 @@
   --accent-rgb:232,124,80;
   --accent-glow:rgba(232,124,80,.11);--accent-soft:rgba(232,124,80,.04);
   --accent-hover:#F09568;
-  --muted:#6e6c66;--border:rgba(255,255,255,.05);--card-bg:#0a0a0a;
+  --muted:#6e6c66;--border:rgba(255,255,255,.05);--card-bg:#161616;
   --nav-bg:rgba(0,0,0,.7);--nav-bg-scrolled:rgba(0,0,0,.85);
   --hero-gradient:radial-gradient(ellipse at 25% 60%,rgba(0,212,104,.035) 0%,transparent 65%);
   --dot-color:rgba(255,255,255,.018);
