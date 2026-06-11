@@ -53,6 +53,10 @@
       lastCX = cX;
       lastCY = cY;
       isFirstMove = false;
+      
+      // Make visible ONLY after first snap to prevent coordinate jump
+      cursorDot.style.opacity = '1';
+      cursorTrail1.style.opacity = '0.65';
     }
   }, { passive: true });
 
@@ -61,10 +65,6 @@
     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
-  });
-  document.addEventListener('mouseenter', function() {
-    cursorDot.style.opacity = '';
-    cursorTrail1.style.opacity = '';
   });
 
   // Hover States (Event Delegation on Document for dynamic elements)
@@ -157,7 +157,7 @@
     const isReturningUpright = (targetAngle === -90);
     let angleEase = 0.13;
     if (isReturningUpright) {
-      angleEase = 0.035; // Slower upright alignment (~300ms glide duration) to let deformation be visible
+      angleEase = cursorSpeed < 0.5 ? 0.08 : 0.035; // Return upright faster if stationary to prevent static lean lag
     } else {
       if (speed < 6.0) {
         const clampedSpeed = Math.max(1.5, speed); // Clamp at 1.5 to prevent negative easing factors
@@ -203,15 +203,15 @@
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
-      ? Math.max(-30, Math.min(30, diff * 0.8)) 
+      ? Math.max(-30, Math.min(30, diff * 0.8)) * Math.min(cursorSpeed / 3.0, 1.0) // Scale by cursorSpeed to prevent static tilt
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
-    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
+    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright, scaled by cursorSpeed to prevent static stretch)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12)) // Dynamic squish on return-to-upright (12% max)
+      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18)) // Dynamic stretch on return-to-upright (18% max)
+      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
 
     // Smooth physics LERP (faster response rate of 0.15)
@@ -220,12 +220,15 @@
     currentStretchX += (targetStretchX - currentStretchX) * 0.15;
     currentStretchY += (targetStretchY - currentStretchY) * 0.15;
 
-    // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving
-    if (cursorSpeed < 0.05 && speed < 0.05) {
-      if (Math.abs(currentAngle - (-90)) < 0.1) currentAngle = -90;
-      if (Math.abs(currentRoll) < 0.1) currentRoll = 0;
-      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 0.1) currentPitch = isHovered ? 22 : 0;
-      if (Math.abs(spinRoll) < 0.1) spinRoll = 0;
+    // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
+    if (cursorSpeed < 0.1 && speed < 0.1) {
+      if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+      if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
+      if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      if (Math.abs(spinRoll) < 1.0) spinRoll = 0;
+      if (Math.abs(currentTwist - targetTwist) < 0.05) currentTwist = targetTwist;
+      if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
+      if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)

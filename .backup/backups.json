@@ -1,12 +1,5 @@
 [
   {
-    "step": 2,
-    "timestamp": "2026-06-11 21:24:40",
-    "description": "Restore fine-tuned 3D custom cursor (Step 108) on top of baseline repository",
-    "folder": "step_002_Restore_fine-tuned_3D_custom_cursor_(Step_108)_on_top_of_baseline_repository",
-    "is_auto": false
-  },
-  {
     "step": 3,
     "timestamp": "2026-06-11 21:25:16",
     "description": "Final integrated 3D cursor on baseline version",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 21:59:45",
     "description": "Hide cursor until snapped on load and re-entry to fix twitch, and expand stationary snap thresholds to prevent tilt",
     "folder": "step_021_Hide_cursor_until_snapped_on_load_and_re-entry_to_fix_twitch,_and_expand_stationary_snap_thresholds_to_prevent_tilt",
+    "is_auto": false
+  },
+  {
+    "step": 22,
+    "timestamp": "2026-06-11 22:00:38",
+    "description": "Fix (0,0) entry warp twitch and scale return-to-upright deformation by cursorSpeed to prevent static tilt and stretch",
+    "folder": "step_022_Fix_(0,0)_entry_warp_twitch_and_scale_return-to-upright_deformation_by_cursorSpeed_to_prevent_static_tilt_and_stretch",
     "is_auto": false
   }
 ]
