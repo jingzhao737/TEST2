@@ -94,9 +94,10 @@
   // Animation Loop
   (function loop() {
     // 1. Position follow with LERP delay
-    // Main triangle follows mouse with significant delay (0.12)
-    cX += (mouseX - cX) * 0.12;
-    cY += (mouseY - cY) * 0.12;
+    // Main triangle follows mouse with significant delay (0.09)
+    cX += (mouseX - cX) * 0.09;
+    cY += (mouseY - cY) * 0.09;
+
     
     // Trail triangle follows main triangle with additional lag (0.08)
     t1X += (cX - t1X) * 0.08;
