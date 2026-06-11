@@ -1,12 +1,5 @@
 [
   {
-    "step": 27,
-    "timestamp": "2026-06-11 22:16:15",
-    "description": "Tune down custom cursor hover animations to make them extremely subtle and restrained",
-    "folder": "step_027_Tune_down_custom_cursor_hover_animations_to_make_them_extremely_subtle_and_restrained",
-    "is_auto": false
-  },
-  {
     "step": 28,
     "timestamp": "2026-06-11 22:16:34",
     "description": "Update walkthrough.md with refined subtle hover values",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 23:22:25",
     "description": "Fix syntax error and finalize asymmetric flying speed filter for paper airplane glide",
     "folder": "step_046_Fix_syntax_error_and_finalize_asymmetric_flying_speed_filter_for_paper_airplane_glide",
+    "is_auto": false
+  },
+  {
+    "step": 47,
+    "timestamp": "2026-06-11 23:26:45",
+    "description": "Add nose-dive forward pitch and gradual LERP transition rates during return-to-upright",
+    "folder": "step_047_Add_nose-dive_forward_pitch_and_gradual_LERP_transition_rates_during_return-to-upright",
     "is_auto": false
   }
 ]

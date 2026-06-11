@@ -176,7 +176,7 @@
     if (cursorSpeed > flyingSpeed) {
       flyingSpeed += (cursorSpeed - flyingSpeed) * 0.15; // Fast rise
     } else {
-      const ease = flyingSpeed < 1.5 ? 0.15 : 0.035; // Slow float, then fast landing
+      const ease = flyingSpeed < 1.5 ? 0.12 : 0.025; // Slower float (longer air time), then clean landing
       flyingSpeed += (cursorSpeed - flyingSpeed) * ease;
     }
 
@@ -194,9 +194,10 @@
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
-    // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
+    // Speed-based Pitch + Hover Dive: nose-dives 22 degrees on hover.
+    // When returning upright, it performs a nose-dive glide (basePitch up to 26 degrees) to look like a descending glider!
     const basePitch = isReturningUpright 
-      ? Math.min(Math.abs(diff) * 0.25, 12) 
+      ? Math.min(Math.abs(diff) * 0.8, 26) 
       : Math.min(flyingSpeed * 1.5, 30);
     const targetPitch = basePitch + (isHovered ? 22 : 0);
     
@@ -213,11 +214,16 @@
       ? (1 + Math.min(Math.abs(diff) * 0.0025, 0.12)) // Subtle stretch (max 12%)
       : (1 + Math.min(flyingSpeed * 0.0025, 0.10)); // Organic stretch driven by flyingSpeed (naturally capped and smoothed)
 
-    // Smooth physics LERP (faster response rate of 0.15)
-    currentPitch += (targetPitch - currentPitch) * 0.15;
-    currentRoll += (targetRoll - currentRoll) * 0.15;
-    currentStretchX += (targetStretchX - currentStretchX) * 0.15;
-    currentStretchY += (targetStretchY - currentStretchY) * 0.15;
+    // Smooth physics LERP (longer, gentler rates during return-to-upright to create a majestic glide descent)
+    const pitchEase = isReturningUpright ? 0.045 : 0.15;
+    const rollEase = isReturningUpright ? 0.05 : 0.15;
+    const stretchEase = isReturningUpright ? 0.06 : 0.15;
+    
+    currentPitch += (targetPitch - currentPitch) * pitchEase;
+    currentRoll += (targetRoll - currentRoll) * rollEase;
+    currentStretchX += (targetStretchX - currentStretchX) * stretchEase;
+    currentStretchY += (targetStretchY - currentStretchY) * stretchEase;
+
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
     if (cursorSpeed < 0.1 && speed < 0.1 && flyingSpeed < 0.1) {
