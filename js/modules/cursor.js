@@ -130,9 +130,18 @@
       if (Date.now() - lastMoveTime < 600) {
         targetAngle = lastActiveAngle;
       } else {
-        targetAngle = -90; // Align upright
+        // Smoothly ease targetAngle to -90 to prevent step-jump twitches
+        let targetDiff = -90 - targetAngle;
+        while (targetDiff < -180) targetDiff += 360;
+        while (targetDiff > 180) targetDiff -= 360;
+        if (Math.abs(targetDiff) < 1.0) {
+          targetAngle = -90;
+        } else {
+          targetAngle += targetDiff * 0.15;
+        }
       }
     }
+
 
 
     // Shortest path interpolation (resolve wrapping at 180/-180 boundary)
@@ -175,16 +184,17 @@
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
-      ? Math.max(-30, Math.min(30, diff * 0.8)) * Math.min(cursorSpeed / 3.0, 1.0) // Scale by cursorSpeed to prevent static tilt
+      ? Math.max(-30, Math.min(30, diff * 0.8)) // Driven smoothly by LERPing targetAngle
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
     
-    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright, scaled by cursorSpeed to prevent static stretch)
+    // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
+      ? (1 - Math.min(Math.abs(diff) * 0.0025, 0.12)) // Driven smoothly by LERPing targetAngle
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18) * Math.min(cursorSpeed / 3.0, 1.0)) // Scaled by cursorSpeed
+      ? (1 + Math.min(Math.abs(diff) * 0.004, 0.18)) // Driven smoothly by LERPing targetAngle
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
+
 
     // Smooth physics LERP (faster response rate of 0.15)
     currentPitch += (targetPitch - currentPitch) * 0.15;
