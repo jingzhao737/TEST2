@@ -173,11 +173,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .cursor-trail.grab-state .cursor-arrow-wrapper {
   opacity: 0;
   transform: scale(0.3);
+  filter: none !important;
 }
 .cursor-dot.grab-state .cursor-circle-wrapper,
 .cursor-trail.grab-state .cursor-circle-wrapper {
   opacity: 1;
   transform: scale(0.84); /* Concentric circle size visually balanced with triangle */
+  filter: none !important;
 }
 .cursor-liquid-flow {
   position: absolute;

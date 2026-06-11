@@ -1,12 +1,5 @@
 [
   {
-    "step": 74,
-    "timestamp": "2026-06-12 01:03:02",
-    "description": "Reduce damping to make record swings last longer and feel freer",
-    "folder": "step_074_Reduce_damping_to_make_record_swings_last_longer_and_feel_freer",
-    "is_auto": false
-  },
-  {
     "step": 75,
     "timestamp": "2026-06-12 01:03:15",
     "description": "Further reduce record swing damping to 0.993 and active drag damping to 0.98",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:36:43",
     "description": "Fix 3D cursor rendering flicker by moving drop-shadow filter to leaf wrapper elements",
     "folder": "step_093_Fix_3D_cursor_rendering_flicker_by_moving_drop-shadow_filter_to_leaf_wrapper_elements",
+    "is_auto": false
+  },
+  {
+    "step": 94,
+    "timestamp": "2026-06-12 01:38:56",
+    "description": "Disable outer glow drop shadow for grab state cursor",
+    "folder": "step_094_Disable_outer_glow_drop_shadow_for_grab_state_cursor",
     "is_auto": false
   }
 ]
