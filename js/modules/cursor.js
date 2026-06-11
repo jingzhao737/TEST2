@@ -17,10 +17,6 @@
   let lastMouseX = 0, lastMouseY = 0;
   let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
-  let lastHoveredElement = null; // Track hover target for new enter transitions
-  let currentTwist = 0;          // Dynamic layer twist/fanning interpolation (0 to 1)
-  let spinRoll = 0;              // Dynamic one-time 3D barrel roll rotation angle
-  let spinVelocity = 0;          // Spring velocity for barrel roll rotation
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -28,10 +24,9 @@
   let lastActiveAngle = -90;
   let lastMoveTime = 0;
 
-  // Scale Physics (LERP to prevent abrupt jumps and raster blur)
+  // Scale Physics (Creamy LERP to swell smoothly like a soft 3D sticker)
   let currentScale = 0.67;
   let currentTrailScale = 0.67 * 0.6;
-  let scaleVelocity = 0; // Spring physics velocity accumulator
 
   // 3D & Deformation Physics
   let currentPitch = 0;
@@ -75,14 +70,6 @@
     if (target) {
       // Only trigger if entering from outside the target element itself
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
-        if (target !== lastHoveredElement) {
-          lastHoveredElement = target;
-          // Only trigger spin if it's not the first move to prevent entering jump/twitch
-          if (!isFirstMove) {
-            spinRoll = -25; // Subtle micro-rotation kick
-            spinVelocity = 0;
-          }
-        }
         isHovered = true;
         cursorDot.classList.add('hovered');
       }
@@ -96,7 +83,6 @@
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
         const related = e.relatedTarget ? e.relatedTarget.closest(hoverSelector) : null;
         if (!related) {
-          lastHoveredElement = null;
           isHovered = false;
           cursorDot.classList.remove('hovered');
         }
@@ -170,30 +156,13 @@
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
 
-    // 4. Hover states scale calculation (using Spring Physics for organic bounce/overshoot)
-    const targetScale = isHovered ? 0.74 : 0.67; // Minimal, refined scale up
+    // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
+    const targetScale = isHovered ? 1.15 : 0.67; // Swell smoothly like a soft 3D sticker
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
-    const targetZSpacing = isHovered ? 2.2 : 1.0; // Subtle Z-spacing depth expansion
+    const targetZSpacing = isHovered ? 3.0 : 1.0; // Dynamic Z-depth spacing for 3D sticker thickness
     
-    const tension = 0.28; // Spring stiffness
-    const damping = 0.64; // Bounciness/friction
-    const scaleForce = (targetScale - currentScale) * tension;
-    scaleVelocity += scaleForce;
-    scaleVelocity *= damping;
-    currentScale += scaleVelocity;
-    
+    currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
-
-    // LERP dynamic layer twist/fanning factor
-    const targetTwist = isHovered ? 1.0 : 0.0;
-    currentTwist += (targetTwist - currentTwist) * 0.12;
-
-    // Decay the 3D barrel roll using spring physics pulling it back to 0
-    // Decay the 3D barrel roll using optimized spring physics (tension=0.35, damping=0.48 for snappiness with zero wobble)
-    const spinForce = (0 - spinRoll) * 0.35; // Spring stiffness
-    spinVelocity += spinForce;
-    spinVelocity *= 0.48; // Bounciness/damping
-    spinRoll += spinVelocity;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
     // Speed-based Pitch + Hover Dive: nose-dives (tilts tail back) 22 degrees on hover to look like it's diving into the button!
@@ -226,8 +195,6 @@
       if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
       if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
       if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
-      if (Math.abs(spinRoll) < 1.0) spinRoll = 0;
-      if (Math.abs(currentTwist - targetTwist) < 0.05) currentTwist = targetTwist;
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
     }
@@ -236,32 +203,22 @@
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, -10%)`;
     cursorTrail1.style.transform = `translate3d(${Math.round(t1X)}px, ${Math.round(t1Y)}px, 0) translate(-50%, -10%)`;
 
-    // Dynamic Z-depth expansion LERP (spacing goes from 1px to 4.5px on hover, expanding 3D crystal thickness)
-    currentZSpacing += (targetZSpacing - currentZSpacing) * 0.12;
+    // Dynamic Z-depth expansion LERP (spacing goes from 1px to 3.0px on hover, expanding 3D crystal thickness)
+    currentZSpacing += (targetZSpacing - currentZSpacing) * 0.08; // Match the creamy scale LERP speed
 
-    // Apply Z-translates and torsional twist on the 5 stacked 3D layers to create dynamic extrusion expansion
+    // Apply Z-translates on the 5 stacked 3D layers to create solid 3D extrusion thickness (no fanning/twist)
     if (cursorLayers) {
       cursorLayers.forEach((layer, idx) => {
         // idx goes from 0 (layer-back) to 4 (layer-front)
         // Layer Z offset = -(4 - idx) * currentZSpacing
         const zVal = -(4 - idx) * currentZSpacing;
-        
-        // Calculate torsional twist rotation for each layer:
-        // Front layer (4) does not twist (maintains accurate pointing tip).
-        // Back layers twist progressively in alternating directions to fan out.
-        let layerTwist = 0;
-        if (idx === 3) layerTwist = -3 * currentTwist;
-        else if (idx === 2) layerTwist = 3 * currentTwist;
-        else if (idx === 1) layerTwist = -6 * currentTwist;
-        else if (idx === 0) layerTwist = 6 * currentTwist;
-
-        layer.style.transform = `translateZ(${zVal}px) rotate(${layerTwist}deg)`;
+        layer.style.transform = `translateZ(${zVal}px)`;
       });
     }
 
-    // Apply 3D tilt, rotation, and dynamic scale warping on the child 3D containers
+    // Apply 3D tilt, rotation, and dynamic scale warping on the child 3D containers (no spinRoll)
     if (cursor3dContainer) {
-      cursor3dContainer.style.transform = `rotate(${arrowRotation + spinRoll}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentScale * currentStretchX}, ${currentScale * currentStretchY})`;
+      cursor3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentScale * currentStretchX}, ${currentScale * currentStretchY})`;
     }
     if (trail3dContainer) {
       trail3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentTrailScale * currentStretchX}, ${currentTrailScale * currentStretchY})`;
