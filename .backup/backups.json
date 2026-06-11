@@ -1,12 +1,5 @@
 [
   {
-    "step": 49,
-    "timestamp": "2026-06-11 23:32:05",
-    "description": "Prepare to bypass return-to-upright when custom cursor is hovered on active pointer elements",
-    "folder": "step_049_Prepare_to_bypass_return-to-upright_when_custom_cursor_is_hovered_on_active_pointer_elements",
-    "is_auto": false
-  },
-  {
     "step": 50,
     "timestamp": "2026-06-11 23:32:16",
     "description": "Bypass return-to-upright when custom cursor is hovered on active pointer elements",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:46:06",
     "description": "Increase custom cursor scale in grab state",
     "folder": "step_068_Increase_custom_cursor_scale_in_grab_state",
+    "is_auto": false
+  },
+  {
+    "step": 69,
+    "timestamp": "2026-06-12 00:46:17",
+    "description": "Increase grab state custom cursor circle scale to 0.85",
+    "folder": "step_069_Increase_grab_state_custom_cursor_circle_scale_to_0.85",
     "is_auto": false
   }
 ]
