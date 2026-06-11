@@ -1,12 +1,5 @@
 [
   {
-    "step": 56,
-    "timestamp": "2026-06-12 00:26:13",
-    "description": "Implement smooth morphing transition from triangle to circle during drag/grab state",
-    "folder": "step_056_Implement_smooth_morphing_transition_from_triangle_to_circle_during_drag_grab_state",
-    "is_auto": false
-  },
-  {
     "step": 57,
     "timestamp": "2026-06-12 00:28:06",
     "description": "Prepare to adjust grab circle scale and grabbing compression values",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:03:15",
     "description": "Further reduce record swing damping to 0.993 and active drag damping to 0.98",
     "folder": "step_075_Further_reduce_record_swing_damping_to_0.993_and_active_drag_damping_to_0.98",
+    "is_auto": false
+  },
+  {
+    "step": 76,
+    "timestamp": "2026-06-12 01:05:23",
+    "description": "Optimize magnetic pocket LERP and boundary rebound bounce to resolve sticky damping",
+    "folder": "step_076_Optimize_magnetic_pocket_LERP_and_boundary_rebound_bounce_to_resolve_sticky_damping",
     "is_auto": false
   }
 ]
