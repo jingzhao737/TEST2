@@ -241,10 +241,10 @@
     let targetScale = isHovered ? 0.82 : 0.67;
     let targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
-    // Symmetrical circle fills more box area, so we scale it down slightly to 0.72 on hover to match visual weight of the triangle
+    // Symmetrical circle fills more box area, but scaled up to 0.85 by user request for a larger grab state circle
     if (isGrabState && !isClicked) {
-      targetScale = 0.72;
-      targetZSpacing = 1.4;
+      targetScale = 0.85;
+      targetZSpacing = 1.6;
     }
     
     if (isClicked) {
