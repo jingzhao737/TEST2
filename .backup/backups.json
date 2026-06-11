@@ -96,5 +96,12 @@
     "description": "Clean up walkthrough.md duplicates",
     "folder": "step_014_Clean_up_walkthrough.md_duplicates",
     "is_auto": false
+  },
+  {
+    "step": 15,
+    "timestamp": "2026-06-11 21:56:26",
+    "description": "Change barrel roll spin from Y-axis rotation to Z-axis flat spin to eliminate edge-on disappearing flash",
+    "folder": "step_015_Change_barrel_roll_spin_from_Y-axis_rotation_to_Z-axis_flat_spin_to_eliminate_edge-on_disappearing_flash",
+    "is_auto": false
   }
 ]
