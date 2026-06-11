@@ -1,12 +1,5 @@
 [
   {
-    "step": 39,
-    "timestamp": "2026-06-11 22:31:51",
-    "description": "Enhance return-to-upright 3D volumetric deformation by swelling layer Z-spacing and banking roll",
-    "folder": "step_039_Enhance_return-to-upright_3D_volumetric_deformation_by_swelling_layer_Z-spacing_and_banking_roll",
-    "is_auto": false
-  },
-  {
     "step": 40,
     "timestamp": "2026-06-11 22:34:29",
     "description": "Restore clean return-to-upright glide and reduce hover layer Z-spacing to 1.8 for tighter 3D stack",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:28:18",
     "description": "Tweak grab circle scale to 0.72 and compress scale to 0.48 on grabbing state",
     "folder": "step_058_Tweak_grab_circle_scale_to_0.72_and_compress_scale_to_0.48_on_grabbing_state",
+    "is_auto": false
+  },
+  {
+    "step": 59,
+    "timestamp": "2026-06-12 00:30:00",
+    "description": "Prepare to hide native grab cursor on framesCanvas and implement dynamic mousemove grab detection",
+    "folder": "step_059_Prepare_to_hide_native_grab_cursor_on_framesCanvas_and_implement_dynamic_mousemove_grab_detection",
     "is_auto": false
   }
 ]
