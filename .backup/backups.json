@@ -1,12 +1,5 @@
 [
   {
-    "step": 35,
-    "timestamp": "2026-06-11 22:27:52",
-    "description": "Adjust hover target scale from 1.15 to 0.82 for more subtle zoom",
-    "folder": "step_035_Adjust_hover_target_scale_from_1.15_to_0.82_for_more_subtle_zoom",
-    "is_auto": false
-  },
-  {
     "step": 36,
     "timestamp": "2026-06-11 22:28:44",
     "description": "Set return-to-upright delay to 600ms",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 00:20:30",
     "description": "Add responsive tactile click compression and 3D depth flattening animation on custom cursor",
     "folder": "step_054_Add_responsive_tactile_click_compression_and_3D_depth_flattening_animation_on_custom_cursor",
+    "is_auto": false
+  },
+  {
+    "step": 55,
+    "timestamp": "2026-06-12 00:25:39",
+    "description": "Prepare to implement custom cursor morphing from triangle to circle during drag state",
+    "folder": "step_055_Prepare_to_implement_custom_cursor_morphing_from_triangle_to_circle_during_drag_state",
     "is_auto": false
   }
 ]
