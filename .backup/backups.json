@@ -1,12 +1,5 @@
 [
   {
-    "step": 12,
-    "timestamp": "2026-06-11 21:55:00",
-    "description": "Balance layer twist symmetries and snap stationary rotations to zero to prevent tilt",
-    "folder": "step_012_Balance_layer_twist_symmetries_and_snap_stationary_rotations_to_zero_to_prevent_tilt",
-    "is_auto": false
-  },
-  {
     "step": 13,
     "timestamp": "2026-06-11 21:55:21",
     "description": "Balance layer twist symmetries and snap stationary rotations to zero to prevent tilt",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-11 22:19:03",
     "description": "Finalize walkthrough.md for creamy LERP soft sticker hover style",
     "folder": "step_031_Finalize_walkthrough.md_for_creamy_LERP_soft_sticker_hover_style",
+    "is_auto": false
+  },
+  {
+    "step": 32,
+    "timestamp": "2026-06-11 22:23:05",
+    "description": "Implement smooth spring scale-up and rebound overshoot",
+    "folder": "step_032_Implement_smooth_spring_scale-up_and_rebound_overshoot",
     "is_auto": false
   }
 ]

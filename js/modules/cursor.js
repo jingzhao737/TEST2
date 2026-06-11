@@ -24,8 +24,9 @@
   let lastActiveAngle = -90;
   let lastMoveTime = 0;
 
-  // Scale Physics (Creamy LERP to swell smoothly like a soft 3D sticker)
+  // Scale Physics (Spring-based overshoot and rebound to swell like a soft 3D sticker)
   let currentScale = 0.67;
+  let scaleVelocity = 0;
   let currentTrailScale = 0.67 * 0.6;
 
   // 3D & Deformation Physics
@@ -156,12 +157,19 @@
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
 
-    // 4. Hover states scale calculation (using Creamy LERP for soft visual swell)
+    // 4. Hover states scale calculation (using Spring physics for creamy overshoot & rebound)
     const targetScale = isHovered ? 1.15 : 0.67; // Swell smoothly like a soft 3D sticker
     const targetTrailScale = isHovered ? 0 : 0.67 * 0.6;
     const targetZSpacing = isHovered ? 3.0 : 1.0; // Dynamic Z-depth spacing for 3D sticker thickness
     
-    currentScale += (targetScale - currentScale) * 0.08; // Viscous, creamy LERP transition
+    // Spring physics: overshoot and rebound back to target
+    const tension = 0.25; // Spring stiffness
+    const damping = 0.70; // Viscous damping
+    const scaleForce = (targetScale - currentScale) * tension;
+    scaleVelocity += scaleForce;
+    scaleVelocity *= damping;
+    currentScale += scaleVelocity;
+
     currentTrailScale += (targetTrailScale - currentTrailScale) * 0.15;
 
     // 5. 3D Aerodynamic Physics & Velocity Warp
@@ -196,7 +204,10 @@
       if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
       if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
-      if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
+      if (Math.abs(currentScale - targetScale) < 0.005 && Math.abs(scaleVelocity) < 0.001) {
+        currentScale = targetScale;
+        scaleVelocity = 0;
+      }
     }
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
