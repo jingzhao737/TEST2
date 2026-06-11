@@ -241,10 +241,10 @@
     let targetScale = isHovered ? 0.82 : 0.67;
     let targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
-    // Symmetrical circle fills more box area, so we scale it down slightly to 0.72 on hover to match visual weight of the triangle
+    // Symmetrical circle fills more box area, but scaled up to 0.85 by user request for a larger grab state circle
     if (isGrabState && !isClicked) {
-      targetScale = 0.72;
-      targetZSpacing = 1.4;
+      targetScale = 0.85;
+      targetZSpacing = 1.6;
     }
     
     if (isClicked) {
@@ -312,7 +312,7 @@
 
     // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
     const targetTranslateY = isGrabState ? -50 : -10;
-    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.12;
+    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.07;
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;

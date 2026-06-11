@@ -1,12 +1,5 @@
 [
   {
-    "step": 62,
-    "timestamp": "2026-06-12 00:32:43",
-    "description": "Prepare to implement dual-shape cross-fade morphing system for custom cursor",
-    "folder": "step_062_Prepare_to_implement_dual-shape_cross-fade_morphing_system_for_custom_cursor",
-    "is_auto": false
-  },
-  {
     "step": 63,
     "timestamp": "2026-06-12 00:32:58",
     "description": "Implement dual-shape cross-fade morphing system for custom cursor",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:08:28",
     "description": "Implement global interactive click sound effects using event delegation",
     "folder": "step_081_Implement_global_interactive_click_sound_effects_using_event_delegation",
+    "is_auto": false
+  },
+  {
+    "step": 82,
+    "timestamp": "2026-06-12 01:10:35",
+    "description": "Add non-interactive laser spark burst and trail drawing overlay using canvas",
+    "folder": "step_082_Add_non-interactive_laser_spark_burst_and_trail_drawing_overlay_using_canvas",
     "is_auto": false
   }
 ]
