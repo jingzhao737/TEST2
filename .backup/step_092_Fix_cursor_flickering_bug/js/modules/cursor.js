@@ -86,7 +86,18 @@
   }, { passive: true });
 
   // Hide on mouseleave window, show on mouseenter
-  document.addEventListener('mouseleave', function() {
+  document.addEventListener('mouseleave', function(e) {
+    // Check if the coordinates are actually outside the viewport boundaries (threshold to prevent false triggers)
+    const threshold = 2; // px
+    if (
+      e.clientX > threshold && 
+      e.clientY > threshold && 
+      e.clientX < window.innerWidth - threshold && 
+      e.clientY < window.innerHeight - threshold
+    ) {
+      // Ignore false mouseleave events (e.g. over scrollbars or elements near window edges)
+      return;
+    }
     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry

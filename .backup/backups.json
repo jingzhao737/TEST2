@@ -1,12 +1,5 @@
 [
   {
-    "step": 72,
-    "timestamp": "2026-06-12 01:00:44",
-    "description": "Relax drag damping and increase velocity scaling to make record flinging freer",
-    "folder": "step_072_Relax_drag_damping_and_increase_velocity_scaling_to_make_record_flinging_freer",
-    "is_auto": false
-  },
-  {
     "step": 73,
     "timestamp": "2026-06-12 01:00:58",
     "description": "Relax record drag damping and increase velocity scaling to make flinging freer",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:31:57",
     "description": "Upgrade laser lines to premium neon effects with chromatic aberration and starburst particles",
     "folder": "step_091_Upgrade_laser_lines_to_premium_neon_effects_with_chromatic_aberration_and_starburst_particles",
+    "is_auto": false
+  },
+  {
+    "step": 92,
+    "timestamp": "2026-06-12 01:34:44",
+    "description": "Fix cursor flickering bug",
+    "folder": "step_092_Fix_cursor_flickering_bug",
     "is_auto": false
   }
 ]

@@ -13,7 +13,7 @@
   },
   "index.html": {
     "type": "code",
-    "hash": "50703c335d26a3718dde4d969a11908d25823a7657a190ac012e77d065af7374"
+    "hash": "6230ba2001c88e702fb699422c3f109c8565a1012a3f93005e2045af36bcaec3"
   },
   "package-lock.json": {
     "type": "code",
@@ -29,7 +29,7 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "f5fc28ecc5a33ab7a4f3656b6992245bd5190ac669c01226a8ad94a1af65819a"
+    "hash": "57e2c3ea0dd345ad4e160b50b3d1c851355fa72edca0a5a4c795c35373b7b583"
   },
   "task.md": {
     "type": "code",
@@ -85,15 +85,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "bcadefb3bc27382e11e076bae078acd7d2c054bd3c04175b766309563c211577"
+    "hash": "8700eaae2bea2698ae9673cab7043ca142f586114863bb32be7b590df8744909"
   },
-  "dist\\assets\\index-7uxcoMQP.js": {
+  "dist\\assets\\index-CQxTbgr-.js": {
     "type": "code",
-    "hash": "0b9d9b57afd825c0d9aeb56e456906d20a1b2cf5e3bde592c2b383a9b56f0c73"
+    "hash": "4ae2cd9bb1d813c853bf6e096c723c4e7b68282c8b6b5de05e51b6aac73d8bc2"
   },
-  "dist\\assets\\index-B27hZB4S.css": {
+  "dist\\assets\\index-D_YfK0JA.css": {
     "type": "code",
-    "hash": "37750153a9adf65ef474f3908dfd380469865a3a0d9ca928628293876fab2dd1"
+    "hash": "fd3fedced8f75a327b997aa3d3314d2dc2d5bcda55f728babc4f3eab7da8f472"
   },
   "images\\index.txt": {
     "type": "code",
@@ -129,7 +129,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "71e64e50c8d6a28f4aa681b6c951ce674f40014d65bd68531007b49acf7f85b3"
+    "hash": "0d2ff26e8c82c447f5075fb5e53d447a60c4dac1c947681a6eee4bcefb4cef67"
   },
   "js\\modules\\data.js": {
     "type": "code",
@@ -137,11 +137,15 @@
   },
   "js\\modules\\hanging-circles.js": {
     "type": "code",
-    "hash": "526f4b93cc05cd19d69f33259e57b4652d73775befc24007e3934a636786bac6"
+    "hash": "6cad419f66ed7f2a16d1624d82db3a50c92dc26f85229b39d3bae1ec9e9c72be"
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
     "hash": "ce8a6667be6eadf49927ea33d73f5a7dec9f1325c4ec5a7e98c80d35daf07f45"
+  },
+  "js\\modules\\laser-lines.js": {
+    "type": "code",
+    "hash": "6a476893532dc8f04325c6b23e7c943b4ad434fac50293cbcaa16a2d92c37056"
   },
   "js\\modules\\loader.js": {
     "type": "code",
@@ -177,7 +181,7 @@
   },
   "js\\modules\\sound-effects.js": {
     "type": "code",
-    "hash": "c23f0b0a6dc2d81772121202631522b3aea7819829ad2c99a2a9e655e5104320"
+    "hash": "7152ac67b902c29a79810563640a3f21633cefc2bda5b0c3afa0ae5ff6ed36ab"
   },
   "js\\modules\\stars.js": {
     "type": "code",
@@ -202,6 +206,22 @@
   "scratch\\capture_works_details.js": {
     "type": "code",
     "hash": "341929ace929c4043f1c619de9d070094dfeec1fb466af7da123b6ea56dada3b"
+  },
+  "scratch\\check_canvas_visibility.js": {
+    "type": "code",
+    "hash": "3b15f18469a1e978ef93a77f368568720b2a0a0666ffc3506d6f2edc2a6ccaa8"
+  },
+  "scratch\\check_console.js": {
+    "type": "code",
+    "hash": "8907b0fe0c2f6d035f230e6b0b5dd6e0d73af2a94a89ceb99728956f514b3eb6"
+  },
+  "scratch\\check_cursor_visibility.js": {
+    "type": "code",
+    "hash": "e27614955440e951808c0d13d0c1ea0cbb0ca1d075ba36d3cb494d9a0ff1f3c0"
+  },
+  "scratch\\check_fixes.js": {
+    "type": "code",
+    "hash": "3a506d121cd7fe7ae01e91f78897133cfe36590609c7711252475a20db471096"
   },
   "scratch\\check_layout.js": {
     "type": "code",
