@@ -80,9 +80,8 @@
     lastX = cX;
     lastY = cY;
 
-    // Trigger laser splash burst and shockwave ripple on click
+    // Trigger laser splash burst on click
     createBurst(cX, cY);
-    createRipple(cX, cY);
   }
 
   // Handle mousemove/touchmove
