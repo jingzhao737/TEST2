@@ -281,36 +281,48 @@
       ctx.restore();
     }
 
-    // 2. Draw & decay drawn line segments (Quantum Filament)
+    // 2. Filter & decay drawn line segments
     for (let i = segments.length - 1; i >= 0; i--) {
-      const s = segments[i];
-      const age = (now - s.created) / s.life;
-
+      const age = (now - segments[i].created) / segments[i].life;
       if (age >= 1) {
         segments.splice(i, 1);
-        continue;
+      }
+    }
+
+    // 3. Draw remaining segments in smooth continuous chunk paths (Quantum Filament)
+    const chunkSize = 3;
+    for (let i = 0; i < segments.length; i += chunkSize) {
+      const chunk = segments.slice(i, i + chunkSize);
+      if (chunk.length === 0) continue;
+
+      // Calculate average alpha for the chunk
+      let sumAlpha = 0;
+      for (const s of chunk) {
+        const age = (now - s.created) / s.life;
+        sumAlpha += Math.max(0, 1 - age);
+      }
+      const alpha = sumAlpha / chunk.length;
+      if (alpha <= 0) continue;
+
+      // Base width depends smoothly on alpha, ignoring single-frame velocity spikes to prevent jitter
+      const baseWidth = 1.3 * alpha;
+
+      // Draw the chunk as a single continuous path
+      ctx.beginPath();
+      ctx.moveTo(chunk[0].x1, chunk[0].y1);
+      for (const s of chunk) {
+        ctx.lineTo(s.x2, s.y2);
       }
 
-      const alpha = 1 - age;
-      // Faster mouse movement makes the laser lines thinner and more stretched
-      const speedFactor = Math.min(1.5, Math.max(0.4, 8 / (s.speed + 1)));
-      const baseWidth = 1.2 * alpha * speedFactor; // Thin, delicate filament
-
       // Layer A: Soft, wide outer color glow
-      ctx.beginPath();
-      ctx.moveTo(s.x1, s.y1);
-      ctx.lineTo(s.x2, s.y2);
-      ctx.strokeStyle = s.color;
+      ctx.strokeStyle = chunk[chunk.length - 1].color;
       ctx.lineWidth = baseWidth * 3.5;
       ctx.globalAlpha = alpha * 0.18;
       ctx.shadowBlur = 10 * alpha;
-      ctx.shadowColor = s.color;
+      ctx.shadowColor = chunk[chunk.length - 1].color;
       ctx.stroke();
 
       // Layer B: Bright white core filament
-      ctx.beginPath();
-      ctx.moveTo(s.x1, s.y1);
-      ctx.lineTo(s.x2, s.y2);
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = baseWidth * 0.8;
       ctx.globalAlpha = alpha * 0.85;
