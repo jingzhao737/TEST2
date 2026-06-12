@@ -60,14 +60,6 @@
     if (hoveredElement) {
       hoveredElement.classList.remove('magnet-hover');
       hoveredElement.classList.remove('magnet-active');
-      if (!el && !isElementVisible(hoveredElement)) {
-        cX = mouseX;
-        cY = mouseY;
-        t1X = mouseX;
-        t1Y = mouseY;
-        lastCX = cX;
-        lastCY = cY;
-      }
     }
     hoveredElement = el;
     if (hoveredElement) {
@@ -487,13 +479,6 @@
     if (hoveredElement) {
       if (window.__isDetailClosing) {
         setHoveredElement(null);
-        // Instant snap back to mouse position to prevent visual lag/drift on exit
-        cX = mouseX;
-        cY = mouseY;
-        t1X = mouseX;
-        t1Y = mouseY;
-        lastCX = cX;
-        lastCY = cY;
       } else {
         // Dynamically query bounding rect on every frame to track moving/animating targets in real-time
         hoveredRect = hoveredElement.getBoundingClientRect();
