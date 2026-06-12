@@ -76,7 +76,7 @@ import * as THREE from 'three';
   // Parameters
   const config = {
     DISSIPATION: 0.99,      // How fast the fluid dye fades (longer trails)
-    VELOCITY_DISSIPATION: 0.998, // Damped decay for smoother, less abrupt movements (increased to 0.998 for extremely lingering ripples)
+    VELOCITY_DISSIPATION: 0.994, // Damped decay for smoother, less abrupt movements (optimized for dual-ripple animation)
     PRESSURE: 0.8,          // Pressure solve multiplier
     PRESSURE_ITERATIONS: 20,// Quality of the swirls
     CURL: 30.0,             // Vorticity confinement (adds micro-swirls)
@@ -468,7 +468,7 @@ import * as THREE from 'three';
     // Velocity splat (adds force)
     matSplat.uniforms.uTarget.value = velocity.read.texture;
     matSplat.uniforms.uPoint.value.set(x, y);
-    matSplat.uniforms.uColor.value.set(dx * 18.0, dy * 18.0, 0.0); // Reduced from 35.0 to 18.0 to keep trails subtle with slow dissipation
+    matSplat.uniforms.uColor.value.set(dx * 35.0, dy * 35.0, 0.0); // Reset to 35.0 for rich hover trails
     matSplat.uniforms.uRadius.value = radius;
     matSplat.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
     renderPass(matSplat, velocity.write);
@@ -485,30 +485,25 @@ import * as THREE from 'three';
   }
 
   function clickSplat(x, y) {
-    // 定义三层同心水波环，以实现更平滑且范围更广的涟漪扩散
-    const ripples = [
-      { offset: 0.025, force: 0.020, radiusMult: 3.5 }, // 内圈：力道极其平缓
-      { offset: 0.06,  force: 0.012, radiusMult: 5.0 }, // 中圈：力道微弱
-      { offset: 0.10,  force: 0.006, radiusMult: 6.5 }  // 外圈：力道极为轻微，扩散最大
-    ];
+    // 蜻蜓点水：点击产生两次扩散的涟漪，第二重延迟 0.28 秒触发
+    createSingleRipple(x, y, 0.0);
+    createSingleRipple(x, y, 0.28);
+  }
+
+  function createSingleRipple(x, y, delay) {
+    // 限制最大活跃波纹数，防止狂点导致多帧渲染卡顿
+    if (activeRipples.length >= 6) {
+      activeRipples.shift();
+    }
     
-    // 1. 中心施加一个大范围极度温和的起伏
-    splat(x, y, 0, 0, pointer.color, config.SPLAT_RADIUS * 6.5);
-    
-    // 2. 依次注入多重同心圆环的径向速度
-    const numAngles = 8;
-    ripples.forEach(rp => {
-      const splatRadius = config.SPLAT_RADIUS * rp.radiusMult;
-      for (let i = 0; i < numAngles; i++) {
-        const angle = (i / numAngles) * Math.PI * 2;
-        const splatX = x + Math.cos(angle) * rp.offset;
-        const splatY = y + Math.sin(angle) * rp.offset;
-        
-        // 速度方向：向内指向圆心（对应折射着色器反转后是向外膨胀）
-        const fx = -Math.cos(angle) * rp.force;
-        const fy = -Math.sin(angle) * rp.force;
-        splat(splatX, splatY, fx, fy, pointer.color, splatRadius);
-      }
+    activeRipples.push({
+      x,
+      y,
+      delay,      // 延迟触发的时间（秒）
+      age: 0,     // 已存活时间
+      duration: 1.5,   // 单个波纹悠长的 1.5 秒生命周期
+      maxRadius: 0.16, // 最大波及范围
+      color: new THREE.Color(pointer.color.r, pointer.color.g, pointer.color.b)
     });
   }
 
@@ -569,6 +564,9 @@ import * as THREE from 'three';
     moved: false,
     color: new THREE.Color()
   };
+  
+  // 存储所有处于活动状态的“蜻蜓点水”涟漪数据
+  const activeRipples = [];
 
   function updatePointerColor(time) {
     const r = Math.sin(time * 0.5) * 0.5 + 0.5;
@@ -688,6 +686,43 @@ import * as THREE from 'three';
       const dx = Math.sin(time * 5.0) * 0.0015;
       const dy = Math.cos(time * 4.0) * 0.0015;
       splat(automoveX, automoveY, dx, dy, pointer.color);
+    }
+    
+    // 注入并渲染所有“蜻蜓点水”涟漪的波浪变化
+    for (let i = activeRipples.length - 1; i >= 0; i--) {
+      const rp = activeRipples[i];
+      if (rp.delay > 0) {
+        rp.delay -= dt;
+        continue;
+      }
+      
+      rp.age += dt;
+      if (rp.age >= rp.duration) {
+        activeRipples.splice(i, 1);
+        continue;
+      }
+      
+      const progress = rp.age / rp.duration; // 0.0 到 1.0
+      // 径向扩散半径使用 sine 缓动，先快后慢
+      const currentRadius = Math.sin(progress * Math.PI * 0.5) * rp.maxRadius;
+      
+      // 力道随着扩散加速衰减 (1 - p)^2，最大力道设为 0.024，保持极佳的缓和性
+      const force = (1.0 - progress) * (1.0 - progress) * 0.024;
+      
+      // splat 画笔尺寸随扩散缓慢变大
+      const splatRadius = config.SPLAT_RADIUS * (3.0 + progress * 2.5);
+      
+      const numAngles = 8;
+      for (let j = 0; j < numAngles; j++) {
+        const angle = (j / numAngles) * Math.PI * 2;
+        const splatX = rp.x + Math.cos(angle) * currentRadius;
+        const splatY = rp.y + Math.sin(angle) * currentRadius;
+        
+        // 速度矢量朝内，在折射贴图转换中呈现向外不断推开的涟漪层
+        const fx = -Math.cos(angle) * force;
+        const fy = -Math.sin(angle) * force;
+        splat(splatX, splatY, fx, fy, rp.color, splatRadius);
+      }
     }
 
     // Calculate Y coordinates of horizontal dividers relative to the viewport
