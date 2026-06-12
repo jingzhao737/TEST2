@@ -104,12 +104,26 @@
 
   // Generate laser spark burst on click
   function createBurst(x, y) {
-    const numSparks = 12 + Math.floor(Math.random() * 8); // 12-20 sparks
+    // 1. Center Lens Flare / HUD Crosshair
+    sparks.push({
+      x: x,
+      y: y,
+      vx: 0,
+      vy: 0,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      type: 'center-flare',
+      size: 16 + Math.random() * 8,
+      created: Date.now(),
+      life: 300
+    });
+
+    // 2. Burst Micro-Sparks
+    const numSparks = 14 + Math.floor(Math.random() * 8); // 14-22 sparks
     for (let i = 0; i < numSparks; i++) {
-      const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 2 + Math.random() * 8;
+      const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+      const speed = 3 + Math.random() * 8;
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const type = Math.random() < 0.35 ? 'star' : 'trail'; // 35% twinkle stars, 65% trails
+      const type = Math.random() < 0.4 ? 'star' : 'trail'; // 40% twinkle starbursts, 60% velocity-aligned trails
       sparks.push({
         x: x,
         y: y,
@@ -117,11 +131,11 @@
         vy: Math.sin(angle) * speed,
         color: color,
         type: type,
-        size: type === 'star' ? 4 + Math.random() * 4 : 2 + Math.random() * 2,
+        size: type === 'star' ? 3 + Math.random() * 2.5 : 1.5 + Math.random() * 1.5,
         angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.15,
+        spin: (Math.random() - 0.5) * 0.25,
         created: Date.now(),
-        life: 500 + Math.random() * 400 // 500ms - 900ms lifespan
+        life: 400 + Math.random() * 400 // 400ms - 800ms lifespan
       });
     }
   }
@@ -227,7 +241,7 @@
       }
     }
 
-    // 1. Draw Shockwave Ripples
+    // 1. Draw Shockwave Ripples (Dotted concentric rings for a premium HUD aesthetic)
     for (let i = ripples.length - 1; i >= 0; i--) {
       const r = ripples[i];
       const age = (now - r.created) / r.life;
@@ -238,15 +252,27 @@
       }
 
       const currentRadius = r.maxRadius * Math.sin(age * Math.PI / 2); // Outward deceleration curve
+      
+      // Main thin ring
       ctx.beginPath();
       ctx.arc(r.x, r.y, currentRadius, 0, Math.PI * 2);
-      
       ctx.strokeStyle = r.color;
-      ctx.lineWidth = 1.5 * (1 - age);
-      ctx.globalAlpha = 0.6 * (1 - age);
-      ctx.shadowBlur = 10 * (1 - age);
+      ctx.lineWidth = 1.0 * (1 - age);
+      ctx.globalAlpha = 0.5 * (1 - age);
+      ctx.shadowBlur = 8 * (1 - age);
       ctx.shadowColor = r.color;
       ctx.stroke();
+
+      // Secondary outer dashed HUD ring
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, currentRadius * 1.25, 0, Math.PI * 2);
+      ctx.setLineDash([4, 6]);
+      ctx.strokeStyle = r.color;
+      ctx.lineWidth = 0.75 * (1 - age);
+      ctx.globalAlpha = 0.35 * (1 - age);
+      ctx.stroke();
+      ctx.restore();
     }
 
     // 2. Draw & decay drawn line segments
@@ -323,33 +349,68 @@
         continue;
       }
 
-      // Update position with air drag & gravitational drift
+      // Update position with air drag & slow upward energy float (no heavy gravity)
       s.x += s.vx;
       s.y += s.vy;
-      s.vx *= 0.94;
-      s.vy *= 0.94;
-      s.vy += 0.08; // downward gravity to mimic falling sparkles
+      if (s.type === 'center-flare') {
+        // Center flare stays fixed at click coordinate
+      } else {
+        s.vx *= 0.90; // Higher friction for a snappier, more localized deceleration
+        s.vy *= 0.90;
+        s.vy -= 0.025; // Subtle upward float to mimic energy dissipating
+      }
 
       const size = s.size * (1 - age);
       const alpha = 1 - age;
 
-      if (s.type === 'star') {
-        // Draw 4-point Diamond Starburst
+      if (s.type === 'center-flare') {
+        // Center Flare / HUD Crosshair
+        const sizeVal = s.size * Math.sin(age * Math.PI); // Pulse size
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        
+        // Circular core glow
+        const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, sizeVal);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.2, s.color);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.globalAlpha = alpha * 0.75;
+        ctx.beginPath();
+        ctx.arc(0, 0, sizeVal, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Thin HUD crosshair lines
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 0.75 * alpha;
+        ctx.globalAlpha = alpha * 0.5;
+        ctx.shadowBlur = 6 * alpha;
+        ctx.shadowColor = s.color;
+        ctx.beginPath();
+        ctx.moveTo(-sizeVal * 2.2, 0);
+        ctx.lineTo(sizeVal * 2.2, 0);
+        ctx.moveTo(0, -sizeVal * 2.2);
+        ctx.lineTo(0, sizeVal * 2.2);
+        ctx.stroke();
+
+        ctx.restore();
+      } else if (s.type === 'star') {
+        // Exquisite 4-point Diamond Starburst
         s.angle += s.spin;
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
         ctx.beginPath();
         // Draw star flares
-        ctx.moveTo(0, -size * 1.8);
-        ctx.quadraticCurveTo(0, 0, size * 1.8, 0);
-        ctx.quadraticCurveTo(0, 0, 0, size * 1.8);
-        ctx.quadraticCurveTo(0, 0, -size * 1.8, 0);
-        ctx.quadraticCurveTo(0, 0, 0, -size * 1.8);
+        ctx.moveTo(0, -size * 1.6);
+        ctx.quadraticCurveTo(0, 0, size * 1.6, 0);
+        ctx.quadraticCurveTo(0, 0, 0, size * 1.6);
+        ctx.quadraticCurveTo(0, 0, -size * 1.6, 0);
+        ctx.quadraticCurveTo(0, 0, 0, -size * 1.6);
         ctx.closePath();
         ctx.fillStyle = s.color;
-        ctx.globalAlpha = alpha;
-        ctx.shadowBlur = 12 * alpha;
+        ctx.globalAlpha = alpha * 0.9;
+        ctx.shadowBlur = 10 * alpha;
         ctx.shadowColor = s.color;
         ctx.fill();
         ctx.restore();
@@ -357,15 +418,14 @@
         // Draw velocity-aligned trail sparks
         ctx.beginPath();
         ctx.moveTo(s.x, s.y);
-        // line stretches according to velocity
-        const tailX = s.vx * 1.8;
-        const tailY = s.vy * 1.8;
+        const tailX = s.vx * 1.6;
+        const tailY = s.vy * 1.6;
         ctx.lineTo(s.x - tailX, s.y - tailY);
 
         ctx.strokeStyle = s.color;
-        ctx.lineWidth = size * 0.8;
-        ctx.globalAlpha = alpha;
-        ctx.shadowBlur = 8 * alpha;
+        ctx.lineWidth = size * 0.75;
+        ctx.globalAlpha = alpha * 0.85;
+        ctx.shadowBlur = 6 * alpha;
         ctx.shadowColor = s.color;
         ctx.stroke();
       }
