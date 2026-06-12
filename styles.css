@@ -2553,9 +2553,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     box-shadow .35s var(--ease-out-expo),
     opacity .25s ease;
 }
-.scroll-dot-marker:hover {
-  width: 8px;
-  height: 8px;
+.scroll-dot-marker:hover:not(:has(.scroll-bubble:hover)):not(:has(.scroll-bubble.magnet-hover)) {
+  width: 6px;
+  height: 6px;
   background: rgba(232,124,80,0.6);
   border-color: rgba(232,124,80,0.5);
   box-shadow:
