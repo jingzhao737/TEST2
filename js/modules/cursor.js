@@ -532,7 +532,7 @@
     let isAnticipating = false;
     if (isArrowHovered) {
       const elapsed = Date.now() - arrowHoverStartTime;
-      if (elapsed < 120) {
+      if (elapsed < 180) {
         isAnticipating = true;
         targetScale = 0.46; // Squash down before popping up
         targetZSpacing = 0.3; // Flatten layers during compression
@@ -565,9 +565,9 @@
     if (isClicked) {
       scaleEase = 0.20; // Fast responsive press
     } else if (isAnticipating) {
-      scaleEase = 0.22; // Snappy compression shrink!
+      scaleEase = 0.13; // Smooth compression shrink! (slower, gentler squish)
     } else if (currentScale < targetScale) {
-      scaleEase = 0.16; // Snappy recovery on release / pop-up growth
+      scaleEase = isArrowHovered ? 0.09 : 0.16; // Smooth, organic recovery/pop-up growth for arrow, snappy for circle
     }
     
     currentScale += (targetScale - currentScale) * scaleEase;
