@@ -130,8 +130,8 @@
         color: '#ffffff',
         type: 'star', // All burst particles are now cross-stars
         size: 0.8 + Math.random() * 3.8, // Increased size variation: 0.8px to 4.6px
-        angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.15, // Smooth slow rotation
+        angle: 0,
+        spin: 0, // No rotation, keeping them perfectly upright +
         created: Date.now(),
         life: 500 + Math.random() * 300 // 500ms - 800ms lifespan
       });
