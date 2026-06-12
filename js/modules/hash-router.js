@@ -15,6 +15,7 @@ Object.defineProperty(window, '__isRouteTransitioning', {
   set(val) { isRouteTransitioning = val; },
   configurable: true
 });
+window.__isDetailClosing = false;
 
 function buildGalleryHTML(gallery) {
   if (!gallery || !gallery.length) return '';
@@ -181,6 +182,7 @@ function closeDetail(popState) {
   // but prevent closing if we are already closed or closing (checked via classList.contains('open'))
   if (!workDetail.classList.contains('open')) return;
   isRouteTransitioning = true;
+  window.__isDetailClosing = true;
   workDetail.classList.remove('open');
 
   const previewContainer = getActivePreviewContainer();
@@ -255,10 +257,12 @@ function closeDetail(popState) {
         }
         window.scrollTo({ top: savedScrollY, behavior: 'instant' });
 
+        window.__isDetailClosing = false;
         isRouteTransitioning = false;
       }
     });
   } else {
+    window.__isDetailClosing = false;
     isRouteTransitioning = false;
   }
 }

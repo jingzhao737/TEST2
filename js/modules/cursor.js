@@ -182,7 +182,7 @@
 
         // Find the closest magnet target, prioritizing direct hover on interactive elements
         let closestTarget = null;
-        if (!window.__isRouteTransitioning) {
+        if (!window.__isDetailClosing) {
           const hoveredInteractive = target.closest(hoverSelector);
           
           if (hoveredInteractive) {
@@ -485,7 +485,7 @@
   (function loop() {
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
     if (hoveredElement) {
-      if (window.__isRouteTransitioning) {
+      if (window.__isDetailClosing) {
         setHoveredElement(null);
         // Instant snap back to mouse position to prevent visual lag/drift on exit
         cX = mouseX;
