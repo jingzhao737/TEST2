@@ -455,6 +455,13 @@
 
     // Gentle steering delay when flying, dynamic low-speed dampening to prevent angular flutter
     const isActuallyHovered = isHovered || (hoveredElement !== null);
+    if (isActuallyHovered) {
+      cursorDot.classList.add('hovered');
+      cursorTrail1.classList.add('hovered');
+    } else {
+      cursorDot.classList.remove('hovered');
+      cursorTrail1.classList.remove('hovered');
+    }
     const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {

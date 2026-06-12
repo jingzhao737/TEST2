@@ -161,21 +161,29 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   filter: drop-shadow(0 0 10px rgba(255, 141, 161, 0.95)) drop-shadow(0 0 20px rgba(112, 230, 210, 0.75));
 }
 
-/* Grab state morphing to 3D circular button */
+/* Grab state and Hovered state morphing to 3D circular button */
 .cursor-dot.grab-state .cursor-3d-container,
 .cursor-dot.grab-state .cursor-3d-layer,
 .cursor-trail.grab-state .cursor-3d-container,
-.cursor-trail.grab-state .cursor-3d-layer {
+.cursor-trail.grab-state .cursor-3d-layer,
+.cursor-dot.hovered .cursor-3d-container,
+.cursor-dot.hovered .cursor-3d-layer,
+.cursor-trail.hovered .cursor-3d-container,
+.cursor-trail.hovered .cursor-3d-layer {
   transform-origin: 50% 50%;
 }
 .cursor-dot.grab-state .cursor-arrow-wrapper,
-.cursor-trail.grab-state .cursor-arrow-wrapper {
+.cursor-trail.grab-state .cursor-arrow-wrapper,
+.cursor-dot.hovered .cursor-arrow-wrapper,
+.cursor-trail.hovered .cursor-arrow-wrapper {
   opacity: 0;
   transform: scale(0.3);
   filter: none !important;
 }
 .cursor-dot.grab-state .cursor-circle-wrapper,
-.cursor-trail.grab-state .cursor-circle-wrapper {
+.cursor-trail.grab-state .cursor-circle-wrapper,
+.cursor-dot.hovered .cursor-circle-wrapper,
+.cursor-trail.hovered .cursor-circle-wrapper {
   opacity: 1;
   transform: scale(0.84); /* Concentric circle size visually balanced with triangle */
   filter: none !important;
