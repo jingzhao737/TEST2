@@ -104,38 +104,36 @@
 
   // Generate laser spark burst on click
   function createBurst(x, y) {
-    // 1. Center Lens Flare / HUD Crosshair
+    // 1. Center Lens Flare / HUD Crosshair (White)
     sparks.push({
       x: x,
       y: y,
       vx: 0,
       vy: 0,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      color: '#ffffff',
       type: 'center-flare',
-      size: 16 + Math.random() * 8,
+      size: 14 + Math.random() * 6,
       created: Date.now(),
       life: 300
     });
 
-    // 2. Burst Micro-Sparks
+    // 2. Burst Micro-Sparks (White Small Cross-Stars)
     const numSparks = 14 + Math.floor(Math.random() * 8); // 14-22 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-      const speed = 3 + Math.random() * 8;
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const type = Math.random() < 0.4 ? 'star' : 'trail'; // 40% twinkle starbursts, 60% velocity-aligned trails
+      const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
       sparks.push({
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        color: color,
-        type: type,
-        size: type === 'star' ? 3 + Math.random() * 2.5 : 1.5 + Math.random() * 1.5,
+        color: '#ffffff',
+        type: 'star', // All burst particles are now cross-stars
+        size: 1.5 + Math.random() * 1.5, // Small size: 1.5px to 3.0px
         angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.25,
+        spin: (Math.random() - 0.5) * 0.15, // Smooth slow rotation
         created: Date.now(),
-        life: 400 + Math.random() * 400 // 400ms - 800ms lifespan
+        life: 500 + Math.random() * 300 // 500ms - 800ms lifespan
       });
     }
   }
@@ -395,24 +393,33 @@
 
         ctx.restore();
       } else if (s.type === 'star') {
-        // Exquisite 4-point Diamond Starburst
+        // Delicate White Small Cross-Star (十字星)
         s.angle += s.spin;
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
+        
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 0.75 * alpha; // Very thin, premium lines
+        ctx.globalAlpha = alpha * 0.85;
+        ctx.shadowBlur = 4 * alpha;
+        ctx.shadowColor = '#ffffff';
+
+        // Draw cross lines (+)
         ctx.beginPath();
-        // Draw star flares
+        ctx.moveTo(-size * 1.6, 0);
+        ctx.lineTo(size * 1.6, 0);
         ctx.moveTo(0, -size * 1.6);
-        ctx.quadraticCurveTo(0, 0, size * 1.6, 0);
-        ctx.quadraticCurveTo(0, 0, 0, size * 1.6);
-        ctx.quadraticCurveTo(0, 0, -size * 1.6, 0);
-        ctx.quadraticCurveTo(0, 0, 0, -size * 1.6);
-        ctx.closePath();
-        ctx.fillStyle = s.color;
-        ctx.globalAlpha = alpha * 0.9;
-        ctx.shadowBlur = 10 * alpha;
-        ctx.shadowColor = s.color;
+        ctx.lineTo(0, size * 1.6);
+        ctx.stroke();
+
+        // Central tiny core glow dot
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = alpha * 0.95;
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2);
         ctx.fill();
+
         ctx.restore();
       } else {
         // Draw velocity-aligned trail sparks
