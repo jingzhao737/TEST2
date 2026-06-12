@@ -60,6 +60,14 @@
     if (hoveredElement) {
       hoveredElement.classList.remove('magnet-hover');
       hoveredElement.classList.remove('magnet-active');
+      if (!el && !isElementVisible(hoveredElement)) {
+        cX = mouseX;
+        cY = mouseY;
+        t1X = mouseX;
+        t1Y = mouseY;
+        lastCX = cX;
+        lastCY = cY;
+      }
     }
     hoveredElement = el;
     if (hoveredElement) {
