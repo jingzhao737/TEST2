@@ -113,9 +113,11 @@
   }
 
   // Generate laser spark burst on click
-  function createBurst(x, y, addOrange = false) {
-    // 1. Default White Micro-Sparks (White Small Cross-Stars)
-    const numSparks = 4 + Math.floor(Math.random() * 4); // 4-7 white sparks
+  function createBurst(x, y, isOrange = false) {
+    const burstColor = isOrange ? '#E87C50' : '#ffffff'; // Monochromatic: all orange on interactive elements, all white on general background
+    
+    // Burst Micro-Sparks (Small Cross-Stars)
+    const numSparks = 4 + Math.floor(Math.random() * 4); // 4-7 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
       const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
@@ -124,36 +126,14 @@
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        color: '#ffffff', // White
-        type: 'star',
-        size: 0.8 + Math.random() * 3.8,
+        color: burstColor,
+        type: 'star', // All particles are cross-stars
+        size: 0.8 + Math.random() * 3.8, // Size variation: 0.8px to 4.6px
         angle: 0,
         spin: 0, // No rotation, keeping them perfectly upright +
         created: Date.now(),
         life: 500 + Math.random() * 300 // 500ms - 800ms lifespan
       });
-    }
-
-    // 2. Extra Orange Micro-Sparks for Pointer/Grab element clicks
-    if (addOrange) {
-      const numOrange = 3 + Math.floor(Math.random() * 3); // 3-5 extra orange sparks
-      for (let i = 0; i < numOrange; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 2.0 + Math.random() * 5.0; // Slightly different velocity variance
-        sparks.push({
-          x: x,
-          y: y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          color: '#E87C50', // Brand Orange
-          type: 'star', // Cross-star shape
-          size: 1.0 + Math.random() * 3.2, // Size: 1.0px to 4.2px
-          angle: 0,
-          spin: 0,
-          created: Date.now(),
-          life: 600 + Math.random() * 300 // Slightly longer lifespan to highlight the click reward
-        });
-      }
     }
   }
 
