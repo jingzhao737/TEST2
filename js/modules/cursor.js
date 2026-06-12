@@ -447,6 +447,8 @@
     lastCX = cX;
     lastCY = cY;
 
+    const isActuallyHovered = isHovered || (hoveredElement !== null);
+
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
     // Otherwise, delay for 400ms before returning to upright (-90 degrees).
@@ -457,9 +459,9 @@
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (isHovered || Date.now() - lastMoveTime < 400) {
+      if (isActuallyHovered || Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
-        if (isHovered) {
+        if (isActuallyHovered) {
           lastMoveTime = Date.now(); // Reset timer so return-to-upright countdown starts ONLY after hover ends
         }
       } else {
@@ -481,7 +483,6 @@
     while (diff > 180) diff -= 360;
 
     // Gentle steering delay when flying, dynamic low-speed dampening to prevent angular flutter
-    const isActuallyHovered = isHovered || (hoveredElement !== null);
     if (isActuallyHovered) {
       cursorDot.classList.add('hovered');
       cursorTrail1.classList.add('hovered');
@@ -543,7 +544,7 @@
     const basePitch = isReturningUpright 
       ? Math.min(Math.abs(diff) * 0.25, 12) 
       : Math.min(cursorSpeed * 1.5, 30);
-    const targetPitch = basePitch + (isHovered ? 22 : 0);
+    const targetPitch = basePitch + (isActuallyHovered ? 22 : 0);
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
     const targetRoll = isReturningUpright 
@@ -566,10 +567,21 @@
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
     if (cursorSpeed < 0.1 && speed < 0.1) {
-      if (targetAngle === -90) {
-        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
-        if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
-        if (Math.abs(currentPitch - (isHovered ? 22 : 0)) < 1.0) currentPitch = isHovered ? 22 : 0;
+      if (isActuallyHovered) {
+        // For circular shape, lock rotation, tilt, and stretch immediately to prevent elliptical distortion
+        currentAngle = -90;
+        currentRoll = 0;
+        currentPitch = 22; // Clean hover dive
+        currentStretchX = 1;
+        currentStretchY = 1;
+      } else {
+        if (targetAngle === -90) {
+          if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+          if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
+          if (Math.abs(currentPitch) < 1.0) currentPitch = 0;
+          currentStretchX = 1;
+          currentStretchY = 1;
+        }
       }
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
       if (Math.abs(currentScale - targetScale) < 0.01) currentScale = targetScale;
