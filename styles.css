@@ -1943,10 +1943,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     display: none !important;
   }
   .h-grid-divider {
-    background: rgba(255, 255, 255, 0.12) !important;
+    background: transparent !important;
   }
   :root.light .h-grid-divider {
-    background: rgba(0, 0, 0, 0.12) !important;
+    background: transparent !important;
   }
 }
 
