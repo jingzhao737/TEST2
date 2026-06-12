@@ -158,12 +158,19 @@
               const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
               const dist = Math.sqrt(dx * dx + dy * dy);
               
+              // Asymmetric snapping: Weaken snapping on the right side of scrollbar bubbles
+              // (facing the screen edge and scroll track) so the mouse slips off easily.
+              let localMaxSnapDistance = maxSnapDistance;
+              if (mt.element.classList.contains('scroll-bubble') && mouseX > mt.centerX) {
+                localMaxSnapDistance = 6;
+              }
+              
               // Hysteresis: Give the currently hovered element a 15px distance discount 
               // so the cursor doesn't jitter back and forth between close neighbors.
               const hysteresisDiscount = (hoveredElement && mt.element === hoveredElement) ? 15 : 0;
               const effectiveDist = dist - hysteresisDiscount;
               
-              if (dist < maxSnapDistance) {
+              if (dist < localMaxSnapDistance) {
                 if (effectiveDist < minDistance) {
                   minDistance = effectiveDist;
                   closestTarget = mt;
