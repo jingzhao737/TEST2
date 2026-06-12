@@ -76,7 +76,7 @@ import * as THREE from 'three';
   // Parameters
   const config = {
     DISSIPATION: 0.99,      // How fast the fluid dye fades (longer trails)
-    VELOCITY_DISSIPATION: 0.995, // Damped decay for smoother, less abrupt movements (increased to 0.995 for longer ripples)
+    VELOCITY_DISSIPATION: 0.998, // Damped decay for smoother, less abrupt movements (increased to 0.998 for extremely lingering ripples)
     PRESSURE: 0.8,          // Pressure solve multiplier
     PRESSURE_ITERATIONS: 20,// Quality of the swirls
     CURL: 30.0,             // Vorticity confinement (adds micro-swirls)
@@ -468,7 +468,7 @@ import * as THREE from 'three';
     // Velocity splat (adds force)
     matSplat.uniforms.uTarget.value = velocity.read.texture;
     matSplat.uniforms.uPoint.value.set(x, y);
-    matSplat.uniforms.uColor.value.set(dx * 35.0, dy * 35.0, 0.0);
+    matSplat.uniforms.uColor.value.set(dx * 18.0, dy * 18.0, 0.0); // Reduced from 35.0 to 18.0 to keep trails subtle with slow dissipation
     matSplat.uniforms.uRadius.value = radius;
     matSplat.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
     renderPass(matSplat, velocity.write);
@@ -487,9 +487,9 @@ import * as THREE from 'three';
   function clickSplat(x, y) {
     // 定义三层同心水波环，以实现更平滑且范围更广的涟漪扩散
     const ripples = [
-      { offset: 0.025, force: 0.035, radiusMult: 3.5 }, // 内圈：力道稍强，范围较小
-      { offset: 0.06,  force: 0.022, radiusMult: 5.0 }, // 中圈：力道中等，范围扩大
-      { offset: 0.10,  force: 0.012, radiusMult: 6.5 }  // 外圈：力道柔和，范围最大（达 viewport 10% 左右）
+      { offset: 0.025, force: 0.020, radiusMult: 3.5 }, // 内圈：力道极其平缓
+      { offset: 0.06,  force: 0.012, radiusMult: 5.0 }, // 中圈：力道微弱
+      { offset: 0.10,  force: 0.006, radiusMult: 6.5 }  // 外圈：力道极为轻微，扩散最大
     ];
     
     // 1. 中心施加一个大范围极度温和的起伏
