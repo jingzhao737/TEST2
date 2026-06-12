@@ -485,9 +485,9 @@ import * as THREE from 'three';
   }
 
   function clickSplat(x, y) {
-    // 蜻蜓点水：点击产生两次扩散的涟漪，第二重延迟 0.22 秒触发（稍微调快以增加动感）
+    // 蜻蜓点水：点击产生两次扩散的涟漪，第二重延迟 0.15 秒触发（配合 0.8s 周期缩短延迟）
     createSingleRipple(x, y, 0.0);
-    createSingleRipple(x, y, 0.22);
+    createSingleRipple(x, y, 0.15);
   }
 
   function createSingleRipple(x, y, delay) {
@@ -501,8 +501,8 @@ import * as THREE from 'three';
       y,
       delay,      // 延迟触发的时间（秒）
       age: 0,     // 已存活时间
-      duration: 1.1,   // 单个波纹生命周期由 1.5s 缩短至 1.1s，使扩散和消退稍微快一些
-      maxRadius: 0.16, // 最大波及范围
+      duration: 0.8,   // 生命周期缩短至 0.8s，使得波纹消散更快更紧凑
+      maxRadius: 0.11, // 最大范围缩小至原先的 70% (0.16 * 0.7 = 0.11)
       color: new THREE.Color(pointer.color.r, pointer.color.g, pointer.color.b)
     });
   }
