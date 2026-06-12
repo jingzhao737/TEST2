@@ -255,51 +255,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   opacity: 0.65; /* Semi-transparent shadow echo */
 }
 
-/* Radio wave pulse effect at the triangle tip */
-.cursor-radar-wave {
-  position: absolute;
-  left: 50%;
-  top: 10%; /* Exactly at the tip of the triangle pointer */
-  width: 10px;
-  height: 10px;
-  border: 1px solid rgba(255, 141, 161, 0);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0.6);
-  opacity: 0;
-  pointer-events: none;
-  box-shadow: 0 0 0px rgba(112, 230, 210, 0);
-  transform-origin: center center;
-  z-index: 10;
-}
-
-.cursor-dot.has-radar .wave-1 {
-  animation: radarPulse 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-}
-.cursor-dot.has-radar .wave-2 {
-  animation: radarPulse 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-  animation-delay: 0.9s;
-}
-
-@keyframes radarPulse {
-  0% {
-    transform: translate(-50%, -50%) scale(0.5);
-    opacity: 0;
-    border-color: rgba(255, 141, 161, 0);
-    box-shadow: 0 0 0px rgba(112, 230, 210, 0);
-  }
-  15% {
-    opacity: 0.95;
-    border-color: rgba(255, 141, 161, 0.85); /* Holographic pink */
-    box-shadow: 0 0 8px rgba(112, 230, 210, 0.6); /* Cyan neon glow */
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(5.8); /* Expanding outward */
-    opacity: 0;
-    border-color: rgba(112, 230, 210, 0);
-    box-shadow: 0 0 16px rgba(255, 141, 161, 0);
-  }
-}
-
 
 /* 鈺愨晲鈺愨晲鈺愨晲?PAGE TRANSITION 鈺愨晲鈺愨晲鈺愨晲?*/
 .page-transition{position:fixed;inset:0;z-index:999;background:var(--fg);transform:scaleY(0);transform-origin:top;pointer-events:none;transition:background .6s var(--ease-out-expo)}

@@ -501,11 +501,6 @@
       cursorTrail1.classList.remove('hovered');
     }
 
-    if (isArrowHovered) {
-      cursorDot.classList.add('has-radar');
-    } else {
-      cursorDot.classList.remove('has-radar');
-    }
     const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
