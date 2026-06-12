@@ -87,7 +87,7 @@
     } else {
       const menuPanel = document.getElementById('menuPanel');
       if (menuPanel && menuPanel.classList.contains('open')) {
-        if (!menuPanel.contains(el)) return false;
+        if (!menuPanel.contains(el) && !el.classList.contains('nav-menu-btn')) return false;
       } else {
         const workDetail = document.getElementById('workDetail');
         if (workDetail && workDetail.classList.contains('open')) {
@@ -154,6 +154,10 @@
 
   // Track mouse coordinates and dynamically update grab state based on hover target styles
   document.addEventListener('mousemove', function(e) {
+    // Ignore synthetic/fake mousemove events at (0,0) when elements are toggled or hidden
+    if (e.clientX === 0 && e.clientY === 0) {
+      return;
+    }
     mouseX = e.clientX;
     mouseY = e.clientY;
 
@@ -477,6 +481,13 @@
       // If the element has become hidden (width/height is 0) or is no longer visible in DOM, release snap immediately
       if (hoveredRect.width === 0 || hoveredRect.height === 0 || !isElementVisible(hoveredElement)) {
         setHoveredElement(null);
+        // Instant snap back to mouse position to prevent visual lag/drift on exit
+        cX = mouseX;
+        cY = mouseY;
+        t1X = mouseX;
+        t1Y = mouseY;
+        lastCX = cX;
+        lastCY = cY;
       }
     }
 
