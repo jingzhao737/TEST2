@@ -247,8 +247,7 @@
         lastDx = dx;
         lastDy = dy;
 
-        const color = colors[Math.floor(colorIndex) % colors.length];
-        colorIndex += 0.12;
+        const color = '#ffffff';
 
         segments.push({
           x1: lastX,
