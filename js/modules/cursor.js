@@ -182,61 +182,63 @@
 
         // Find the closest magnet target, prioritizing direct hover on interactive elements
         let closestTarget = null;
-        const hoveredInteractive = target.closest(hoverSelector);
-        
-        if (hoveredInteractive) {
-          const isMagnet = hoveredInteractive.matches(magnetSelector);
-          if (isMagnet) {
-            closestTarget = magnetTargets.find(mt => mt.element === hoveredInteractive);
-            if (closestTarget) {
-              if (!isElementVisible(hoveredInteractive)) {
-                closestTarget = null;
-              }
-            } else if (isElementVisible(hoveredInteractive)) {
-              const rect = hoveredInteractive.getBoundingClientRect();
-              closestTarget = {
-                element: hoveredInteractive,
-                left: rect.left,
-                top: rect.top,
-                right: rect.right,
-                bottom: rect.bottom,
-                centerX: rect.left + rect.width / 2,
-                centerY: rect.top + rect.height / 2
-              };
-            }
-          }
-        } else {
-          // Check if pointer is currently inside the scrollbar container
-          const isInsideScrollbar = target.closest('#scrollBar') !== null;
+        if (!window.__isRouteTransitioning) {
+          const hoveredInteractive = target.closest(hoverSelector);
           
-          if (!isInsideScrollbar) {
-            // If in empty space (and not inside the scrollbar), find the closest magnet target based on Euclidean distance to its bounding box
-            let minDistance = Infinity;
-            const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
-            
-            for (const mt of magnetTargets) {
-              // Euclidean distance to axis-aligned bounding box
-              const dx = Math.max(mt.left - mouseX, 0, mouseX - mt.right);
-              const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              
-              // Asymmetric snapping: Weaken snapping on the right side of scrollbar bubbles
-              // (facing the screen edge and scroll track) so the mouse slips off easily.
-              let localMaxSnapDistance = maxSnapDistance;
-              if (mt.element.classList.contains('scroll-bubble') && mouseX > mt.centerX) {
-                localMaxSnapDistance = 2;
+          if (hoveredInteractive) {
+            const isMagnet = hoveredInteractive.matches(magnetSelector);
+            if (isMagnet) {
+              closestTarget = magnetTargets.find(mt => mt.element === hoveredInteractive);
+              if (closestTarget) {
+                if (!isElementVisible(hoveredInteractive)) {
+                  closestTarget = null;
+                }
+              } else if (isElementVisible(hoveredInteractive)) {
+                const rect = hoveredInteractive.getBoundingClientRect();
+                closestTarget = {
+                  element: hoveredInteractive,
+                  left: rect.left,
+                  top: rect.top,
+                  right: rect.right,
+                  bottom: rect.bottom,
+                  centerX: rect.left + rect.width / 2,
+                  centerY: rect.top + rect.height / 2
+                };
               }
+            }
+          } else {
+            // Check if pointer is currently inside the scrollbar container
+            const isInsideScrollbar = target.closest('#scrollBar') !== null;
+            
+            if (!isInsideScrollbar) {
+              // If in empty space (and not inside the scrollbar), find the closest magnet target based on Euclidean distance to its bounding box
+              let minDistance = Infinity;
+              const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
               
-              // Hysteresis: Give the currently hovered element a 15px distance discount 
-              // so the cursor doesn't jitter back and forth between close neighbors.
-              const hysteresisDiscount = (hoveredElement && mt.element === hoveredElement) ? 15 : 0;
-              const effectiveDist = dist - hysteresisDiscount;
-              
-              if (dist < localMaxSnapDistance) {
-                if (isElementVisible(mt.element)) {
-                  if (effectiveDist < minDistance) {
-                    minDistance = effectiveDist;
-                    closestTarget = mt;
+              for (const mt of magnetTargets) {
+                // Euclidean distance to axis-aligned bounding box
+                const dx = Math.max(mt.left - mouseX, 0, mouseX - mt.right);
+                const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                // Asymmetric snapping: Weaken snapping on the right side of scrollbar bubbles
+                // (facing the screen edge and scroll track) so the mouse slips off easily.
+                let localMaxSnapDistance = maxSnapDistance;
+                if (mt.element.classList.contains('scroll-bubble') && mouseX > mt.centerX) {
+                  localMaxSnapDistance = 2;
+                }
+                
+                // Hysteresis: Give the currently hovered element a 15px distance discount 
+                // so the cursor doesn't jitter back and forth between close neighbors.
+                const hysteresisDiscount = (hoveredElement && mt.element === hoveredElement) ? 15 : 0;
+                const effectiveDist = dist - hysteresisDiscount;
+                
+                if (dist < localMaxSnapDistance) {
+                  if (isElementVisible(mt.element)) {
+                    if (effectiveDist < minDistance) {
+                      minDistance = effectiveDist;
+                      closestTarget = mt;
+                    }
                   }
                 }
               }
@@ -483,11 +485,7 @@
   (function loop() {
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
     if (hoveredElement) {
-      // Dynamically query bounding rect on every frame to track moving/animating targets in real-time
-      hoveredRect = hoveredElement.getBoundingClientRect();
-      
-      // If the element has become hidden (width/height is 0) or is no longer visible in DOM, release snap immediately
-      if (hoveredRect.width === 0 || hoveredRect.height === 0 || !isElementVisible(hoveredElement)) {
+      if (window.__isRouteTransitioning) {
         setHoveredElement(null);
         // Instant snap back to mouse position to prevent visual lag/drift on exit
         cX = mouseX;
@@ -496,6 +494,21 @@
         t1Y = mouseY;
         lastCX = cX;
         lastCY = cY;
+      } else {
+        // Dynamically query bounding rect on every frame to track moving/animating targets in real-time
+        hoveredRect = hoveredElement.getBoundingClientRect();
+        
+        // If the element has become hidden (width/height is 0) or is no longer visible in DOM, release snap immediately
+        if (hoveredRect.width === 0 || hoveredRect.height === 0 || !isElementVisible(hoveredElement)) {
+          setHoveredElement(null);
+          // Instant snap back to mouse position to prevent visual lag/drift on exit
+          cX = mouseX;
+          cY = mouseY;
+          t1X = mouseX;
+          t1Y = mouseY;
+          lastCX = cX;
+          lastCY = cY;
+        }
       }
     }
 

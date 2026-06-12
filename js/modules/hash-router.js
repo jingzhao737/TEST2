@@ -10,6 +10,11 @@ const ROUTE_PREFIX = '#/work/';
 let detailOpenedFromHash = false;
 let savedScrollY = 0;
 let isRouteTransitioning = false;
+Object.defineProperty(window, '__isRouteTransitioning', {
+  get() { return isRouteTransitioning; },
+  set(val) { isRouteTransitioning = val; },
+  configurable: true
+});
 
 function buildGalleryHTML(gallery) {
   if (!gallery || !gallery.length) return '';
