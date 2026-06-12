@@ -67,8 +67,15 @@
 
   // Handle mousedown/touchstart
   function handleStart(x, y, target, e) {
-    // Trigger click particle burst immediately on any element (including interactive buttons/links)
-    createBurst(x, y);
+    // Detect if clicking on pointer, grab, or selection elements (based on selectors or computed CSS styles)
+    const computedCursor = window.getComputedStyle(target).cursor;
+    const isPointerOrGrab = isInteractive(target) || 
+                            computedCursor === 'pointer' || 
+                            computedCursor === 'grab' || 
+                            computedCursor === 'grabbing';
+
+    // Trigger click particle burst immediately, adding extra orange cross-stars if in pointer/grab state
+    createBurst(x, y, isPointerOrGrab);
 
     if (isInteractive(target)) return;
 
@@ -106,9 +113,9 @@
   }
 
   // Generate laser spark burst on click
-  function createBurst(x, y) {
-    // Burst Micro-Sparks (White Small Cross-Stars)
-    const numSparks = 4 + Math.floor(Math.random() * 4); // Extremely sparse count: 4-7 sparks
+  function createBurst(x, y, addOrange = false) {
+    // 1. Default White Micro-Sparks (White Small Cross-Stars)
+    const numSparks = 4 + Math.floor(Math.random() * 4); // 4-7 white sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
       const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
@@ -117,14 +124,36 @@
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        color: '#ffffff',
-        type: 'star', // All burst particles are now cross-stars
-        size: 0.8 + Math.random() * 3.8, // Size variation: 0.8px to 4.6px
+        color: '#ffffff', // White
+        type: 'star',
+        size: 0.8 + Math.random() * 3.8,
         angle: 0,
         spin: 0, // No rotation, keeping them perfectly upright +
         created: Date.now(),
         life: 500 + Math.random() * 300 // 500ms - 800ms lifespan
       });
+    }
+
+    // 2. Extra Orange Micro-Sparks for Pointer/Grab element clicks
+    if (addOrange) {
+      const numOrange = 3 + Math.floor(Math.random() * 3); // 3-5 extra orange sparks
+      for (let i = 0; i < numOrange; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2.0 + Math.random() * 5.0; // Slightly different velocity variance
+        sparks.push({
+          x: x,
+          y: y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          color: '#E87C50', // Brand Orange
+          type: 'star', // Cross-star shape
+          size: 1.0 + Math.random() * 3.2, // Size: 1.0px to 4.2px
+          angle: 0,
+          spin: 0,
+          created: Date.now(),
+          life: 600 + Math.random() * 300 // Slightly longer lifespan to highlight the click reward
+        });
+      }
     }
   }
 
@@ -410,17 +439,17 @@
 
         ctx.restore();
       } else if (s.type === 'star') {
-        // Delicate White Small Cross-Star (十字星)
+        // Delicate Small Cross-Star (十字星)
         s.angle += s.spin;
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
         
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = s.color || '#ffffff'; // Dynamic color support (white or brand orange)
         ctx.lineWidth = 1.0 * alpha; // Slightly thicker lines for brightness
         ctx.globalAlpha = alpha * 1.0; // Max opacity
         ctx.shadowBlur = 8 * alpha; // Stronger glow blur
-        ctx.shadowColor = '#ffffff';
+        ctx.shadowColor = s.color || '#ffffff'; // Glowing halo color matches particle color
 
         // Draw cross lines (+)
         ctx.beginPath();
@@ -430,7 +459,7 @@
         ctx.lineTo(0, size * 1.6);
         ctx.stroke();
 
-        // Central tiny core glow dot
+        // Central tiny core glow dot (intense hot white center for realistic light rendering)
         ctx.fillStyle = '#ffffff';
         ctx.globalAlpha = alpha * 1.0; // Max opacity
         ctx.beginPath();
