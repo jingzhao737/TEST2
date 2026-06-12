@@ -67,6 +67,9 @@
 
   // Handle mousedown/touchstart
   function handleStart(x, y, target, e) {
+    // Trigger click particle burst immediately on any element (including interactive buttons/links)
+    createBurst(x, y);
+
     if (isInteractive(target)) return;
 
     isDrawing = true;
@@ -81,9 +84,6 @@
     
     lastX = cX;
     lastY = cY;
-
-    // Trigger laser splash burst on click
-    createBurst(cX, cY);
   }
 
   // Handle mousemove/touchmove
