@@ -342,3 +342,18 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **Visibility-Checked Snapping**: Modified [js/modules/cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) to verify `isElementVisible()` on-the-fly before snapping to any element—both for direct hovers and distance-based snaps—even if it is found in the `magnetTargets` cache. This completely prevents snapping to background elements when overlays are open.
 - **Background Pointer Blocking**: Updated [js/modules/hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) to set `pointer-events: none` on `#scrollBar` and `#backToTop` immediately when opening the details card, and restore them when closing it. This completely blocks browser hover events on hidden background elements.
 - **Verified Build & Deployment**: Recompiled the production bundle successfully using `npx.cmd vite build` and pushed all changes to the remote repository.
+
+---
+
+## 🛠️ Hotfix: Custom Cursor Displacement & Exit Jumps
+
+### Problem
+- **Menu Close Snap Lag**: When the menu panel was open, the navigation menu toggle button `.nav-menu-btn` was excluded from snapping because it lived outside the `#menuPanel` container. This meant when hovering over it to close the menu, the cursor stayed at the physical mouse position. Once clicked, the menu closed, enabling snapping on the button, which caused the custom cursor to suddenly jump to its center, creating a jarring displacement.
+- **Exit LERP Lag**: When the details card closed, the close button `#detailClose` was hidden, causing the snap to release. The custom cursor would then LERP back to the physical mouse position over 300ms. If the card was sliding down, this LERP looked like the cursor was sliding away from the mouse and catching up, feeling sticky and lagged.
+- **Synthetic (0,0) Mouse Jumps**: When overlays transitioned or were set to `display: none`, the browser recalculated hover states and dispatched a synthetic `mousemove` event at `(0,0)`. Because the mouse coordinates were updated to `0,0`, the cursor would start flying to the top-left corner before snapping back upon the next real mouse movement.
+
+### Resolution
+- **Menu Snapping Exception**: Modified [js/modules/cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) to allow `.nav-menu-btn` to snap even when `menuPanel` is open, ensuring a stable, locked cursor before and after click.
+- **Instant Snap on Hide**: Configured the cursor loop to instantly reset coordinates (`cX`, `cY`, `t1X`, `t1Y`) to the physical mouse coordinates (`mouseX`, `mouseY`) if the hovered element suddenly becomes invisible (e.g. is hidden or closed), bypassing the LERP transition for a seamless release.
+- **Synthetic Event Filter**: Added a filter at the top of the `mousemove` handler to ignore any events with coordinates `(0, 0)`, preventing top-left cursor jumps.
+- **Verified Build & Deployment**: Rebuilt and pushed to production. Custom cursor transitions are now completely seamless on closing all panels.
