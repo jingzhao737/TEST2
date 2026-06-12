@@ -201,6 +201,7 @@
     const now = Date.now();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    ctx.globalCompositeOperation = 'screen'; // Enable additive blending for realistic neon glow overlay
 
     // LERP drawing position to match custom cursor LERP delay (0.09)
     const distToTarget = Math.sqrt(Math.pow(targetX - cX, 2) + Math.pow(targetY - cY, 2));
@@ -289,46 +290,68 @@
       }
     }
 
-    // 3. Draw remaining segments in smooth continuous chunk paths (Quantum Filament)
-    const chunkSize = 3;
-    for (let i = 0; i < segments.length; i += chunkSize) {
-      const chunk = segments.slice(i, i + chunkSize);
-      if (chunk.length === 0) continue;
-
-      // Calculate average alpha for the chunk
-      let sumAlpha = 0;
-      for (const s of chunk) {
-        const age = (now - s.created) / s.life;
-        sumAlpha += Math.max(0, 1 - age);
+    // 3. Group segments into contiguous strokes (prevents connection lines between separate drags)
+    const strokes = [];
+    let currentStroke = [];
+    for (const s of segments) {
+      if (currentStroke.length === 0) {
+        currentStroke.push(s);
+      } else {
+        const lastSeg = currentStroke[currentStroke.length - 1];
+        // If segments endpoints match within a 1.5px tolerance, they belong to the same contiguous stroke
+        const isContiguous = Math.abs(s.x1 - lastSeg.x2) < 1.5 && Math.abs(s.y1 - lastSeg.y2) < 1.5;
+        if (isContiguous) {
+          currentStroke.push(s);
+        } else {
+          strokes.push(currentStroke);
+          currentStroke = [s];
+        }
       }
-      const alpha = sumAlpha / chunk.length;
-      if (alpha <= 0) continue;
+    }
+    if (currentStroke.length > 0) {
+      strokes.push(currentStroke);
+    }
 
-      // Base width depends smoothly on alpha, ignoring single-frame velocity spikes to prevent jitter
-      const baseWidth = 1.3 * alpha;
+    // 4. Draw each stroke in smooth continuous chunk paths (Quantum Filament)
+    for (const stroke of strokes) {
+      const chunkSize = 3;
+      for (let i = 0; i < stroke.length; i += chunkSize) {
+        const chunk = stroke.slice(i, i + chunkSize);
+        if (chunk.length === 0) continue;
 
-      // Draw the chunk as a single continuous path
-      ctx.beginPath();
-      ctx.moveTo(chunk[0].x1, chunk[0].y1);
-      for (const s of chunk) {
-        ctx.lineTo(s.x2, s.y2);
+        let sumAlpha = 0;
+        for (const s of chunk) {
+          const age = (now - s.created) / s.life;
+          sumAlpha += Math.max(0, 1 - age);
+        }
+        const alpha = sumAlpha / chunk.length;
+        if (alpha <= 0) continue;
+
+        // Smoothly decay width, ignoring single-frame velocity noise
+        const baseWidth = 1.3 * alpha;
+
+        ctx.beginPath();
+        ctx.moveTo(chunk[0].x1, chunk[0].y1);
+        for (const s of chunk) {
+          ctx.lineTo(s.x2, s.y2);
+        }
+
+        // Layer A: Soft, wide outer color glow
+        ctx.strokeStyle = chunk[chunk.length - 1].color;
+        ctx.lineWidth = baseWidth * 3.5;
+        ctx.globalAlpha = alpha * 0.18;
+        ctx.shadowBlur = 10 * alpha;
+        ctx.shadowColor = chunk[chunk.length - 1].color;
+        ctx.stroke();
+
+        // Layer B: Bright white core filament
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = baseWidth * 0.8;
+        ctx.globalAlpha = alpha * 0.85;
+        ctx.shadowBlur = 4 * alpha;
+        ctx.shadowColor = '#ffffff';
+        ctx.stroke();
       }
-
-      // Layer A: Soft, wide outer color glow
-      ctx.strokeStyle = chunk[chunk.length - 1].color;
-      ctx.lineWidth = baseWidth * 3.5;
-      ctx.globalAlpha = alpha * 0.18;
-      ctx.shadowBlur = 10 * alpha;
-      ctx.shadowColor = chunk[chunk.length - 1].color;
-      ctx.stroke();
-
-      // Layer B: Bright white core filament
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = baseWidth * 0.8;
-      ctx.globalAlpha = alpha * 0.85;
-      ctx.shadowBlur = 4 * alpha;
-      ctx.shadowColor = '#ffffff';
-      ctx.stroke();
     }
 
     // 3. Draw & decay laser sparks (with particle physics)
@@ -444,6 +467,7 @@
     // Reset styles for next frames
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over'; // Reset blending mode
 
     requestAnimationFrame(loop);
   }
