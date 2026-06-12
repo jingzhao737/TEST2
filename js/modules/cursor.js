@@ -500,7 +500,7 @@
     const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
-      angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide
+      angleEase = 0.06; // Smooth and responsive return-to-upright glide
     } else {
       if (fSpeed < 6.0) {
         const clampedSpeed = Math.max(1.6, fSpeed); // Clamp at 1.6 to prevent negative easing factors
@@ -574,12 +574,12 @@
     currentStretchX += (targetStretchX - currentStretchX) * 0.15;
     currentStretchY += (targetStretchY - currentStretchY) * 0.15;
 
-    // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
+    // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (locks smoothly when close to target)
     if (cursorSpeed < 0.1 && speed < 0.1) {
       if (isActuallyHovered) {
         // For circular shape, lock tilt and stretch immediately to prevent elliptical distortion,
         // but let rotation angle snap only when it has smoothly eased close to -90 (prevents chrome flow flashing)
-        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
+        if (Math.abs(currentAngle - (-90)) < 1.0) currentAngle = -90;
         currentRoll = 0;
         currentPitch = 0; // Flat perfect circle!
         currentStretchX = 1;
@@ -587,11 +587,13 @@
         currentTranslateY = -50; // Instantly lock vertical center
       } else {
         if (targetAngle === -90) {
-          if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
-          if (Math.abs(currentRoll) < 1.0) currentRoll = 0;
-          if (Math.abs(currentPitch) < 1.0) currentPitch = 0;
-          currentStretchX = 1;
-          currentStretchY = 1;
+          // Narrower threshold for angle snap to prevent a visible jump
+          if (Math.abs(currentAngle - (-90)) < 0.5) currentAngle = -90;
+          // Let 3D roll, pitch, and velocity stretch/squish LERP naturally, snapping only when imperceptible
+          if (Math.abs(currentRoll) < 0.1) currentRoll = 0;
+          if (Math.abs(currentPitch) < 0.1) currentPitch = 0;
+          if (Math.abs(currentStretchX - 1) < 0.005) currentStretchX = 1;
+          if (Math.abs(currentStretchY - 1) < 0.005) currentStretchY = 1;
         }
       }
       if (Math.abs(currentZSpacing - targetZSpacing) < 0.05) currentZSpacing = targetZSpacing;
