@@ -8,6 +8,10 @@
   const trail3dContainer = cursorTrail1.querySelector('.cursor-3d-container');
   const cursorLayers = cursorDot.querySelectorAll('.cursor-3d-layer');
 
+  // Force hide initially to override any browser-cached inline styles from previous sessions
+  cursorDot.style.opacity = '0';
+  cursorTrail1.style.opacity = '0';
+
   const initialX = window.innerWidth / 2;
   const initialY = window.innerHeight / 2;
 
@@ -232,6 +236,10 @@
     }
 
     if (isFirstMove) {
+      // Ignore initial fake mousemove events at (0,0) when the mouse is actually outside
+      if (e.clientX === 0 && e.clientY === 0) {
+        return;
+      }
       cX = mouseX;
       cY = mouseY;
       t1X = mouseX;
@@ -282,6 +290,9 @@
   });
 
   document.addEventListener('mouseenter', function(e) {
+    // Ignore initial/fake events at (0,0)
+    if (e.clientX === 0 && e.clientY === 0) return;
+
     mouseX = e.clientX;
     mouseY = e.clientY;
     cX = mouseX;
