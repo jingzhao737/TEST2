@@ -164,8 +164,8 @@
     if (max <= 0) return;
     const pct = h.scrollTop / max;
     const shiftPx = (pct * 100 - 50) / 100 * trackH;
-    // Only translateY — left is fixed, no layout needed
-    thumb.style.transform = 'translateY(calc(-50% + ' + shiftPx + 'px))';
+    // Set CSS custom property to avoid overriding CSS transforms (like hover scale) with inline styles
+    thumb.style.setProperty('--scroll-translate-y', shiftPx + 'px');
   }
 
   function positionDots(){
