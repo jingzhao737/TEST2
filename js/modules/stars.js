@@ -76,7 +76,7 @@ import * as THREE from 'three';
   // Parameters
   const config = {
     DISSIPATION: 0.99,      // How fast the fluid dye fades (longer trails)
-    VELOCITY_DISSIPATION: 0.991, // Damped decay for smoother, less abrupt movements
+    VELOCITY_DISSIPATION: 0.995, // Damped decay for smoother, less abrupt movements (increased to 0.995 for longer ripples)
     PRESSURE: 0.8,          // Pressure solve multiplier
     PRESSURE_ITERATIONS: 20,// Quality of the swirls
     CURL: 30.0,             // Vorticity confinement (adds micro-swirls)
@@ -485,24 +485,31 @@ import * as THREE from 'three';
   }
 
   function clickSplat(x, y) {
+    // 定义三层同心水波环，以实现更平滑且范围更广的涟漪扩散
+    const ripples = [
+      { offset: 0.025, force: 0.035, radiusMult: 3.5 }, // 内圈：力道稍强，范围较小
+      { offset: 0.06,  force: 0.022, radiusMult: 5.0 }, // 中圈：力道中等，范围扩大
+      { offset: 0.10,  force: 0.012, radiusMult: 6.5 }  // 外圈：力道柔和，范围最大（达 viewport 10% 左右）
+    ];
+    
+    // 1. 中心施加一个大范围极度温和的起伏
+    splat(x, y, 0, 0, pointer.color, config.SPLAT_RADIUS * 6.5);
+    
+    // 2. 依次注入多重同心圆环的径向速度
     const numAngles = 8;
-    const offsetRadius = 0.032; // Expanded radial offset for wider range
-    const forceMagnitude = 0.07; // Reduced force for a gentler, softer ripple
-    const splatRadius = config.SPLAT_RADIUS * 4.5; // Significantly larger radius for smooth water wave feeling
-    
-    // 1. Central dye splash to make it visually pop
-    splat(x, y, 0, 0, pointer.color, splatRadius * 1.5);
-    
-    // 2. Radial velocity burst pointing inwards to create an expanding visual shockwave distortion
-    for (let i = 0; i < numAngles; i++) {
-      const angle = (i / numAngles) * Math.PI * 2;
-      const splatX = x + Math.cos(angle) * offsetRadius;
-      const splatY = y + Math.sin(angle) * offsetRadius;
-      // Invert force direction (point inwards) to create visual outward expansion
-      const fx = -Math.cos(angle) * forceMagnitude;
-      const fy = -Math.sin(angle) * forceMagnitude;
-      splat(splatX, splatY, fx, fy, pointer.color, splatRadius);
-    }
+    ripples.forEach(rp => {
+      const splatRadius = config.SPLAT_RADIUS * rp.radiusMult;
+      for (let i = 0; i < numAngles; i++) {
+        const angle = (i / numAngles) * Math.PI * 2;
+        const splatX = x + Math.cos(angle) * rp.offset;
+        const splatY = y + Math.sin(angle) * rp.offset;
+        
+        // 速度方向：向内指向圆心（对应折射着色器反转后是向外膨胀）
+        const fx = -Math.cos(angle) * rp.force;
+        const fy = -Math.sin(angle) * rp.force;
+        splat(splatX, splatY, fx, fy, pointer.color, splatRadius);
+      }
+    });
   }
 
   function step(dt) {
