@@ -45,6 +45,8 @@
   let hoveredElement = null;
   let hoveredRect = null;
   let isArrowHovered = false;
+  let lastIsArrowHovered = false;
+  let arrowHoverStartTime = 0;
 
   function setHoveredElement(el) {
     if (hoveredElement === el) return;
@@ -517,9 +519,28 @@
     // To rotate it in the direction of motion, add 90 degrees offset.
     const arrowRotation = currentAngle + 90;
 
+    // Detect transition of isArrowHovered from false to true to trigger anticipation squash
+    if (isArrowHovered && !lastIsArrowHovered) {
+      arrowHoverStartTime = Date.now();
+    }
+    lastIsArrowHovered = isArrowHovered;
+
     // 4. Hover & Click states scale calculation (using Creamy LERP for soft visual swell)
-    let targetScale = isActuallyHovered ? 0.82 : (isArrowHovered ? 0.96 : 0.67);
-    let targetZSpacing = isActuallyHovered ? 1.8 : (isArrowHovered ? 1.8 : 0.8); // Compact Z-depth spacing to keep layers merged as solid 3D sticker
+    let targetScale = isActuallyHovered ? 0.82 : 0.67;
+    let targetZSpacing = isActuallyHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
+    
+    let isAnticipating = false;
+    if (isArrowHovered) {
+      const elapsed = Date.now() - arrowHoverStartTime;
+      if (elapsed < 120) {
+        isAnticipating = true;
+        targetScale = 0.46; // Squash down before popping up
+        targetZSpacing = 0.3; // Flatten layers during compression
+      } else {
+        targetScale = 0.96; // Pop up larger
+        targetZSpacing = 1.8;
+      }
+    }
     
     // Symmetrical circle fills more box area, but scaled up to 0.85 by user request for a larger grab state circle
     if (isGrabState && !isClicked) {
@@ -537,14 +558,16 @@
       }
     }
     
-    const targetTrailScale = isHovered ? 0 : (isClicked ? (isArrowHovered ? 0.96 * 0.4 : 0.67 * 0.4) : (isArrowHovered ? 0.96 * 0.6 : 0.67 * 0.6));
+    const targetTrailScale = isHovered ? 0 : (isClicked ? (isArrowHovered ? 0.96 * 0.4 : 0.67 * 0.4) : (isArrowHovered ? (isAnticipating ? 0.46 * 0.6 : 0.96 * 0.6) : 0.67 * 0.6));
     
     // Choose dynamic LERP easing factor to make click/release feel tactile and snappy
     let scaleEase = 0.08; // Normal creamy hover LERP
     if (isClicked) {
       scaleEase = 0.20; // Fast responsive press
+    } else if (isAnticipating) {
+      scaleEase = 0.22; // Snappy compression shrink!
     } else if (currentScale < targetScale) {
-      scaleEase = 0.16; // Snappy recovery on release
+      scaleEase = 0.16; // Snappy recovery on release / pop-up growth
     }
     
     currentScale += (targetScale - currentScale) * scaleEase;
