@@ -605,11 +605,7 @@
 
     // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
     const targetTranslateY = (isGrabState || isActuallyHovered) ? -50 : -10;
-    if (isActuallyHovered || isGrabState) {
-      currentTranslateY = -50; // Instantly center on snap/grab to match target center exactly
-    } else {
-      currentTranslateY += (targetTranslateY - currentTranslateY) * 0.25; // Smoothly slide back to tip
-    }
+    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.15; // Smoothly slide center point (matches coordinates LERP speed)
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;
