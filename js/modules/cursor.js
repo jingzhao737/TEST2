@@ -469,22 +469,31 @@
     // Otherwise, delay for 800ms before returning to upright (-90 degrees).
     if (isGrabState) {
       targetAngle = -90; // Symmetrical circle points straight up
+    } else if (isClicked) {
+      targetAngle = -90;
+      lastActiveAngle = -90;
     } else if (fSpeed > 1.6) {
       targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (Date.now() - lastMoveTime < 800) {
+      if (isArrowHovered) {
+        // In works area: do not automatically return to upright, hold the last active angle
         targetAngle = lastActiveAngle;
       } else {
-        // Smoothly ease targetAngle to -90 to prevent step-jump twitches
-        let targetDiff = -90 - targetAngle;
-        while (targetDiff < -180) targetDiff += 360;
-        while (targetDiff > 180) targetDiff -= 360;
-        if (Math.abs(targetDiff) < 1.0) {
-          targetAngle = -90;
+        // Outside works area: return to upright after 800ms hold delay
+        if (Date.now() - lastMoveTime < 800) {
+          targetAngle = lastActiveAngle;
         } else {
-          targetAngle += targetDiff * 0.08; // Gentle transition of targetAngle
+          // Smoothly ease targetAngle to -90 to prevent step-jump twitches
+          let targetDiff = -90 - targetAngle;
+          while (targetDiff < -180) targetDiff += 360;
+          while (targetDiff > 180) targetDiff -= 360;
+          if (Math.abs(targetDiff) < 1.0) {
+            targetAngle = -90;
+          } else {
+            targetAngle += targetDiff * 0.08; // Gentle transition of targetAngle
+          }
         }
       }
     }
@@ -503,7 +512,7 @@
       cursorTrail1.classList.remove('hovered');
     }
 
-    const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 800);
+    const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || (!isArrowHovered && Date.now() - lastMoveTime >= 800));
     let angleEase = 0.13;
     if (isReturningUpright) {
       angleEase = 0.06; // Smooth and responsive return-to-upright glide
