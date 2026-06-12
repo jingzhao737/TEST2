@@ -176,7 +176,11 @@
           const isMagnet = hoveredInteractive.matches(magnetSelector);
           if (isMagnet) {
             closestTarget = magnetTargets.find(mt => mt.element === hoveredInteractive);
-            if (!closestTarget && isElementVisible(hoveredInteractive)) {
+            if (closestTarget) {
+              if (!isElementVisible(hoveredInteractive)) {
+                closestTarget = null;
+              }
+            } else if (isElementVisible(hoveredInteractive)) {
               const rect = hoveredInteractive.getBoundingClientRect();
               closestTarget = {
                 element: hoveredInteractive,
@@ -217,9 +221,11 @@
               const effectiveDist = dist - hysteresisDiscount;
               
               if (dist < localMaxSnapDistance) {
-                if (effectiveDist < minDistance) {
-                  minDistance = effectiveDist;
-                  closestTarget = mt;
+                if (isElementVisible(mt.element)) {
+                  if (effectiveDist < minDistance) {
+                    minDistance = effectiveDist;
+                    closestTarget = mt;
+                  }
                 }
               }
             }

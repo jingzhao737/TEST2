@@ -107,6 +107,10 @@ function openDetail(data, heroImg, pushState) {
   gsap.to('.works-header', { opacity: 0, y: -40, duration: 0.8, ease: 'power3.inOut' });
   gsap.to('.work-card', { opacity: 0, y: 50, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
+  const btt = document.getElementById('backToTop');
+  if (btt) btt.style.pointerEvents = 'none';
+  const sb = document.getElementById('scrollBar');
+  if (sb) sb.style.pointerEvents = 'none';
 
   // ── 3. Prepare detail overlay (visible but transparent, enable pointer-events immediately) ──
   workDetail.classList.add('open');
@@ -207,6 +211,10 @@ function closeDetail(popState) {
   gsap.to('.works-header', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
   gsap.to('.work-card', { opacity: 1, y: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.6, ease: 'power2.out', clearProps: 'all' });
+  const bttRestore = document.getElementById('backToTop');
+  if (bttRestore) bttRestore.style.pointerEvents = '';
+  const sbRestore = document.getElementById('scrollBar');
+  if (sbRestore) sbRestore.style.pointerEvents = '';
 
   // Slide down the entire card panel to the bottom!
   if (detailCard) {
