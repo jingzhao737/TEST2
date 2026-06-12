@@ -451,6 +451,14 @@
     if (hoveredElement) {
       // Dynamically query bounding rect on every frame to track moving/animating targets in real-time
       hoveredRect = hoveredElement.getBoundingClientRect();
+      
+      // If the element has become hidden (width/height is 0) or is no longer visible in DOM, release snap immediately
+      if (hoveredRect.width === 0 || hoveredRect.height === 0 || !isElementVisible(hoveredElement)) {
+        setHoveredElement(null);
+      }
+    }
+
+    if (hoveredElement) {
       const btnCenterX = hoveredRect.left + hoveredRect.width / 2;
       const btnCenterY = hoveredRect.top + hoveredRect.height / 2;
       
