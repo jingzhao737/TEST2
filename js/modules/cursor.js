@@ -146,7 +146,7 @@
         } else {
           // If in empty space, find the closest magnet target based on Euclidean distance to its bounding box
           let minDistance = Infinity;
-          const maxSnapDistance = 45; // Only snap if pointer is within 45px of the target's boundary
+          const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
           
           for (const mt of magnetTargets) {
             // Euclidean distance to axis-aligned bounding box
