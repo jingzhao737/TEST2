@@ -238,6 +238,80 @@
     }
   });
 
+  // Intercept and redirect mouse events to the snapped element
+  let isRedirectingMousedown = false;
+  document.addEventListener('mousedown', function(e) {
+    if (isRedirectingMousedown) return;
+    if (hoveredElement && !hoveredElement.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      isRedirectingMousedown = true;
+      const newEvent = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        detail: e.detail,
+        screenX: e.screenX,
+        screenY: e.screenY,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        ctrlKey: e.ctrlKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey,
+        metaKey: e.metaKey,
+        button: e.button,
+        buttons: e.buttons,
+        relatedTarget: e.relatedTarget
+      });
+      hoveredElement.dispatchEvent(newEvent);
+      isRedirectingMousedown = false;
+    }
+  }, { capture: true });
+
+  let isRedirectingMouseup = false;
+  document.addEventListener('mouseup', function(e) {
+    if (isRedirectingMouseup) return;
+    if (hoveredElement && !hoveredElement.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      isRedirectingMouseup = true;
+      const newEvent = new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        detail: e.detail,
+        screenX: e.screenX,
+        screenY: e.screenY,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        ctrlKey: e.ctrlKey,
+        altKey: e.altKey,
+        shiftKey: e.shiftKey,
+        metaKey: e.metaKey,
+        button: e.button,
+        buttons: e.buttons,
+        relatedTarget: e.relatedTarget
+      });
+      hoveredElement.dispatchEvent(newEvent);
+      isRedirectingMouseup = false;
+    }
+  }, { capture: true });
+
+  let isRedirectingClick = false;
+  document.addEventListener('click', function(e) {
+    if (isRedirectingClick) return;
+    if (hoveredElement && !hoveredElement.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      isRedirectingClick = true;
+      hoveredElement.click();
+      isRedirectingClick = false;
+    }
+  }, { capture: true });
+
   // Animation Loop
   (function loop() {
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
@@ -245,9 +319,9 @@
       const btnCenterX = hoveredRect.left + hoveredRect.width / 2;
       const btnCenterY = hoveredRect.top + hoveredRect.height / 2;
       
-      // Blending: 70% snap to center, 30% follow mouse (rubbery magnetic spring pull)
-      const targetX = btnCenterX + (mouseX - btnCenterX) * 0.30;
-      const targetY = btnCenterY + (mouseY - btnCenterY) * 0.30;
+      // Snaps exactly to the center of the button (100% magnetic lock)
+      const targetX = btnCenterX;
+      const targetY = btnCenterY;
       
       // Glides and snaps to the button center slightly faster (0.22 LERP) for responsive magnetization
       cX += (targetX - cX) * 0.22;
@@ -438,6 +512,13 @@
     if (trail3dContainer) {
       trail3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentTrailScale * currentStretchX}, ${currentTrailScale * currentStretchY})`;
     }
+
+    // Expose coordinates and hovered element globally for particle effect alignment
+    window.__customCursor = {
+      x: cX,
+      y: cY,
+      hoveredElement: hoveredElement
+    };
 
     requestAnimationFrame(loop);
   })();

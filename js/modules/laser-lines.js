@@ -67,6 +67,15 @@
 
   // Handle mousedown/touchstart
   function handleStart(x, y, target, e) {
+    let clickX = x;
+    let clickY = y;
+    
+    // If the custom cursor is snapped, use the snapped visual position for the particles
+    if (window.__customCursor && window.__customCursor.hoveredElement) {
+      clickX = window.__customCursor.x;
+      clickY = window.__customCursor.y;
+    }
+
     // Detect if clicking on pointer, grab, or selection elements (based on selectors or computed CSS styles)
     const computedCursor = window.getComputedStyle(target).cursor;
     const isPointerOrGrab = isInteractive(target) || 
@@ -75,7 +84,7 @@
                             computedCursor === 'grabbing';
 
     // Trigger click particle burst immediately, adding extra orange cross-stars if in pointer/grab state
-    createBurst(x, y, isPointerOrGrab);
+    createBurst(clickX, clickY, isPointerOrGrab);
 
     if (isInteractive(target)) return;
 
