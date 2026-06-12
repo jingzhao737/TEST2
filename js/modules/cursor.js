@@ -49,10 +49,14 @@
     if (hoveredElement === el) return;
     if (hoveredElement) {
       hoveredElement.classList.remove('magnet-hover');
+      hoveredElement.classList.remove('magnet-active');
     }
     hoveredElement = el;
     if (hoveredElement) {
       hoveredElement.classList.add('magnet-hover');
+      if (isClicked) {
+        hoveredElement.classList.add('magnet-active');
+      }
       hoveredRect = hoveredElement.getBoundingClientRect();
     } else {
       hoveredRect = null;
@@ -272,6 +276,9 @@
   // Click States
   document.addEventListener('mousedown', function(e) {
     isClicked = true;
+    if (hoveredElement) {
+      hoveredElement.classList.add('magnet-active');
+    }
     
     // Lock grab state during active dragging
     const target = e.target.closest(hoverSelector) || e.target;
@@ -286,6 +293,9 @@
 
   document.addEventListener('mouseup', function(e) {
     isClicked = false;
+    if (hoveredElement) {
+      hoveredElement.classList.remove('magnet-active');
+    }
     
     // Check if we are still hovering over a grabbable element after release
     const target = e.target;
@@ -593,7 +603,11 @@
 
     // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
     const targetTranslateY = (isGrabState || isActuallyHovered) ? -50 : -10;
-    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.18;
+    if (isActuallyHovered || isGrabState) {
+      currentTranslateY = -50; // Instantly center on snap/grab to match target center exactly
+    } else {
+      currentTranslateY += (targetTranslateY - currentTranslateY) * 0.25; // Smoothly slide back to tip
+    }
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;
@@ -614,10 +628,14 @@
 
     // Apply 3D tilt, rotation, and dynamic scale warping on the child 3D containers (no spinRoll)
     if (cursor3dContainer) {
-      cursor3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentScale * currentStretchX}, ${currentScale * currentStretchY})`;
+      const sX = isActuallyHovered ? currentScale : (currentScale * currentStretchX);
+      const sY = isActuallyHovered ? currentScale : (currentScale * currentStretchY);
+      cursor3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${sX}, ${sY})`;
     }
     if (trail3dContainer) {
-      trail3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${currentTrailScale * currentStretchX}, ${currentTrailScale * currentStretchY})`;
+      const sX = isActuallyHovered ? currentTrailScale : (currentTrailScale * currentStretchX);
+      const sY = isActuallyHovered ? currentTrailScale : (currentTrailScale * currentStretchY);
+      trail3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${sX}, ${sY})`;
     }
 
     // Expose coordinates and hovered element globally for particle effect alignment
