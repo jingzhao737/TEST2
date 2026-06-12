@@ -49,29 +49,63 @@
   let magnetTargets = [];
   let lastUpdateTime = 0;
 
+  // Helper to check if an element is actually visible to the user (including ancestors)
+  function isElementVisible(el) {
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      return false;
+    }
+    
+    let parent = el;
+    while (parent && parent !== document.body) {
+      const style = window.getComputedStyle(parent);
+      if (
+        style.display === 'none' ||
+        style.visibility === 'hidden' ||
+        style.opacity === '0' ||
+        parseFloat(style.opacity) === 0
+      ) {
+        return false;
+      }
+      
+      // Explicitly check container open states
+      if (parent.id === 'menuPanel' && !parent.classList.contains('open')) {
+        return false;
+      }
+      if (parent.id === 'workDetail' && !parent.classList.contains('open')) {
+        return false;
+      }
+      
+      parent = parent.parentElement;
+    }
+    return true;
+  }
+
   function updateMagnetTargets() {
     magnetTargets = [];
     const elements = document.querySelectorAll(magnetSelector);
     elements.forEach(el => {
-      // Ignore hidden or zero-opacity elements
-      const style = window.getComputedStyle(el);
-      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+      if (!isElementVisible(el)) {
         return;
       }
       const rect = el.getBoundingClientRect();
-      // Snap radius = half of max size + 72px padding for a generous snapping zone
-      const radius = Math.max(rect.width, rect.height) / 2 + 72;
       magnetTargets.push({
         element: el,
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
         centerX: rect.left + rect.width / 2,
-        centerY: rect.top + rect.height / 2,
-        radius: radius
+        centerY: rect.top + rect.height / 2
       });
     });
   }
 
   // Run initial coordinates cache
   updateMagnetTargets();
+
+  // Expose updateMagnetTargets globally for instant updates on panel toggle
+  window.__updateMagnetTargets = updateMagnetTargets;
 
   // Track mouse coordinates and dynamically update grab state based on hover target styles
   document.addEventListener('mousemove', function(e) {
@@ -98,23 +132,29 @@
             closestTarget = magnetTargets.find(mt => mt.element === hoveredInteractive);
             if (!closestTarget) {
               const rect = hoveredInteractive.getBoundingClientRect();
-              const radius = Math.max(rect.width, rect.height) / 2 + 72;
               closestTarget = {
                 element: hoveredInteractive,
+                left: rect.left,
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
                 centerX: rect.left + rect.width / 2,
-                centerY: rect.top + rect.height / 2,
-                radius: radius
+                centerY: rect.top + rect.height / 2
               };
             }
           }
         } else {
-          // If in empty space, find the closest magnet target within its snapping radius
+          // If in empty space, find the closest magnet target based on Euclidean distance to its bounding box
           let minDistance = Infinity;
+          const maxSnapDistance = 56; // Only snap if pointer is within 56px of the target's boundary
+          
           for (const mt of magnetTargets) {
-            const dx = mouseX - mt.centerX;
-            const dy = mouseY - mt.centerY;
+            // Euclidean distance to axis-aligned bounding box
+            const dx = Math.max(mt.left - mouseX, 0, mouseX - mt.right);
+            const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
             const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < mt.radius) {
+            
+            if (dist < maxSnapDistance) {
               if (dist < minDistance) {
                 minDistance = dist;
                 closestTarget = mt;
