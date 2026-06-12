@@ -503,7 +503,8 @@ import * as THREE from 'three';
       age: 0,     // 已存活时间
       duration: 0.6,   // 生命周期进一步缩短至 0.6s，使起伏和消散更加快速利落
       maxRadius: 0.11, // 最大范围限制在 0.11 (原先 0.16 的 70% 左右)
-      color: new THREE.Color(pointer.color.r, pointer.color.g, pointer.color.b)
+      color: new THREE.Color(pointer.color.r, pointer.color.g, pointer.color.b),
+      isCurrentPress: true // 标记属于当前按下的波纹，用于精准追随和锁死
     });
   }
 
@@ -612,9 +613,16 @@ import * as THREE from 'three';
     }
   }, { passive: true });
 
-  window.addEventListener('mouseup', () => { isPointerDown = false; });
-  window.addEventListener('touchend', () => { isPointerDown = false; });
-  window.addEventListener('mouseleave', () => { isPointerDown = false; });
+  function releasePointer() {
+    isPointerDown = false;
+    activeRipples.forEach(rp => {
+      rp.isCurrentPress = false;
+    });
+  }
+
+  window.addEventListener('mouseup', releasePointer);
+  window.addEventListener('touchend', releasePointer);
+  window.addEventListener('mouseleave', releasePointer);
 
   let dividers = [];
   function initDividers() {
@@ -698,6 +706,13 @@ import * as THREE from 'three';
     // 注入并渲染所有“蜻蜓点水”涟漪的波浪变化
     for (let i = activeRipples.length - 1; i >= 0; i--) {
       const rp = activeRipples[i];
+      
+      // 实时跟随鼠标指针移动，使用 LERP 缓动提供极其高级的水流物理滞后感（即便处于延迟阶段，也提前同步起点）
+      if (isPointerDown && rp.isCurrentPress) {
+        rp.x += (pointer.x - rp.x) * 0.25;
+        rp.y += (pointer.y - rp.y) * 0.25;
+      }
+
       if (rp.delay > 0) {
         rp.delay -= dt;
         continue;
@@ -709,7 +724,7 @@ import * as THREE from 'three';
       let isHolding = false;
       
       // 若处于长按状态且波纹扩散至后期 (progress >= 0.85)，卡住进度以保持最大的波折形变状态
-      if (isPointerDown && progress >= 0.85) {
+      if (isPointerDown && rp.isCurrentPress && progress >= 0.85) {
         rp.age = rp.duration * 0.85;
         progress = 0.85;
         isHolding = true;
