@@ -46,6 +46,33 @@
   let hoveredRect = null;
   const magnetSelector = 'a, button, [role="button"]:not(.work-card), .theme-toggle, .detail-close, .nav-menu-btn, .logo-wrapper, .lightbox-nav, .lightbox-close, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .scroll-bubble';
 
+  let magnetTargets = [];
+  let lastUpdateTime = 0;
+
+  function updateMagnetTargets() {
+    magnetTargets = [];
+    const elements = document.querySelectorAll(magnetSelector);
+    elements.forEach(el => {
+      // Ignore hidden or zero-opacity elements
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      // Snap radius = half of max size + 48px padding for a generous snapping zone
+      const radius = Math.max(rect.width, rect.height) / 2 + 48;
+      magnetTargets.push({
+        element: el,
+        centerX: rect.left + rect.width / 2,
+        centerY: rect.top + rect.height / 2,
+        radius: radius
+      });
+    });
+  }
+
+  // Run initial coordinates cache
+  updateMagnetTargets();
+
   // Track mouse coordinates and dynamically update grab state based on hover target styles
   document.addEventListener('mousemove', function(e) {
     mouseX = e.clientX;
@@ -54,12 +81,32 @@
     if (!isFirstMove) {
       const target = e.target;
       if (target) {
-        // Track hovered magnet snapping elements dynamically (caching rect to avoid layout thrashing)
-        const magnetTarget = target.closest(magnetSelector);
-        if (magnetTarget) {
-          if (hoveredElement !== magnetTarget) {
-            hoveredElement = magnetTarget;
-            hoveredRect = magnetTarget.getBoundingClientRect();
+        // Throttled update of magnet coordinates (runs every 250ms) to capture dynamic close buttons/lightbox arrows
+        const now = Date.now();
+        if (now - lastUpdateTime > 250) {
+          updateMagnetTargets();
+          lastUpdateTime = now;
+        }
+
+        // Find the closest magnet target within its snapping radius
+        let closestTarget = null;
+        let minDistance = Infinity;
+        for (const mt of magnetTargets) {
+          const dx = mouseX - mt.centerX;
+          const dy = mouseY - mt.centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mt.radius) {
+            if (dist < minDistance) {
+              minDistance = dist;
+              closestTarget = mt;
+            }
+          }
+        }
+
+        if (closestTarget) {
+          if (hoveredElement !== closestTarget.element) {
+            hoveredElement = closestTarget.element;
+            hoveredRect = closestTarget.element.getBoundingClientRect();
           }
         } else {
           hoveredElement = null;
@@ -102,8 +149,10 @@
     }
   }, { passive: true });
 
-  // Update bounding rect on scroll if an element is hovered to maintain accurate offset
+  // Update bounding rect on scroll/resize
+  window.addEventListener('resize', updateMagnetTargets, { passive: true });
   window.addEventListener('scroll', function() {
+    updateMagnetTargets();
     if (hoveredElement) {
       hoveredRect = hoveredElement.getBoundingClientRect();
     }
@@ -271,7 +320,8 @@
     while (diff > 180) diff -= 360;
 
     // Gentle steering delay when flying, dynamic low-speed dampening to prevent angular flutter
-    const isReturningUpright = !isHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
+    const isActuallyHovered = isHovered || (hoveredElement !== null);
+    const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
       angleEase = cursorSpeed < 0.5 ? 0.03 : 0.02; // Gentler, longer, and smoother return-to-upright glide
@@ -288,8 +338,8 @@
     const arrowRotation = currentAngle + 90;
 
     // 4. Hover & Click states scale calculation (using Creamy LERP for soft visual swell)
-    let targetScale = isHovered ? 0.82 : 0.67;
-    let targetZSpacing = isHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
+    let targetScale = isActuallyHovered ? 0.82 : 0.67;
+    let targetZSpacing = isActuallyHovered ? 1.8 : 0.8; // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
     // Symmetrical circle fills more box area, but scaled up to 0.85 by user request for a larger grab state circle
     if (isGrabState && !isClicked) {
@@ -302,8 +352,8 @@
         targetScale = 0.48; // Circle shrinks down to a tight, tiny 3D ball on active drag/grabbing
         targetZSpacing = 0.25; // Tightly flattened 3D layers
       } else {
-        targetScale = isHovered ? 0.62 : 0.52; // Press down scale compression
-        targetZSpacing = isHovered ? 0.6 : 0.3;  // Compress 3D layers closer to screen
+        targetScale = isActuallyHovered ? 0.62 : 0.52; // Press down scale compression
+        targetZSpacing = isActuallyHovered ? 0.6 : 0.3;  // Compress 3D layers closer to screen
       }
     }
     
