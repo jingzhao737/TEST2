@@ -708,10 +708,10 @@ import * as THREE from 'three';
       let progress = rp.age / rp.duration;
       let isHolding = false;
       
-      // 若处于长按状态且波纹扩散至中途 (progress >= 0.4)，卡住时间并维持微波振荡
-      if (isPointerDown && progress >= 0.4) {
-        rp.age = rp.duration * 0.4;
-        progress = 0.4;
+      // 若处于长按状态且波纹扩散至后期 (progress >= 0.85)，卡住进度以保持最大的波折形变状态
+      if (isPointerDown && progress >= 0.85) {
+        rp.age = rp.duration * 0.85;
+        progress = 0.85;
         isHolding = true;
       }
       
@@ -723,10 +723,10 @@ import * as THREE from 'three';
       // 径向扩散半径使用 sine 缓动，先快后慢
       const currentRadius = Math.sin(progress * Math.PI * 0.5) * rp.maxRadius;
       
-      // 力道随着扩散加速衰减 (1 - p)^2，长按时在极微弱范围内正弦起伏以形成持续波荡
+      // 力道随着扩散加速衰减 (1 - p)^2，长按卡点时施加恒定的微弱维持力，消除来回震荡及反复触发水纹的碎乱感
       const baseForce = (1.0 - progress) * (1.0 - progress) * 0.024;
       const force = isHolding 
-        ? baseForce * (0.3 + Math.sin(time * 16.0) * 0.7) 
+        ? baseForce * 2.2 // 恒定补偿流体物理耗散，实现稳态最大形变
         : baseForce;
       
       // splat 画笔尺寸随扩散缓慢变大
