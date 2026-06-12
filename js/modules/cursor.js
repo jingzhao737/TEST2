@@ -500,6 +500,12 @@
       cursorDot.classList.remove('hovered');
       cursorTrail1.classList.remove('hovered');
     }
+
+    if (isArrowHovered) {
+      cursorDot.classList.add('has-radar');
+    } else {
+      cursorDot.classList.remove('has-radar');
+    }
     const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 400);
     let angleEase = 0.13;
     if (isReturningUpright) {
@@ -517,8 +523,8 @@
     const arrowRotation = currentAngle + 90;
 
     // 4. Hover & Click states scale calculation (using Creamy LERP for soft visual swell)
-    let targetScale = isActuallyHovered ? 0.82 : (isArrowHovered ? 0.82 : 0.67);
-    let targetZSpacing = isActuallyHovered ? 1.8 : (isArrowHovered ? 1.5 : 0.8); // Compact Z-depth spacing to keep layers merged as solid 3D sticker
+    let targetScale = isActuallyHovered ? 0.82 : (isArrowHovered ? 0.96 : 0.67);
+    let targetZSpacing = isActuallyHovered ? 1.8 : (isArrowHovered ? 1.8 : 0.8); // Compact Z-depth spacing to keep layers merged as solid 3D sticker
     
     // Symmetrical circle fills more box area, but scaled up to 0.85 by user request for a larger grab state circle
     if (isGrabState && !isClicked) {
@@ -531,12 +537,12 @@
         targetScale = 0.48; // Circle shrinks down to a tight, tiny 3D ball on active drag/grabbing
         targetZSpacing = 0.25; // Tightly flattened 3D layers
       } else {
-        targetScale = isActuallyHovered ? 0.62 : (isArrowHovered ? 0.62 : 0.52); // Press down scale compression
-        targetZSpacing = isActuallyHovered ? 0.6 : (isArrowHovered ? 0.5 : 0.3);  // Compress 3D layers closer to screen
+        targetScale = isActuallyHovered ? 0.62 : (isArrowHovered ? 0.72 : 0.52); // Press down scale compression
+        targetZSpacing = isActuallyHovered ? 0.6 : (isArrowHovered ? 0.6 : 0.3);  // Compress 3D layers closer to screen
       }
     }
     
-    const targetTrailScale = isHovered ? 0 : (isClicked ? (isArrowHovered ? 0.82 * 0.4 : 0.67 * 0.4) : (isArrowHovered ? 0.82 * 0.6 : 0.67 * 0.6));
+    const targetTrailScale = isHovered ? 0 : (isClicked ? (isArrowHovered ? 0.96 * 0.4 : 0.67 * 0.4) : (isArrowHovered ? 0.96 * 0.6 : 0.67 * 0.6));
     
     // Choose dynamic LERP easing factor to make click/release feel tactile and snappy
     let scaleEase = 0.08; // Normal creamy hover LERP
