@@ -59,8 +59,8 @@
         return;
       }
       const rect = el.getBoundingClientRect();
-      // Snap radius = half of max size + 96px padding for a generous snapping zone
-      const radius = Math.max(rect.width, rect.height) / 2 + 96;
+      // Snap radius = half of max size + 72px padding for a generous snapping zone
+      const radius = Math.max(rect.width, rect.height) / 2 + 72;
       magnetTargets.push({
         element: el,
         centerX: rect.left + rect.width / 2,
@@ -88,17 +88,37 @@
           lastUpdateTime = now;
         }
 
-        // Find the closest magnet target within its snapping radius
+        // Find the closest magnet target, prioritizing direct hover on interactive elements
         let closestTarget = null;
-        let minDistance = Infinity;
-        for (const mt of magnetTargets) {
-          const dx = mouseX - mt.centerX;
-          const dy = mouseY - mt.centerY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < mt.radius) {
-            if (dist < minDistance) {
-              minDistance = dist;
-              closestTarget = mt;
+        const hoveredInteractive = target.closest(hoverSelector);
+        
+        if (hoveredInteractive) {
+          const isMagnet = hoveredInteractive.matches(magnetSelector);
+          if (isMagnet) {
+            closestTarget = magnetTargets.find(mt => mt.element === hoveredInteractive);
+            if (!closestTarget) {
+              const rect = hoveredInteractive.getBoundingClientRect();
+              const radius = Math.max(rect.width, rect.height) / 2 + 72;
+              closestTarget = {
+                element: hoveredInteractive,
+                centerX: rect.left + rect.width / 2,
+                centerY: rect.top + rect.height / 2,
+                radius: radius
+              };
+            }
+          }
+        } else {
+          // If in empty space, find the closest magnet target within its snapping radius
+          let minDistance = Infinity;
+          for (const mt of magnetTargets) {
+            const dx = mouseX - mt.centerX;
+            const dy = mouseY - mt.centerY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < mt.radius) {
+              if (dist < minDistance) {
+                minDistance = dist;
+                closestTarget = mt;
+              }
             }
           }
         }
