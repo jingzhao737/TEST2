@@ -41,6 +41,11 @@
   // Hover Selector definition
   const hoverSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble';
 
+  // Magnetic snap variables
+  let hoveredElement = null;
+  let hoveredRect = null;
+  const magnetSelector = 'a, button, [role="button"], .theme-toggle, .detail-close, .nav-menu-btn, .logo-wrapper, .lightbox-nav, .lightbox-close, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .scroll-bubble';
+
   // Track mouse coordinates and dynamically update grab state based on hover target styles
   document.addEventListener('mousemove', function(e) {
     mouseX = e.clientX;
@@ -49,6 +54,18 @@
     if (!isFirstMove) {
       const target = e.target;
       if (target) {
+        // Track hovered magnet snapping elements dynamically (caching rect to avoid layout thrashing)
+        const magnetTarget = target.closest(magnetSelector);
+        if (magnetTarget) {
+          if (hoveredElement !== magnetTarget) {
+            hoveredElement = magnetTarget;
+            hoveredRect = magnetTarget.getBoundingClientRect();
+          }
+        } else {
+          hoveredElement = null;
+          hoveredRect = null;
+        }
+
         // Dynamic detection of grabbable elements and inline cursor styles (e.g. #framesCanvas records)
         const isGrab = target.closest('.motion-hero, .motion-slide, .scroll-thumb, .scroll-bar, .zoom-slider-knob, .zoom-slider-track, .theme-pull-wrapper, .theme-toggle') || 
                        (target.closest('#framesCanvas') && (target.style.cursor === 'grab' || target.style.cursor === 'grabbing'));
@@ -85,6 +102,13 @@
     }
   }, { passive: true });
 
+  // Update bounding rect on scroll if an element is hovered to maintain accurate offset
+  window.addEventListener('scroll', function() {
+    if (hoveredElement) {
+      hoveredRect = hoveredElement.getBoundingClientRect();
+    }
+  }, { passive: true });
+
   // Hide on mouseleave window, show on mouseenter
   document.addEventListener('mouseleave', function(e) {
     // Check if the coordinates are actually outside the viewport boundaries (threshold to prevent false triggers)
@@ -98,11 +122,13 @@
       // Ignore false mouseleave events (e.g. over scrollbars or elements near window edges)
       return;
     }
-    cursorDot.style.opacity = '0';
+     cursorDot.style.opacity = '0';
     cursorTrail1.style.opacity = '0';
     isFirstMove = true; // Reset first-move flag to snap position on next entry
     isClicked = false;  // Reset click state
     isGrabState = false; // Reset grab state
+    hoveredElement = null; // Clear magnet target
+    hoveredRect = null;
     cursorDot.classList.remove('grab-state');
     cursorTrail1.classList.remove('grab-state');
   });
@@ -165,10 +191,23 @@
 
   // Animation Loop
   (function loop() {
-    // 1. Position follow with LERP delay
-    // Main triangle follows mouse with responsive LERP factor (0.15)
-    cX += (mouseX - cX) * 0.15;
-    cY += (mouseY - cY) * 0.15;
+    // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
+    if (hoveredElement && hoveredRect) {
+      const btnCenterX = hoveredRect.left + hoveredRect.width / 2;
+      const btnCenterY = hoveredRect.top + hoveredRect.height / 2;
+      
+      // Blending: 70% snap to center, 30% follow mouse (rubbery magnetic spring pull)
+      const targetX = btnCenterX + (mouseX - btnCenterX) * 0.30;
+      const targetY = btnCenterY + (mouseY - btnCenterY) * 0.30;
+      
+      // Glides and snaps to the button center slightly faster (0.22 LERP) for responsive magnetization
+      cX += (targetX - cX) * 0.22;
+      cY += (targetY - cY) * 0.22;
+    } else {
+      // Main triangle follows mouse with responsive LERP factor (0.15)
+      cX += (mouseX - cX) * 0.15;
+      cY += (mouseY - cY) * 0.15;
+    }
 
     
     // Trail triangle follows main triangle with matching lag (0.11)
