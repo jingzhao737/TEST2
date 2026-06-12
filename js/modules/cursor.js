@@ -146,7 +146,7 @@
         } else {
           // If in empty space, find the closest magnet target based on Euclidean distance to its bounding box
           let minDistance = Infinity;
-          const maxSnapDistance = 56; // Only snap if pointer is within 56px of the target's boundary
+          const maxSnapDistance = 45; // Only snap if pointer is within 45px of the target's boundary
           
           for (const mt of magnetTargets) {
             // Euclidean distance to axis-aligned bounding box
@@ -383,9 +383,9 @@
       const targetX = btnCenterX;
       const targetY = btnCenterY;
       
-      // Glides and snaps to the button center slightly faster (0.22 LERP) for responsive magnetization
-      cX += (targetX - cX) * 0.22;
-      cY += (targetY - cY) * 0.22;
+      // Glides and snaps to the button center slightly slower (0.15 LERP) for responsive and soft magnetization
+      cX += (targetX - cX) * 0.15;
+      cY += (targetY - cY) * 0.15;
     } else {
       // Main triangle follows mouse with responsive LERP factor (0.15)
       cX += (mouseX - cX) * 0.15;
