@@ -59,8 +59,8 @@
         return;
       }
       const rect = el.getBoundingClientRect();
-      // Snap radius = half of max size + 48px padding for a generous snapping zone
-      const radius = Math.max(rect.width, rect.height) / 2 + 48;
+      // Snap radius = half of max size + 96px padding for a generous snapping zone
+      const radius = Math.max(rect.width, rect.height) / 2 + 96;
       magnetTargets.push({
         element: el,
         centerX: rect.left + rect.width / 2,
