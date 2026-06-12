@@ -76,7 +76,7 @@ import * as THREE from 'three';
   // Parameters
   const config = {
     DISSIPATION: 0.99,      // How fast the fluid dye fades (longer trails)
-    VELOCITY_DISSIPATION: 0.985, // Damped decay for smoother, less abrupt movements
+    VELOCITY_DISSIPATION: 0.991, // Damped decay for smoother, less abrupt movements
     PRESSURE: 0.8,          // Pressure solve multiplier
     PRESSURE_ITERATIONS: 20,// Quality of the swirls
     CURL: 30.0,             // Vorticity confinement (adds micro-swirls)
@@ -486,9 +486,9 @@ import * as THREE from 'three';
 
   function clickSplat(x, y) {
     const numAngles = 8;
-    const offsetRadius = 0.015; // Radial offset for velocity splats
-    const forceMagnitude = 0.12; // High velocity force
-    const splatRadius = config.SPLAT_RADIUS * 2.5; // Larger splat radius for click
+    const offsetRadius = 0.032; // Expanded radial offset for wider range
+    const forceMagnitude = 0.07; // Reduced force for a gentler, softer ripple
+    const splatRadius = config.SPLAT_RADIUS * 4.5; // Significantly larger radius for smooth water wave feeling
     
     // 1. Central dye splash to make it visually pop
     splat(x, y, 0, 0, pointer.color, splatRadius * 1.5);
