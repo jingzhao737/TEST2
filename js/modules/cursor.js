@@ -144,25 +144,30 @@
             }
           }
         } else {
-          // If in empty space, find the closest magnet target based on Euclidean distance to its bounding box
-          let minDistance = Infinity;
-          const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
+          // Check if pointer is currently inside the scrollbar container
+          const isInsideScrollbar = target.closest('#scrollBar') !== null;
           
-          for (const mt of magnetTargets) {
-            // Euclidean distance to axis-aligned bounding box
-            const dx = Math.max(mt.left - mouseX, 0, mouseX - mt.right);
-            const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
-            const dist = Math.sqrt(dx * dx + dy * dy);
+          if (!isInsideScrollbar) {
+            // If in empty space (and not inside the scrollbar), find the closest magnet target based on Euclidean distance to its bounding box
+            let minDistance = Infinity;
+            const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
             
-            // Hysteresis: Give the currently hovered element a 15px distance discount 
-            // so the cursor doesn't jitter back and forth between close neighbors.
-            const hysteresisDiscount = (hoveredElement && mt.element === hoveredElement) ? 15 : 0;
-            const effectiveDist = dist - hysteresisDiscount;
-            
-            if (dist < maxSnapDistance) {
-              if (effectiveDist < minDistance) {
-                minDistance = effectiveDist;
-                closestTarget = mt;
+            for (const mt of magnetTargets) {
+              // Euclidean distance to axis-aligned bounding box
+              const dx = Math.max(mt.left - mouseX, 0, mouseX - mt.right);
+              const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              
+              // Hysteresis: Give the currently hovered element a 15px distance discount 
+              // so the cursor doesn't jitter back and forth between close neighbors.
+              const hysteresisDiscount = (hoveredElement && mt.element === hoveredElement) ? 15 : 0;
+              const effectiveDist = dist - hysteresisDiscount;
+              
+              if (dist < maxSnapDistance) {
+                if (effectiveDist < minDistance) {
+                  minDistance = effectiveDist;
+                  closestTarget = mt;
+                }
               }
             }
           }
