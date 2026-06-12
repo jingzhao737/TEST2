@@ -103,20 +103,7 @@
 
   // Generate laser spark burst on click
   function createBurst(x, y) {
-    // 1. Center Lens Flare / HUD Crosshair (White)
-    sparks.push({
-      x: x,
-      y: y,
-      vx: 0,
-      vy: 0,
-      color: '#ffffff',
-      type: 'center-flare',
-      size: 14 + Math.random() * 6,
-      created: Date.now(),
-      life: 300
-    });
-
-    // 2. Burst Micro-Sparks (White Small Cross-Stars)
+    // Burst Micro-Sparks (White Small Cross-Stars)
     const numSparks = 4 + Math.floor(Math.random() * 4); // Extremely sparse count: 4-7 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
