@@ -44,6 +44,8 @@
   let isDrawing = false;
   let lastX = 0;
   let lastY = 0;
+  let lastDx = 0;
+  let lastDy = 0;
   
   // LERP delay variables to match custom cursor trailing physics
   let cX = 0;
@@ -99,6 +101,8 @@
   function handleEnd() {
     isDrawing = false;
     isFirstDraw = true;
+    lastDx = 0;
+    lastDy = 0;
   }
 
   // Generate laser spark burst on click
@@ -124,32 +128,24 @@
     }
   }
 
-  // Generate premium white stardust and micro-dots along the drawn line segment
-  function emitLineDust(x1, y1, x2, y2) {
-    // Spawn 1-2 particles per segment step to create a fine trace
-    const steps = 1 + Math.floor(Math.random() * 2);
-    for (let i = 0; i < steps; i++) {
-      // Interpolate along the line segment to distribute particles smoothly
-      const t = Math.random();
-      const px = x1 + (x2 - x1) * t;
-      const py = y1 + (y2 - y1) * t;
-      
-      const isCross = Math.random() < 0.35; // 35% white cross-stars, 65% tiny white dust dots
+  // Generate white small cross-stars at sharp drawing turns
+  function triggerCornerBurst(x, y) {
+    const numSparks = 2 + Math.floor(Math.random() * 3); // 2-4 sparks (very delicate and crisp)
+    for (let i = 0; i < numSparks; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 0.1 + Math.random() * 0.5; // Very slow drifting
-      
+      const speed = 1.0 + Math.random() * 2.5; // Slower dispersion
       sparks.push({
-        x: px,
-        y: py,
+        x: x,
+        y: y,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 0.08, // Subtle upward drift bias
+        vy: Math.sin(angle) * speed - 0.05, // Subtle upward drift
         color: '#ffffff',
-        type: isCross ? 'star' : 'dust-dot',
-        size: isCross ? 0.7 + Math.random() * 1.0 : 0.4 + Math.random() * 0.6, // Extremely tiny for premium feel
+        type: 'star', // White small cross-stars
+        size: 0.8 + Math.random() * 2.2, // Size: 0.8px to 3.0px
         angle: 0,
         spin: 0,
         created: Date.now(),
-        life: 600 + Math.random() * 400 // 600ms - 1000ms lifespan
+        life: 400 + Math.random() * 300 // 400ms - 700ms lifespan
       });
     }
   }
@@ -214,6 +210,24 @@
 
       const dist = Math.sqrt(Math.pow(cX - lastX, 2) + Math.pow(cY - lastY, 2));
       if (dist > 0.5) {
+        const dx = cX - lastX;
+        const dy = cY - lastY;
+
+        // Check if there is a sharp turn compared to the last segment direction
+        if (lastDx !== 0 || lastDy !== 0) {
+          const len = dist;
+          const plen = Math.sqrt(lastDx * lastDx + lastDy * lastDy);
+          if (len > 0.5 && plen > 0.5) {
+            const cosTheta = (dx * lastDx + dy * lastDy) / (len * plen);
+            if (cosTheta < 0.819) { // 35-degree turn threshold (cos 35° ≈ 0.819)
+              triggerCornerBurst(lastX, lastY);
+            }
+          }
+        }
+
+        lastDx = dx;
+        lastDy = dy;
+
         const color = colors[Math.floor(colorIndex) % colors.length];
         colorIndex += 0.12;
 
@@ -227,9 +241,6 @@
           created: now,
           life: 800 // 800ms lifespan
         });
-
-        // Emit premium stardust along the drawn segment
-        emitLineDust(lastX, lastY, cX, cY);
 
         lastX = cX;
         lastY = cY;
