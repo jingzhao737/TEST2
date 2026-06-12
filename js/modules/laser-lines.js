@@ -124,21 +124,34 @@
     }
   }
 
-  // Generate ambient dust sparks while drawing
-  function createDust(x, y, color) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = 0.5 + Math.random() * 1.5;
-    sparks.push({
-      x: x,
-      y: y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 0.4, // slight upward float bias
-      color: color,
-      type: 'trail',
-      size: 1 + Math.random() * 1.5,
-      created: Date.now(),
-      life: 300 + Math.random() * 200 // shorter lifespan for dust
-    });
+  // Generate premium white stardust and micro-dots along the drawn line segment
+  function emitLineDust(x1, y1, x2, y2) {
+    // Spawn 1-2 particles per segment step to create a fine trace
+    const steps = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < steps; i++) {
+      // Interpolate along the line segment to distribute particles smoothly
+      const t = Math.random();
+      const px = x1 + (x2 - x1) * t;
+      const py = y1 + (y2 - y1) * t;
+      
+      const isCross = Math.random() < 0.35; // 35% white cross-stars, 65% tiny white dust dots
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.1 + Math.random() * 0.5; // Very slow drifting
+      
+      sparks.push({
+        x: px,
+        y: py,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 0.08, // Subtle upward drift bias
+        color: '#ffffff',
+        type: isCross ? 'star' : 'dust-dot',
+        size: isCross ? 0.7 + Math.random() * 1.0 : 0.4 + Math.random() * 0.6, // Extremely tiny for premium feel
+        angle: 0,
+        spin: 0,
+        created: Date.now(),
+        life: 600 + Math.random() * 400 // 600ms - 1000ms lifespan
+      });
+    }
   }
 
   // Generate dynamic ripple ring
@@ -215,10 +228,8 @@
           life: 800 // 800ms lifespan
         });
 
-        // Emit trail dust sparkles when moving
-        if (Math.random() < 0.25) {
-          createDust(cX, cY, color);
-        }
+        // Emit premium stardust along the drawn segment
+        emitLineDust(lastX, lastY, cX, cY);
 
         lastX = cX;
         lastY = cY;
@@ -259,7 +270,7 @@
       ctx.restore();
     }
 
-    // 2. Draw & decay drawn line segments
+    // 2. Draw & decay drawn line segments (Quantum Filament)
     for (let i = segments.length - 1; i >= 0; i--) {
       const s = segments[i];
       const age = (now - s.created) / s.life;
@@ -272,54 +283,28 @@
       const alpha = 1 - age;
       // Faster mouse movement makes the laser lines thinner and more stretched
       const speedFactor = Math.min(1.5, Math.max(0.4, 8 / (s.speed + 1)));
-      const baseWidth = 3.5 * alpha * speedFactor;
+      const baseWidth = 1.2 * alpha * speedFactor; // Thin, delicate filament
 
-      // Chromatic Aberration & Multilayer Neon Glow logic
-      // If speed is high, draw chromatic split paths
-      if (s.speed > 6) {
-        const offset = 2.0 * alpha; // split distance fades out as segment decays
-        
-        // Pass 1: Magenta split
-        ctx.beginPath();
-        ctx.moveTo(s.x1 - offset, s.y1 - offset);
-        ctx.lineTo(s.x2 - offset, s.y2 - offset);
-        ctx.strokeStyle = '#ff007f';
-        ctx.lineWidth = baseWidth * 0.8;
-        ctx.globalAlpha = alpha * 0.5;
-        ctx.shadowBlur = 0;
-        ctx.stroke();
-
-        // Pass 2: Cyan split
-        ctx.beginPath();
-        ctx.moveTo(s.x1 + offset, s.y1 + offset);
-        ctx.lineTo(s.x2 + offset, s.y2 + offset);
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = baseWidth * 0.8;
-        ctx.globalAlpha = alpha * 0.5;
-        ctx.stroke();
-      }
-
-      // Main glows (Drawn on top of split paths or drawn standalone at low speed)
-      // Layer A: Ambient outer glow
+      // Layer A: Soft, wide outer color glow
       ctx.beginPath();
       ctx.moveTo(s.x1, s.y1);
       ctx.lineTo(s.x2, s.y2);
       ctx.strokeStyle = s.color;
-      ctx.lineWidth = baseWidth * 2.2;
-      ctx.globalAlpha = alpha * 0.25;
-      ctx.shadowBlur = 24 * alpha;
+      ctx.lineWidth = baseWidth * 3.5;
+      ctx.globalAlpha = alpha * 0.18;
+      ctx.shadowBlur = 10 * alpha;
       ctx.shadowColor = s.color;
       ctx.stroke();
 
-      // Layer B: Bright inner neon core
+      // Layer B: Bright white core filament
       ctx.beginPath();
       ctx.moveTo(s.x1, s.y1);
       ctx.lineTo(s.x2, s.y2);
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = baseWidth * 0.5;
-      ctx.globalAlpha = alpha * 0.95;
-      ctx.shadowBlur = 6 * alpha;
-      ctx.shadowColor = s.color;
+      ctx.lineWidth = baseWidth * 0.8;
+      ctx.globalAlpha = alpha * 0.85;
+      ctx.shadowBlur = 4 * alpha;
+      ctx.shadowColor = '#ffffff';
       ctx.stroke();
     }
 
@@ -407,6 +392,15 @@
         ctx.fill();
 
         ctx.restore();
+      } else if (s.type === 'dust-dot') {
+        // Draw tiny white stardust dot
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, size * 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.globalAlpha = alpha * 0.8;
+        ctx.shadowBlur = 3 * alpha;
+        ctx.shadowColor = '#ffffff';
+        ctx.fill();
       } else {
         // Draw velocity-aligned trail sparks
         ctx.beginPath();
