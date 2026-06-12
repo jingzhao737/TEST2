@@ -402,10 +402,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:24px 64px;display:flex;justify-content:space-between;align-items:center;transition:padding .5s var(--ease-out-expo),background .5s var(--ease-out-expo);background:var(--nav-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255, 255, 255, 0.15)}
 .nav.scrolled{padding:14px 64px;background:var(--nav-bg-scrolled);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255, 255, 255, 0.15)}
 .nav-logo{font-family:'Climate Crisis',sans-serif;font-size:1.3rem;color:var(--fg);letter-spacing:0.03em;text-decoration:none;position:relative;z-index:101;font-weight:700;line-height:1;display:inline-flex;align-items:center;margin-top:-1px;transition:color 0.4s var(--ease-out-expo),transform 0.4s var(--ease-out-expo)}
-.nav-logo:hover{color:var(--accent);transform:scale(1.02)}
+.nav-logo:hover, .nav-logo.magnet-hover{color:var(--accent);transform:scale(1.02)}
 .nav-wave-container{display:inline-flex;align-items:center;margin-left:12px;margin-right:auto;position:relative}
 .nav-waveform{width:100px;height:28px;opacity:0.75;pointer-events:auto;cursor:pointer;flex-shrink:0;filter:drop-shadow(0 0 4px rgba(232, 124, 80, 0.25));transition:opacity 0.4s var(--ease-out-expo),filter 0.4s var(--ease-out-expo),transform 0.4s var(--ease-out-expo)}
-.nav-waveform:hover{opacity:1;transform:scale(1.05);filter:drop-shadow(0 0 8px rgba(232, 124, 80, 0.6))}
+.nav-waveform:hover, .nav-waveform.magnet-hover{opacity:1;transform:scale(1.05);filter:drop-shadow(0 0 8px rgba(232, 124, 80, 0.6))}
 .nav-next-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--fg);cursor:pointer;outline:none;padding:0;opacity:0;pointer-events:none;overflow:hidden;perspective:800px;transform:rotateY(-120deg) rotateZ(-30deg) scale(0) translateX(-30px);filter:blur(4px);transition:opacity 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),transform 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),color 0.3s ease,filter 0.5s ease;margin-left:8px;flex-shrink:0}
 :root.light .nav-next-btn{border:none;background:transparent}
 .nav-next-btn.is-active{opacity:0.85;pointer-events:auto;transform:rotateY(0deg) rotateZ(0deg) scale(1) translateX(0);filter:blur(0px)}
@@ -435,8 +435,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .nav-links li{display:flex;align-items:center;height:100%}
 .nav-links a{text-decoration:none;color:var(--muted);font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;position:relative;padding:8px 0;transition:color .3s;display:inline-block}
 .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .35s var(--ease-out-expo)}
-.nav-links a:hover{color:var(--fg)}
-.nav-links a:hover::after{transform:scaleX(1);transform-origin:left}
+.nav-links a:hover, .nav-links a.magnet-hover{color:var(--fg)}
+.nav-links a:hover::after, .nav-links a.magnet-hover::after{transform:scaleX(1);transform-origin:left}
 .nav-links a.active{color:var(--fg)}
 .nav-links a.active::after{transform:scaleX(1)}
 .nav-menu-li{display:flex;align-items:center;gap:16px;position:relative}
@@ -446,7 +446,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .menu-line{display:block;width:14px;height:1.5px;background:var(--fg);border-radius:1px;position:absolute;transition:transform .4s var(--ease-out-expo)}
 .menu-line:nth-child(1){transform:rotate(0)}
 .menu-line:nth-child(2){transform:rotate(90deg)}
-.nav-menu-btn:hover{transform:scale(1.15);border-color:rgba(255,255,255,.6)}
+.nav-menu-btn:hover, .nav-menu-btn.magnet-hover{transform:scale(1.15);border-color:rgba(255,255,255,.6)}
 .nav-menu-btn.open{transform:rotate(45deg) scale(1);border-color:var(--accent)}
 
 /* Single Nav Menu Button - Open State Overrides */
@@ -1670,12 +1670,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 /* 鈺愨晲鈺愨晲鈺愨晲锟?BACK TO TOP 鈺愨晲鈺愨晲鈺愨晲锟?*/
 .back-to-top{position:fixed;bottom:40px;right:40px;z-index:99;width:52px;height:52px;border-radius:50%;border:1px solid var(--border);background:var(--card-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;opacity:0;transform:translateY(20px) scale(.9);pointer-events:none;transition:opacity .4s var(--ease-out-expo),transform .5s var(--spring),border-color .4s var(--ease-out-expo),background .4s var(--ease-out-expo);will-change:transform,opacity}
 .back-to-top.visible{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
-.back-to-top:hover{background:var(--fg);border-color:var(--accent);transform:translateY(-3px) scale(1.06)}
+.back-to-top:hover, .back-to-top.magnet-hover{background:var(--fg);border-color:var(--accent);transform:translateY(-3px) scale(1.06)}
 .back-to-top:active{transform:scale(.94)}
 .btt-arrow{width:20px;height:20px;color:var(--fg);transition:transform .35s var(--spring),color .35s}
-.back-to-top:hover .btt-arrow{color:var(--bg);transform:translateY(-2px)}
+.back-to-top:hover .btt-arrow, .back-to-top.magnet-hover .btt-arrow{color:var(--bg);transform:translateY(-2px)}
 .btt-label{font-family:'Google Sans',sans-serif;font-size:.52rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);transition:color .35s}
-.back-to-top:hover .btt-label{color:var(--bg)}
+.back-to-top:hover .btt-label, .back-to-top.magnet-hover .btt-label{color:var(--bg)}
 
 /* 鈺愨晲鈺愨晲鈺愨晲锟?FOOTER 鈺愨晲鈺愨晲鈺愨晲锟?*/
 .footer{padding:220px 64px 56px;max-width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1}
@@ -1765,7 +1765,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   color: var(--fg);
   transition: all 0.3s var(--ease-out-expo);
 }
-.detail-close:hover {
+.detail-close:hover, .detail-close.magnet-hover {
   background: var(--fg);
   color: var(--bg);
   border-color: var(--fg);
@@ -2607,6 +2607,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     opacity .3s;
 }
 
+.scroll-bubble:hover, .scroll-bubble.magnet-hover {
+  background: rgba(232, 124, 80, 0.25);
+  border-color: rgba(232, 124, 80, 0.45);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 4px 12px rgba(232, 124, 80, 0.15);
+}
+
 .scroll-bubble:active {
   transform: translateY(-50%) scale(0.92);
   transition: transform .1s var(--ease-out-expo), box-shadow .1s;
@@ -2646,16 +2655,22 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     0 4px 16px rgba(0,0,0,0.1);
 }
 
+:root.light .scroll-bubble:hover, :root.light .scroll-bubble.magnet-hover {
+  background: rgba(155, 142, 126, 0.2);
+  color: var(--nav-light-bg);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
 
 :root.light .back-to-top{background:var(--btt-light-bg);border-color:rgba(255,255,255,.12);color:#fafaf7}
 :root.light .back-to-top .btt-arrow{color:#fafaf7}
 :root.light .back-to-top .btt-label{color:rgba(250,250,247,.65)}
-:root.light .back-to-top:hover{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
-:root.light .back-to-top:hover .btt-arrow{color:#0a0a0a}
-:root.light .back-to-top:hover .btt-label{color:#0a0a0a}
+:root.light .back-to-top:hover, :root.light .back-to-top.magnet-hover{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
+:root.light .back-to-top:hover .btt-arrow, :root.light .back-to-top.magnet-hover .btt-arrow{color:#0a0a0a}
+:root.light .back-to-top:hover .btt-label, :root.light .back-to-top.magnet-hover .btt-label{color:#0a0a0a}
 :root.light .menu-panel-content{background:var(--menu-light-bg);--fg:#fafaf7;--muted:rgba(250,250,247,.6);--border:rgba(255,255,255,.1);--card-bg:rgba(255,255,255,.06)}
 :root.light .detail-close{background:var(--detail-close-light-bg);border-color:rgba(255,255,255,.12)}
-:root.light .detail-close:hover{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
+:root.light .detail-close:hover, :root.light .detail-close.magnet-hover{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
 
 :root.light .nav-link{color:#fafaf7}
 :root.light .nav-link:hover{color:var(--accent)}

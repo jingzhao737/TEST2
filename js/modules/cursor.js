@@ -44,6 +44,21 @@
   // Magnetic snap variables
   let hoveredElement = null;
   let hoveredRect = null;
+
+  function setHoveredElement(el) {
+    if (hoveredElement === el) return;
+    if (hoveredElement) {
+      hoveredElement.classList.remove('magnet-hover');
+    }
+    hoveredElement = el;
+    if (hoveredElement) {
+      hoveredElement.classList.add('magnet-hover');
+      hoveredRect = hoveredElement.getBoundingClientRect();
+    } else {
+      hoveredRect = null;
+    }
+  }
+
   const magnetSelector = 'a, button, [role="button"]:not(.work-card), .theme-toggle, .detail-close, .nav-menu-btn, .logo-wrapper, .lightbox-nav, .lightbox-close, .zoom-slider-knob, .back-to-top, .scroll-bubble';
 
   let magnetTargets = [];
@@ -181,13 +196,9 @@
         }
 
         if (closestTarget) {
-          if (hoveredElement !== closestTarget.element) {
-            hoveredElement = closestTarget.element;
-            hoveredRect = closestTarget.element.getBoundingClientRect();
-          }
+          setHoveredElement(closestTarget.element);
         } else {
-          hoveredElement = null;
-          hoveredRect = null;
+          setHoveredElement(null);
         }
 
         // Dynamic detection of grabbable elements and inline cursor styles (e.g. #framesCanvas records)
@@ -253,8 +264,7 @@
     isFirstMove = true; // Reset first-move flag to snap position on next entry
     isClicked = false;  // Reset click state
     isGrabState = false; // Reset grab state
-    hoveredElement = null; // Clear magnet target
-    hoveredRect = null;
+    setHoveredElement(null); // Clear magnet target
     cursorDot.classList.remove('grab-state');
     cursorTrail1.classList.remove('grab-state');
   });
