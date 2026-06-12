@@ -466,7 +466,7 @@
 
     // 3. Arrow steering angle calculation (Shortest Path Lerp)
     // If mouse moves, calculate target heading direction instantly (no turning delay).
-    // Otherwise, delay for 650ms before returning to upright (-90 degrees).
+    // Otherwise, delay for 800ms before returning to upright (-90 degrees).
     if (isGrabState) {
       targetAngle = -90; // Symmetrical circle points straight up
     } else if (fSpeed > 1.6) {
@@ -474,7 +474,7 @@
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (Date.now() - lastMoveTime < 650) {
+      if (Date.now() - lastMoveTime < 800) {
         targetAngle = lastActiveAngle;
       } else {
         // Smoothly ease targetAngle to -90 to prevent step-jump twitches
@@ -503,7 +503,7 @@
       cursorTrail1.classList.remove('hovered');
     }
 
-    const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 650);
+    const isReturningUpright = !isActuallyHovered && (targetAngle === -90 || Date.now() - lastMoveTime >= 800);
     let angleEase = 0.13;
     if (isReturningUpright) {
       angleEase = 0.06; // Smooth and responsive return-to-upright glide
