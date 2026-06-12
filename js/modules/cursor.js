@@ -417,7 +417,9 @@
   // Animation Loop
   (function loop() {
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
-    if (hoveredElement && hoveredRect) {
+    if (hoveredElement) {
+      // Dynamically query bounding rect on every frame to track moving/animating targets in real-time
+      hoveredRect = hoveredElement.getBoundingClientRect();
       const btnCenterX = hoveredRect.left + hoveredRect.width / 2;
       const btnCenterY = hoveredRect.top + hoveredRect.height / 2;
       
