@@ -493,13 +493,14 @@ import * as THREE from 'three';
     // 1. Central dye splash to make it visually pop
     splat(x, y, 0, 0, pointer.color, splatRadius * 1.5);
     
-    // 2. Radial velocity burst to create expanding shockwave distortion
+    // 2. Radial velocity burst pointing inwards to create an expanding visual shockwave distortion
     for (let i = 0; i < numAngles; i++) {
       const angle = (i / numAngles) * Math.PI * 2;
       const splatX = x + Math.cos(angle) * offsetRadius;
       const splatY = y + Math.sin(angle) * offsetRadius;
-      const fx = Math.cos(angle) * forceMagnitude;
-      const fy = Math.sin(angle) * forceMagnitude;
+      // Invert force direction (point inwards) to create visual outward expansion
+      const fx = -Math.cos(angle) * forceMagnitude;
+      const fy = -Math.sin(angle) * forceMagnitude;
       splat(splatX, splatY, fx, fy, pointer.color, splatRadius);
     }
   }
