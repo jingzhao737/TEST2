@@ -84,6 +84,18 @@ function openDetail(data, heroImg, pushState) {
   const detailHeroDim = document.getElementById('detailHeroDim');
   const previewContainer = getActivePreviewContainer();
   const detailCard = document.getElementById('workDetailCard');
+  const detailBody = workDetail.querySelector('.detail-body');
+  const detailClose = document.getElementById('detailClose');
+  const detailHeroContent = workDetail.querySelector('.detail-hero-content');
+  const detailTag = document.getElementById('detailTag');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailSubtitle = document.getElementById('detailSubtitle');
+
+  // Kill any running Transitions on these elements to avoid overlap conflicts
+  gsap.killTweensOf([
+    '#nav', '.works-header', '.work-card', '.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar',
+    detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
+  ]);
 
   // ── 1. Smooth fade out the hover preview card ──
   if (previewContainer) {
@@ -96,7 +108,8 @@ function openDetail(data, heroImg, pushState) {
   gsap.to('.work-card', { opacity: 0, y: 50, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
 
-  // ── 3. Prepare detail overlay (visible but transparent, no .open yet) ──
+  // ── 3. Prepare detail overlay (visible but transparent, enable pointer-events immediately) ──
+  workDetail.classList.add('open');
   workDetail.style.display = 'flex';
   workDetail.style.visibility = 'visible';
   if (detailCard) {
@@ -113,13 +126,6 @@ function openDetail(data, heroImg, pushState) {
     gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power2.out' });
   }
 
-  const detailBody = workDetail.querySelector('.detail-body');
-  const detailClose = document.getElementById('detailClose');
-  const detailHeroContent = workDetail.querySelector('.detail-hero-content');
-  const detailTag = document.getElementById('detailTag');
-  const detailTitle = document.getElementById('detailTitle');
-  const detailSubtitle = document.getElementById('detailSubtitle');
-  
   gsap.set([detailBody, detailClose], { opacity: 0, y: 30 });
   gsap.set(detailHeroContent, { opacity: 1, y: 0 });
   gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
@@ -135,14 +141,12 @@ function openDetail(data, heroImg, pushState) {
       duration: 1.2,
       ease: 'expo.out',
       onComplete: () => {
-        workDetail.classList.add('open');
         if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         isRouteTransitioning = false;
         initGalleryLightbox();
       }
     });
   } else {
-    workDetail.classList.add('open');
     if (window.__updateMagnetTargets) window.__updateMagnetTargets();
     isRouteTransitioning = false;
   }
@@ -164,9 +168,11 @@ function openDetail(data, heroImg, pushState) {
 }
 
 function closeDetail(popState) {
-  if (isRouteTransitioning) return;
+  // Allow closing even if isRouteTransitioning is true (e.g. still opening),
+  // but prevent closing if we are already closed or closing (checked via classList.contains('open'))
   if (!workDetail.classList.contains('open')) return;
   isRouteTransitioning = true;
+  workDetail.classList.remove('open');
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');
@@ -176,6 +182,15 @@ function closeDetail(popState) {
   const detailHeroDim = document.getElementById('detailHeroDim');
   const detailCard = document.getElementById('workDetailCard');
   const detailHeroImg = document.getElementById('detailHeroImg');
+  const detailTag = document.getElementById('detailTag');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailSubtitle = document.getElementById('detailSubtitle');
+
+  // Kill any running Transitions on these elements to avoid overlap conflicts
+  gsap.killTweensOf([
+    '#nav', '.works-header', '.work-card', '.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar',
+    detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
+  ]);
 
   // Fade out backdrop smoothly
   if (detailBg) {
@@ -215,9 +230,6 @@ function closeDetail(popState) {
         if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
 
         // Reset text elements to hidden start state
-        const detailTag = document.getElementById('detailTag');
-        const detailTitle = document.getElementById('detailTitle');
-        const detailSubtitle = document.getElementById('detailSubtitle');
         if (detailTag) gsap.set(detailTag, { opacity: 0, y: 24 });
         if (detailTitle) gsap.set(detailTitle, { opacity: 0, y: 24 });
         if (detailSubtitle) gsap.set(detailSubtitle, { opacity: 0, y: 24 });
