@@ -176,7 +176,7 @@
           const isMagnet = hoveredInteractive.matches(magnetSelector);
           if (isMagnet) {
             closestTarget = magnetTargets.find(mt => mt.element === hoveredInteractive);
-            if (!closestTarget) {
+            if (!closestTarget && isElementVisible(hoveredInteractive)) {
               const rect = hoveredInteractive.getBoundingClientRect();
               closestTarget = {
                 element: hoveredInteractive,
@@ -364,7 +364,7 @@
 
   document.addEventListener('mouseover', function(e) {
     const target = e.target.closest(hoverSelector);
-    if (target) {
+    if (target && isElementVisible(target)) {
       // Only trigger if entering from outside the target element itself
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
         isHovered = true;
@@ -379,7 +379,7 @@
       // Only trigger if leaving to outside the target element itself
       if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
         const related = e.relatedTarget ? e.relatedTarget.closest(hoverSelector) : null;
-        if (!related) {
+        if (!related || !isElementVisible(related)) {
           isHovered = false;
           cursorDot.classList.remove('hovered');
         }
