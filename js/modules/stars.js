@@ -462,12 +462,14 @@ import * as THREE from 'three';
     renderer.render(quadScene, quadCamera);
   }
 
-  function splat(x, y, dx, dy, color) {
+  function splat(x, y, dx, dy, color, customRadius) {
+    const radius = customRadius !== undefined ? customRadius : config.SPLAT_RADIUS;
+
     // Velocity splat (adds force)
     matSplat.uniforms.uTarget.value = velocity.read.texture;
     matSplat.uniforms.uPoint.value.set(x, y);
     matSplat.uniforms.uColor.value.set(dx * 35.0, dy * 35.0, 0.0);
-    matSplat.uniforms.uRadius.value = config.SPLAT_RADIUS;
+    matSplat.uniforms.uRadius.value = radius;
     matSplat.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
     renderPass(matSplat, velocity.write);
     velocity.swap();
@@ -476,10 +478,30 @@ import * as THREE from 'three';
     matSplat.uniforms.uTarget.value = density.read.texture;
     matSplat.uniforms.uPoint.value.set(x, y);
     matSplat.uniforms.uColor.value.set(color.r, color.g, color.b);
-    matSplat.uniforms.uRadius.value = config.SPLAT_RADIUS;
+    matSplat.uniforms.uRadius.value = radius;
     matSplat.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
     renderPass(matSplat, density.write);
     density.swap();
+  }
+
+  function clickSplat(x, y) {
+    const numAngles = 8;
+    const offsetRadius = 0.015; // Radial offset for velocity splats
+    const forceMagnitude = 0.12; // High velocity force
+    const splatRadius = config.SPLAT_RADIUS * 2.5; // Larger splat radius for click
+    
+    // 1. Central dye splash to make it visually pop
+    splat(x, y, 0, 0, pointer.color, splatRadius * 1.5);
+    
+    // 2. Radial velocity burst to create expanding shockwave distortion
+    for (let i = 0; i < numAngles; i++) {
+      const angle = (i / numAngles) * Math.PI * 2;
+      const splatX = x + Math.cos(angle) * offsetRadius;
+      const splatY = y + Math.sin(angle) * offsetRadius;
+      const fx = Math.cos(angle) * forceMagnitude;
+      const fy = Math.sin(angle) * forceMagnitude;
+      splat(splatX, splatY, fx, fy, pointer.color, splatRadius);
+    }
   }
 
   function step(dt) {
@@ -564,6 +586,20 @@ import * as THREE from 'three';
   window.addEventListener('touchmove', (e) => {
     if (e.touches.length > 0) {
       updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  window.addEventListener('mousedown', (e) => {
+    const x = e.clientX / window.innerWidth;
+    const y = 1.0 - (e.clientY / window.innerHeight);
+    clickSplat(x, y);
+  });
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+      const x = e.touches[0].clientX / window.innerWidth;
+      const y = 1.0 - (e.touches[0].clientY / window.innerHeight);
+      clickSplat(x, y);
     }
   }, { passive: true });
 
