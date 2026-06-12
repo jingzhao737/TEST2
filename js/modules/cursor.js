@@ -27,6 +27,7 @@
   let isHovered = false;
   let isClicked = false;
   let isGrabState = false;
+  let isVisualSnapReleased = false;
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -62,6 +63,7 @@
       hoveredElement.classList.remove('magnet-active');
     }
     hoveredElement = el;
+    isVisualSnapReleased = false;
     if (hoveredElement) {
       hoveredElement.classList.add('magnet-hover');
       if (isClicked) {
@@ -341,6 +343,12 @@
   document.addEventListener('mousedown', function(e) {
     isClicked = true;
     if (hoveredElement) {
+      if (
+        hoveredElement.closest('.detail-close, .menu-panel-close, .lightbox-close') ||
+        hoveredElement.matches('[aria-label*="close" i]')
+      ) {
+        isVisualSnapReleased = true;
+      }
       hoveredElement.classList.add('magnet-active');
     }
     
@@ -357,6 +365,7 @@
 
   document.addEventListener('mouseup', function(e) {
     isClicked = false;
+    isVisualSnapReleased = false;
     if (hoveredElement) {
       hoveredElement.classList.remove('magnet-active');
     }
@@ -505,9 +514,15 @@
       const targetX = btnCenterX;
       const targetY = btnCenterY;
       
-      // Glides and snaps to the button center slightly slower (0.15 LERP) for responsive and soft magnetization
-      cX += (targetX - cX) * 0.15;
-      cY += (targetY - cY) * 0.15;
+      if (isVisualSnapReleased) {
+        // Release visually and LERP back to mouse immediately during active click
+        cX += (mouseX - cX) * 0.15;
+        cY += (mouseY - cY) * 0.15;
+      } else {
+        // Glides and snaps to the button center slightly slower (0.15 LERP) for responsive and soft magnetization
+        cX += (targetX - cX) * 0.15;
+        cY += (targetY - cY) * 0.15;
+      }
     } else {
       // Main triangle follows mouse with responsive LERP factor (0.15)
       cX += (mouseX - cX) * 0.15;
