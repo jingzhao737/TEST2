@@ -118,7 +118,7 @@
     });
 
     // 2. Burst Micro-Sparks (White Small Cross-Stars)
-    const numSparks = 6 + Math.floor(Math.random() * 5); // Reduced count: 6-10 sparks
+    const numSparks = 4 + Math.floor(Math.random() * 4); // Extremely sparse count: 4-7 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
       const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
@@ -129,7 +129,7 @@
         vy: Math.sin(angle) * speed,
         color: '#ffffff',
         type: 'star', // All burst particles are now cross-stars
-        size: 0.8 + Math.random() * 3.8, // Increased size variation: 0.8px to 4.6px
+        size: 0.8 + Math.random() * 3.8, // Size variation: 0.8px to 4.6px
         angle: 0,
         spin: 0, // No rotation, keeping them perfectly upright +
         created: Date.now(),
@@ -367,22 +367,22 @@
         ctx.save();
         ctx.translate(s.x, s.y);
         
-        // Circular core glow
+        // Circular core glow (Brighter gradient overlay)
         const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, sizeVal);
         grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.2, s.color);
+        grad.addColorStop(0.3, s.color);
         grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad;
-        ctx.globalAlpha = alpha * 0.75;
+        ctx.globalAlpha = alpha * 0.95; // Brighter core glow
         ctx.beginPath();
         ctx.arc(0, 0, sizeVal, 0, Math.PI * 2);
         ctx.fill();
 
-        // Thin HUD crosshair lines
+        // Thin HUD crosshair lines (Brighter and slightly thicker)
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 0.75 * alpha;
-        ctx.globalAlpha = alpha * 0.5;
-        ctx.shadowBlur = 6 * alpha;
+        ctx.lineWidth = 1.0 * alpha;
+        ctx.globalAlpha = alpha * 0.75;
+        ctx.shadowBlur = 12 * alpha; // Double the blur for neon pop
         ctx.shadowColor = s.color;
         ctx.beginPath();
         ctx.moveTo(-sizeVal * 2.2, 0);
@@ -400,9 +400,9 @@
         ctx.rotate(s.angle);
         
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 0.75 * alpha; // Very thin, premium lines
-        ctx.globalAlpha = alpha * 0.85;
-        ctx.shadowBlur = 4 * alpha;
+        ctx.lineWidth = 1.0 * alpha; // Slightly thicker lines for brightness
+        ctx.globalAlpha = alpha * 1.0; // Max opacity
+        ctx.shadowBlur = 8 * alpha; // Stronger glow blur
         ctx.shadowColor = '#ffffff';
 
         // Draw cross lines (+)
@@ -415,7 +415,7 @@
 
         // Central tiny core glow dot
         ctx.fillStyle = '#ffffff';
-        ctx.globalAlpha = alpha * 0.95;
+        ctx.globalAlpha = alpha * 1.0; // Max opacity
         ctx.beginPath();
         ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2);
         ctx.fill();
