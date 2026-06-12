@@ -8,15 +8,18 @@
   const trail3dContainer = cursorTrail1.querySelector('.cursor-3d-container');
   const cursorLayers = cursorDot.querySelectorAll('.cursor-3d-layer');
 
-  let mouseX = 0, mouseY = 0;
+  const initialX = window.innerWidth / 2;
+  const initialY = window.innerHeight / 2;
+
+  let mouseX = initialX, mouseY = initialY;
   let isFirstMove = true; // Snap initial mouse position to prevent warped flying/stretching on entry
-  let cX = 0, cY = 0; // Main dot/triangle position
+  let cX = initialX, cY = initialY; // Main dot/triangle position
   let currentZSpacing = 1.0; // Dynamic Z-depth spacing between layers (1px default, expands on hover)
-  let t1X = 0, t1Y = 0; // Trail 1 position
+  let t1X = initialX, t1Y = initialY; // Trail 1 position
   
-  let lastMouseX = 0, lastMouseY = 0;
+  let lastMouseX = initialX, lastMouseY = initialY;
   let fVx = 0, fVy = 0; // Filtered velocity components for smooth steering direction
-  let lastCX = 0, lastCY = 0; // Track last cX, cY for LERP-smoothed velocity
+  let lastCX = initialX, lastCY = initialY; // Track last cX, cY for LERP-smoothed velocity
   let isHovered = false;
   let isClicked = false;
   let isGrabState = false;
@@ -276,6 +279,23 @@
     setHoveredElement(null); // Clear magnet target
     cursorDot.classList.remove('grab-state');
     cursorTrail1.classList.remove('grab-state');
+  });
+
+  document.addEventListener('mouseenter', function(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cX = mouseX;
+    cY = mouseY;
+    t1X = mouseX;
+    t1Y = mouseY;
+    lastMouseX = mouseX;
+    lastMouseY = mouseY;
+    lastCX = cX;
+    lastCY = cY;
+    isFirstMove = false;
+    
+    cursorDot.style.opacity = '1';
+    cursorTrail1.style.opacity = '0.65';
   });
 
   // Click States
