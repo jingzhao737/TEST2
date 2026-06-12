@@ -154,9 +154,14 @@
             const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
             const dist = Math.sqrt(dx * dx + dy * dy);
             
+            // Hysteresis: Give the currently hovered element a 15px distance discount 
+            // so the cursor doesn't jitter back and forth between close neighbors.
+            const hysteresisDiscount = (hoveredElement && mt.element === hoveredElement) ? 15 : 0;
+            const effectiveDist = dist - hysteresisDiscount;
+            
             if (dist < maxSnapDistance) {
-              if (dist < minDistance) {
-                minDistance = dist;
+              if (effectiveDist < minDistance) {
+                minDistance = effectiveDist;
                 closestTarget = mt;
               }
             }
