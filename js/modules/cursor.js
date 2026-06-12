@@ -80,6 +80,22 @@
 
   // Helper to check if an element is actually visible to the user (including ancestors)
   function isElementVisible(el) {
+    // 1. Overlay Snapping Hierarchy: if an overlay is open, only allow snapping inside it
+    const lightbox = document.getElementById('galleryLightbox');
+    if (lightbox && lightbox.classList.contains('open')) {
+      if (!lightbox.contains(el)) return false;
+    } else {
+      const menuPanel = document.getElementById('menuPanel');
+      if (menuPanel && menuPanel.classList.contains('open')) {
+        if (!menuPanel.contains(el)) return false;
+      } else {
+        const workDetail = document.getElementById('workDetail');
+        if (workDetail && workDetail.classList.contains('open')) {
+          if (!workDetail.contains(el)) return false;
+        }
+      }
+    }
+
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) {
       return false;
