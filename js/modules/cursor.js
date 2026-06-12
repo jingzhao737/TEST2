@@ -576,7 +576,7 @@
         currentPitch = 0; // Flat perfect circle!
         currentStretchX = 1;
         currentStretchY = 1;
-        currentTranslateY = targetTranslateY; // Instantly lock vertical center
+        currentTranslateY = -50; // Instantly lock vertical center
       } else {
         if (targetAngle === -90) {
           if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
