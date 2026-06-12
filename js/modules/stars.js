@@ -567,6 +567,7 @@ import * as THREE from 'three';
   
   // 存储所有处于活动状态的“蜻蜓点水”涟漪数据
   const activeRipples = [];
+  let isPointerDown = false;
 
   function updatePointerColor(time) {
     const r = Math.sin(time * 0.5) * 0.5 + 0.5;
@@ -596,18 +597,24 @@ import * as THREE from 'three';
   }, { passive: true });
 
   window.addEventListener('mousedown', (e) => {
+    isPointerDown = true;
     const x = e.clientX / window.innerWidth;
     const y = 1.0 - (e.clientY / window.innerHeight);
     clickSplat(x, y);
   });
 
   window.addEventListener('touchstart', (e) => {
+    isPointerDown = true;
     if (e.touches.length > 0) {
       const x = e.touches[0].clientX / window.innerWidth;
       const y = 1.0 - (e.touches[0].clientY / window.innerHeight);
       clickSplat(x, y);
     }
   }, { passive: true });
+
+  window.addEventListener('mouseup', () => { isPointerDown = false; });
+  window.addEventListener('touchend', () => { isPointerDown = false; });
+  window.addEventListener('mouseleave', () => { isPointerDown = false; });
 
   let dividers = [];
   function initDividers() {
@@ -697,17 +704,30 @@ import * as THREE from 'three';
       }
       
       rp.age += dt;
+      
+      let progress = rp.age / rp.duration;
+      let isHolding = false;
+      
+      // 若处于长按状态且波纹扩散至中途 (progress >= 0.4)，卡住时间并维持微波振荡
+      if (isPointerDown && progress >= 0.4) {
+        rp.age = rp.duration * 0.4;
+        progress = 0.4;
+        isHolding = true;
+      }
+      
       if (rp.age >= rp.duration) {
         activeRipples.splice(i, 1);
         continue;
       }
       
-      const progress = rp.age / rp.duration; // 0.0 到 1.0
       // 径向扩散半径使用 sine 缓动，先快后慢
       const currentRadius = Math.sin(progress * Math.PI * 0.5) * rp.maxRadius;
       
-      // 力道随着扩散加速衰减 (1 - p)^2，最大力道设为 0.024，保持极佳的缓和性
-      const force = (1.0 - progress) * (1.0 - progress) * 0.024;
+      // 力道随着扩散加速衰减 (1 - p)^2，长按时在极微弱范围内正弦起伏以形成持续波荡
+      const baseForce = (1.0 - progress) * (1.0 - progress) * 0.024;
+      const force = isHolding 
+        ? baseForce * (0.3 + Math.sin(time * 16.0) * 0.7) 
+        : baseForce;
       
       // splat 画笔尺寸随扩散缓慢变大
       const splatRadius = config.SPLAT_RADIUS * (3.0 + progress * 2.5);
