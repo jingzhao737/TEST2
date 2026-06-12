@@ -1756,20 +1756,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
+  border: 1px solid var(--fg);
+  background: var(--fg);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  color: var(--fg);
+  color: var(--bg);
   transition: all 0.3s var(--ease-out-expo);
 }
 .detail-close:hover, .detail-close.magnet-hover {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
+  background: var(--card-bg);
+  color: var(--fg);
+  border-color: var(--border);
   transform: rotate(90deg);
 }
 
@@ -2671,8 +2671,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 :root.light .back-to-top:hover .btt-arrow, :root.light .back-to-top.magnet-hover .btt-arrow{color:#0a0a0a}
 :root.light .back-to-top:hover .btt-label, :root.light .back-to-top.magnet-hover .btt-label{color:#0a0a0a}
 :root.light .menu-panel-content{background:var(--menu-light-bg);--fg:#fafaf7;--muted:rgba(250,250,247,.6);--border:rgba(255,255,255,.1);--card-bg:rgba(255,255,255,.06)}
-:root.light .detail-close{background:var(--detail-close-light-bg);border-color:rgba(255,255,255,.12)}
-:root.light .detail-close:hover, :root.light .detail-close.magnet-hover{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
+:root.light .detail-close{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
+:root.light .detail-close:hover, :root.light .detail-close.magnet-hover{background:var(--detail-close-light-bg);border-color:rgba(255,255,255,.12);color:#fafaf7}
 
 :root.light .nav-link{color:#fafaf7}
 :root.light .nav-link:hover{color:var(--accent)}
