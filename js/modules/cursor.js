@@ -562,10 +562,10 @@
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
-      ? (1 - Math.min(Math.abs(diff) * 0.0015, 0.08)) // Subtle squish (max 8%)
+      ? (1 - Math.min(Math.abs(diff) * 0.0035, 0.18)) // Dynamic squish (max 18%)
       : (1 - Math.min(cursorSpeed * 0.0015, 0.06)); // Organic squish driven by cursorSpeed (naturally capped and smoothed)
     const targetStretchY = isReturningUpright 
-      ? (1 + Math.min(Math.abs(diff) * 0.0025, 0.12)) // Subtle stretch (max 12%)
+      ? (1 + Math.min(Math.abs(diff) * 0.0055, 0.26)) // Dynamic stretch (max 26%)
       : (1 + Math.min(cursorSpeed * 0.0025, 0.10)); // Organic stretch driven by cursorSpeed (naturally capped and smoothed)
 
     // Smooth physics LERP (faster response rate of 0.15)
