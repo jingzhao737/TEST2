@@ -585,13 +585,13 @@
     // Otherwise, delay for 800ms before returning to upright (-90 degrees).
     if (isGrabState) {
       targetAngle = -90; // Symmetrical circle points straight up
-    } else if (isClicked) {
-      targetAngle = -90;
-      lastActiveAngle = -90;
     } else if (fSpeed > 1.6) {
       targetAngle = Math.atan2(fVy, fVx) * 180 / Math.PI;
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
+    } else if (isClicked) {
+      targetAngle = -90;
+      lastActiveAngle = -90;
     } else {
       if (isArrowHovered) {
         // In works area: do not automatically return to upright, hold the last active angle
