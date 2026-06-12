@@ -27,7 +27,6 @@
   let isHovered = false;
   let isClicked = false;
   let isGrabState = false;
-  let isVisualSnapReleased = false;
 
   // Steering Physics: angle in degrees (-90 = pointing straight up)
   let currentAngle = -90;
@@ -55,15 +54,20 @@
   let isArrowHovered = false;
   let lastIsArrowHovered = false;
   let arrowHoverStartTime = 0;
+  let snapOffsetX = 0;
+  let snapOffsetY = 0;
 
   function setHoveredElement(el) {
     if (hoveredElement === el) return;
     if (hoveredElement) {
       hoveredElement.classList.remove('magnet-hover');
       hoveredElement.classList.remove('magnet-active');
+      
+      // Capture the visual offset relative to the physical mouse when releasing snap
+      snapOffsetX = cX - mouseX;
+      snapOffsetY = cY - mouseY;
     }
     hoveredElement = el;
-    isVisualSnapReleased = false;
     if (hoveredElement) {
       hoveredElement.classList.add('magnet-hover');
       if (isClicked) {
@@ -135,16 +139,7 @@
       if (!isElementVisible(el)) {
         return;
       }
-      const rect = el.getBoundingClientRect();
-      magnetTargets.push({
-        element: el,
-        left: rect.left,
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        centerX: rect.left + rect.width / 2,
-        centerY: rect.top + rect.height / 2
-      });
+      magnetTargets.push(el);
     });
   }
 
@@ -181,24 +176,8 @@
           
           if (hoveredInteractive) {
             const isMagnet = hoveredInteractive.matches(magnetSelector);
-            if (isMagnet) {
-              closestTarget = magnetTargets.find(mt => mt.element === hoveredInteractive);
-              if (closestTarget) {
-                if (!isElementVisible(hoveredInteractive)) {
-                  closestTarget = null;
-                }
-              } else if (isElementVisible(hoveredInteractive)) {
-                const rect = hoveredInteractive.getBoundingClientRect();
-                closestTarget = {
-                  element: hoveredInteractive,
-                  left: rect.left,
-                  top: rect.top,
-                  right: rect.right,
-                  bottom: rect.bottom,
-                  centerX: rect.left + rect.width / 2,
-                  centerY: rect.top + rect.height / 2
-                };
-              }
+            if (isMagnet && isElementVisible(hoveredInteractive)) {
+              closestTarget = hoveredInteractive;
             }
           } else {
             // Check if pointer is currently inside the scrollbar container
@@ -209,30 +188,35 @@
               let minDistance = Infinity;
               const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
               
-              for (const mt of magnetTargets) {
+              for (const el of magnetTargets) {
+                if (!isElementVisible(el)) continue;
+                const rect = el.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) continue;
+
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
                 // Euclidean distance to axis-aligned bounding box
-                const dx = Math.max(mt.left - mouseX, 0, mouseX - mt.right);
-                const dy = Math.max(mt.top - mouseY, 0, mouseY - mt.bottom);
+                const dx = Math.max(rect.left - mouseX, 0, mouseX - rect.right);
+                const dy = Math.max(rect.top - mouseY, 0, mouseY - rect.bottom);
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 
                 // Asymmetric snapping: Weaken snapping on the right side of scrollbar bubbles
                 // (facing the screen edge and scroll track) so the mouse slips off easily.
                 let localMaxSnapDistance = maxSnapDistance;
-                if (mt.element.classList.contains('scroll-bubble') && mouseX > mt.centerX) {
+                if (el.classList.contains('scroll-bubble') && mouseX > centerX) {
                   localMaxSnapDistance = 2;
                 }
                 
                 // Hysteresis: Give the currently hovered element a 15px distance discount 
                 // so the cursor doesn't jitter back and forth between close neighbors.
-                const hysteresisDiscount = (hoveredElement && mt.element === hoveredElement) ? 15 : 0;
+                const hysteresisDiscount = (hoveredElement && el === hoveredElement) ? 15 : 0;
                 const effectiveDist = dist - hysteresisDiscount;
                 
                 if (dist < localMaxSnapDistance) {
-                  if (isElementVisible(mt.element)) {
-                    if (effectiveDist < minDistance) {
-                      minDistance = effectiveDist;
-                      closestTarget = mt;
-                    }
+                  if (effectiveDist < minDistance) {
+                    minDistance = effectiveDist;
+                    closestTarget = el;
                   }
                 }
               }
@@ -241,7 +225,7 @@
         }
 
         if (closestTarget) {
-          setHoveredElement(closestTarget.element);
+          setHoveredElement(closestTarget);
         } else {
           setHoveredElement(null);
         }
@@ -343,12 +327,6 @@
   document.addEventListener('mousedown', function(e) {
     isClicked = true;
     if (hoveredElement) {
-      if (
-        hoveredElement.closest('.detail-close, .menu-panel-close, .lightbox-close') ||
-        hoveredElement.matches('[aria-label*="close" i]')
-      ) {
-        isVisualSnapReleased = true;
-      }
       hoveredElement.classList.add('magnet-active');
     }
     
@@ -365,7 +343,6 @@
 
   document.addEventListener('mouseup', function(e) {
     isClicked = false;
-    isVisualSnapReleased = false;
     if (hoveredElement) {
       hoveredElement.classList.remove('magnet-active');
     }
@@ -495,13 +472,43 @@
         // If the element has become hidden (width/height is 0) or is no longer visible in DOM, release snap immediately
         if (hoveredRect.width === 0 || hoveredRect.height === 0 || !isElementVisible(hoveredElement)) {
           setHoveredElement(null);
-          // Instant snap back to mouse position to prevent visual lag/drift on exit
-          cX = mouseX;
-          cY = mouseY;
-          t1X = mouseX;
-          t1Y = mouseY;
-          lastCX = cX;
-          lastCY = cY;
+        }
+      }
+    } else {
+      // If not currently snapped, but we are in page transition, check distances in real-time
+      // so we can snap immediately to the exit button as it slides under a stationary mouse
+      if (window.__isRouteTransitioning && !window.__isDetailClosing) {
+        let closestTarget = null;
+        let minDistance = Infinity;
+        const maxSnapDistance = 30;
+        
+        for (const el of magnetTargets) {
+          if (!isElementVisible(el)) continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) continue;
+          
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          const dx = Math.max(rect.left - mouseX, 0, mouseX - rect.right);
+          const dy = Math.max(rect.top - mouseY, 0, mouseY - rect.bottom);
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          let localMaxSnapDistance = maxSnapDistance;
+          if (el.classList.contains('scroll-bubble') && mouseX > centerX) {
+            localMaxSnapDistance = 2;
+          }
+          
+          if (dist < localMaxSnapDistance) {
+            if (dist < minDistance) {
+              minDistance = dist;
+              closestTarget = el;
+            }
+          }
+        }
+        
+        if (closestTarget) {
+          setHoveredElement(closestTarget);
         }
       }
     }
@@ -514,19 +521,33 @@
       const targetX = btnCenterX;
       const targetY = btnCenterY;
       
-      if (isVisualSnapReleased) {
-        // Release visually and LERP back to mouse immediately during active click
-        cX += (mouseX - cX) * 0.15;
-        cY += (mouseY - cY) * 0.15;
-      } else {
-        // Glides and snaps to the button center slightly slower (0.15 LERP) for responsive and soft magnetization
-        cX += (targetX - cX) * 0.15;
-        cY += (targetY - cY) * 0.15;
-      }
+      // Glides and snaps to the button center slightly slower (0.15 LERP) for responsive and soft magnetization
+      cX += (targetX - cX) * 0.15;
+      cY += (targetY - cY) * 0.15;
+      
+      // Track current snap offset relative to the physical mouse
+      snapOffsetX = cX - mouseX;
+      snapOffsetY = cY - mouseY;
     } else {
-      // Main triangle follows mouse with responsive LERP factor (0.15)
-      cX += (mouseX - cX) * 0.15;
-      cY += (mouseY - cY) * 0.15;
+      // Release snap: decay the offset based on time and mouse movement
+      const vx = mouseX - lastMouseX;
+      const vy = mouseY - lastMouseY;
+      const mouseDist = Math.sqrt(vx * vx + vy * vy);
+      
+      // When mouse is stationary (mouseDist = 0), decay = 1.0 (no decay, stays stationary)
+      const decay = Math.exp(-mouseDist * 0.08);
+      snapOffsetX *= decay;
+      snapOffsetY *= decay;
+      
+      if (Math.abs(snapOffsetX) < 0.05) snapOffsetX = 0;
+      if (Math.abs(snapOffsetY) < 0.05) snapOffsetY = 0;
+      
+      const targetX = mouseX + snapOffsetX;
+      const targetY = mouseY + snapOffsetY;
+      
+      // Main triangle follows mouse plus decaying offset with responsive LERP factor (0.15)
+      cX += (targetX - cX) * 0.15;
+      cY += (targetY - cY) * 0.15;
     }
 
     

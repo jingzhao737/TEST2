@@ -122,6 +122,7 @@ function openDetail(data, heroImg, pushState) {
   workDetail.classList.add('open');
   workDetail.style.display = 'flex';
   workDetail.style.visibility = 'visible';
+  if (window.__updateMagnetTargets) window.__updateMagnetTargets();
   if (detailCard) {
     detailCard.scrollTop = 0;
   }
