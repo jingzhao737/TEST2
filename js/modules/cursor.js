@@ -166,14 +166,14 @@
   // Animation Loop
   (function loop() {
     // 1. Position follow with LERP delay
-    // Main triangle follows mouse with significant delay (0.09)
-    cX += (mouseX - cX) * 0.09;
-    cY += (mouseY - cY) * 0.09;
+    // Main triangle follows mouse with responsive LERP factor (0.15)
+    cX += (mouseX - cX) * 0.15;
+    cY += (mouseY - cY) * 0.15;
 
     
-    // Trail triangle follows main triangle with additional lag (0.08)
-    t1X += (cX - t1X) * 0.08;
-    t1Y += (cY - t1Y) * 0.08;
+    // Trail triangle follows main triangle with matching lag (0.11)
+    t1X += (cX - t1X) * 0.11;
+    t1Y += (cY - t1Y) * 0.11;
 
     // 2. Calculate mouse velocity (speed & direction)
     const vx = mouseX - lastMouseX;
