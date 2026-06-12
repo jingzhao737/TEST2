@@ -118,7 +118,7 @@
     });
 
     // 2. Burst Micro-Sparks (White Small Cross-Stars)
-    const numSparks = 14 + Math.floor(Math.random() * 8); // 14-22 sparks
+    const numSparks = 6 + Math.floor(Math.random() * 5); // Reduced count: 6-10 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
       const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
@@ -129,7 +129,7 @@
         vy: Math.sin(angle) * speed,
         color: '#ffffff',
         type: 'star', // All burst particles are now cross-stars
-        size: 1.5 + Math.random() * 1.5, // Small size: 1.5px to 3.0px
+        size: 0.8 + Math.random() * 3.8, // Increased size variation: 0.8px to 4.6px
         angle: Math.random() * Math.PI * 2,
         spin: (Math.random() - 0.5) * 0.15, // Smooth slow rotation
         created: Date.now(),
