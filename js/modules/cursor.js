@@ -552,7 +552,7 @@
 
 
     // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
-    const targetTranslateY = isGrabState ? -50 : -10;
+    const targetTranslateY = (isGrabState || isActuallyHovered) ? -50 : -10;
     currentTranslateY += (targetTranslateY - currentTranslateY) * 0.07;
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
