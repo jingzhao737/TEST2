@@ -44,7 +44,7 @@
   // Magnetic snap variables
   let hoveredElement = null;
   let hoveredRect = null;
-  const magnetSelector = 'a, button, [role="button"]:not(.work-card), .theme-toggle, .detail-close, .nav-menu-btn, .logo-wrapper, .lightbox-nav, .lightbox-close, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .scroll-bubble';
+  const magnetSelector = 'a, button, [role="button"]:not(.work-card), .theme-toggle, .detail-close, .nav-menu-btn, .logo-wrapper, .lightbox-nav, .lightbox-close, .zoom-slider-knob, .back-to-top, .scroll-bubble';
 
   let magnetTargets = [];
   let lastUpdateTime = 0;
