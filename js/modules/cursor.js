@@ -162,7 +162,7 @@
               // (facing the screen edge and scroll track) so the mouse slips off easily.
               let localMaxSnapDistance = maxSnapDistance;
               if (mt.element.classList.contains('scroll-bubble') && mouseX > mt.centerX) {
-                localMaxSnapDistance = 6;
+                localMaxSnapDistance = 2;
               }
               
               // Hysteresis: Give the currently hovered element a 15px distance discount 
