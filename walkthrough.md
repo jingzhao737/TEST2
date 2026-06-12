@@ -329,3 +329,16 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
    - Added `will-change: filter` in [styles.css](file:///D:/webprojext/styles.css) on `.cursor-dot` to promote the filter to a persistent GPU layer, eliminating any repaint stutters during hover filter swaps.
 
 
+---
+
+## 🛠️ Hotfix: Background Scrollbar Snapping & Hover Integrity
+
+### Problem
+- When the Works details card was open, moving the mouse to the right edge of the screen (the scrollbar area) still caused the custom cursor to snap to scrollbar bubbles, and the bubbles would show hover states.
+- **Stale Cache Snapping**: In the custom cursor module, `magnetTargets` is a cached array updated throttled every 250ms on mousemove. During the card detail slide-up animation (which takes 1.2s), the cached targets still contained the scroll bubbles. If the user hovered over this area, the coordinates would snap to the cached targets because the mousemove listener bypassed `isElementVisible` checks if the target was found in the cache. This created a rapid oscillation (vibration feeling) of snapping and releasing.
+- **Leaking Pointer Events**: The backdrop of the details card had `pointer-events: none` outside the card content box, letting browser hover events fall straight through to the hidden scrollbar elements behind it, causing hover state triggers.
+
+### Resolution
+- **Visibility-Checked Snapping**: Modified [js/modules/cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) to verify `isElementVisible()` on-the-fly before snapping to any element—both for direct hovers and distance-based snaps—even if it is found in the `magnetTargets` cache. This completely prevents snapping to background elements when overlays are open.
+- **Background Pointer Blocking**: Updated [js/modules/hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) to set `pointer-events: none` on `#scrollBar` and `#backToTop` immediately when opening the details card, and restore them when closing it. This completely blocks browser hover events on hidden background elements.
+- **Verified Build & Deployment**: Recompiled the production bundle successfully using `npx.cmd vite build` and pushed all changes to the remote repository.
