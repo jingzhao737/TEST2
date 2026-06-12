@@ -544,12 +544,14 @@
     const basePitch = isReturningUpright 
       ? Math.min(Math.abs(diff) * 0.25, 12) 
       : Math.min(cursorSpeed * 1.5, 30);
-    const targetPitch = basePitch + (isActuallyHovered ? 22 : 0);
+    const targetPitch = isActuallyHovered ? 0 : basePitch;
     
     // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
-    const targetRoll = isReturningUpright 
-      ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
-      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
+    const targetRoll = isActuallyHovered 
+      ? 0 
+      : (isReturningUpright 
+          ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
+          : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0)); // Driven by LERP-smoothed cursorSpeed
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
@@ -571,9 +573,10 @@
         // For circular shape, lock rotation, tilt, and stretch immediately to prevent elliptical distortion
         currentAngle = -90;
         currentRoll = 0;
-        currentPitch = 22; // Clean hover dive
+        currentPitch = 0; // Flat perfect circle!
         currentStretchX = 1;
         currentStretchY = 1;
+        currentTranslateY = targetTranslateY; // Instantly lock vertical center
       } else {
         if (targetAngle === -90) {
           if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
@@ -592,7 +595,7 @@
 
     // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
     const targetTranslateY = (isGrabState || isActuallyHovered) ? -50 : -10;
-    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.07;
+    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.18;
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;
