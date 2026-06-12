@@ -459,11 +459,8 @@
       lastActiveAngle = targetAngle;
       lastMoveTime = Date.now();
     } else {
-      if (isActuallyHovered || Date.now() - lastMoveTime < 400) {
+      if (Date.now() - lastMoveTime < 400) {
         targetAngle = lastActiveAngle;
-        if (isActuallyHovered) {
-          lastMoveTime = Date.now(); // Reset timer so return-to-upright countdown starts ONLY after hover ends
-        }
       } else {
         // Smoothly ease targetAngle to -90 to prevent step-jump twitches
         let targetDiff = -90 - targetAngle;
@@ -570,8 +567,9 @@
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (widened thresholds for immediate lock-in)
     if (cursorSpeed < 0.1 && speed < 0.1) {
       if (isActuallyHovered) {
-        // For circular shape, lock rotation, tilt, and stretch immediately to prevent elliptical distortion
-        currentAngle = -90;
+        // For circular shape, lock tilt and stretch immediately to prevent elliptical distortion,
+        // but let rotation angle snap only when it has smoothly eased close to -90 (prevents chrome flow flashing)
+        if (Math.abs(currentAngle - (-90)) < 4.0) currentAngle = -90;
         currentRoll = 0;
         currentPitch = 0; // Flat perfect circle!
         currentStretchX = 1;
