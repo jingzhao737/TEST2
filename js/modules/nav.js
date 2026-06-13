@@ -45,6 +45,12 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
   let mouseVy = 0;
   let isMouseOver = false;
 
+  const gridCount = 80;
+  const velocityGrid = [];
+  for (let i = 0; i < gridCount; i++) {
+    velocityGrid.push({ vx: 0, vy: 0 });
+  }
+
   navElement.addEventListener('mousemove', (e) => {
     const rect = navElement.getBoundingClientRect();
     const currX = e.clientX - rect.left;
@@ -187,50 +193,86 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
     mouseVx *= 0.88;
     mouseVy *= 0.88;
     
-    const repelRadius = 90;
-    const dragFactor = 0.45; // drag force strength (mouse velocity)
-    const repelFactor = 0.35; // outward push strength (pressure)
-    const springStrength = 0.06; // spring back strength
-    const friction = 0.84; // friction coefficient
+    // 1. Splat velocity & pressure into the grid
+    const rect = navElement.getBoundingClientRect();
+    const navW = rect.width || 1200;
+    
+    if (isMouseOver && lastMouseX !== -1000) {
+      const mouseCell = (mouseX / navW) * gridCount;
+      const splatRadiusCells = 5; // spread force over 5 cells
+      
+      for (let i = 0; i < gridCount; i++) {
+        const distCells = Math.abs(i - mouseCell);
+        if (distCells < splatRadiusCells) {
+          const force = (splatRadiusCells - distCells) / splatRadiusCells;
+          const forceSq = force * force;
+          
+          // Inject velocity direction
+          velocityGrid[i].vx += mouseVx * forceSq * 0.18;
+          velocityGrid[i].vy += mouseVy * forceSq * 0.18;
+          
+          // Inject pressure push (away from cursor position)
+          const cellWidth = 3000 / gridCount;
+          const dx = (i - mouseCell) * cellWidth;
+          const dxSign = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
+          velocityGrid[i].vx += dxSign * forceSq * 0.45;
+        }
+      }
+    }
+    
+    // 2. Diffuse and dissipate grid velocity
+    const nextGrid = [];
+    const dissipation = 0.94; // slow, beautiful fluid trails
+    
+    for (let i = 0; i < gridCount; i++) {
+      const prev = velocityGrid[i === 0 ? 0 : i - 1];
+      const next = velocityGrid[i === gridCount - 1 ? gridCount - 1 : i + 1];
+      const curr = velocityGrid[i];
+      
+      // Diffusion formula: 70% current + 30% neighbors average
+      const vx = (curr.vx * 0.7 + (prev.vx + next.vx) * 0.15) * dissipation;
+      const vy = (curr.vy * 0.7 + (prev.vy + next.vy) * 0.15) * dissipation;
+      
+      nextGrid.push({ vx, vy });
+    }
+    
+    // Copy back to velocityGrid
+    for (let i = 0; i < gridCount; i++) {
+      velocityGrid[i].vx = nextGrid[i].vx;
+      velocityGrid[i].vy = nextGrid[i].vy;
+    }
+    
+    // 3. Update stars position using interpolated grid velocities
+    const dragFactor = 1.6; // multiplier for drag force on stars
+    const springStrength = 0.05; // spring return strength
+    const friction = 0.82; // damping friction
+    const maxWidth = 3000;
     
     for (let i = 0; i < starsData.length; i++) {
       const star = starsData[i];
       
-      let fx = 0;
-      let fy = 0;
+      // Interpolate velocity at star's coordinate
+      const pct = star.baseX / maxWidth;
+      const cellFloat = pct * (gridCount - 1);
+      const cellIdx = Math.max(0, Math.min(gridCount - 2, Math.floor(cellFloat)));
+      const t = cellFloat - cellIdx;
       
-      if (isMouseOver) {
-        const dx = star.x - mouseX;
-        const dy = star.y - mouseY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < repelRadius && dist > 0.1) {
-          const force = (repelRadius - dist) / repelRadius;
-          const forceSq = force * force; // stronger close to cursor
-          
-          // 1. Radial repulsion (simulating fluid pressure splat)
-          const angle = Math.atan2(dy, dx);
-          const rx = Math.cos(angle) * forceSq * repelFactor;
-          const ry = Math.sin(angle) * forceSq * repelFactor;
-          
-          // 2. Mouse velocity drag (simulating fluid velocity drag)
-          const vx_drag = mouseVx * forceSq * dragFactor;
-          const vy_drag = mouseVy * forceSq * dragFactor;
-          
-          // Small stars are lighter and react slightly more, large stars have more inertia
-          const massFactor = star.isSmall ? 1.25 : 0.75;
-          
-          fx = (rx + vx_drag) * massFactor;
-          fy = (ry + vy_drag) * massFactor;
-        }
-      }
+      const velA = velocityGrid[cellIdx];
+      const velB = velocityGrid[cellIdx + 1];
+      
+      const fx = (velA.vx * (1 - t) + velB.vx * t) * dragFactor;
+      const fy = (velA.vy * (1 - t) + velB.vy * t) * dragFactor;
+      
+      const massFactor = star.isSmall ? 1.3 : 0.75;
       
       const ax = (star.baseX - star.x) * springStrength;
       const ay = (star.baseY - star.y) * springStrength;
       
-      star.vx = (star.vx + fx + ax) * friction;
-      star.vy = (star.vy + fy + ay) * friction;
+      // Update velocity
+      star.vx = (star.vx + fx * massFactor + ax) * friction;
+      star.vy = (star.vy + fy * massFactor + ay) * friction;
       
+      // Update position
       star.x += star.vx;
       star.y += star.vy;
       
