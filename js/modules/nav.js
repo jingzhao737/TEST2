@@ -39,18 +39,39 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
   let starsData = [];
   let mouseX = -1000;
   let mouseY = -1000;
+  let lastMouseX = -1000;
+  let lastMouseY = -1000;
+  let mouseVx = 0;
+  let mouseVy = 0;
   let isMouseOver = false;
 
   navElement.addEventListener('mousemove', (e) => {
     const rect = navElement.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
+    const currX = e.clientX - rect.left;
+    const currY = e.clientY - rect.top;
+    
+    if (isMouseOver && lastMouseX !== -1000) {
+      mouseVx = currX - lastMouseX;
+      mouseVy = currY - lastMouseY;
+    } else {
+      mouseVx = 0;
+      mouseVy = 0;
+    }
+    
+    mouseX = currX;
+    mouseY = currY;
+    lastMouseX = currX;
+    lastMouseY = currY;
     isMouseOver = true;
   });
 
   navElement.addEventListener('mouseleave', () => {
     mouseX = -1000;
     mouseY = -1000;
+    lastMouseX = -1000;
+    lastMouseY = -1000;
+    mouseVx = 0;
+    mouseVy = 0;
     isMouseOver = false;
   });
 
@@ -106,7 +127,7 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
     }
     
     starsData = [];
-    const numStars = 80;
+    const numStars = 180; // Increased density to match background
     const maxWidth = 3000;
     const maxHeight = 56;
     
@@ -116,16 +137,28 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       
       const cx = Math.random() * maxWidth;
       const cy = Math.random() * maxHeight;
-      const r = 0.4 + Math.random() * 0.7; // radius between 0.4px and 1.1px
+      
+      // Granularity alignment: 75% tiny background stars, 25% larger bright foreground stars
+      const isSmall = Math.random() < 0.75;
+      
+      let r, minOpacity, maxOpacity, duration;
+      if (isSmall) {
+        r = 0.35 + Math.random() * 0.25; // 0.35px to 0.6px
+        minOpacity = 0.08 + Math.random() * 0.12; // 0.08 to 0.20
+        maxOpacity = 0.25 + Math.random() * 0.20; // 0.25 to 0.45
+        duration = 3.5 + Math.random() * 3.5;
+      } else {
+        r = 0.75 + Math.random() * 0.65; // 0.75px to 1.4px
+        minOpacity = 0.20 + Math.random() * 0.15; // 0.20 to 0.35
+        maxOpacity = 0.65 + Math.random() * 0.30; // 0.65 to 0.95
+        duration = 2.0 + Math.random() * 2.0;
+      }
       
       circle.setAttribute('cx', cx.toFixed(1));
       circle.setAttribute('cy', cy.toFixed(1));
       circle.setAttribute('r', r.toFixed(2));
       
-      const duration = 2.5 + Math.random() * 3.5;
       const delay = Math.random() * -6;
-      const minOpacity = 0.15 + Math.random() * 0.2;
-      const maxOpacity = 0.6 + Math.random() * 0.4;
       
       circle.style.setProperty('--duration', `${duration.toFixed(2)}s`);
       circle.style.setProperty('--delay', `${delay.toFixed(2)}s`);
@@ -141,7 +174,8 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
         x: cx,
         y: cy,
         vx: 0,
-        vy: 0
+        vy: 0,
+        isSmall: isSmall
       });
     }
   }
@@ -149,10 +183,15 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
   function updateStarsPhysics() {
     if (!starsData.length) return;
     
-    const repelRadius = 80;
-    const forceFactor = 1.8;
-    const springStrength = 0.08;
-    const friction = 0.85;
+    // Smoothly decay mouse velocity in each frame
+    mouseVx *= 0.88;
+    mouseVy *= 0.88;
+    
+    const repelRadius = 90;
+    const dragFactor = 0.45; // drag force strength (mouse velocity)
+    const repelFactor = 0.35; // outward push strength (pressure)
+    const springStrength = 0.06; // spring back strength
+    const friction = 0.84; // friction coefficient
     
     for (let i = 0; i < starsData.length; i++) {
       const star = starsData[i];
@@ -167,9 +206,22 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
         
         if (dist < repelRadius && dist > 0.1) {
           const force = (repelRadius - dist) / repelRadius;
+          const forceSq = force * force; // stronger close to cursor
+          
+          // 1. Radial repulsion (simulating fluid pressure splat)
           const angle = Math.atan2(dy, dx);
-          fx = Math.cos(angle) * force * forceFactor;
-          fy = Math.sin(angle) * force * forceFactor;
+          const rx = Math.cos(angle) * forceSq * repelFactor;
+          const ry = Math.sin(angle) * forceSq * repelFactor;
+          
+          // 2. Mouse velocity drag (simulating fluid velocity drag)
+          const vx_drag = mouseVx * forceSq * dragFactor;
+          const vy_drag = mouseVy * forceSq * dragFactor;
+          
+          // Small stars are lighter and react slightly more, large stars have more inertia
+          const massFactor = star.isSmall ? 1.25 : 0.75;
+          
+          fx = (rx + vx_drag) * massFactor;
+          fy = (ry + vy_drag) * massFactor;
         }
       }
       
