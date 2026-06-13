@@ -179,7 +179,9 @@ import gsap from 'gsap';
     }
   }
 
-  canvas.style.display = 'none';
+  canvas.style.display = 'block';
+  canvas.style.pointerEvents = 'none';
+
 
   // IntersectionObserver
   const observer = new IntersectionObserver((entries) => {
@@ -200,7 +202,6 @@ import gsap from 'gsap';
     if (!animId) animate();
 
     canvas.className = 'works-webgl-canvas';
-    canvas.style.display = 'block';
     canvas.style.zIndex = '90';
 
     const w = window.innerWidth;
@@ -256,7 +257,6 @@ import gsap from 'gsap';
         isHoverActive = false;
         if (!isMorphing) {
           mesh.visible = false;
-          canvas.style.display = 'none';
           mesh.rotation.set(0, 0, 0);
         }
       }
@@ -270,7 +270,6 @@ import gsap from 'gsap';
     if (!animId) animate();
 
     canvas.className = 'works-webgl-canvas';
-    canvas.style.display = 'block';
     canvas.style.zIndex = '501';
 
     const w = window.innerWidth;
@@ -321,7 +320,7 @@ import gsap from 'gsap';
       onComplete: () => {
         isMorphing = false;
         mesh.visible = false;
-        canvas.style.display = 'none';
+        canvas.style.zIndex = '90';
         if (onComplete) onComplete();
       }
     });
