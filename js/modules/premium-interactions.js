@@ -7,9 +7,10 @@ if (!isMobileDevice) {
   // === DESKTOP HOVER PREVIEW (MOUSE FOLLOW) ===
   const workList = document.querySelector('.work-list');
   const cards = document.querySelectorAll('.work-card');
-  console.log('Premium Interactions JS Initialized (Desktop).', !!workList, cards.length);
+  const worksEl = document.querySelector('.works');
+  console.log('Premium Interactions JS Initialized (Desktop 3D Projection).', !!workList, cards.length, !!worksEl);
 
-  if (workList && cards.length > 0) {
+  if (workList && cards.length > 0 && worksEl) {
     let targetX = 0, targetY = 0;
     let isVisible = false;
     let activeSrc = null;
@@ -34,10 +35,60 @@ if (!isMobileDevice) {
     let rawMouseY = -9999;
     let hoveredCardIndex = -1;
 
-    // Native hover state tracking and event bindings
+    // Page-relative flat coordinates for the cards and sections (avoid layout reflows on scroll/RAF)
+    let wPageRect = { left: 0, top: 0, width: 0, height: 0 };
+    let pPageRect = { left: 0, top: 0, width: 0, height: 0 };
+    let cardPageRects = [];
+
+    function updateFlatPageCoordinates() {
+      // Temporarily flatten the list to get 100% accurate flat client rects
+      const oldTransform = workList.style.transform;
+      workList.style.transform = 'none';
+
+      const wRect = workList.getBoundingClientRect();
+      const pRect = worksEl.getBoundingClientRect();
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+
+      wPageRect = {
+        left: wRect.left + scrollX,
+        top: wRect.top + scrollY,
+        width: wRect.width,
+        height: wRect.height
+      };
+
+      pPageRect = {
+        left: pRect.left + scrollX,
+        top: pRect.top + scrollY,
+        width: pRect.width,
+        height: pRect.height
+      };
+
+      cardPageRects = Array.from(cards).map(card => {
+        const rect = card.getBoundingClientRect();
+        return {
+          left: rect.left + scrollX,
+          right: rect.right + scrollX,
+          top: rect.top + scrollY,
+          bottom: rect.bottom + scrollY,
+          width: rect.width,
+          height: rect.height
+        };
+      });
+
+      // Restore the 3D transform
+      workList.style.transform = oldTransform;
+    }
+
+    // Initialize flat page layout bounds
+    updateFlatPageCoordinates();
+    window.addEventListener('load', updateFlatPageCoordinates);
+    window.addEventListener('resize', updateFlatPageCoordinates);
+
     function onListEnter() {
       isVisible = true;
       firstMove = true;
+      updateFlatPageCoordinates(); // Refresh coordinates when entering the list
     }
 
     function onListLeave() {
@@ -81,50 +132,11 @@ if (!isMobileDevice) {
       }
     }
 
-    // Set up native mouse listeners on the static works container
-    const worksEl = document.querySelector('.works');
+    // Hook section enter/leave on the works container
     if (worksEl) {
       worksEl.addEventListener('mouseenter', onListEnter);
       worksEl.addEventListener('mouseleave', onListLeave);
     }
-
-    // Set up native mouse/pointer listeners on individual cards
-    cards.forEach((card, index) => {
-      card.addEventListener('pointerenter', () => {
-        if (!isVisible) {
-          onListEnter();
-        }
-        hoveredCardIndex = index;
-        onCardEnter(index);
-      });
-
-      card.addEventListener('pointerleave', () => {
-        card.classList.remove('hovered');
-        card.style.removeProperty('--card-mouse-x');
-        card.style.removeProperty('--card-mouse-y');
-        
-        setTimeout(() => {
-          if (hoveredCardIndex === -1) {
-            activeSrc = null;
-            if (window.__worksWebGL && window.__worksWebGL.isActive) {
-              window.__worksWebGL.hidePreview();
-            }
-          }
-        }, 0);
-        
-        if (hoveredCardIndex === index) {
-          hoveredCardIndex = -1;
-        }
-      });
-
-      card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const localX = ((e.clientX - rect.left) / rect.width) * 100;
-        const localY = ((e.clientY - rect.top) / rect.height) * 100;
-        card.style.setProperty('--card-mouse-x', `${localX}%`);
-        card.style.setProperty('--card-mouse-y', `${localY}%`);
-      });
-    });
 
     window.addEventListener('mousemove', (e) => {
       rawMouseX = e.clientX;
@@ -143,7 +155,20 @@ if (!isMobileDevice) {
       targetY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 20, rawMouseY - offsetY);
     });
 
-    // RAF Animation Loop (Tilt and WebGL Follow only)
+    // Helper functions for 3D projection hit-testing
+    function isPointInQuad(px, py, p0, p1, p2, p3) {
+      function crossProduct(ax, ay, bx, by, cx, cy) {
+        return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+      }
+      const cp0 = crossProduct(p0.x, p0.y, p1.x, p1.y, px, py);
+      const cp1 = crossProduct(p1.x, p1.y, p2.x, p2.y, px, py);
+      const cp2 = crossProduct(p2.x, p2.y, p3.x, p3.y, px, py);
+      const cp3 = crossProduct(p3.x, p3.y, p0.x, p0.y, px, py);
+      return (cp0 >= 0 && cp1 >= 0 && cp2 >= 0 && cp3 >= 0) ||
+             (cp0 <= 0 && cp1 <= 0 && cp2 <= 0 && cp3 <= 0);
+    }
+
+    // RAF Animation Loop
     let curX2 = 0, curY2 = 0;
     let firstMove = true;
 
@@ -168,7 +193,98 @@ if (!isMobileDevice) {
         workList.style.transform = `rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg)`;
       }
 
-      // ── STEP 3: Animate preview thumbnail follow via WebGL ──
+      // ── STEP 3: Hit test page-relative coordinates against 3D projected rects ──
+      if (isVisible && rawMouseX > -9000) {
+        const scrollX = window.scrollX;
+        const scrollY = window.scrollY;
+
+        // Viewport center of rotation and perspective origin flat
+        const originX = wPageRect.left + wPageRect.width / 2 - scrollX;
+        const originY = wPageRect.top + wPageRect.height / 2 - scrollY;
+        const perspX = pPageRect.left + pPageRect.width / 2 - scrollX;
+        const perspY = pPageRect.top + pPageRect.height / 2 - scrollY;
+
+        const d = 1750;
+
+        // Rotations at the base tilt angles (makes hit-test static and prevents boundary jitter)
+        const radY = baseY * Math.PI / 180;
+        const radX = baseX * Math.PI / 180;
+        const radZ = baseZ * Math.PI / 180;
+
+        function projectPoint(pageX, pageY) {
+          const vx = pageX - scrollX;
+          const vy = pageY - scrollY;
+          const x0 = vx - originX;
+          const y0 = vy - originY;
+          const z0 = 0;
+
+          // Rotations
+          const x1 = x0 * Math.cos(radZ) - y0 * Math.sin(radZ);
+          const y1 = x0 * Math.sin(radZ) + y0 * Math.cos(radZ);
+
+          const y2 = y1 * Math.cos(radX);
+          const z2 = y1 * Math.sin(radX);
+
+          const x3 = x1 * Math.cos(radY) + z2 * Math.sin(radY);
+          const z3 = -x1 * Math.sin(radY) + z2 * Math.cos(radY);
+
+          // Perspective
+          const dx = x3 + originX - perspX;
+          const dy = y2 + originY - perspY;
+          const dz = z3;
+
+          const scale = d / (d - dz);
+          return {
+            x: dx * scale + perspX,
+            y: dy * scale + perspY
+          };
+        }
+
+        let newHoveredIndex = -1;
+        for (let i = 0; i < cardPageRects.length; i++) {
+          const r = cardPageRects[i];
+          const p0 = projectPoint(r.left, r.top);
+          const p1 = projectPoint(r.right, r.top);
+          const p2 = projectPoint(r.right, r.bottom);
+          const p3 = projectPoint(r.left, r.bottom);
+
+          if (isPointInQuad(rawMouseX, rawMouseY, p0, p1, p2, p3)) {
+            newHoveredIndex = i;
+            break;
+          }
+        }
+
+        if (newHoveredIndex !== hoveredCardIndex) {
+          // Clear shine from old card
+          if (hoveredCardIndex >= 0 && cards[hoveredCardIndex]) {
+            cards[hoveredCardIndex].style.removeProperty('--card-mouse-x');
+            cards[hoveredCardIndex].style.removeProperty('--card-mouse-y');
+            cards[hoveredCardIndex].classList.remove('hovered');
+          }
+          hoveredCardIndex = newHoveredIndex;
+          if (newHoveredIndex >= 0) {
+            onCardEnter(newHoveredIndex);
+          } else {
+            cards.forEach(c => c.classList.remove('hovered'));
+            if (window.__worksWebGL && window.__worksWebGL.isActive) {
+              window.__worksWebGL.hidePreview();
+            }
+          }
+        }
+
+        // ── STEP 3b: Update shine CSS vars on hovered card ──
+        if (hoveredCardIndex >= 0 && cards[hoveredCardIndex]) {
+          const r = cardPageRects[hoveredCardIndex];
+          const pageMouseX = rawMouseX + window.scrollX;
+          const pageMouseY = rawMouseY + window.scrollY;
+          const localX = ((pageMouseX - r.left) / r.width) * 100;
+          const localY = ((pageMouseY - r.top) / r.height) * 100;
+          cards[hoveredCardIndex].style.setProperty('--card-mouse-x', `${localX}%`);
+          cards[hoveredCardIndex].style.setProperty('--card-mouse-y', `${localY}%`);
+        }
+      }
+
+      // ── STEP 4: Animate preview thumbnail follow via WebGL ──
       if (isVisible && hoveredCardIndex >= 0) {
         if (firstMove) {
           curX2 = targetX; curY2 = targetY;
