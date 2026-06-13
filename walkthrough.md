@@ -391,3 +391,19 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **Point-in-Quad Polygon Check**: Added a clockwise cross-product point-in-convex-polygon algorithm to check if `(clientX, clientY)` is inside the projected card quadrilaterals, replacing native hover events entirely.
 - **No Out-of-Bounds Selection**: Since Card 4's hover zone starts at X=500 and Card 1's at X=600, any mouse movements in `.works-header` (X <= 404) or spacing gaps will never trigger card hovers.
 - **Verified Build & Deployment**: Recompiled the client bundle successfully using `npx vite build` and pushed all changes to the remote repository.
+
+---
+
+## 🛠️ Hotfix: Restored WebGL Mouse-Velocity Displacement & Aberration
+
+### Problem
+- **Simplified Hover Preview**: In a previous WebGL hover implementation update, the premium mouse-follow preview card had its dynamic shader-based displacement and color-splitting effects simplified/deactivated. The preview hovered as a completely flat, static texture, losing the liquid jelly-like warping and chromatic aberration that visual-heavy users expect.
+
+### Resolution
+- **Mouse Velocity Tracking**: Updated [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js) to compute and pass the horizontal and vertical velocity components (`dx2`, `dy2`) of the mouse-follow LERP motion directly into the WebGL `updatePreviewRect` function.
+- **Dynamic Jelly Vertex Bending**: Upgraded the GLSL vertex shader in [webgl-preview.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/webgl-preview.js) to skew and bend the 32x32 plane geometry grid on the X and Y axes using a sine wave function driven by the mouse's real-time velocity vector (`uMouseVelocity`).
+- **Velocity-Driven Liquid Ripples**: Upgraded the GLSL fragment shader to apply an organic liquid ripple distortion to the texture coordinate UVs when the mouse is moving:
+  `uvDistorted += (noise(uv * 10.0 + mouseSpeed * 1.5) - 0.5) * mouseSpeed * 0.06;`
+- **Directional Chromatic Aberration**: Updated the fragment shader to split the red, green, and blue color channels dynamically. The splitting distance scales with the mouse velocity, and the chromatic aberration offset vector aligns perfectly with the direction of the mouse's movement vector (`normalize(uMouseVelocity) * shift`), providing a highly premium and natural aesthetic.
+- **Smooth Physics Decay**: Added a LERP decay inside the Three.js `animate` render loop to smoothly ramp `uMouseVelocity` back to zero when the mouse stops moving, preventing abrupt visual jumps.
+- **Verified Build & Deployment**: Rebuilt the client assets and deployed the hotfix to production.
