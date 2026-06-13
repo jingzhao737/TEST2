@@ -35,6 +35,50 @@ if (!isMobileDevice) {
     let rawMouseY = -9999;
     let hoveredCardIndex = -1;
 
+    // Singleton DOM
+    const wrapper = document.createElement('div');
+    wrapper.className = 'work-preview-wrapper';
+
+    const curtain = document.createElement('div');
+    curtain.className = 'work-preview-curtain';
+
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'work-preview-img-container';
+
+    wrapper.appendChild(curtain);
+    wrapper.appendChild(imgContainer);
+    document.body.appendChild(wrapper);
+
+    // Initial State
+    gsap.set(wrapper, { autoAlpha: 0 });
+    gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
+    gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
+
+    let isPreviewActive = false; // Track if the preview wrapper is physically faded in
+
+    function showPreviewDOM() {
+      if (isPreviewActive) return;
+      isPreviewActive = true;
+      gsap.killTweensOf([wrapper, curtain, imgContainer]);
+      gsap.to(wrapper, { autoAlpha: 1, duration: 0.15, overwrite: true });
+      gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, rotationX: 0, duration: 0.6, ease: 'expo.out', overwrite: true });
+      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: -16, x: 16, rotationX: 0, duration: 0.6, ease: 'expo.out', delay: 0.15, overwrite: true });
+    }
+
+    function hidePreviewDOM() {
+      if (!isPreviewActive) return;
+      isPreviewActive = false;
+      activeSrc = null;
+      gsap.killTweensOf([wrapper, curtain, imgContainer]);
+      gsap.to(wrapper, { autoAlpha: 0, duration: 0.2, delay: 0.1, overwrite: true, onComplete: () => {
+        gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
+        gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
+        imgContainer.innerHTML = '';
+      }});
+      gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -30, rotationX: 15, duration: 0.5, ease: 'expo.out', overwrite: true });
+      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -46, x: 16, rotationX: 15, duration: 0.5, ease: 'expo.out', delay: 0.05, overwrite: true });
+    }
+
     // Page-relative flat coordinates for the cards and sections (avoid layout reflows on scroll/RAF)
     let wPageRect = { left: 0, top: 0, width: 0, height: 0 };
     let pPageRect = { left: 0, top: 0, width: 0, height: 0 };
@@ -106,9 +150,8 @@ if (!isMobileDevice) {
       targetWorkListZ = baseZ;
       mousePercentX = 0;
       mousePercentY = 0;
-      if (window.__worksWebGL && window.__worksWebGL.isActive) {
-        window.__worksWebGL.hidePreview();
-      }
+      
+      hidePreviewDOM();
     }
 
     function onCardEnter(index) {
@@ -117,17 +160,32 @@ if (!isMobileDevice) {
         if (idx !== index) c.classList.remove('hovered');
       });
       card.classList.add('hovered');
+      
+      showPreviewDOM();
+
       const src = card.dataset.image;
       if (src && src !== activeSrc) {
         activeSrc = src;
-        const rect = {
-          left: curX2 || targetX,
-          top: curY2 || targetY,
-          width: 200,
-          height: 138
-        };
-        if (window.__worksWebGL && window.__worksWebGL.isActive) {
-          window.__worksWebGL.showPreview(src, rect);
+        const newImg = document.createElement('img');
+        newImg.className = 'work-preview-img';
+        newImg.src = src;
+        const hasExistingImg = imgContainer.querySelectorAll('.work-preview-img').length > 0;
+        if (!hasExistingImg) {
+          gsap.set(newImg, { clipPath: 'none', y: 0, rotationX: 0 });
+          imgContainer.appendChild(newImg);
+        } else {
+          gsap.set(newImg, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
+          imgContainer.appendChild(newImg);
+          gsap.to(newImg, {
+            clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+            y: 0, rotationX: 0, duration: 0.6, ease: 'expo.out', overwrite: 'auto',
+            onComplete: () => {
+              const imgs = imgContainer.querySelectorAll('.work-preview-img');
+              if (imgs.length > 1) {
+                for (let i = 0; i < imgs.length - 1; i++) imgs[i].remove();
+              }
+            }
+          });
         }
       }
     }
@@ -169,6 +227,7 @@ if (!isMobileDevice) {
     }
 
     // RAF Animation Loop
+    let curX1 = 0, curY1 = 0;
     let curX2 = 0, curY2 = 0;
     let firstMove = true;
 
@@ -266,9 +325,7 @@ if (!isMobileDevice) {
             onCardEnter(newHoveredIndex);
           } else {
             cards.forEach(c => c.classList.remove('hovered'));
-            if (window.__worksWebGL && window.__worksWebGL.isActive) {
-              window.__worksWebGL.hidePreview();
-            }
+            hidePreviewDOM();
           }
         }
 
@@ -284,12 +341,19 @@ if (!isMobileDevice) {
         }
       }
 
-      // ── STEP 4: Animate preview thumbnail follow via WebGL ──
-      if (isVisible && hoveredCardIndex >= 0) {
+      // ── STEP 4: Animate preview thumbnail follow (DOM clip-path animation) ──
+      if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
         if (firstMove) {
+          curX1 = targetX; curY1 = targetY;
           curX2 = targetX; curY2 = targetY;
           firstMove = false;
         }
+
+        let dx1 = targetX - curX1, dy1 = targetY - curY1;
+        curX1 += dx1 * 0.04; curY1 += dy1 * 0.04;
+        let tiltY1 = gsap.utils.clamp(-15, 15, dx1 * 0.05);
+        let tiltX1 = gsap.utils.clamp(-15, 15, -dy1 * 0.05);
+        let tiltZ1 = gsap.utils.clamp(-5, 5, dx1 * 0.015);
 
         let dx2 = targetX - curX2, dy2 = targetY - curY2;
         curX2 += dx2 * 0.06; curY2 += dy2 * 0.06;
@@ -297,14 +361,12 @@ if (!isMobileDevice) {
         let tiltX2 = gsap.utils.clamp(-18, 18, -dy2 * 0.06);
         let tiltZ2 = gsap.utils.clamp(-6, 6, dx2 * 0.018);
 
-        if (window.__worksWebGL && window.__worksWebGL.isActive) {
-          const rect = {
-            left: curX2,
-            top: curY2,
-            width: 200,
-            height: 138
-          };
-          window.__worksWebGL.updatePreviewRect(rect, tiltX2, tiltY2, tiltZ2, dx2, dy2);
+        if (isVisible) {
+          gsap.set(curtain, { left: curX1, top: curY1, transformPerspective: 1000, rotationY: tiltY1, rotationX: tiltX1, rotation: tiltZ1 });
+          gsap.set(imgContainer, { left: curX2, top: curY2, transformPerspective: 1000, rotationY: tiltY2, rotationX: tiltX2, rotation: tiltZ2 });
+        } else {
+          gsap.set(curtain, { left: curX1, top: curY1 });
+          gsap.set(imgContainer, { left: curX2, top: curY2 });
         }
       } else {
         firstMove = true;
