@@ -27,11 +27,7 @@ async function main() {
   const card1 = cards.nth(0);
   const box = await card1.boundingBox();
   if (box) {
-    // We will test hovering at different offsets relative to the card's top edge
-    // to see if we can trigger a state toggle loop (jitter)
     const centerX = box.x + box.width / 2;
-    
-    // Let's test hovering near the bottom edge of Card 1
     const hoverY = box.y + box.height - 2; // 2px inside the bottom boundary
 
     console.log(`Card 1 bottom hover: x=${centerX}, y=${hoverY}`);
@@ -44,7 +40,12 @@ async function main() {
         const card = hitEl ? hitEl.closest('.work-card') : null;
         const cardClass = card ? card.className : 'null';
         const hitElTagClass = hitEl ? `${hitEl.tagName}.${hitEl.className}` : 'null';
-        console.log(`[EDGE_MONITOR] hitEl: ${hitElTagClass}, closest card: ${cardClass}`);
+        
+        // Let's get Card 1's actual class list from DOM
+        const actualCard1 = document.querySelectorAll('.work-card')[0];
+        const card1Classes = actualCard1 ? actualCard1.className : 'null';
+
+        console.log(`[EDGE_MONITOR] hitEl: ${hitElTagClass} | closest card: ${cardClass} | Card 1 Classes: [${card1Classes}]`);
         count++;
         if (count >= 20) clearInterval(interval);
       }, 100);

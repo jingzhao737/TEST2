@@ -34,6 +34,36 @@ if (!isMobileDevice) {
     let rawMouseY = -9999;
     let hoveredCardIndex = -1;
 
+    // Static page-relative coordinates to bypass browser 3D hit-testing precision bugs
+    let cardRects = [];
+    let worksPageRect = { left: 0, right: 0, top: 0, bottom: 0 };
+
+    function updateCardRects() {
+      const worksEl = document.querySelector('.works');
+      if (worksEl) {
+        const wRect = worksEl.getBoundingClientRect();
+        worksPageRect = {
+          left: wRect.left + window.scrollX,
+          right: wRect.right + window.scrollX,
+          top: wRect.top + window.scrollY,
+          bottom: wRect.bottom + window.scrollY
+        };
+      }
+      cardRects = Array.from(cards).map(card => {
+        const rect = card.getBoundingClientRect();
+        return {
+          left: rect.left + window.scrollX,
+          right: rect.right + window.scrollX,
+          top: rect.top + window.scrollY,
+          bottom: rect.bottom + window.scrollY
+        };
+      });
+    }
+
+    // Initialize once
+    updateCardRects();
+    window.addEventListener('resize', updateCardRects);
+
     // Singleton DOM
     const wrapper = document.createElement('div');
     wrapper.className = 'work-preview-wrapper';
@@ -58,6 +88,7 @@ if (!isMobileDevice) {
     function onListEnter() {
       isVisible = true;
       firstMove = true;
+      updateCardRects(); // Refresh coordinates on list entry
       gsap.killTweensOf([wrapper, curtain, imgContainer]);
       gsap.to(wrapper, { autoAlpha: 1, duration: 0.15, overwrite: true });
       gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, rotationX: 0, duration: 0.6, ease: 'expo.out', overwrite: true });
@@ -162,10 +193,17 @@ if (!isMobileDevice) {
         workList.style.transform = `rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg)`;
       }
 
-      // ── STEP 3: Hit test AFTER transform is written — using native browser elementFromPoint ──
+      // ── STEP 3: Hit test page-relative coordinates against stored static rects ──
       if (rawMouseX > -9000) {
-        const hitEl = document.elementFromPoint(rawMouseX, rawMouseY);
-        const overList = !!(hitEl && hitEl.closest('.works'));
+        const pageMouseX = rawMouseX + window.scrollX;
+        const pageMouseY = rawMouseY + window.scrollY;
+
+        const overList = (
+          pageMouseX >= worksPageRect.left &&
+          pageMouseX <= worksPageRect.right &&
+          pageMouseY >= worksPageRect.top &&
+          pageMouseY <= worksPageRect.bottom
+        );
 
         if (overList && !isVisible) {
           onListEnter();
@@ -175,9 +213,12 @@ if (!isMobileDevice) {
 
         if (isVisible) {
           let newHoveredIndex = -1;
-          const hoveredCard = hitEl ? hitEl.closest('.work-card') : null;
-          if (hoveredCard) {
-            newHoveredIndex = Array.from(cards).indexOf(hoveredCard);
+          for (let i = 0; i < cardRects.length; i++) {
+            const r = cardRects[i];
+            if (pageMouseX >= r.left && pageMouseX <= r.right && pageMouseY >= r.top && pageMouseY <= r.bottom) {
+              newHoveredIndex = i;
+              break;
+            }
           }
           
           if (newHoveredIndex !== hoveredCardIndex) {
