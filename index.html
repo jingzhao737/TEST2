@@ -39,6 +39,9 @@
     <clipPath id="cursorClip" clipPathUnits="objectBoundingBox">
       <path d="M0.433,0.133 C0.467,0.067 0.533,0.067 0.567,0.133 L0.892,0.783 C0.925,0.85 0.883,0.917 0.808,0.908 L0.525,0.767 C0.508,0.758 0.492,0.758 0.475,0.767 L0.192,0.908 C0.117,0.917 0.075,0.85 0.108,0.783 Z" />
     </clipPath>
+    <clipPath id="navClip" clipPathUnits="userSpaceOnUse">
+      <path id="navClipPath" d="" />
+    </clipPath>
   </defs>
 </svg>
 
@@ -107,6 +110,9 @@
 </div>
 
 <nav class="nav" id="nav">
+  <svg class="nav-border-svg" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100;">
+    <path id="navBorderPath" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1" />
+  </svg>
   <a href="#" class="nav-logo" data-link="home">YYJZ</a>
   <div class="nav-wave-container" id="navWaveContainer">
     <canvas class="nav-waveform" id="navWaveform" width="160" height="36"></canvas>

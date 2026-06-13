@@ -27,3 +27,84 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
     if (workDetail.classList.contains('open') && window.closeDetail) window.closeDetail();
   });
 });
+
+// --- Custom Tabbed Shape Drawing for Nav Bar ---
+(function() {
+  const navElement = document.getElementById('nav');
+  const navClipPath = document.getElementById('navClipPath');
+  const navBorderPath = document.getElementById('navBorderPath');
+  
+  if (!navElement || !navClipPath || !navBorderPath) return;
+
+  function getNavbarPath(w, h, inset = 0) {
+    const tabH = 24;
+    const tabW = 16;
+    const rMain = 12;
+    const rConcave = 4;
+    const center = h / 2;
+    
+    const tTop = center - tabH / 2;
+    const tBottom = center + tabH / 2;
+    const cTop = tTop - rConcave;
+    const cBottom = tBottom + rConcave;
+    
+    // Apply inset
+    const x0 = inset;
+    const y0 = inset;
+    const xW = w - inset;
+    const yH = h - inset;
+    
+    return `M ${tabW + rMain} ${y0}
+            L ${xW - (rMain + tabW)} ${y0}
+            A ${rMain} ${rMain} 0 0 1 ${xW - tabW} ${y0 + rMain}
+            L ${xW - tabW} ${y0 + cTop}
+            A ${rConcave} ${rConcave} 0 0 0 ${xW - tabW + rConcave} ${y0 + tTop}
+            A ${tabH / 2} ${tabH / 2} 0 0 1 ${xW - tabW + rConcave} ${y0 + tBottom}
+            A ${rConcave} ${rConcave} 0 0 0 ${xW - tabW} ${y0 + cBottom}
+            L ${xW - tabW} ${yH - rMain}
+            A ${rMain} ${rMain} 0 0 1 ${xW - tabW - rMain} ${yH}
+            L ${x0 + tabW + rMain} ${yH}
+            A ${rMain} ${rMain} 0 0 1 ${x0 + tabW} ${yH - rMain}
+            L ${x0 + tabW} ${y0 + cBottom}
+            A ${rConcave} ${rConcave} 0 0 0 ${x0 + tabW - rConcave} ${y0 + tBottom}
+            A ${tabH / 2} ${tabH / 2} 0 0 1 ${x0 + tabW - rConcave} ${y0 + tTop}
+            A ${rConcave} ${rConcave} 0 0 0 ${x0 + tabW} ${y0 + cTop}
+            L ${x0 + tabW} ${y0 + rMain}
+            A ${rMain} ${rMain} 0 0 1 ${x0 + tabW + rMain} ${y0}
+            Z`;
+  }
+
+  function updateNavbarGeometry() {
+    const rect = navElement.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    
+    // Generate paths
+    const clipD = getNavbarPath(w, h, 0);
+    const borderD = getNavbarPath(w, h, 0.5); // inset by 0.5px to keep stroke within bounds
+    
+    navClipPath.setAttribute('d', clipD);
+    navBorderPath.setAttribute('d', borderD);
+  }
+
+  // Update on resize, load, and DOMContentLoaded
+  window.addEventListener('resize', updateNavbarGeometry);
+  window.addEventListener('load', updateNavbarGeometry);
+  document.addEventListener('DOMContentLoaded', updateNavbarGeometry);
+  
+  // Initial run
+  updateNavbarGeometry();
+  
+  // Periodic poll to ensure alignment during animations / scroll transitions
+  let lastW = 0, lastH = 0;
+  function pollResize() {
+    const rect = navElement.getBoundingClientRect();
+    if (rect.width !== lastW || rect.height !== lastH) {
+      lastW = rect.width;
+      lastH = rect.height;
+      updateNavbarGeometry();
+    }
+    requestAnimationFrame(pollResize);
+  }
+  requestAnimationFrame(pollResize);
+})();
