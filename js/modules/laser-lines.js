@@ -57,6 +57,7 @@
   function isInteractive(target) {
     if (!target) return false;
     if (typeof target.closest !== 'function') return false;
+    if (target.closest('#work') !== null) return true;
     // For #framesCanvas, only treat it as interactive when cursor is grab/grabbing (hovering a vinyl record)
     if (target.id === 'framesCanvas') {
       const cur = target.style.cursor;

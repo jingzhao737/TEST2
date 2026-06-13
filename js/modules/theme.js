@@ -6,7 +6,23 @@
   let btn = document.getElementById('themeToggle');
   let wrapper = document.getElementById('themePullWrapper');
   let stringEl = document.getElementById('themePullString');
+  let anchor = document.getElementById('navThemeAnchor');
+  let menuBtn = document.getElementById('navMenuBtn');
   if (!btn) return;
+
+  // Position the anchor div to align with the nav-menu-btn center
+  function positionAnchor() {
+    if (!anchor || !menuBtn) return;
+    const r = menuBtn.getBoundingClientRect();
+    // Anchor top = bottom of nav (bottom of menuBtn area), centered on btn
+    anchor.style.top = r.bottom + 'px';
+    anchor.style.left = (r.left + r.width / 2) + 'px';
+  }
+  positionAnchor();
+  window.addEventListener('resize', positionAnchor);
+  window.addEventListener('scroll', positionAnchor, { passive: true });
+  // Also re-position periodically in case nav transitions (scrolled state changes top)
+  setInterval(positionAnchor, 500);
 
   // ── Audio ──
   let audioCtx = null;

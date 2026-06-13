@@ -36,6 +36,11 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
   
   if (!navElement || !navClipPath || !navBorderPath) return;
 
+  const starsCanvas = document.getElementById('navStarsCanvas');
+  const ctx = starsCanvas ? starsCanvas.getContext('2d') : null;
+  const dpr = window.devicePixelRatio || 1;
+  let stars = [];
+
 
   function getNavbarPath(w, h, inset = 0) {
     const tabH = 24;
@@ -75,58 +80,299 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
             Z`;
   }
 
+  function fract(x) {
+    return x - Math.floor(x);
+  }
+
+  function hash3(x, y) {
+    let qx = fract(x * 443.897);
+    let qy = fract(y * 441.423);
+    let qz = fract(x * 437.195);
+    
+    let dotVal = qx * (qy + 19.19) + qy * (qz + 19.19) + qz * (qx + 19.19);
+    qx += dotVal;
+    qy += dotVal;
+    qz += dotVal;
+    
+    return [
+      fract((qx + qy) * qz),
+      fract((qx + qx) * qy),
+      fract((qy + qz) * qx)
+    ];
+  }
+
   function initNavStars() {
-    const borderSvg = document.querySelector('.nav-border-svg');
-    if (!borderSvg) return;
+    stars = [];
+    if (!navElement) return;
     
-    let starsGroup = document.getElementById('navStarsGroup');
-    if (!starsGroup) {
-      starsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      starsGroup.setAttribute('id', 'navStarsGroup');
-      borderSvg.insertBefore(starsGroup, borderSvg.firstChild);
-    } else {
-      starsGroup.innerHTML = '';
-    }
+    const rect = navElement.getBoundingClientRect();
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    if (W === 0 || H === 0) return;
     
-    const numStars = 180; // Match background stars density
-    const maxWidth = 3000;
-    const maxHeight = 56;
+    const aspect = W / H;
+    const pad = 2; // Pad cells to ensure stars near border are drawn
     
-    for (let i = 0; i < numStars; i++) {
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('class', 'nav-star');
+    // Rotation pivot in viewport UV (px = W * 0.75, py = H * 0.5)
+    const pUvX = 0.75;
+    const pUvY = 0.5;
+    
+    // Pivot in spaceUv space
+    const p_space_x = (pUvX - 0.5) * aspect + 0.5;
+    const p_space_y = pUvY;
+    
+    // Left-most point of nav bar in UV
+    const vUvLeftX = rect.left / W;
+    const vUvTopY = 1.0 - rect.top / H;
+    
+    // Distance from pivot to left-top of nav bar in spaceUv
+    const dxLeft = (vUvLeftX - pUvX) * aspect;
+    const dyTop = vUvTopY - pUvY;
+    const R_space = Math.sqrt(dxLeft * dxLeft + dyTop * dyTop) + 0.5; // add 0.5 extra padding for safety
+    
+    // Bounding box in spaceUv space
+    const spaceUv_min_x = p_space_x - R_space;
+    const spaceUv_max_x = p_space_x + R_space;
+    const spaceUv_min_y = p_space_y - R_space;
+    const spaceUv_max_y = p_space_y + R_space;
+    
+    // We have two grid scales: 25.0 (main layer) and 60.0 (faint layer)
+    const scales = [25.0, 60.0];
+    
+    scales.forEach(S => {
+      const g_min_x = Math.floor(spaceUv_min_x * S) - pad;
+      const g_max_x = Math.ceil(spaceUv_max_x * S) + pad;
+      const g_min_y = Math.floor(spaceUv_min_y * S) - pad;
+      const g_max_y = Math.ceil(spaceUv_max_y * S) + pad;
       
-      const cx = Math.random() * maxWidth;
-      const cy = Math.random() * maxHeight;
+      for (let gx = g_min_x; gx <= g_max_x; gx++) {
+        // Fast circular distance check to skip cells outside the rotation radius
+        const cx = gx / S;
+        const dx = cx - p_space_x;
+        if (Math.abs(dx) > R_space + 0.1) continue;
+        
+        for (let gy = g_min_y; gy <= g_max_y; gy++) {
+          const cy = gy / S;
+          const dy = cy - p_space_y;
+          if (dx * dx + dy * dy > R_space * R_space) continue;
+          
+          const r = hash3(gx, gy);
+          if (r[2] >= 0.6) { // step(0.6, r.z)
+            const offsetX = r[0] * 0.8 + 0.1;
+            const offsetY = r[1] * 0.8 + 0.1;
+            
+            const spaceUvStarX = (gx + offsetX) / S;
+            const spaceUvStarY = (gy + offsetY) / S;
+            
+            // Convert spaceUv back to vUv
+            const vUvStarX = (spaceUvStarX - 0.5) / aspect + 0.5;
+            const vUvStarY = spaceUvStarY;
+            
+            stars.push({
+              vUvX: vUvStarX,
+              vUvY: vUvStarY,
+              scale: S,
+              rx: r[0],
+              ry: r[1],
+              rz: r[2]
+            });
+          }
+        }
+      }
+    });
+  }
+
+  function drawStars() {
+    if (!starsCanvas || !ctx || !stars.length) return;
+    
+    const rect = navElement.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    
+    ctx.clearRect(0, 0, w, h);
+    
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    if (W === 0 || H === 0) return;
+    
+    // Get time from global simulation, fallback to Date.now() / 1000
+    const time = window.fluidSimulationTime !== undefined ? window.fluidSimulationTime : (Date.now() / 1000);
+    
+    const isLightMode = document.documentElement.classList.contains('light');
+    
+    // Choose composite operation based on theme
+    ctx.globalCompositeOperation = isLightMode ? 'multiply' : 'screen';
+    
+    // Rotation pivot: middle-right of the viewport (representing the "empty parent object")
+    const px = W * 0.75;
+    const py = H * 0.5;
+    
+    // Rotation speed: reversed direction (0.03 rad/s)
+    const rotationSpeed = 0.03;
+    const theta = time * rotationSpeed;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    
+    for (let i = 0; i < stars.length; i++) {
+      const star = stars[i];
       
-      // Granularity alignment: 75% tiny background stars, 25% larger bright foreground stars
-      const isSmall = Math.random() < 0.75;
+      // 1. Calculate Twinkle (exact WebGL formula)
+      const twinkle = 0.2 + 0.8 * Math.sin(time * (1.5 + star.rz) + star.rx * 20.0);
       
-      let r, minOpacity, maxOpacity, duration;
-      if (isSmall) {
-        r = 0.35 + Math.random() * 0.25; // 0.35px to 0.6px
-        minOpacity = 0.08 + Math.random() * 0.12; // 0.08 to 0.20
-        maxOpacity = 0.25 + Math.random() * 0.20; // 0.25 to 0.45
-        duration = 3.5 + Math.random() * 3.5;
-      } else {
-        r = 0.75 + Math.random() * 0.65; // 0.75px to 1.4px
-        minOpacity = 0.20 + Math.random() * 0.15; // 0.20 to 0.35
-        maxOpacity = 0.65 + Math.random() * 0.30; // 0.65 to 0.95
-        duration = 2.0 + Math.random() * 2.0;
+      // Scale factor: 1.0 for scale 25.0, 0.5 for scale 60.0 (boosted by 2.2x for bright, crisp glow)
+      const scaleFactor = star.scale === 25.0 ? 2.2 : 1.1;
+      
+      // Calculate opacity
+      const opacity = twinkle * scaleFactor;
+      if (opacity <= 0.001) continue;
+      
+      // Star size calculation (exact WebGL formula)
+      const size = 0.008 + star.rz * 0.025;
+      const r = (size / star.scale) * H;
+      
+      // 2. Base screen position
+      const baseScreenX = star.vUvX * W;
+      const baseScreenY = (1.0 - star.vUvY) * H;
+      
+      // 3. Rotate coordinates around the pivot point px, py (rigid parent simulation)
+      const dx = baseScreenX - px;
+      const dy = baseScreenY - py;
+      const rotX = px + dx * cos - dy * sin;
+      const rotY = py + dx * sin + dy * cos;
+      
+      // 4. Set screenX/screenY to the rotated coordinates so the rest of drawing code uses it
+      const screenX = rotX;
+      const screenY = rotY;
+      
+      // 5. Crop check: skip stars that are far outside the navigation bar boundary
+      const localX = screenX - rect.left;
+      const localY = screenY - rect.top;
+      if (localX < -r || localX > w + r || localY < -r || localY > h + r) {
+        continue;
       }
       
-      circle.setAttribute('cx', cx.toFixed(1));
-      circle.setAttribute('cy', cy.toFixed(1));
-      circle.setAttribute('r', r.toFixed(2));
+      // 6. Fetch local velocity from window.cpuFluid at the rotated coordinates
+      let vx = 0, vy = 0;
+      if (window.cpuFluid) {
+        const rotUvX = rotX / W;
+        const rotUvY = 1.0 - rotY / H;
+        const vel = window.cpuFluid.getVelocity(rotUvX, rotUvY);
+        vx = vel.x;
+        vy = vel.y;
+      }
       
-      const delay = Math.random() * -6;
+      // Chromatic aberration offsets in pixels (aligned with WebGL shader factors)
+      const dxR = vx * 0.015 * W;
+      const dyR = -vy * 0.015 * H;
       
-      circle.style.setProperty('--duration', `${duration.toFixed(2)}s`);
-      circle.style.setProperty('--delay', `${delay.toFixed(2)}s`);
-      circle.style.setProperty('--min-opacity', minOpacity.toFixed(2));
-      circle.style.setProperty('--max-opacity', maxOpacity.toFixed(2));
+      const dxG = vx * 0.018 * W;
+      const dyG = -vy * 0.018 * H;
       
-      starsGroup.appendChild(circle);
+      const dxB = vx * 0.021 * W;
+      const dyB = -vy * 0.021 * H;
+      
+      if (isLightMode) {
+        // Light Mode: Subtractive Chromatic Aberration using multiply blend mode to form orange (rgb(232, 124, 80))
+        // Target: R=232, G=124, B=80 -> Subtraction coefficients: R_sub=0.090, G_sub=0.514, B_sub=0.686
+        const baseA = opacity * 1.5;
+        
+        // 1. Red channel subtraction (Cyan color)
+        const rx = screenX + dxR - rect.left;
+        const ry = screenY + dyR - rect.top;
+        if (rx >= -r && rx <= w + r && ry >= -r && ry <= h + r) {
+          const gradR = ctx.createRadialGradient(rx, ry, 0, rx, ry, r);
+          const a0 = Math.min(1.0, 2.5 * baseA * 0.090);
+          const a25 = Math.min(1.0, 0.84 * baseA * 0.090);
+          gradR.addColorStop(0, `rgba(0, 255, 255, ${a0})`);
+          gradR.addColorStop(0.25, `rgba(0, 255, 255, ${a25})`);
+          gradR.addColorStop(1, 'rgba(0, 255, 255, 0)');
+          ctx.fillStyle = gradR;
+          ctx.beginPath();
+          ctx.arc(rx, ry, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // 2. Green channel subtraction (Magenta color)
+        const gx = screenX + dxG - rect.left;
+        const gy = screenY + dyG - rect.top;
+        if (gx >= -r && gx <= w + r && gy >= -r && gy <= h + r) {
+          const gradG = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
+          const a0 = Math.min(1.0, 2.5 * baseA * 0.514);
+          const a25 = Math.min(1.0, 0.84 * baseA * 0.514);
+          gradG.addColorStop(0, `rgba(255, 0, 255, ${a0})`);
+          gradG.addColorStop(0.25, `rgba(255, 0, 255, ${a25})`);
+          gradG.addColorStop(1, 'rgba(255, 0, 255, 0)');
+          ctx.fillStyle = gradG;
+          ctx.beginPath();
+          ctx.arc(gx, gy, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // 3. Blue channel subtraction (Yellow color)
+        const bx = screenX + dxB - rect.left;
+        const by = screenY + dyB - rect.top;
+        if (bx >= -r && bx <= w + r && by >= -r && by <= h + r) {
+          const gradB = ctx.createRadialGradient(bx, by, 0, bx, by, r);
+          const a0 = Math.min(1.0, 2.5 * baseA * 0.686);
+          const a25 = Math.min(1.0, 0.84 * baseA * 0.686);
+          gradB.addColorStop(0, `rgba(255, 255, 0, ${a0})`);
+          gradB.addColorStop(0.25, `rgba(255, 255, 0, ${a25})`);
+          gradB.addColorStop(1, 'rgba(255, 255, 0, 0)');
+          ctx.fillStyle = gradB;
+          ctx.beginPath();
+          ctx.arc(bx, by, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        // Dark Mode: Additive Chromatic Aberration using screen blend mode to form orange (rgb(232, 124, 80))
+        // 1. Red channel glow (Red color scaled to 232)
+        const rx = screenX + dxR - rect.left;
+        const ry = screenY + dyR - rect.top;
+        if (rx >= -r && rx <= w + r && ry >= -r && ry <= h + r) {
+          const gradR = ctx.createRadialGradient(rx, ry, 0, rx, ry, r);
+          const a0 = Math.min(1.0, 2.5 * opacity);
+          const a25 = Math.min(1.0, 0.84 * opacity);
+          gradR.addColorStop(0, `rgba(232, 0, 0, ${a0})`);
+          gradR.addColorStop(0.25, `rgba(232, 0, 0, ${a25})`);
+          gradR.addColorStop(1, 'rgba(232, 0, 0, 0)');
+          ctx.fillStyle = gradR;
+          ctx.beginPath();
+          ctx.arc(rx, ry, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // 2. Green channel glow (Green color scaled to 124)
+        const gx = screenX + dxG - rect.left;
+        const gy = screenY + dyG - rect.top;
+        if (gx >= -r && gx <= w + r && gy >= -r && gy <= h + r) {
+          const gradG = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
+          const a0 = Math.min(1.0, 2.5 * opacity);
+          const a25 = Math.min(1.0, 0.84 * opacity);
+          gradG.addColorStop(0, `rgba(0, 124, 0, ${a0})`);
+          gradG.addColorStop(0.25, `rgba(0, 124, 0, ${a25})`);
+          gradG.addColorStop(1, 'rgba(0, 124, 0, 0)');
+          ctx.fillStyle = gradG;
+          ctx.beginPath();
+          ctx.arc(gx, gy, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // 3. Blue channel glow (Blue color scaled to 80)
+        const bx = screenX + dxB - rect.left;
+        const by = screenY + dyB - rect.top;
+        if (bx >= -r && bx <= w + r && by >= -r && by <= h + r) {
+          const gradB = ctx.createRadialGradient(bx, by, 0, bx, by, r);
+          const a0 = Math.min(1.0, 2.5 * opacity);
+          const a25 = Math.min(1.0, 0.84 * opacity);
+          gradB.addColorStop(0, `rgba(0, 0, 80, ${a0})`);
+          gradB.addColorStop(0.25, `rgba(0, 0, 80, ${a25})`);
+          gradB.addColorStop(1, 'rgba(0, 0, 80, 0)');
+          ctx.fillStyle = gradB;
+          ctx.beginPath();
+          ctx.arc(bx, by, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
     }
   }
 
@@ -141,6 +387,20 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
     
     navClipPath.setAttribute('d', clipD);
     navBorderPath.setAttribute('d', borderD);
+    
+    const glowPath = document.getElementById('navInnerGlowPath');
+    if (glowPath) {
+      glowPath.setAttribute('d', getNavbarPath(w, h, 1.5)); // inset slightly for a centered inner glow
+    }
+    
+    if (starsCanvas && ctx) {
+      starsCanvas.width = w * dpr;
+      starsCanvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    
+    // Recalculate stars that fall within the new dimensions
+    initNavStars();
   }
 
   // Update on resize, load, and DOMContentLoaded
@@ -167,6 +427,7 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       lastH = rect.height;
       updateNavbarGeometry();
     }
+    drawStars();
     requestAnimationFrame(pollResize);
   }
   requestAnimationFrame(pollResize);

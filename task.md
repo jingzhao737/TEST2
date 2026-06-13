@@ -19,3 +19,13 @@
 - `[x]` **Resource Lifecycle & Mobile Fallback**
   - Implement `IntersectionObserver` to toggle rendering loops based on Works visibility.
   - Implement mobile checks to disable WebGL canvas and fallback to native CSS transform rendering.
+
+- `[x]` **Works Hover Jitter Bug Fix**
+  - `[x]` Implement static `.work-list-sensors` overlay in `premium-interactions.js`.
+  - `[x]` Sync sensor heights with `.work-card` heights dynamically on init and window resize.
+  - `[x]` Forward click events from `.card-sensor` to `.work-card`.
+  - `[x]` Add `.hovered` class to `.work-card` on `.card-sensor` hover in JS.
+  - `[x]` Update `cursor.js` to recognize `.card-sensor` for `isArrowHovered`.
+  - `[x]` Update `styles.css` to add `.work-card.hovered` styles parallel to `.work-card:hover`.
+  - `[x]` Verify layout correctness and fix the hover loop.
+
