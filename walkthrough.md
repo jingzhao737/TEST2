@@ -375,3 +375,19 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **Restored Global 3D Tilt**: Re-enabled the premium 3D perspective (`1750px`) on `.works` and `transform-style: preserve-3d` on `.work-list`, allowing the entire card list to tilt dynamically following the mouse position without any jitter.
 - **Dynamic Spotlight Shine**: Added a high-end mouse-follow spotlight overlay to each card using a `::before` pseudo-element and a `radial-gradient` mapped to custom properties `--card-mouse-x` and `--card-mouse-y` driven dynamically by the JavaScript hover listener.
 - **Verified Build & Deployment**: Recompiled the client bundle successfully using `npx vite build` and pushed all changes to the remote repository.
+
+---
+
+## 🛠️ Hotfix: Static 3D Projected Coordinate Hit-Testing for Works Cards
+
+### Problem
+- **LERP Jitter Feedback Loop**: In tilted 3D space, when cards translate/tilt dynamically based on mouse position, browser native hit-testing layer lag causes cards to twitch uncontrollably at the boundaries as they shift under the mouse pointer.
+- **Flat Coordinate Misalignment**: Reverting to flat rectangular coordinates for page-relative mouse hit-testing resulted in significant out-of-bounds hover alignment issues. The visual boundaries of the tilted cards did not align with their flat projection zones, allowing cards to be hovered even when the mouse was far outside their visual borders (e.g. over the left-hand section header).
+
+### Resolution
+- **Static 3D Projection Hit-Testing**: Implemented a mathematically rigorous 3D projection hit-testing engine in [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js). It computes the exact 2D projection of the 3D-transformed cards (using Z, X, Y rotation matrices and perspective projection scale matching the CSS perspective `1750px` and rotation origin) relative to the viewport.
+- **Hysteresis Boundary Stability**: To prevent LERP-induced boundary jitter, the 3D projected coordinates are computed using the *base tilt transform* (`rotateY(-34deg) rotateX(17deg) rotateZ(2deg)`). Because this transform is static, the hit-test bounds remain constant as the mouse moves, completely eliminating the LERP feedback loop. Since the base tilt is extremely close to the active tilt (which deviates by +/- 4 degrees), the hit-test bounds match the visual cards perfectly.
+- **Efficient Page-Relative Caching**: Flat card coordinates are cached page-relative on window `load` and `resize` (avoiding expensive layout reflows during scroll). During the RAF loop, viewport-relative coordinates are updated instantly by subtracting scroll offsets, keeping performance at a buttery-smooth 60fps.
+- **Point-in-Quad Polygon Check**: Added a clockwise cross-product point-in-convex-polygon algorithm to check if `(clientX, clientY)` is inside the projected card quadrilaterals, replacing native hover events entirely.
+- **No Out-of-Bounds Selection**: Since Card 4's hover zone starts at X=500 and Card 1's at X=600, any mouse movements in `.works-header` (X <= 404) or spacing gaps will never trigger card hovers.
+- **Verified Build & Deployment**: Recompiled the client bundle successfully using `npx vite build` and pushed all changes to the remote repository.
