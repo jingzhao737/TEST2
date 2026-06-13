@@ -710,12 +710,27 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border-top:1px solid rgba(255, 255, 255, 0.15);
   cursor:pointer;
   position:relative;
-  isolation:isolate;
-  transition:all .6s cubic-bezier(.16,1,.3,1);
+  /* isolation:isolate removed — conflicts with preserve-3d causing Chromium jitter */
+  transition:background .6s cubic-bezier(.16,1,.3,1), border-color .6s cubic-bezier(.16,1,.3,1);
+  overflow:hidden;
 }
-.work-card:hover{
-  background:rgba(255,255,255,.015);
+/* Dynamic mouse-follow shine — driven by CSS custom props set via JS */
+.work-card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(
+    280px circle at var(--card-mouse-x, 50%) var(--card-mouse-y, 50%),
+    rgba(255,255,255,0.055),
+    transparent 70%
+  );
+  opacity:0;
+  transition:opacity .4s ease;
+  pointer-events:none;
+  z-index:0;
+  border-radius:inherit;
 }
+.work-card.hovered::before{ opacity:1; }
 @media(min-width: 1568px){
   .work-card{
     padding-left:calc((100cqw - 1440px) / 2 + 32px);
@@ -733,7 +748,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   transition:transform .6s cubic-bezier(.22,.61,.36,1),opacity .4s;
   opacity:0;z-index:3;
 }
-.work-card:hover::after,
 .work-card.hovered::after{transform:scaleY(1);opacity:1}
 
 .work-idx{
@@ -746,7 +760,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   text-transform:uppercase;
   transition:transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.work-card:hover .work-idx,
 .work-card.hovered .work-idx{opacity:1;color:var(--accent);transform:translateX(24px)}
 
 .work-meta {
@@ -754,7 +767,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   flex-direction: column;
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.work-card:hover .work-meta,
 .work-card.hovered .work-meta {
   transform: translateX(24px);
 }
@@ -769,7 +781,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   transition:letter-spacing 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin:left center;
 }
-.work-card:hover .work-name,
 .work-card.hovered .work-name{
   letter-spacing:.02em;
   color:var(--accent);
@@ -786,7 +797,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   margin-top:12px;
   transition:color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.work-card:hover .work-medium,
 .work-card.hovered .work-medium{color:rgba(255,255,255,.7)}
 
 .work-tags{
@@ -795,7 +805,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   flex-wrap:wrap;
   transition:transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.work-card:hover .work-tags,
 .work-card.hovered .work-tags {
   transform: translateX(24px);
 }
@@ -813,7 +822,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   color:var(--muted);
   transition:background 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.work-card:hover .tag,
 .work-card.hovered .tag{
   background:rgba(255,255,255,.05);
   border-color:rgba(255,255,255,.2);
@@ -829,7 +837,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   text-align:right;
   transition:color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.work-card:hover .work-year,
 .work-card.hovered .work-year{color:var(--accent)}
 
 /* HOVER PREVIEW */
@@ -2061,9 +2068,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .works-header{margin-bottom:72px;flex-direction:column;align-items:flex-start;gap:12px}
   .works-count{align-self:flex-end}
   .work-card{grid-template-columns:60px 1fr 120px 80px;gap:24px;padding:32px 44px;margin-left:-20px;margin-right:-20px}
-  .work-card:hover .work-idx,
-  .work-card:hover .work-meta,
-  .work-card:hover .work-tags {
+  .work-card.hovered .work-idx,
+  .work-card.hovered .work-meta,
+  .work-card.hovered .work-tags {
     transform: translateX(12px);
   }
   .work-name{font-size:1.6rem}
@@ -2180,9 +2187,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .works{padding:180px 32px 110px}
   .works-header{margin-bottom:48px}
   .work-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:24px 24px;margin-left:-16px;margin-right:-16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .work-card:hover .work-idx,
-  .work-card:hover .work-meta,
-  .work-card:hover .work-tags{transform:none !important}
   .work-card:active{background:var(--card-bg)}
   .work-idx{font-size:0.62rem;letter-spacing:0.15em;opacity:0.7;transform:none !important}
   .work-meta{transform:none !important;width:100%}
@@ -2391,20 +2395,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 :root.light .scroll-hint-text{color:rgba(0,0,0,.25)}
 :root.light .work-name{color:#E87C50}
 :root.light .work-card{border-color:rgba(0, 0, 0, 0.12)}
-:root.light .work-card:hover,
 :root.light .work-card.hovered{background:#83a39a}
-:root.light .work-card:hover::after,
 :root.light .work-card.hovered::after{background:#83a39a}
-:root.light .work-card:hover .work-idx,
 :root.light .work-card.hovered .work-idx,
-:root.light .work-card:hover .work-name,
 :root.light .work-card.hovered .work-name{color:#fafaf7}
-:root.light .work-card:hover .work-medium,
 :root.light .work-card.hovered .work-medium,
-:root.light .work-card:hover .work-year,
 :root.light .work-card.hovered .work-year{color:rgba(250,250,247,.7)}
 :root.light .tag{background:rgba(0,0,0,.04);color:var(--muted);border:1px solid rgba(0,0,0,.08)}
-:root.light .work-card:hover .tag,
 :root.light .work-card.hovered .tag{background:rgba(255,255,255,.12);color:#fafaf7}
 :root.light .work-preview{box-shadow:0 40px 100px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.05)}
 :root.light .ice-hint{color:rgba(0,0,0,.25)}
@@ -2423,7 +2420,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 :root.light .hero-subtitle{color:rgba(0,0,0,.35)}
 :root.light .work-medium{color:rgba(0,0,0,.45)}
 :root.light .work-year{color:rgba(0,0,0,.45)}
-:root.light .work-card:hover .work-medium,
 :root.light .work-card.hovered .work-medium{color:rgba(250,250,247,.7)}
 
 /* Mobile light overrides */
@@ -2855,13 +2851,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 @media(min-width: 1025px) {
-  /* Tilted works section now flat DOM */
+  /* 3D tilted works section — perspective on parent, preserve-3d on list */
   .works {
     display: grid;
     grid-template-columns: 340px 1fr;
     gap: 80px;
     align-items: center;
     padding: 240px 64px 220px;
+    perspective: 1750px;
     overflow: visible;
   }
 
@@ -2878,7 +2875,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     align-self: flex-start;
   }
 
+  /* JS drives the rotation — transform-style needed for 3D children */
   .work-list {
+    transform-style: preserve-3d;
     transition: none;
   }
 
@@ -2892,17 +2891,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.035);
-    transition: background 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    /* No preserve-3d on cards — avoids Chromium stacking-context flattening */
+    transition: background 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .work-list .work-card:last-child {
     margin-bottom: 0;
   }
 
-  .work-list .work-card:hover,
+  /* Hover state driven ONLY by .hovered class set from JS static-rect hit-testing
+     NO .work-card:hover rules exist — prevents CSS native hover from causing jitter */
   .work-list .work-card.hovered {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(232, 124, 80, 0.4);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(232, 124, 80, 0.45);
+    box-shadow: 0 0 0 1px rgba(232, 124, 80, 0.15), 0 20px 60px rgba(0,0,0,0.3);
   }
 
   /* Hover line override for 3D cards */
@@ -2916,7 +2918,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     background: rgba(0, 0, 0, 0.025);
   }
 
-  :root.light .work-list .work-card:hover,
   :root.light .work-list .work-card.hovered {
     background: #83a39a !important;
     border-color: rgba(131, 163, 154, 0.4);

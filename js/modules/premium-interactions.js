@@ -74,7 +74,17 @@ if (!isMobileDevice) {
       isVisible = false;
       activeSrc = null;
       hoveredCardIndex = -1;
-      cards.forEach(c => c.classList.remove('hovered'));
+      cards.forEach(c => {
+        c.classList.remove('hovered');
+        c.style.removeProperty('--card-mouse-x');
+        c.style.removeProperty('--card-mouse-y');
+      });
+      // Reset tilt targets — list will LERP back to base angles
+      targetWorkListY = baseY;
+      targetWorkListX = baseX;
+      targetWorkListZ = baseZ;
+      mousePercentX = 0;
+      mousePercentY = 0;
       if (window.__worksWebGL && window.__worksWebGL.isActive) {
         window.__worksWebGL.hidePreview();
       }
@@ -125,7 +135,27 @@ if (!isMobileDevice) {
 
     (function animateHover() {
 
-      // ── STEP 1: Hit test page-relative coordinates against stored static rects ──
+      // ── STEP 1: Update 3D list tilt target from mouse position ──
+      if (isVisible) {
+        mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
+        mousePercentY = (rawMouseY - window.innerHeight / 2) / (window.innerHeight / 2);
+        targetWorkListY = baseY + mousePercentX * 4;
+        targetWorkListX = baseX + mousePercentY * 3;
+        targetWorkListZ = baseZ + mousePercentX * 1.5;
+      }
+
+      // ── STEP 2: Apply LERP to list rotation ──
+      const diffY = targetWorkListY - currentWorkListY;
+      const diffX = targetWorkListX - currentWorkListX;
+      const diffZ = targetWorkListZ - currentWorkListZ;
+      if (Math.abs(diffY) > 0.001 || Math.abs(diffX) > 0.001 || Math.abs(diffZ) > 0.001) {
+        currentWorkListY += diffY * 0.06;
+        currentWorkListX += diffX * 0.06;
+        currentWorkListZ += diffZ * 0.06;
+        workList.style.transform = `rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg)`;
+      }
+
+      // ── STEP 3: Hit test page-relative coordinates against stored static rects ──
       if (rawMouseX > -9000) {
         const pageMouseX = rawMouseX + window.scrollX;
         const pageMouseY = rawMouseY + window.scrollY;
@@ -152,8 +182,13 @@ if (!isMobileDevice) {
               break;
             }
           }
-          
+
           if (newHoveredIndex !== hoveredCardIndex) {
+            // Clear shine from old card
+            if (hoveredCardIndex >= 0 && cards[hoveredCardIndex]) {
+              cards[hoveredCardIndex].style.removeProperty('--card-mouse-x');
+              cards[hoveredCardIndex].style.removeProperty('--card-mouse-y');
+            }
             hoveredCardIndex = newHoveredIndex;
             if (newHoveredIndex >= 0) {
               onCardEnter(newHoveredIndex);
@@ -164,10 +199,21 @@ if (!isMobileDevice) {
               }
             }
           }
+
+          // ── STEP 3b: Update shine CSS vars on hovered card ──
+          if (hoveredCardIndex >= 0 && cards[hoveredCardIndex]) {
+            const r = cardRects[hoveredCardIndex];
+            const cardW = r.right - r.left;
+            const cardH = r.bottom - r.top;
+            const localX = ((pageMouseX - r.left) / cardW) * 100;
+            const localY = ((pageMouseY - r.top) / cardH) * 100;
+            cards[hoveredCardIndex].style.setProperty('--card-mouse-x', `${localX}%`);
+            cards[hoveredCardIndex].style.setProperty('--card-mouse-y', `${localY}%`);
+          }
         }
       }
 
-      // ── STEP 2: Animate preview thumbnail follow via WebGL ──
+      // ── STEP 4: Animate preview thumbnail follow via WebGL ──
       if (isVisible) {
         if (firstMove) {
           curX2 = targetX; curY2 = targetY;
