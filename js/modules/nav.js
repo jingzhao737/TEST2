@@ -36,50 +36,6 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
   
   if (!navElement || !navClipPath || !navBorderPath) return;
 
-  let starsData = [];
-  let mouseX = -1000;
-  let mouseY = -1000;
-  let lastMouseX = -1000;
-  let lastMouseY = -1000;
-  let mouseVx = 0;
-  let mouseVy = 0;
-  let isMouseOver = false;
-
-  const gridCount = 80;
-  const velocityGrid = [];
-  for (let i = 0; i < gridCount; i++) {
-    velocityGrid.push({ vx: 0, vy: 0 });
-  }
-
-  navElement.addEventListener('mousemove', (e) => {
-    const rect = navElement.getBoundingClientRect();
-    const currX = e.clientX - rect.left;
-    const currY = e.clientY - rect.top;
-    
-    if (isMouseOver && lastMouseX !== -1000) {
-      mouseVx = currX - lastMouseX;
-      mouseVy = currY - lastMouseY;
-    } else {
-      mouseVx = 0;
-      mouseVy = 0;
-    }
-    
-    mouseX = currX;
-    mouseY = currY;
-    lastMouseX = currX;
-    lastMouseY = currY;
-    isMouseOver = true;
-  });
-
-  navElement.addEventListener('mouseleave', () => {
-    mouseX = -1000;
-    mouseY = -1000;
-    lastMouseX = -1000;
-    lastMouseY = -1000;
-    mouseVx = 0;
-    mouseVy = 0;
-    isMouseOver = false;
-  });
 
   function getNavbarPath(w, h, inset = 0) {
     const tabH = 24;
@@ -132,8 +88,7 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       starsGroup.innerHTML = '';
     }
     
-    starsData = [];
-    const numStars = 180; // Increased density to match background
+    const numStars = 180; // Match background stars density
     const maxWidth = 3000;
     const maxHeight = 56;
     
@@ -172,127 +127,6 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       circle.style.setProperty('--max-opacity', maxOpacity.toFixed(2));
       
       starsGroup.appendChild(circle);
-      
-      starsData.push({
-        el: circle,
-        baseX: cx,
-        baseY: cy,
-        x: cx,
-        y: cy,
-        vx: 0,
-        vy: 0,
-        isSmall: isSmall
-      });
-    }
-  }
-
-  function updateStarsPhysics() {
-    if (!starsData.length) return;
-    
-    // Smoothly decay mouse velocity in each frame
-    mouseVx *= 0.88;
-    mouseVy *= 0.88;
-    
-    // 1. Splat velocity & pressure into the grid
-    const rect = navElement.getBoundingClientRect();
-    const navW = rect.width || 1200;
-    
-    if (isMouseOver && lastMouseX !== -1000) {
-      const mouseCell = (mouseX / navW) * gridCount;
-      const splatRadiusCells = 5; // spread force over 5 cells
-      
-      for (let i = 0; i < gridCount; i++) {
-        const distCells = Math.abs(i - mouseCell);
-        if (distCells < splatRadiusCells) {
-          const force = (splatRadiusCells - distCells) / splatRadiusCells;
-          const forceSq = force * force;
-          
-          // Inject velocity direction
-          velocityGrid[i].vx += mouseVx * forceSq * 0.18;
-          velocityGrid[i].vy += mouseVy * forceSq * 0.18;
-          
-          // Inject pressure push (away from cursor position)
-          const cellWidth = 3000 / gridCount;
-          const dx = (i - mouseCell) * cellWidth;
-          const dxSign = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
-          velocityGrid[i].vx += dxSign * forceSq * 0.45;
-        }
-      }
-    }
-    
-    // 2. Diffuse and dissipate grid velocity
-    const nextGrid = [];
-    const dissipation = 0.94; // slow, beautiful fluid trails
-    
-    for (let i = 0; i < gridCount; i++) {
-      const prev = velocityGrid[i === 0 ? 0 : i - 1];
-      const next = velocityGrid[i === gridCount - 1 ? gridCount - 1 : i + 1];
-      const curr = velocityGrid[i];
-      
-      // Diffusion formula: 70% current + 30% neighbors average
-      const vx = (curr.vx * 0.7 + (prev.vx + next.vx) * 0.15) * dissipation;
-      const vy = (curr.vy * 0.7 + (prev.vy + next.vy) * 0.15) * dissipation;
-      
-      nextGrid.push({ vx, vy });
-    }
-    
-    // Copy back to velocityGrid
-    for (let i = 0; i < gridCount; i++) {
-      velocityGrid[i].vx = nextGrid[i].vx;
-      velocityGrid[i].vy = nextGrid[i].vy;
-    }
-    
-    // 3. Update stars position using interpolated grid velocities
-    const dragFactor = 1.6; // multiplier for drag force on stars
-    const springStrength = 0.05; // spring return strength
-    const friction = 0.82; // damping friction
-    const maxWidth = 3000;
-    
-    for (let i = 0; i < starsData.length; i++) {
-      const star = starsData[i];
-      
-      // Interpolate velocity at star's coordinate
-      const pct = star.baseX / maxWidth;
-      const cellFloat = pct * (gridCount - 1);
-      const cellIdx = Math.max(0, Math.min(gridCount - 2, Math.floor(cellFloat)));
-      const t = cellFloat - cellIdx;
-      
-      const velA = velocityGrid[cellIdx];
-      const velB = velocityGrid[cellIdx + 1];
-      
-      const fx = (velA.vx * (1 - t) + velB.vx * t) * dragFactor;
-      const fy = (velA.vy * (1 - t) + velB.vy * t) * dragFactor;
-      
-      const massFactor = star.isSmall ? 1.3 : 0.75;
-      
-      const ax = (star.baseX - star.x) * springStrength;
-      const ay = (star.baseY - star.y) * springStrength;
-      
-      // Update velocity
-      star.vx = (star.vx + fx * massFactor + ax) * friction;
-      star.vy = (star.vy + fy * massFactor + ay) * friction;
-      
-      // Update position
-      star.x += star.vx;
-      star.y += star.vy;
-      
-      const dxFromBase = star.x - star.baseX;
-      const dyFromBase = star.y - star.baseY;
-      const distFromBase = Math.sqrt(dxFromBase * dxFromBase + dyFromBase * dyFromBase);
-      
-      if (Math.abs(star.vx) > 0.005 || Math.abs(star.vy) > 0.005 || distFromBase > 0.05) {
-        star.el.setAttribute('cx', star.x.toFixed(1));
-        star.el.setAttribute('cy', star.y.toFixed(1));
-      } else {
-        if (star.x !== star.baseX || star.y !== star.baseY) {
-          star.x = star.baseX;
-          star.y = star.baseY;
-          star.vx = 0;
-          star.vy = 0;
-          star.el.setAttribute('cx', star.baseX.toFixed(1));
-          star.el.setAttribute('cy', star.baseY.toFixed(1));
-        }
-      }
     }
   }
 
@@ -333,7 +167,6 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       lastH = rect.height;
       updateNavbarGeometry();
     }
-    updateStarsPhysics();
     requestAnimationFrame(pollResize);
   }
   requestAnimationFrame(pollResize);
