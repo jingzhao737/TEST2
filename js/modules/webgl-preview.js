@@ -41,6 +41,7 @@ import gsap from 'gsap';
     uniform sampler2D uTexture;
     uniform float uVelocity;
     uniform float uTransition;
+    uniform float uOpacity;
     uniform float uImageAspect;
     uniform float uContainerAspect;
     varying vec2 vUv;
@@ -83,7 +84,7 @@ import gsap from 'gsap';
       vec4 g = texture2D(uTexture, uv);
       vec4 b = texture2D(uTexture, uv - vec2(shift, shift * 0.5));
 
-      gl_FragColor = vec4(r.r, g.g, b.b, 1.0);
+      gl_FragColor = vec4(r.r, g.g, b.b, uOpacity);
     }
   `;
 
@@ -115,6 +116,7 @@ import gsap from 'gsap';
       uTexture: { value: new THREE.Texture() },
       uVelocity: { value: 0.0 },
       uTransition: { value: 0.0 },
+      uOpacity: { value: 0.0 },
       uImageAspect: { value: 1.0 },
       uContainerAspect: { value: 1.0 }
     },
@@ -130,6 +132,7 @@ import gsap from 'gsap';
 
   // States
   let isVisible = false;
+  let isHoverActive = false;
   let isMorphing = false;
   let animId = null;
   const currentRect = { left: 0, top: 0, width: 0, height: 0 };
@@ -158,15 +161,15 @@ import gsap from 'gsap';
 
   // ── Render loop ──
   function animate() {
-    if (!isVisible && !isMorphing) return;
+    if (!isVisible && !isMorphing && !isHoverActive) return;
     animId = requestAnimationFrame(animate);
 
     currentScrollVelocity += (scrollVelocity - currentScrollVelocity) * 0.1;
     scrollVelocity *= 0.9;
     material.uniforms.uVelocity.value = gsap.utils.clamp(-25, 25, currentScrollVelocity);
 
-    if (isMorphing) {
-      // Update container aspect ratio every frame (changes during morph)
+    if (isMorphing || isHoverActive) {
+      // Update container aspect ratio every frame
       material.uniforms.uContainerAspect.value = currentRect.width / currentRect.height;
 
       const mapped = mapDOMToWebGL(currentRect);
@@ -184,16 +187,86 @@ import gsap from 'gsap';
       isVisible = entry.isIntersecting;
       if (isVisible) {
         if (!animId) animate();
-      } else if (!isMorphing) {
+      } else if (!isMorphing && !isHoverActive) {
         if (animId) { cancelAnimationFrame(animId); animId = null; }
       }
     });
   }, { threshold: 0.01 });
   observer.observe(worksSection);
 
+  // ── Hover API ──
+  function showPreview(texturePath, rect) {
+    isHoverActive = true;
+    if (!animId) animate();
+
+    canvas.className = 'works-webgl-canvas';
+    canvas.style.display = 'block';
+    canvas.style.zIndex = '90';
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.fov = 2 * Math.atan(h / (2 * Z_DEPTH)) * (180 / Math.PI);
+    camera.updateProjectionMatrix();
+
+    // Assign texture and natural aspect ratio
+    const tex = textures[texturePath];
+    if (tex) material.uniforms.uTexture.value = tex;
+    material.uniforms.uImageAspect.value = imageAspects[texturePath] || 1.0;
+
+    // Reset transitions and rotation
+    material.uniforms.uTransition.value = 0.0;
+    mesh.rotation.set(0, 0, 0);
+    mesh.visible = true;
+
+    // Initialize current coordinates
+    currentRect.left = rect.left;
+    currentRect.top = rect.top;
+    currentRect.width = rect.width;
+    currentRect.height = rect.height;
+
+    // Animate opacity fade-in
+    gsap.killTweensOf(material.uniforms.uOpacity);
+    gsap.to(material.uniforms.uOpacity, {
+      value: 1.0,
+      duration: 0.35,
+      ease: 'power2.out'
+    });
+  }
+
+  function updatePreviewRect(rect, tiltX, tiltY, tiltZ) {
+    currentRect.left = rect.left;
+    currentRect.top = rect.top;
+    currentRect.width = rect.width;
+    currentRect.height = rect.height;
+
+    if (tiltX !== undefined) mesh.rotation.x = THREE.MathUtils.degToRad(tiltX);
+    if (tiltY !== undefined) mesh.rotation.y = THREE.MathUtils.degToRad(tiltY);
+    if (tiltZ !== undefined) mesh.rotation.z = THREE.MathUtils.degToRad(tiltZ);
+  }
+
+  function hidePreview() {
+    gsap.killTweensOf(material.uniforms.uOpacity);
+    gsap.to(material.uniforms.uOpacity, {
+      value: 0.0,
+      duration: 0.35,
+      ease: 'power2.out',
+      onComplete: () => {
+        isHoverActive = false;
+        if (!isMorphing) {
+          mesh.visible = false;
+          canvas.style.display = 'none';
+          mesh.rotation.set(0, 0, 0);
+        }
+      }
+    });
+  }
+
   // ── Morph API ──
   function morphTo(startRect, targetRect, texturePath, onComplete) {
     isMorphing = true;
+    isHoverActive = false; // Turn off hover tracking
     if (!animId) animate();
 
     canvas.className = 'works-webgl-canvas';
@@ -207,20 +280,25 @@ import gsap from 'gsap';
     camera.fov = 2 * Math.atan(h / (2 * Z_DEPTH)) * (180 / Math.PI);
     camera.updateProjectionMatrix();
 
-    // Load texture and set image aspect
+    // Reset mesh rotation for flat morph
+    mesh.rotation.set(0, 0, 0);
+
+    // Assign texture and natural aspect ratio
     const tex = textures[texturePath];
     if (tex) material.uniforms.uTexture.value = tex;
     material.uniforms.uImageAspect.value = imageAspects[texturePath] || 1.0;
 
-    // Set initial container aspect from start rect
+    // Set initial aspect ratio from start rect
     material.uniforms.uContainerAspect.value = startRect.width / startRect.height;
 
-    // Start coordinates
+    // Set initial coordinates
     currentRect.left = startRect.left;
     currentRect.top = startRect.top;
     currentRect.width = startRect.width;
     currentRect.height = startRect.height;
+
     material.uniforms.uTransition.value = 0.0;
+    material.uniforms.uOpacity.value = 1.0; // Keep fully opaque during morph transition
     mesh.visible = true;
 
     // Animate position/size
@@ -230,16 +308,16 @@ import gsap from 'gsap';
       top: targetRect.top,
       width: targetRect.width,
       height: targetRect.height,
-      duration: 0.85,
-      ease: 'power3.inOut'
+      duration: 1.2,
+      ease: 'expo.out'
     });
 
     // Animate liquid transition
     gsap.killTweensOf(material.uniforms.uTransition);
     gsap.to(material.uniforms.uTransition, {
       value: 1.0,
-      duration: 0.85,
-      ease: 'power3.inOut',
+      duration: 1.2,
+      ease: 'expo.out',
       onComplete: () => {
         isMorphing = false;
         mesh.visible = false;
@@ -249,7 +327,11 @@ import gsap from 'gsap';
     });
   }
 
-  window.__worksWebGL = { morphTo, isActive: true };
+  function getCurrentRect() {
+    return { ...currentRect };
+  }
+
+  window.__worksWebGL = { showPreview, updatePreviewRect, hidePreview, morphTo, getCurrentRect, isActive: true };
   document.body.classList.add('webgl-active');
-  console.log('[Works WebGL] Transition renderer initialized successfully.');
+  console.log('[Works WebGL] Full preview & transition renderer initialized successfully.');
 })();

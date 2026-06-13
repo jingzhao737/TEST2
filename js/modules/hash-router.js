@@ -103,6 +103,10 @@ function openDetail(data, heroImg, pushState) {
     detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
   ]);
 
+  const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);
+  const webgl = window.__worksWebGL;
+  const hasWebGL = !isMobile && webgl && webgl.isActive;
+
   // ── 1. Smooth fade out the hover preview card ──
   if (previewContainer) {
     gsap.to(previewContainer, { opacity: 0, duration: 0.25, ease: 'power2.out' });
@@ -128,8 +132,18 @@ function openDetail(data, heroImg, pushState) {
   }
   document.body.style.overflow = 'hidden';
 
+  // Measure targetRect BEFORE we slide the detailCard down (since it's currently y:0 as rendered)
+  let targetRect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight * 0.6 };
+  if (detailHeroImg) {
+    targetRect = detailHeroImg.getBoundingClientRect();
+  }
+
   // ── 4. Set initial content and parallax values ──
-  gsap.set(detailHeroImg, { opacity: 1, y: -80, scale: 1.15 });
+  if (hasWebGL) {
+    gsap.set(detailHeroImg, { opacity: 0 }); // Hide DOM image during morph
+  } else {
+    gsap.set(detailHeroImg, { opacity: 1, y: -80, scale: 1.15 });
+  }
   if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
   
   // Backdrop fades in immediately in sync with card slide-up
@@ -162,13 +176,20 @@ function openDetail(data, heroImg, pushState) {
     isRouteTransitioning = false;
   }
 
-  // ── 6. Run parallax image sliding ──
-  gsap.to(detailHeroImg, {
-    y: 0,
-    scale: 1.0,
-    duration: 1.2,
-    ease: 'expo.out'
-  });
+  // ── 6. Run parallax image sliding / WebGL morph ──
+  if (hasWebGL) {
+    const startRect = webgl.getCurrentRect();
+    webgl.morphTo(startRect, targetRect, heroImg, () => {
+      gsap.set(detailHeroImg, { opacity: 1, y: 0, scale: 1.0 });
+    });
+  } else {
+    gsap.to(detailHeroImg, {
+      y: 0,
+      scale: 1.0,
+      duration: 1.2,
+      ease: 'expo.out'
+    });
+  }
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailClose, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.3 });

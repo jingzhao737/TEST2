@@ -2855,14 +2855,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 @media(min-width: 1025px) {
-  /* 3D tilted works section */
+  /* Tilted works section now flat DOM */
   .works {
     display: grid;
     grid-template-columns: 340px 1fr;
     gap: 80px;
     align-items: center;
     padding: 240px 64px 220px;
-    perspective: 1750px;
     overflow: visible;
   }
 
@@ -2880,8 +2879,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
 
   .work-list {
-    transform-style: preserve-3d;
-    transform: rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
     transition: none;
   }
 
@@ -2895,50 +2892,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.035);
-    transform-style: preserve-3d;
-    will-change: transform;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .work-list .work-card:last-child {
     margin-bottom: 0;
   }
 
-  .work-list .work-card .work-idx,
-  .work-list .work-card .work-meta,
-  .work-list .work-card .work-tags,
-  .work-list .work-card .work-year {
-    will-change: transform;
-  }
-
-  .work-list .work-card .work-year {
-    transition: color 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
   .work-list .work-card:hover,
   .work-list .work-card.hovered {
     background: rgba(255, 255, 255, 0.07);
     border-color: rgba(232, 124, 80, 0.4);
-  }
-
-  .work-list .work-card:hover .work-idx,
-  .work-list .work-card.hovered .work-idx {
-    transform: translateX(24px) translateZ(6px);
-  }
-
-  .work-list .work-card:hover .work-meta,
-  .work-list .work-card.hovered .work-meta {
-    transform: translateX(24px) translateZ(6px);
-  }
-
-  .work-list .work-card:hover .work-tags,
-  .work-list .work-card.hovered .work-tags {
-    transform: translateX(24px) translateZ(6px);
-  }
-
-  .work-list .work-card:hover .work-year,
-  .work-list .work-card.hovered .work-year {
-    transform: translateZ(6px);
   }
 
   /* Hover line override for 3D cards */
