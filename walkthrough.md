@@ -357,3 +357,19 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **Instant Snap on Hide**: Configured the cursor loop to instantly reset coordinates (`cX`, `cY`, `t1X`, `t1Y`) to the physical mouse coordinates (`mouseX`, `mouseY`) if the hovered element suddenly becomes invisible (e.g. is hidden or closed), bypassing the LERP transition for a seamless release.
 - **Synthetic Event Filter**: Added a filter at the top of the `mousemove` handler to ignore any events with coordinates `(0, 0)`, preventing top-left cursor jumps.
 - **Verified Build & Deployment**: Rebuilt and pushed to production. Custom cursor transitions are now completely seamless on closing all panels.
+
+---
+
+## 🛠️ Hotfix: Works Card List 3D Jitter Elimination & Performance Polish
+
+### Problem
+- When hover interactions were enabled, hovering over cards caused rapid, violent layout stuttering (jitter loop). 
+- **Cause of Jitter**: The root cause was that browser native CSS `:hover` states triggered 3D transitions and layout translations on the hovered card. When the card translated/skewed, the browser's mouse-pointer ray-cast hit test would detect that the mouse had left the card (as it shifted in 3D space). This would immediately strip the `:hover` class, reverting the card's 3D transform, which shifted the card back under the mouse, re-triggering `:hover` and starting the cycle again at 60Hz.
+- **3D Rendering Conflict**: The presence of `isolation: isolate` on `.work-card` was conflicting with the list's `preserve-3d` context, causing Chromium-based browsers to flatten the 3D stacking context and break visual depth.
+
+### Resolution
+- **Removed CSS Hover Selectors**: Completely stripped all browser-native `.work-card:hover` or `:hover` rules related to work cards from [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) (including light theme and mobile media query overrides).
+- **Pure JS-Controlled Hover State**: Transferred hover detection exclusively to JavaScript. In [js/modules/premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js), we perform a page-relative hit-test against cached static card bounds (`cardRects`). These bounds are measured only once on initial entry or resize, ensuring they remain completely stable and unaffected by any active 3D transforms. JavaScript then sets the `.hovered` class to activate styles.
+- **Restored Global 3D Tilt**: Re-enabled the premium 3D perspective (`1750px`) on `.works` and `transform-style: preserve-3d` on `.work-list`, allowing the entire card list to tilt dynamically following the mouse position without any jitter.
+- **Dynamic Spotlight Shine**: Added a high-end mouse-follow spotlight overlay to each card using a `::before` pseudo-element and a `radial-gradient` mapped to custom properties `--card-mouse-x` and `--card-mouse-y` driven dynamically by the JavaScript hover listener.
+- **Verified Build & Deployment**: Recompiled the client bundle successfully using `npx vite build` and pushed all changes to the remote repository.
