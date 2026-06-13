@@ -31,9 +31,17 @@ import gsap from 'gsap';
   // ── Shaders with object-fit:cover UV computation ──
   const vertexShader = `
     varying vec2 vUv;
+    uniform vec2 uMouseVelocity;
     void main() {
       vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      vec3 pos = position;
+      
+      // Dynamic jelly skewing/bending along X and Y axes driven by mouse speed
+      float PI = 3.14159265;
+      pos.x += sin(uv.y * PI) * uMouseVelocity.x * 0.12;
+      pos.y += sin(uv.x * PI) * uMouseVelocity.y * 0.12;
+      
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     }
   `;
 
@@ -44,6 +52,7 @@ import gsap from 'gsap';
     uniform float uOpacity;
     uniform float uImageAspect;
     uniform float uContainerAspect;
+    uniform vec2 uMouseVelocity;
     varying vec2 vUv;
 
     float rand(vec2 n) { 
@@ -71,18 +80,33 @@ import gsap from 'gsap';
 
       // Liquid noise at transition midpoint (multi-layered warp)
       float wave = uTransition * (1.0 - uTransition);
+      
+      // Hover mouse velocity liquid warp
+      float mouseSpeed = length(uMouseVelocity);
+      vec2 uvDistorted = uv;
+      
       if (wave > 0.0) {
         float n1 = noise(uv * 8.0 + vec2(0.0, uTransition * 4.0));
         float n2 = noise(uv * 15.0 - vec2(uTransition * 6.0, 0.0));
-        uv.x += (n1 - 0.5) * 0.12 * wave;
-        uv.y += (n2 - 0.5) * 0.12 * wave;
+        uvDistorted.x += (n1 - 0.5) * 0.12 * wave;
+        uvDistorted.y += (n2 - 0.5) * 0.12 * wave;
+      } else if (mouseSpeed > 0.01) {
+        // Organic liquid ripple on active mouse movement
+        float n = noise(uv * 10.0 + mouseSpeed * 1.5);
+        uvDistorted += (n - 0.5) * mouseSpeed * 0.06;
       }
 
-      // Subtle chromatic aberration (diagonal split)
-      float shift = abs(uVelocity) * 0.0004 + wave * 0.022;
-      vec4 r = texture2D(uTexture, uv + vec2(shift, shift * 0.5));
-      vec4 g = texture2D(uTexture, uv);
-      vec4 b = texture2D(uTexture, uv - vec2(shift, shift * 0.5));
+      // Chromatic aberration: split channels along movement direction
+      float shift = abs(uVelocity) * 0.0004 + wave * 0.022 + mouseSpeed * 0.015;
+      
+      vec2 shiftVector = vec2(shift, shift * 0.5);
+      if (mouseSpeed > 0.01) {
+        shiftVector = normalize(uMouseVelocity) * shift;
+      }
+      
+      vec4 r = texture2D(uTexture, uvDistorted + shiftVector);
+      vec4 g = texture2D(uTexture, uvDistorted);
+      vec4 b = texture2D(uTexture, uvDistorted - shiftVector);
 
       gl_FragColor = vec4(r.r, g.g, b.b, uOpacity);
     }
@@ -118,7 +142,8 @@ import gsap from 'gsap';
       uTransition: { value: 0.0 },
       uOpacity: { value: 0.0 },
       uImageAspect: { value: 1.0 },
-      uContainerAspect: { value: 1.0 }
+      uContainerAspect: { value: 1.0 },
+      uMouseVelocity: { value: new THREE.Vector2(0, 0) }
     },
     transparent: true, depthWrite: false, depthTest: false
   });
@@ -167,6 +192,10 @@ import gsap from 'gsap';
     currentScrollVelocity += (scrollVelocity - currentScrollVelocity) * 0.1;
     scrollVelocity *= 0.9;
     material.uniforms.uVelocity.value = gsap.utils.clamp(-25, 25, currentScrollVelocity);
+
+    // Smoothly decay mouse velocity uniform towards zero
+    material.uniforms.uMouseVelocity.value.x += (0 - material.uniforms.uMouseVelocity.value.x) * 0.12;
+    material.uniforms.uMouseVelocity.value.y += (0 - material.uniforms.uMouseVelocity.value.y) * 0.12;
 
     if (isMorphing || isHoverActive) {
       // Update container aspect ratio every frame
@@ -236,7 +265,7 @@ import gsap from 'gsap';
     });
   }
 
-  function updatePreviewRect(rect, tiltX, tiltY, tiltZ) {
+  function updatePreviewRect(rect, tiltX, tiltY, tiltZ, mouseVelX, mouseVelY) {
     currentRect.left = rect.left;
     currentRect.top = rect.top;
     currentRect.width = rect.width;
@@ -245,6 +274,11 @@ import gsap from 'gsap';
     if (tiltX !== undefined) mesh.rotation.x = THREE.MathUtils.degToRad(tiltX);
     if (tiltY !== undefined) mesh.rotation.y = THREE.MathUtils.degToRad(tiltY);
     if (tiltZ !== undefined) mesh.rotation.z = THREE.MathUtils.degToRad(tiltZ);
+
+    if (mouseVelX !== undefined && mouseVelY !== undefined) {
+      // Scale velocity to a balanced range for shader distortion
+      material.uniforms.uMouseVelocity.value.set(mouseVelX * 0.04, mouseVelY * 0.04);
+    }
   }
 
   function hidePreview() {

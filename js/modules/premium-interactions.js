@@ -304,7 +304,7 @@ if (!isMobileDevice) {
             width: 200,
             height: 138
           };
-          window.__worksWebGL.updatePreviewRect(rect, tiltX2, tiltY2, tiltZ2);
+          window.__worksWebGL.updatePreviewRect(rect, tiltX2, tiltY2, tiltZ2, dx2, dy2);
         }
       } else {
         firstMove = true;
