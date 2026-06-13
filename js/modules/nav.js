@@ -36,6 +36,24 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
   
   if (!navElement || !navClipPath || !navBorderPath) return;
 
+  let starsData = [];
+  let mouseX = -1000;
+  let mouseY = -1000;
+  let isMouseOver = false;
+
+  navElement.addEventListener('mousemove', (e) => {
+    const rect = navElement.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+    isMouseOver = true;
+  });
+
+  navElement.addEventListener('mouseleave', () => {
+    mouseX = -1000;
+    mouseY = -1000;
+    isMouseOver = false;
+  });
+
   function getNavbarPath(w, h, inset = 0) {
     const tabH = 24;
     const tabW = 16;
@@ -87,6 +105,7 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       starsGroup.innerHTML = '';
     }
     
+    starsData = [];
     const numStars = 80;
     const maxWidth = 3000;
     const maxHeight = 56;
@@ -114,6 +133,72 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       circle.style.setProperty('--max-opacity', maxOpacity.toFixed(2));
       
       starsGroup.appendChild(circle);
+      
+      starsData.push({
+        el: circle,
+        baseX: cx,
+        baseY: cy,
+        x: cx,
+        y: cy,
+        vx: 0,
+        vy: 0
+      });
+    }
+  }
+
+  function updateStarsPhysics() {
+    if (!starsData.length) return;
+    
+    const repelRadius = 80;
+    const forceFactor = 1.8;
+    const springStrength = 0.08;
+    const friction = 0.85;
+    
+    for (let i = 0; i < starsData.length; i++) {
+      const star = starsData[i];
+      
+      let fx = 0;
+      let fy = 0;
+      
+      if (isMouseOver) {
+        const dx = star.x - mouseX;
+        const dy = star.y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < repelRadius && dist > 0.1) {
+          const force = (repelRadius - dist) / repelRadius;
+          const angle = Math.atan2(dy, dx);
+          fx = Math.cos(angle) * force * forceFactor;
+          fy = Math.sin(angle) * force * forceFactor;
+        }
+      }
+      
+      const ax = (star.baseX - star.x) * springStrength;
+      const ay = (star.baseY - star.y) * springStrength;
+      
+      star.vx = (star.vx + fx + ax) * friction;
+      star.vy = (star.vy + fy + ay) * friction;
+      
+      star.x += star.vx;
+      star.y += star.vy;
+      
+      const dxFromBase = star.x - star.baseX;
+      const dyFromBase = star.y - star.baseY;
+      const distFromBase = Math.sqrt(dxFromBase * dxFromBase + dyFromBase * dyFromBase);
+      
+      if (Math.abs(star.vx) > 0.005 || Math.abs(star.vy) > 0.005 || distFromBase > 0.05) {
+        star.el.setAttribute('cx', star.x.toFixed(1));
+        star.el.setAttribute('cy', star.y.toFixed(1));
+      } else {
+        if (star.x !== star.baseX || star.y !== star.baseY) {
+          star.x = star.baseX;
+          star.y = star.baseY;
+          star.vx = 0;
+          star.vy = 0;
+          star.el.setAttribute('cx', star.baseX.toFixed(1));
+          star.el.setAttribute('cy', star.baseY.toFixed(1));
+        }
+      }
     }
   }
 
@@ -154,6 +239,7 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       lastH = rect.height;
       updateNavbarGeometry();
     }
+    updateStarsPhysics();
     requestAnimationFrame(pollResize);
   }
   requestAnimationFrame(pollResize);

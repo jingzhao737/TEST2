@@ -403,13 +403,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .nav{position:fixed;top:24px;left:50%;transform:translateX(-50%);width:98%;max-width:2880px;height:56px;z-index:200;padding:0 48px;display:flex;justify-content:space-between;align-items:center;transition:top .5s var(--ease-out-expo),padding .5s var(--ease-out-expo),background .5s var(--ease-out-expo),width .5s var(--ease-out-expo);background:var(--nav-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);clip-path:url(#navClip);border-bottom:none!important;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.55))}
 .nav.scrolled{top:12px;padding:0 48px;background:var(--nav-bg-scrolled);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:none!important}
 .nav-star {
-  fill: #faf2e3;
+  fill: url(#navStarGlow);
   transition: fill 0.6s var(--ease-out-expo);
   animation: navStarTwinkle var(--duration) infinite ease-in-out;
   animation-delay: var(--delay);
 }
 :root.light .nav-star {
-  fill: #fafaf7;
+  fill: url(#navStarGlowLight);
+}
+#navStarsGroup {
+  filter: url(#navChromatic);
 }
 @keyframes navStarTwinkle {
   0%, 100% { opacity: var(--min-opacity); }
