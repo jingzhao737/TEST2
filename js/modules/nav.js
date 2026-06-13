@@ -74,6 +74,49 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
             Z`;
   }
 
+  function initNavStars() {
+    const borderSvg = document.querySelector('.nav-border-svg');
+    if (!borderSvg) return;
+    
+    let starsGroup = document.getElementById('navStarsGroup');
+    if (!starsGroup) {
+      starsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      starsGroup.setAttribute('id', 'navStarsGroup');
+      borderSvg.insertBefore(starsGroup, borderSvg.firstChild);
+    } else {
+      starsGroup.innerHTML = '';
+    }
+    
+    const numStars = 80;
+    const maxWidth = 3000;
+    const maxHeight = 56;
+    
+    for (let i = 0; i < numStars; i++) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('class', 'nav-star');
+      
+      const cx = Math.random() * maxWidth;
+      const cy = Math.random() * maxHeight;
+      const r = 0.4 + Math.random() * 0.7; // radius between 0.4px and 1.1px
+      
+      circle.setAttribute('cx', cx.toFixed(1));
+      circle.setAttribute('cy', cy.toFixed(1));
+      circle.setAttribute('r', r.toFixed(2));
+      
+      const duration = 2.5 + Math.random() * 3.5;
+      const delay = Math.random() * -6;
+      const minOpacity = 0.15 + Math.random() * 0.2;
+      const maxOpacity = 0.6 + Math.random() * 0.4;
+      
+      circle.style.setProperty('--duration', `${duration.toFixed(2)}s`);
+      circle.style.setProperty('--delay', `${delay.toFixed(2)}s`);
+      circle.style.setProperty('--min-opacity', minOpacity.toFixed(2));
+      circle.style.setProperty('--max-opacity', maxOpacity.toFixed(2));
+      
+      starsGroup.appendChild(circle);
+    }
+  }
+
   function updateNavbarGeometry() {
     const rect = navElement.getBoundingClientRect();
     const w = rect.width;
@@ -89,11 +132,18 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
 
   // Update on resize, load, and DOMContentLoaded
   window.addEventListener('resize', updateNavbarGeometry);
-  window.addEventListener('load', updateNavbarGeometry);
-  document.addEventListener('DOMContentLoaded', updateNavbarGeometry);
+  window.addEventListener('load', () => {
+    updateNavbarGeometry();
+    initNavStars();
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    updateNavbarGeometry();
+    initNavStars();
+  });
   
   // Initial run
   updateNavbarGeometry();
+  initNavStars();
   
   // Periodic poll to ensure alignment during animations / scroll transitions
   let lastW = 0, lastH = 0;
