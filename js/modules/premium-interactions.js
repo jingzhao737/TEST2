@@ -34,40 +34,10 @@ if (!isMobileDevice) {
     let rawMouseY = -9999;
     let hoveredCardIndex = -1;
 
-    // Static page-relative coordinates to bypass browser 3D hit-testing precision bugs
-    let cardRects = [];
-    let worksPageRect = { left: 0, right: 0, top: 0, bottom: 0 };
-
-    function updateCardRects() {
-      const worksEl = document.querySelector('.works');
-      if (worksEl) {
-        const wRect = worksEl.getBoundingClientRect();
-        worksPageRect = {
-          left: wRect.left + window.scrollX,
-          right: wRect.right + window.scrollX,
-          top: wRect.top + window.scrollY,
-          bottom: wRect.bottom + window.scrollY
-        };
-      }
-      cardRects = Array.from(cards).map(card => {
-        const rect = card.getBoundingClientRect();
-        return {
-          left: rect.left + window.scrollX,
-          right: rect.right + window.scrollX,
-          top: rect.top + window.scrollY,
-          bottom: rect.bottom + window.scrollY
-        };
-      });
-    }
-
-    // Initialize once
-    updateCardRects();
-    window.addEventListener('resize', updateCardRects);
-
+    // Native hover state tracking and event bindings
     function onListEnter() {
       isVisible = true;
       firstMove = true;
-      updateCardRects(); // Refresh coordinates on list entry
     }
 
     function onListLeave() {
@@ -92,7 +62,9 @@ if (!isMobileDevice) {
 
     function onCardEnter(index) {
       const card = cards[index];
-      cards.forEach(c => c.classList.remove('hovered'));
+      cards.forEach((c, idx) => {
+        if (idx !== index) c.classList.remove('hovered');
+      });
       card.classList.add('hovered');
       const src = card.dataset.image;
       if (src && src !== activeSrc) {
@@ -109,9 +81,51 @@ if (!isMobileDevice) {
       }
     }
 
-    // mousemove ONLY stores coordinates and updates the preview follow target.
-    // ALL hit-testing happens in the RAF loop, after the transform is applied,
-    // so the rects are always fresh and consistent. This eliminates jitter.
+    // Set up native mouse listeners on the static works container
+    const worksEl = document.querySelector('.works');
+    if (worksEl) {
+      worksEl.addEventListener('mouseenter', onListEnter);
+      worksEl.addEventListener('mouseleave', onListLeave);
+    }
+
+    // Set up native mouse/pointer listeners on individual cards
+    cards.forEach((card, index) => {
+      card.addEventListener('pointerenter', () => {
+        if (!isVisible) {
+          onListEnter();
+        }
+        hoveredCardIndex = index;
+        onCardEnter(index);
+      });
+
+      card.addEventListener('pointerleave', () => {
+        card.classList.remove('hovered');
+        card.style.removeProperty('--card-mouse-x');
+        card.style.removeProperty('--card-mouse-y');
+        
+        setTimeout(() => {
+          if (hoveredCardIndex === -1) {
+            activeSrc = null;
+            if (window.__worksWebGL && window.__worksWebGL.isActive) {
+              window.__worksWebGL.hidePreview();
+            }
+          }
+        }, 0);
+        
+        if (hoveredCardIndex === index) {
+          hoveredCardIndex = -1;
+        }
+      });
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const localX = ((e.clientX - rect.left) / rect.width) * 100;
+        const localY = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--card-mouse-x', `${localX}%`);
+        card.style.setProperty('--card-mouse-y', `${localY}%`);
+      });
+    });
+
     window.addEventListener('mousemove', (e) => {
       rawMouseX = e.clientX;
       rawMouseY = e.clientY;
@@ -129,12 +143,11 @@ if (!isMobileDevice) {
       targetY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 20, rawMouseY - offsetY);
     });
 
-    // RAF Animation Loop
+    // RAF Animation Loop (Tilt and WebGL Follow only)
     let curX2 = 0, curY2 = 0;
     let firstMove = true;
 
     (function animateHover() {
-
       // ── STEP 1: Update 3D list tilt target from mouse position ──
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
@@ -155,66 +168,8 @@ if (!isMobileDevice) {
         workList.style.transform = `rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg)`;
       }
 
-      // ── STEP 3: Hit test page-relative coordinates against stored static rects ──
-      if (rawMouseX > -9000) {
-        const pageMouseX = rawMouseX + window.scrollX;
-        const pageMouseY = rawMouseY + window.scrollY;
-
-        const overList = (
-          pageMouseX >= worksPageRect.left &&
-          pageMouseX <= worksPageRect.right &&
-          pageMouseY >= worksPageRect.top &&
-          pageMouseY <= worksPageRect.bottom
-        );
-
-        if (overList && !isVisible) {
-          onListEnter();
-        } else if (!overList && isVisible) {
-          onListLeave();
-        }
-
-        if (isVisible) {
-          let newHoveredIndex = -1;
-          for (let i = 0; i < cardRects.length; i++) {
-            const r = cardRects[i];
-            if (pageMouseX >= r.left && pageMouseX <= r.right && pageMouseY >= r.top && pageMouseY <= r.bottom) {
-              newHoveredIndex = i;
-              break;
-            }
-          }
-
-          if (newHoveredIndex !== hoveredCardIndex) {
-            // Clear shine from old card
-            if (hoveredCardIndex >= 0 && cards[hoveredCardIndex]) {
-              cards[hoveredCardIndex].style.removeProperty('--card-mouse-x');
-              cards[hoveredCardIndex].style.removeProperty('--card-mouse-y');
-            }
-            hoveredCardIndex = newHoveredIndex;
-            if (newHoveredIndex >= 0) {
-              onCardEnter(newHoveredIndex);
-            } else {
-              cards.forEach(c => c.classList.remove('hovered'));
-              if (window.__worksWebGL && window.__worksWebGL.isActive) {
-                window.__worksWebGL.hidePreview();
-              }
-            }
-          }
-
-          // ── STEP 3b: Update shine CSS vars on hovered card ──
-          if (hoveredCardIndex >= 0 && cards[hoveredCardIndex]) {
-            const r = cardRects[hoveredCardIndex];
-            const cardW = r.right - r.left;
-            const cardH = r.bottom - r.top;
-            const localX = ((pageMouseX - r.left) / cardW) * 100;
-            const localY = ((pageMouseY - r.top) / cardH) * 100;
-            cards[hoveredCardIndex].style.setProperty('--card-mouse-x', `${localX}%`);
-            cards[hoveredCardIndex].style.setProperty('--card-mouse-y', `${localY}%`);
-          }
-        }
-      }
-
-      // ── STEP 4: Animate preview thumbnail follow via WebGL ──
-      if (isVisible) {
+      // ── STEP 3: Animate preview thumbnail follow via WebGL ──
+      if (isVisible && hoveredCardIndex >= 0) {
         if (firstMove) {
           curX2 = targetX; curY2 = targetY;
           firstMove = false;
