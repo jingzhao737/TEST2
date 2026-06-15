@@ -1,12 +1,5 @@
 [
   {
-    "step": 83,
-    "timestamp": "2026-06-12 01:11:45",
-    "description": "Fix native cursor flickering and apply LERP delay to laser lines",
-    "folder": "step_083_Fix_native_cursor_flickering_and_apply_LERP_delay_to_laser_lines",
-    "is_auto": false
-  },
-  {
     "step": 84,
     "timestamp": "2026-06-12 01:12:05",
     "description": "Fix native cursor flickering and align laser lines with custom cursor LERP delay",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:02:10",
     "description": "Restore volume HUD font back to Google Sans",
     "folder": "step_102_Restore_volume_HUD_font_back_to_Google_Sans",
+    "is_auto": false
+  },
+  {
+    "step": 103,
+    "timestamp": "2026-06-16 01:02:30",
+    "description": "Restore volume HUD font description",
+    "folder": "step_103_Restore_volume_HUD_font_description",
     "is_auto": false
   }
 ]
