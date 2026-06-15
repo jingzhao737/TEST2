@@ -407,3 +407,21 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **Directional Chromatic Aberration**: Updated the fragment shader to split the red, green, and blue color channels dynamically. The splitting distance scales with the mouse velocity, and the chromatic aberration offset vector aligns perfectly with the direction of the mouse's movement vector (`normalize(uMouseVelocity) * shift`), providing a highly premium and natural aesthetic.
 - **Smooth Physics Decay**: Added a LERP decay inside the Three.js `animate` render loop to smoothly ramp `uMouseVelocity` back to zero when the mouse stops moving, preventing abrupt visual jumps.
 - **Verified Build & Deployment**: Rebuilt the client assets and deployed the hotfix to production.
+
+---
+
+## 🛠️ Hotfix: 解决 Works 卡片点击无响应/劫持问题
+
+### 1. 问题现象与原因分析
+- **磁吸劫持 (Cursor Snap Hijacking)**: 页面带有磁吸自定义鼠标（crystal delta wing）。当鼠标移动到 works 卡片右边缘或下边缘时，会由于接近页面右侧的滚动条气泡 (`.scroll-bubble`) 或底部的返回顶部按钮 (`.back-to-top`)，磁吸到这些元素上。
+- **点击重定向污染**: 在 `cursor.js` 中，当鼠标吸附在某个元素上时，为了增强真实感，系统会把所有的物理点击事件重定向分发给被吸附的元素。这导致用户看着鼠标好像在卡片上，但是一点击，事件全被拦截并分发给了不可见的滚动条气泡或返回顶部按钮，造成“卡片点击无响应”。
+- **3D 倾斜空隙点击未覆盖**: 在 3D 旋转下，用户的点击容易落在卡片 DOM 元素外面的 `.works` 背景区域上。虽然有 fallback 点击机制，但之前的机制限定必须精准命中 `.works` 或 `.work-list` 本身，如果击中内部的其他背景节点（如 header 空白处）则失效。
+
+### 2. 解决方案与修改
+- **悬停时绕过磁吸**: 在 [cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) 中，判断当前鼠标如果物理上处于 `.work-card` 上，或者在 3D 投影判断中处于悬停卡片状态（`window.__hoveredCardIndex >= 0`），则**完全禁止**距离磁吸到任何背景组件，从而断开磁吸重定向。
+- **Works 区域拦截豁免**: 在 `cursor.js` 的 `mousedown`、`mouseup` 和 `click` 拦截监听器中添加豁免：如果点击落在 `.works` 区域内且当前有卡片处于 3D 悬停状态，**直接放行，不作任何拦截与重定向**。
+- **健壮的背景 Fallback 点击**: 优化 [work-detail.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/work-detail.js) 的 fallback 机制，将监听目标放大到整个 `.works`。只要点击落在区域内，且不是卡片本身或其他链接/按钮，但在 3D 投影检测下当前处于卡片悬停状态，就自动触发该卡片的 click 动作。
+
+### 3. 编译与自动化验证
+- 使用 `npx.cmd vite build` 重新编译了最新的生产环境静态资源，改动已完全被打包编译到 dist 目录中。
+- 运行了 Playwright 自动化测试脚本，全面测试了 4 个卡片在不同位置（中心、左边缘、右边缘、文字）的点击成功率。测试结果显示，除 Card 1 左边缘（物理边界已因 3D 偏斜移出卡片，不触发符合预期）外，所有卡片及边缘点击均 100% 成功触发详情页开启，且完全排除了背景磁吸元素干扰。
