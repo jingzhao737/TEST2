@@ -381,12 +381,12 @@ if (!isMobileDevice) {
           currentY = targetY;
           currentOrangeX = targetX + 12;
           currentOrangeY = targetY + 12;
-          currentTiltX = 0;
-          currentTiltY = 0;
-          currentTiltZ = 0;
-          currentOrangeTiltX = 0;
-          currentOrangeTiltY = 0;
-          currentOrangeTiltZ = 0;
+          currentTiltX = baseX;
+          currentTiltY = baseY;
+          currentTiltZ = baseZ;
+          currentOrangeTiltX = baseX;
+          currentOrangeTiltY = baseY;
+          currentOrangeTiltZ = baseZ;
           firstMove = false;
         }
 
@@ -412,20 +412,21 @@ if (!isMobileDevice) {
           imgContainer.innerHTML = '';
         }
         
-        // Calculate target 3D tilts for image container (based on its dx/dy velocity)
-        let targetTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
-        let targetTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
-        let targetTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
+        // Calculate target 3D tilts for image container (based on its dx/dy velocity + base card tilt)
+        let targetTiltY = baseY + gsap.utils.clamp(-16, 16, dx * 0.06);
+        let targetTiltX = baseX + gsap.utils.clamp(-16, 16, -dy * 0.06);
+        let targetTiltZ = baseZ + gsap.utils.clamp(-6, 6, dx * 0.02);
 
         // Smoothly LERP image tilts with more delay (0.02 LERP factor)
         currentTiltX += (targetTiltX - currentTiltX) * 0.02;
         currentTiltY += (targetTiltY - currentTiltY) * 0.02;
         currentTiltZ += (targetTiltZ - currentTiltZ) * 0.02;
 
-        // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity)
-        let targetOrangeTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
-        let targetOrangeTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
-        let targetOrangeTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
+        // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity + base card tilt)
+        // Dynamic mouse tilt offset is scaled by 0.8 for parallax depth
+        let targetOrangeTiltY = baseY + gsap.utils.clamp(-16, 16, dx * 0.06) * 0.8;
+        let targetOrangeTiltX = baseX + gsap.utils.clamp(-16, 16, -dy * 0.06) * 0.8;
+        let targetOrangeTiltZ = baseZ + gsap.utils.clamp(-6, 6, dx * 0.02) * 0.8;
 
         // Smoothly LERP orange layer tilts with even more delay (0.012 LERP factor)
         currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.012;
@@ -450,9 +451,9 @@ if (!isMobileDevice) {
           x: currentOrangeX,
           y: currentOrangeY,
           scale: currentScale,
-          rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
-          rotationX: currentOrangeTiltX * 0.8,
-          rotation: currentOrangeTiltZ * 0.8,
+          rotationY: currentOrangeTiltY, 
+          rotationX: currentOrangeTiltX,
+          rotation: currentOrangeTiltZ,
           transformPerspective: 1000,
           force3D: true
         });
