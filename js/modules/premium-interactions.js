@@ -397,20 +397,20 @@ if (!isMobileDevice) {
         let targetTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
         let targetTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
-        // Smoothly LERP image tilts with less delay (0.035 LERP factor - matching its coordinates LERP)
-        currentTiltX += (targetTiltX - currentTiltX) * 0.035;
-        currentTiltY += (targetTiltY - currentTiltY) * 0.035;
-        currentTiltZ += (targetTiltZ - currentTiltZ) * 0.035;
+        // Smoothly LERP image tilts with more delay (0.02 LERP factor)
+        currentTiltX += (targetTiltX - currentTiltX) * 0.02;
+        currentTiltY += (targetTiltY - currentTiltY) * 0.02;
+        currentTiltZ += (targetTiltZ - currentTiltZ) * 0.02;
 
         // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity)
         let targetOrangeTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
         let targetOrangeTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
         let targetOrangeTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
-        // Smoothly LERP orange layer tilts with more delay (0.025 LERP factor - matching its coordinates LERP)
-        currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.025;
-        currentOrangeTiltY += (targetOrangeTiltY - currentOrangeTiltY) * 0.025;
-        currentOrangeTiltZ += (targetOrangeTiltZ - currentOrangeTiltZ) * 0.025;
+        // Smoothly LERP orange layer tilts with even more delay (0.012 LERP factor)
+        currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.012;
+        currentOrangeTiltY += (targetOrangeTiltY - currentOrangeTiltY) * 0.012;
+        currentOrangeTiltZ += (targetOrangeTiltZ - currentOrangeTiltZ) * 0.012;
 
         // Apply transform to image container (on top, z-index: 2)
         gsap.set(imgContainer, {
