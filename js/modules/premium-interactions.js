@@ -32,21 +32,24 @@ if (!isMobileDevice) {
     let currentOrangeX = 0;
     let currentOrangeY = 0;
 
-    let baseY = -34;
-    let baseX = 17;
-    let baseZ = 2;
+    const listBaseY = -34;
+    const listBaseX = 17;
+    const listBaseZ = 2;
+    let previewBaseY = -34;
+    let previewBaseX = 17;
+    let previewBaseZ = 2;
     let clampYMax = 16;
     let clampXMax = 16;
     let clampZMax = 6;
     let forceVisible = true; // Lock preview visible by default for angle tuning
 
-    let targetWorkListY = baseY;
-    let targetWorkListX = baseX;
-    let targetWorkListZ = baseZ;
+    let targetWorkListY = listBaseY;
+    let targetWorkListX = listBaseX;
+    let targetWorkListZ = listBaseZ;
 
-    let currentWorkListY = baseY;
-    let currentWorkListX = baseX;
-    let currentWorkListZ = baseZ;
+    let currentWorkListY = listBaseY;
+    let currentWorkListX = listBaseX;
+    let currentWorkListZ = listBaseZ;
 
     let mousePercentX = 0;
     let mousePercentY = 0;
@@ -74,7 +77,7 @@ if (!isMobileDevice) {
     gsap.set(wrapper, { autoAlpha: 0 });
 
     // Apply initial 3D tilt transform to workList so it aligns with starting coordinates on load
-    workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
+    workList.style.transform = `rotateY(${listBaseY}deg) rotateX(${listBaseX}deg) rotateZ(${listBaseZ}deg)`;
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
     let activeImages = []; // Array to keep track of active image items in the stack
 
@@ -164,9 +167,9 @@ if (!isMobileDevice) {
     function onListLeave() {
       if (forceVisible) {
         // Keep preview active, reset list tilt to base
-        targetWorkListY = baseY;
-        targetWorkListX = baseX;
-        targetWorkListZ = baseZ;
+        targetWorkListY = listBaseY;
+        targetWorkListX = listBaseX;
+        targetWorkListZ = listBaseZ;
         mousePercentX = 0;
         mousePercentY = 0;
         return;
@@ -181,9 +184,9 @@ if (!isMobileDevice) {
         c.style.removeProperty('--card-mouse-y');
       });
       // Reset tilt targets — list will LERP back to base angles
-      targetWorkListY = baseY;
-      targetWorkListX = baseX;
-      targetWorkListZ = baseZ;
+      targetWorkListY = listBaseY;
+      targetWorkListX = listBaseX;
+      targetWorkListZ = listBaseZ;
       mousePercentX = 0;
       mousePercentY = 0;
       
@@ -282,9 +285,9 @@ if (!isMobileDevice) {
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
         mousePercentY = (rawMouseY - window.innerHeight / 2) / (window.innerHeight / 2);
-        targetWorkListY = baseY + mousePercentX * 4;
-        targetWorkListX = baseX + mousePercentY * 3;
-        targetWorkListZ = baseZ + mousePercentX * 1.5;
+        targetWorkListY = listBaseY + mousePercentX * 4;
+        targetWorkListX = listBaseX + mousePercentY * 3;
+        targetWorkListZ = listBaseZ + mousePercentX * 1.5;
       }
 
       // ── STEP 2: Apply LERP to list rotation ──
@@ -312,9 +315,9 @@ if (!isMobileDevice) {
         const d = 1750;
 
         // Rotations at the base tilt angles (makes hit-test static and prevents boundary jitter)
-        const radY = baseY * Math.PI / 180;
-        const radX = baseX * Math.PI / 180;
-        const radZ = baseZ * Math.PI / 180;
+        const radY = listBaseY * Math.PI / 180;
+        const radX = listBaseX * Math.PI / 180;
+        const radZ = listBaseZ * Math.PI / 180;
 
         function projectPoint(pageX, pageY) {
           const vx = pageX - scrollX;
@@ -394,12 +397,12 @@ if (!isMobileDevice) {
           currentY = targetY;
           currentOrangeX = targetX + 12;
           currentOrangeY = targetY + 12;
-          currentTiltX = baseX;
-          currentTiltY = baseY;
-          currentTiltZ = baseZ;
-          currentOrangeTiltX = baseX;
-          currentOrangeTiltY = baseY;
-          currentOrangeTiltZ = baseZ;
+          currentTiltX = previewBaseX;
+          currentTiltY = previewBaseY;
+          currentTiltZ = previewBaseZ;
+          currentOrangeTiltX = previewBaseX;
+          currentOrangeTiltY = previewBaseY;
+          currentOrangeTiltZ = previewBaseZ;
           firstMove = false;
         }
 
@@ -426,9 +429,9 @@ if (!isMobileDevice) {
         }
         
         // Calculate target 3D tilts for image container (based on its dx/dy velocity + base card tilt)
-        let targetTiltY = baseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06);
-        let targetTiltX = baseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06);
-        let targetTiltZ = baseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02);
+        let targetTiltY = previewBaseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06);
+        let targetTiltX = previewBaseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06);
+        let targetTiltZ = previewBaseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02);
 
         // Smoothly LERP image tilts with more delay (0.02 LERP factor)
         currentTiltX += (targetTiltX - currentTiltX) * 0.02;
@@ -437,9 +440,9 @@ if (!isMobileDevice) {
 
         // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity + base card tilt)
         // Dynamic mouse tilt offset is scaled by 0.8 for parallax depth
-        let targetOrangeTiltY = baseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06) * 0.8;
-        let targetOrangeTiltX = baseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06) * 0.8;
-        let targetOrangeTiltZ = baseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02) * 0.8;
+        let targetOrangeTiltY = previewBaseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06) * 0.8;
+        let targetOrangeTiltX = previewBaseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06) * 0.8;
+        let targetOrangeTiltZ = previewBaseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02) * 0.8;
 
         // Smoothly LERP orange layer tilts with even more delay (0.012 LERP factor)
         currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.012;
@@ -506,9 +509,9 @@ if (!isMobileDevice) {
       panel.appendChild(title);
 
       const sliders = [
-        { label: 'Base Y Rotation (rotateY)', min: -90, max: 90, val: baseY, step: 1, key: 'baseY' },
-        { label: 'Base X Rotation (rotateX)', min: -90, max: 90, val: baseX, step: 1, key: 'baseX' },
-        { label: 'Base Z Rotation (rotateZ)', min: -90, max: 90, val: baseZ, step: 1, key: 'baseZ' },
+        { label: 'Preview Base Y Rotation (rotateY)', min: -90, max: 90, val: previewBaseY, step: 1, key: 'previewBaseY' },
+        { label: 'Preview Base X Rotation (rotateX)', min: -90, max: 90, val: previewBaseX, step: 1, key: 'previewBaseX' },
+        { label: 'Preview Base Z Rotation (rotateZ)', min: -90, max: 90, val: previewBaseZ, step: 1, key: 'previewBaseZ' },
         { label: 'Max Mouse Y-Tilt (X-rotation)', min: 0, max: 45, val: clampXMax, step: 1, key: 'clampXMax' },
         { label: 'Max Mouse X-Tilt (Y-rotation)', min: 0, max: 45, val: clampYMax, step: 1, key: 'clampYMax' },
         { label: 'Max Mouse Z-Tilt (Z-rotation)', min: 0, max: 30, val: clampZMax, step: 1, key: 'clampZMax' }
@@ -544,15 +547,12 @@ if (!isMobileDevice) {
         input.addEventListener('input', (e) => {
           const v = parseFloat(e.target.value);
           valEl.innerText = v;
-          if (s.key === 'baseX') baseX = v;
-          else if (s.key === 'baseY') baseY = v;
-          else if (s.key === 'baseZ') baseZ = v;
+          if (s.key === 'previewBaseX') previewBaseX = v;
+          else if (s.key === 'previewBaseY') previewBaseY = v;
+          else if (s.key === 'previewBaseZ') previewBaseZ = v;
           else if (s.key === 'clampXMax') clampXMax = v;
           else if (s.key === 'clampYMax') clampYMax = v;
           else if (s.key === 'clampZMax') clampZMax = v;
-
-          // Force updates on list transform immediately
-          workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
         });
 
         row.appendChild(input);
@@ -609,9 +609,9 @@ if (!isMobileDevice) {
       copyBtn.addEventListener('mouseleave', () => copyBtn.style.background = '#e87c50');
       copyBtn.addEventListener('click', () => {
         const config = {
-          baseX: baseX,
-          baseY: baseY,
-          baseZ: baseZ,
+          previewBaseX: previewBaseX,
+          previewBaseY: previewBaseY,
+          previewBaseZ: previewBaseZ,
           clampXMax: clampXMax,
           clampYMax: clampYMax,
           clampZMax: clampZMax
