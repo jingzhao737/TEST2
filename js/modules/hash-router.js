@@ -24,6 +24,11 @@ let startX = 0;
 let startY = 0;
 let currentRotateX = 0;
 let currentRotateY = 0;
+let lastDragTime = 0;
+let lastDragX = 0;
+let lastDragY = 0;
+let velocityRotateX = 0;
+let velocityRotateY = 0;
 
 function buildGalleryHTML(gallery) {
   if (!gallery || !gallery.length) return '';
@@ -470,10 +475,13 @@ document.addEventListener('keydown', function(e) {
 function setupDetail3DCard() {
   const hero = document.querySelector('.detail-hero');
   const card = document.getElementById('detail3dCard');
+  const cardInner = document.getElementById('detail3dCardInner');
+  const cardImg = document.getElementById('detail3dCardImg');
   const container = document.getElementById('detail3dContainer');
   const glare = document.getElementById('detail3dCardGlare');
+  const sheen = document.getElementById('detail3dCardSheen');
   
-  if (!hero || !card || !container || !glare) return;
+  if (!hero || !card || !cardInner || !cardImg || !container || !glare || !sheen) return;
 
   // Prevent default image drag-and-drop ghosting behaviour
   hero.addEventListener('dragstart', function(e) {
@@ -496,6 +504,22 @@ function setupDetail3DCard() {
       gsap.fromTo(container,
         { opacity: 0, scale: 0.8 },
         { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }
+      );
+
+      // Reset values
+      gsap.set(cardInner, { rotateX: 0, rotateY: 0 });
+      gsap.set(cardImg, { x: 0, y: 0 });
+      gsap.set(sheen, { opacity: 0 });
+      gsap.set(glare, { opacity: 0 });
+      currentRotateX = 0;
+      currentRotateY = 0;
+      velocityRotateX = 0;
+      velocityRotateY = 0;
+
+      // Introduce card with tilted 3D entry spin
+      gsap.fromTo(cardInner,
+        { rotateY: -45, rotateX: 18 },
+        { rotateY: 0, rotateX: 0, duration: 1.2, ease: 'power3.out' }
       );
       
       // Start multi-axis organic floating & swaying loops with coprime periods
@@ -537,127 +561,205 @@ function setupDetail3DCard() {
       gsap.to('.detail-hero-content', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out', pointerEvents: 'auto' });
       
       // Reset rotation/translation smoothly
-      gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out' });
+      gsap.to(cardInner, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out' });
       gsap.to(container, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' });
+      gsap.to(cardImg, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' });
       gsap.to(glare, { opacity: 0, duration: 0.8, ease: 'power2.out' });
+      gsap.to(sheen, { opacity: 0, duration: 0.8, ease: 'power2.out' });
     }
   });
 
-  // Drag-to-rotate event listeners
+  // Helper functions for drag lifecycle
+  function handleDragStart(clientX, clientY) {
+    isDragging = true;
+    startX = clientX;
+    startY = clientY;
+    
+    // Intercept current rotation (allows seamless catching mid-rebound)
+    currentRotateY = gsap.getProperty(cardInner, "rotateY") || 0;
+    currentRotateX = gsap.getProperty(cardInner, "rotateX") || 0;
+    
+    // Kill active rebound or entry tweens
+    gsap.killTweensOf([cardInner, container, cardImg, sheen, glare]);
+    
+    hero.classList.add('detail-hero-grabbing');
+    
+    lastDragTime = performance.now();
+    lastDragX = clientX;
+    lastDragY = clientY;
+    velocityRotateX = 0;
+    velocityRotateY = 0;
+  }
+
+  function handleDragMove(clientX, clientY) {
+    if (!isDragging) return;
+    
+    const now = performance.now();
+    const dt = now - lastDragTime;
+    
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    
+    // Rotate card based on drag distance
+    const rotY = currentRotateY + dx * 0.45;
+    const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
+    
+    // Smooth responsive drag positioning
+    gsap.to(cardInner, {
+      rotateY: rotY,
+      rotateX: rotX,
+      duration: 0.2,
+      ease: 'power1.out',
+      overwrite: 'auto'
+    });
+    
+    // Parallax image shift inside visual window
+    gsap.to(cardImg, {
+      x: -rotY * 0.15,
+      y: rotX * 0.15,
+      duration: 0.2,
+      ease: 'power1.out',
+      overwrite: 'auto'
+    });
+    
+    const px = Math.max(-1, Math.min(1, rotY / 45));
+    const py = Math.max(-1, Math.min(1, -rotX / 45));
+    
+    // Parallax shift on card container
+    gsap.to(container, {
+      x: px * 15,
+      y: py * 15,
+      duration: 0.2,
+      ease: 'power1.out',
+      overwrite: 'auto'
+    });
+    
+    // Velocity tracking for spring snap-back dynamic overshoot
+    if (dt > 0) {
+      const instantV_rotY = ((clientX - lastDragX) * 0.45) / dt;
+      const instantV_rotX = (- (clientY - lastDragY) * 0.45) / dt;
+      
+      velocityRotateY = velocityRotateY * 0.65 + instantV_rotY * 0.35;
+      velocityRotateX = velocityRotateX * 0.65 + instantV_rotX * 0.35;
+    }
+    
+    lastDragTime = now;
+    lastDragX = clientX;
+    lastDragY = clientY;
+    
+    // Radial glare reflection update
+    const glareX = 50 - px * 25;
+    const glareY = 50 - py * 25;
+    const glareOpacity = Math.min(0.6, Math.sqrt(px*px + py*py) * 0.4);
+    glare.style.opacity = glareOpacity;
+    glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 70%)`;
+    
+    // Holographic rainbow sheen background-position shift
+    const sheenX = 50 + px * 35;
+    const sheenY = 50 + py * 35;
+    const sheenOpacity = Math.min(0.7, Math.sqrt(px*px + py*py) * 0.5);
+    sheen.style.opacity = sheenOpacity;
+    sheen.style.backgroundPosition = `${sheenX}% ${sheenY}%`;
+  }
+
+  function handleDragEnd(clientX, clientY) {
+    if (!isDragging) return;
+    isDragging = false;
+    hero.classList.remove('detail-hero-grabbing');
+    
+    // Calculate rebound snap duration and overshoot based on release velocity
+    const velocity = Math.sqrt(velocityRotateX * velocityRotateX + velocityRotateY * velocityRotateY) || 0;
+    const overshoot = Math.max(1.0, Math.min(3.5, 1.2 + velocity * 0.5));
+    const snapDuration = Math.max(0.7, Math.min(1.5, 0.9 + velocity * 0.1));
+    
+    // Elastic spring snap back to 0 rotation
+    gsap.to(cardInner, {
+      rotateY: 0,
+      rotateX: 0,
+      duration: snapDuration,
+      ease: `back.out(${overshoot})`,
+      overwrite: 'auto',
+      onUpdate: () => {
+        const rotY = gsap.getProperty(cardInner, "rotateY") || 0;
+        const rotX = gsap.getProperty(cardInner, "rotateX") || 0;
+        
+        const px = Math.max(-1, Math.min(1, rotY / 45));
+        const py = Math.max(-1, Math.min(1, -rotX / 45));
+        
+        // Image parallax shift updates dynamically during snap-back
+        gsap.set(cardImg, { x: -rotY * 0.15, y: rotX * 0.15 });
+        
+        // Glare updates
+        const glareX = 50 - px * 25;
+        const glareY = 50 - py * 25;
+        const glareOpacity = Math.min(0.6, Math.sqrt(px*px + py*py) * 0.4);
+        glare.style.opacity = glareOpacity;
+        glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 70%)`;
+        
+        // Sheen updates
+        const sheenX = 50 + px * 35;
+        const sheenY = 50 + py * 35;
+        const sheenOpacity = Math.min(0.7, Math.sqrt(px*px + py*py) * 0.5);
+        sheen.style.opacity = sheenOpacity;
+        sheen.style.backgroundPosition = `${sheenX}% ${sheenY}%`;
+      }
+    });
+    
+    // Snap container translation back to 0
+    gsap.to(container, {
+      x: 0,
+      y: 0,
+      duration: snapDuration,
+      ease: `back.out(${overshoot})`,
+      overwrite: 'auto'
+    });
+    
+    currentRotateY = 0;
+    currentRotateX = 0;
+    velocityRotateX = 0;
+    velocityRotateY = 0;
+  }
+
+  // Bind Mouse Listeners
   hero.addEventListener('mousedown', function(e) {
     if (!is3DCardActive) return;
     if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
       return;
     }
-    isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    hero.classList.add('detail-hero-grabbing');
-    e.preventDefault(); // prevents text selections
+    handleDragStart(e.clientX, e.clientY);
+    e.preventDefault();
   });
 
+  window.addEventListener('mousemove', function(e) {
+    if (!is3DCardActive || !isDragging) return;
+    handleDragMove(e.clientX, e.clientY);
+  });
+
+  window.addEventListener('mouseup', function(e) {
+    if (!is3DCardActive || !isDragging) return;
+    handleDragEnd(e.clientX, e.clientY);
+  });
+
+  // Bind Touch Listeners
   hero.addEventListener('touchstart', function(e) {
     if (!is3DCardActive) return;
     if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
       return;
     }
-    isDragging = true;
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    hero.classList.add('detail-hero-grabbing');
+    handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: true });
-
-  window.addEventListener('mousemove', function(e) {
-    if (!is3DCardActive || !isDragging) return;
-    
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    
-    // Rotate card based on drag distance: rotateY responds to X drag, rotateX to Y drag
-    const rotY = currentRotateY + dx * 0.45;
-    const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
-    
-    // Animate smoothly to target rotation with GSAP (creates momentum and weight feel)
-    gsap.to(card, {
-      rotateY: rotY,
-      rotateX: rotX,
-      duration: 0.5,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    });
-    
-    // Parallax container shift slightly following drag direction
-    const px = Math.max(-1, Math.min(1, rotY / 45));
-    const py = Math.max(-1, Math.min(1, -rotX / 45));
-    gsap.to(container, {
-      x: px * 15,
-      y: py * 15,
-      duration: 0.5,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    });
-    
-    // Glare reflection overlay updates
-    const angle = Math.atan2(py, px) * (180 / Math.PI) - 90;
-    const opacity = Math.min(0.65, Math.sqrt(px*px + py*py) * 0.5);
-    glare.style.opacity = opacity;
-    glare.style.background = `linear-gradient(${angle}deg, rgba(255,255,255,${opacity}) 0%, rgba(255,255,255,0) 70%)`;
-  });
 
   window.addEventListener('touchmove', function(e) {
     if (!is3DCardActive || !isDragging || !e.touches.length) return;
-    
-    const dx = e.touches[0].clientX - startX;
-    const dy = e.touches[0].clientY - startY;
-    
-    const rotY = currentRotateY + dx * 0.45;
-    const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
-    
-    gsap.to(card, {
-      rotateY: rotY,
-      rotateX: rotX,
-      duration: 0.5,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    });
-    
-    const px = Math.max(-1, Math.min(1, rotY / 45));
-    const py = Math.max(-1, Math.min(1, -rotX / 45));
-    gsap.to(container, {
-      x: px * 15,
-      y: py * 15,
-      duration: 0.5,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    });
-    
-    const angle = Math.atan2(py, px) * (180 / Math.PI) - 90;
-    const opacity = Math.min(0.65, Math.sqrt(px*px + py*py) * 0.5);
-    glare.style.opacity = opacity;
-    glare.style.background = `linear-gradient(${angle}deg, rgba(255,255,255,${opacity}) 0%, rgba(255,255,255,0) 70%)`;
-  });
-
-  window.addEventListener('mouseup', function(e) {
-    if (!is3DCardActive || !isDragging) return;
-    isDragging = false;
-    hero.classList.remove('detail-hero-grabbing');
-    
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    currentRotateY = currentRotateY + dx * 0.45;
-    currentRotateX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
+    handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
   });
 
   window.addEventListener('touchend', function(e) {
     if (!is3DCardActive || !isDragging) return;
-    isDragging = false;
-    hero.classList.remove('detail-hero-grabbing');
-    
     if (e.changedTouches && e.changedTouches.length) {
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = e.changedTouches[0].clientY - startY;
-      currentRotateY = currentRotateY + dx * 0.45;
-      currentRotateX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
+      handleDragEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    } else {
+      handleDragEnd(startX, startY);
     }
   });
 }

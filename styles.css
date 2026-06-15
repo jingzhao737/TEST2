@@ -1868,12 +1868,51 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 .detail-3d-card {
   position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1.5px solid #E87C50; /* Brand accent orange - thinner & crispier */
-  box-shadow: 0 30px 65px rgba(0, 0, 0, 0.6), 0 0 20px rgba(232, 124, 80, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  perspective: 1200px; /* Separate 3D camera depth per card */
+  will-change: transform;
+}
+.detail-3d-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
   transform-style: preserve-3d;
+  will-change: transform;
+}
+.detail-3d-card-front,
+.detail-3d-card-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(232, 124, 80, 0.35); /* Elegant thin semi-transparent orange border */
+  box-shadow: 
+    0 30px 70px rgba(0, 0, 0, 0.55), 
+    0 0 25px rgba(232, 124, 80, 0.06), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08); /* inner glass border */
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  overflow: hidden;
+}
+.detail-3d-card-front {
   background: #111;
+  transform: translate3d(0, 0, 0);
+  z-index: 2;
+  transform-style: preserve-3d;
+}
+.detail-3d-card-back {
+  background: #0b0b0b;
+  transform: rotateY(180deg);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+.detail-3d-card-img-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 15px;
+  transform: translateZ(-15px) scale(1.08); /* Depth recessed look */
   will-change: transform;
 }
 .detail-3d-card-img {
@@ -1883,17 +1922,87 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   display: block;
   -webkit-user-drag: none;
   user-select: none;
+  will-change: transform;
 }
 .detail-3d-card-glare {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  mix-blend-mode: overlay;
+  mix-blend-mode: screen; /* Brighter and glossier screen mode */
   z-index: 2;
   opacity: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 60%);
-  transition: opacity 0.1s ease-out;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+  transition: opacity 0.15s ease-out;
 }
+.detail-3d-card-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: color-dodge; /* Shimmering holographic colors */
+  z-index: 3;
+  opacity: 0;
+  background: linear-gradient(110deg, 
+    rgba(255, 0, 128, 0.2) 0%, 
+    rgba(120, 0, 255, 0.15) 25%, 
+    rgba(0, 255, 255, 0.2) 50%, 
+    rgba(255, 255, 0, 0.15) 75%, 
+    rgba(255, 0, 128, 0.2) 100%
+  );
+  background-size: 200% 200%;
+  will-change: background-position, opacity;
+  transition: opacity 0.2s ease-out;
+}
+
+/* Card Back Geometric styling */
+.card-back-inner {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(232, 124, 80, 0.2);
+  border-radius: 12px;
+  background: radial-gradient(circle at center, #161616 0%, #060606 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+.card-back-pattern {
+  position: absolute;
+  inset: 12px;
+  opacity: 0.3;
+}
+.back-svg {
+  width: 100%;
+  height: 100%;
+}
+.card-back-logo {
+  font-family: 'Climate Crisis', sans-serif;
+  font-size: 1.1rem;
+  color: #E87C50;
+  text-shadow: 0 0 12px rgba(232, 124, 80, 0.45);
+  letter-spacing: 0.18em;
+  z-index: 2;
+  transform: translateZ(20px); /* 3D floating effect */
+  will-change: transform;
+}
+
+/* Hover/Grabbing dynamic illumination */
+.detail-hero-3d-active:hover .detail-3d-card-front,
+.detail-hero-3d-active:hover .detail-3d-card-back {
+  border-color: rgba(232, 124, 80, 0.65);
+  box-shadow: 
+    0 35px 80px rgba(0, 0, 0, 0.6), 
+    0 0 35px rgba(232, 124, 80, 0.15), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.detail-hero-grabbing .detail-3d-card-front,
+.detail-hero-grabbing .detail-3d-card-back {
+  border-color: rgba(232, 124, 80, 0.85) !important;
+  box-shadow: 
+    0 40px 90px rgba(0, 0, 0, 0.7), 
+    0 0 45px rgba(232, 124, 80, 0.25), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+}
+
 .detail-3d-card-hint {
   margin-top: 16px;
   font-family: 'Google Sans', sans-serif;
