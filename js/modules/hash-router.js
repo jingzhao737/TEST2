@@ -685,6 +685,16 @@ function setupDetail3DCard() {
     isDragging = false;
     hero.classList.remove('detail-hero-grabbing');
     
+    // Calculate final drag angle on release
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    const endRotateY = currentRotateY + dx * 0.45;
+    const endRotateX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
+    
+    // Snapping to the nearest multiple of 180 degrees (0 for front, 180 or -180 for back)
+    const targetRotateY = Math.round(endRotateY / 180) * 180;
+    const targetRotateX = 0; // X always snaps back to 0
+    
     // Calculate rebound snap duration and overshoot based on release velocity
     // Reset velocity if user paused for more than 100ms before releasing
     const timeSinceLastMove = performance.now() - lastDragTime;
@@ -693,10 +703,10 @@ function setupDetail3DCard() {
     const overshoot = Math.max(1.0, Math.min(3.5, 1.2 + activeVelocity * 0.5));
     const snapDuration = Math.max(0.7, Math.min(1.5, 0.9 + activeVelocity * 0.1));
     
-    // Elastic spring snap back to 0 rotation
+    // Elastic spring snap back to nearest stable face (0, 180, 360, etc.)
     gsap.to(cardInner, {
-      rotateY: 0,
-      rotateX: 0,
+      rotateY: targetRotateY,
+      rotateX: targetRotateX,
       duration: snapDuration,
       ease: `back.out(${overshoot})`,
       overwrite: 'auto',
@@ -741,8 +751,8 @@ function setupDetail3DCard() {
       overwrite: 'auto'
     });
     
-    currentRotateY = 0;
-    currentRotateX = 0;
+    currentRotateY = targetRotateY;
+    currentRotateX = targetRotateX;
     velocityRotateX = 0;
     velocityRotateY = 0;
   }
