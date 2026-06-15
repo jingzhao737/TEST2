@@ -1142,3 +1142,18 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新运行了 `npx vite build` 生产编译打包。
 - 使用 `git push` 将热修复同步推送到 GitHub 远程仓库中。
+
+
+---
+
+## 🛠️ Hotfix: 大音量状态下网页声波起伏幅度增强优化
+
+### 1. 需求分析与修改
+- **需求**：用户反馈在大音量状态下，希望声波起伏能更明显一些。
+- **解决方案**：
+  - 重构了 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js#L150-L167) 里的 `targetAmp` 计算常数：将有背景音乐播放时的振幅增幅由 `0.28 + (avgVolume / 255.0) * 1.35` 提高到了 `0.42 + (avgVolume / 255.0) * 2.45`（起伏和跳动度提升了近一倍）；将无声分析数据时的占位振幅从 `1.0` 提高到 `1.6`。
+  - 在乘以音量系数时，引入了 $1.15$ 次方的非线性幂次缩放 `Math.pow(globalVolume, 1.15) * 1.55`。这使得当音量拉至较大（如 $80\% \sim 100\%$）时，声波的运动具有更强的视觉冲击力和纵向拉伸感，在低音量时依然能快速收缩，过度更加饱满剧烈。
+
+### 2. 部署与验证
+- 重新运行了 `npx vite build` 生产编译打包。
+- 使用 `git push` 同步推送到 GitHub 远程仓库的 `main` 分支。
