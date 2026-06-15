@@ -448,9 +448,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   margin-left: 10px;
   transform: translateY(-2px) scale(1.18);
 }
-.nav-next-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--fg);cursor:pointer;outline:none;padding:0;opacity:0;pointer-events:none;overflow:hidden;perspective:800px;transform:rotateY(-120deg) rotateZ(-30deg) scale(0) translateX(-30px);filter:blur(4px);transition:opacity 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),transform 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),color 0.3s ease,filter 0.5s ease;margin-left:8px;flex-shrink:0}
+.nav-next-btn{display:flex;align-items:center;justify-content:center;width:0;height:32px;border-radius:50%;border:none;background:transparent;color:var(--fg);cursor:pointer;outline:none;padding:0;opacity:0;pointer-events:none;overflow:hidden;perspective:800px;transform:rotateY(-120deg) rotateZ(-30deg) scale(0) translateX(-30px);filter:blur(4px);transition:opacity 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),transform 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),color 0.3s ease,filter 0.5s ease,width 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),margin-left 0.6s cubic-bezier(0.34, 1.75, 0.4, 1);margin-left:0;flex-shrink:0}
 :root.light .nav-next-btn{border:none;background:transparent}
-.nav-next-btn.is-active{opacity:0.85;pointer-events:auto;transform:rotateY(0deg) rotateZ(0deg) scale(1) translateX(0);filter:blur(0px)}
+.nav-next-btn.is-active{width:32px;margin-left:8px;opacity:0.85;pointer-events:auto;transform:rotateY(0deg) rotateZ(0deg) scale(1) translateX(0);filter:blur(0px)}
 @media(hover: hover){
   .nav-next-btn.is-active:hover{opacity:1;background:transparent;color:rgb(232,124,80)}
 }

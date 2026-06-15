@@ -418,6 +418,7 @@ import gsap from 'gsap';
     document.body.style.overflow = 'hidden';
     const sb = document.getElementById('scrollBar');
     if (sb) sb.style.display = 'none';
+    if (window.__updateMagnetTargets) window.__updateMagnetTargets();
   }
 
   function closeMenu() {
@@ -427,6 +428,7 @@ import gsap from 'gsap';
     document.body.style.overflow = '';
     const sb = document.getElementById('scrollBar');
     if (sb) sb.style.display = '';
+    if (window.__updateMagnetTargets) window.__updateMagnetTargets();
   }
 
   btn.addEventListener('click', () => {
