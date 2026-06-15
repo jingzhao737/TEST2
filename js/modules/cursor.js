@@ -56,6 +56,10 @@
   let arrowHoverStartTime = 0;
   let snapOffsetX = 0;
   let snapOffsetY = 0;
+  let snapStartTime = 0;
+  let snapPullX = 0;
+  let snapPullY = 0;
+  let snapPullDist = 0;
 
   function setHoveredElement(el) {
     if (hoveredElement === el) return;
@@ -75,8 +79,13 @@
         hoveredElement.classList.add('magnet-active');
       }
       hoveredRect = hoveredElement.getBoundingClientRect();
+      snapStartTime = Date.now(); // Record start time of snap
     } else {
       hoveredRect = null;
+      snapStartTime = 0;
+      snapPullX = 0;
+      snapPullY = 0;
+      snapPullDist = 0;
     }
   }
 
@@ -482,6 +491,11 @@
 
   // Animation Loop
   (function loop() {
+    // Calculate mouse velocity (speed & direction) early to use for snapping physics
+    const vx = mouseX - lastMouseX;
+    const vy = mouseY - lastMouseY;
+    const speed = Math.sqrt(vx * vx + vy * vy);
+
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
     if (hoveredElement) {
       if (window.__isDetailClosing) {
@@ -538,11 +552,45 @@
       const btnCenterX = hoveredRect.left + hoveredRect.width / 2;
       const btnCenterY = hoveredRect.top + hoveredRect.height / 2;
       
-      // Snaps exactly to the center of the button (100% magnetic lock)
-      const targetX = btnCenterX;
-      const targetY = btnCenterY;
+      const timeSinceSnap = Date.now() - snapStartTime;
+      const lockDuration = 250; // 250ms of complete lock to give instant snap feedback
       
-      // Glides and snaps to the button center slightly slower (0.15 LERP) for responsive and soft magnetization
+      let targetX = btnCenterX;
+      let targetY = btnCenterY;
+      
+      if (timeSinceSnap >= lockDuration) {
+        // Calculate offset vector from button center to physical mouse position
+        const mouseDx = mouseX - btnCenterX;
+        const mouseDy = mouseY - btnCenterY;
+        
+        // Elastic rubber-band stretch: pulls custom cursor slightly towards mouse position
+        // Scale the pull based on mouse movement speed so that it returns to center when stationary
+        const speedScale = Math.min(speed * 0.15, 1.0);
+        const pullFactor = 0.38 * speedScale; // Pull up to 38% towards physical mouse when moving fast
+        const maxPull = 15; // Cap stretch at 15px max displacement so it stays within trigger area
+        
+        let pullX = mouseDx * pullFactor;
+        let pullY = mouseDy * pullFactor;
+        const pullDist = Math.sqrt(pullX * pullX + pullY * pullY);
+        
+        if (pullDist > maxPull) {
+          pullX = (pullX / pullDist) * maxPull;
+          pullY = (pullY / pullDist) * maxPull;
+        }
+        
+        targetX = btnCenterX + pullX;
+        targetY = btnCenterY + pullY;
+        
+        snapPullX = pullX;
+        snapPullY = pullY;
+        snapPullDist = Math.sqrt(pullX * pullX + pullY * pullY);
+      } else {
+        snapPullX = 0;
+        snapPullY = 0;
+        snapPullDist = 0;
+      }
+      
+      // Glides and snaps to the target coordinate (0.15 LERP) for responsive and soft magnetization
       cX += (targetX - cX) * 0.15;
       cY += (targetY - cY) * 0.15;
       
@@ -551,12 +599,8 @@
       snapOffsetY = cY - mouseY;
     } else {
       // Release snap: decay the offset based on time and mouse movement
-      const vx = mouseX - lastMouseX;
-      const vy = mouseY - lastMouseY;
-      const mouseDist = Math.sqrt(vx * vx + vy * vy);
-      
-      // When mouse is stationary (mouseDist = 0), decay = 1.0 (no decay, stays stationary)
-      const decay = Math.exp(-mouseDist * 0.08);
+      // When mouse is stationary (speed = 0), decay = 1.0 (no decay, stays stationary)
+      const decay = Math.exp(-speed * 0.08);
       snapOffsetX *= decay;
       snapOffsetY *= decay;
       
@@ -576,10 +620,7 @@
     t1X += (cX - t1X) * 0.11;
     t1Y += (cY - t1Y) * 0.11;
 
-    // 2. Calculate mouse velocity (speed & direction)
-    const vx = mouseX - lastMouseX;
-    const vy = mouseY - lastMouseY;
-    const speed = Math.sqrt(vx * vx + vy * vy);
+    // 2. Calculate mouse velocity (speed & direction) - already computed early in loop
     
     // Smooth the velocity components only for steering angle calculation to filter high-frequency noise
     fVx += (vx - fVx) * 0.25;
@@ -724,14 +765,24 @@
     const basePitch = isReturningUpright 
       ? Math.min(Math.abs(diff) * 0.25, 12) 
       : Math.min(cursorSpeed * 1.5, 30);
-    const targetPitch = isActuallyHovered ? 0 : basePitch;
     
-    // Turning-based Roll: banking left/right into sharp turns (rolls dynamically during the return-to-upright straightening turn)
-    const targetRoll = isActuallyHovered 
-      ? 0 
-      : (isReturningUpright 
-          ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
-          : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0)); // Driven by LERP-smoothed cursorSpeed
+    // When hovered/snapped, tilt in the direction of the elastic pull
+    let targetPitch = basePitch;
+    let targetRoll = isReturningUpright 
+      ? Math.max(-20, Math.min(20, diff * 0.6)) // Subtle and elegant roll (max 20 degrees) to prevent layer splitting
+      : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
+
+    if (isActuallyHovered) {
+      if (snapPullDist > 0) {
+        // Roll: horizontal tilt from snapPullX (cap at 15px pull -> 18deg tilt)
+        // Pitch: vertical tilt from snapPullY (cap at 15px pull -> 18deg tilt)
+        targetRoll = (snapPullX / 15) * 18;
+        targetPitch = -(snapPullY / 15) * 18;
+      } else {
+        targetPitch = 0;
+        targetRoll = 0;
+      }
+    }
     
     // Dynamic stretch/squish: stretch length (Y) and compress width (X) (retains organic deformation during return-to-upright)
     const targetStretchX = isReturningUpright 
@@ -748,7 +799,8 @@
     currentStretchY += (targetStretchY - currentStretchY) * 0.15;
 
     // Snapping logic to completely eliminate subpixel drift/residual tilt when the mouse stops moving (locks smoothly when close to target)
-    if (cursorSpeed < 0.1 && speed < 0.1) {
+    // Also protect the snapping phase during active elastic snapping pulls
+    if (cursorSpeed < 0.1 && speed < 0.1 && snapPullDist < 0.1) {
       if (isActuallyHovered) {
         // For circular shape, lock tilt and stretch immediately to prevent elliptical distortion,
         // but let rotation angle snap only when it has smoothly eased close to -90 (prevents chrome flow flashing)
@@ -798,15 +850,34 @@
     }
 
     // Apply 3D tilt, rotation, and dynamic scale warping on the child 3D containers (no spinRoll)
+    let transform3dStr = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg)`;
+    let trailTransform3dStr = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg)`;
+    
+    if (isActuallyHovered) {
+      if (snapPullDist > 0.01) {
+        const pullAngle = Math.atan2(snapPullY, snapPullX);
+        const stretchAmt = (snapPullDist / 15) * 0.12;
+        const squeezeAmt = (snapPullDist / 15) * 0.08;
+        transform3dStr += ` scale(${currentScale}) rotate(${pullAngle}rad) scale(${1 + stretchAmt}, ${1 - squeezeAmt}) rotate(${-pullAngle}rad)`;
+        trailTransform3dStr += ` scale(${currentTrailScale}) rotate(${pullAngle}rad) scale(${1 + stretchAmt}, ${1 - squeezeAmt}) rotate(${-pullAngle}rad)`;
+      } else {
+        transform3dStr += ` scale(${currentScale})`;
+        trailTransform3dStr += ` scale(${currentTrailScale})`;
+      }
+    } else {
+      const sX = currentScale * currentStretchX;
+      const sY = currentScale * currentStretchY;
+      const tsX = currentTrailScale * currentStretchX;
+      const tsY = currentTrailScale * currentStretchY;
+      transform3dStr += ` scale(${sX}, ${sY})`;
+      trailTransform3dStr += ` scale(${tsX}, ${tsY})`;
+    }
+
     if (cursor3dContainer) {
-      const sX = isActuallyHovered ? currentScale : (currentScale * currentStretchX);
-      const sY = isActuallyHovered ? currentScale : (currentScale * currentStretchY);
-      cursor3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${sX}, ${sY})`;
+      cursor3dContainer.style.transform = transform3dStr;
     }
     if (trail3dContainer) {
-      const sX = isActuallyHovered ? currentTrailScale : (currentTrailScale * currentStretchX);
-      const sY = isActuallyHovered ? currentTrailScale : (currentTrailScale * currentStretchY);
-      trail3dContainer.style.transform = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg) scale(${sX}, ${sY})`;
+      trail3dContainer.style.transform = trailTransform3dStr;
     }
 
     // Expose coordinates and hovered element globally for particle effect alignment
