@@ -17,6 +17,9 @@ Object.defineProperty(window, '__isRouteTransitioning', {
 });
 window.__isDetailClosing = false;
 
+let is3DCardActive = false;
+let floatTween = null;
+
 function buildGalleryHTML(gallery) {
   if (!gallery || !gallery.length) return '';
   // Determine layout class based on count
@@ -56,6 +59,24 @@ function renderDetailContent(data, heroImg) {
     if (heroSkeleton) { heroSkeleton.classList.add('hidden'); }
   };
   heroEl.src = heroImg;
+
+  // Set 3D Card image and calculate aspect ratio dimensions
+  const card3dImg = document.getElementById('detail3dCardImg');
+  if (card3dImg) {
+    card3dImg.onload = function() {
+      const aspectRatio = card3dImg.naturalWidth / card3dImg.naturalHeight || 16/9;
+      const cardEl = document.getElementById('detail3dCard');
+      if (cardEl) {
+        const isMobile = window.innerWidth <= 768;
+        const maxH = isMobile ? window.innerHeight * 0.28 : window.innerHeight * 0.42;
+        const height = Math.min(360, Math.max(200, maxH));
+        cardEl.style.height = height + 'px';
+        cardEl.style.width = (height * aspectRatio) + 'px';
+      }
+    };
+    card3dImg.src = heroImg;
+  }
+
   document.getElementById('detailMeta').innerHTML = Object.keys(data.meta).map(function(k) {
     return '<div class="detail-meta-item"><span class="detail-meta-label">' + k + '</span><span class="detail-meta-value">' + data.meta[k] + '</span></div>';
   }).join('');
@@ -290,6 +311,21 @@ function closeDetail(popState) {
         // Reset DOM hero image
         if (detailHeroImg) gsap.set(detailHeroImg, { opacity: 1 });
 
+        // Reset 3D Card active state and float animations
+        is3DCardActive = false;
+        if (floatTween) {
+          floatTween.kill();
+          floatTween = null;
+        }
+        gsap.set('#detail3dContainer', { opacity: 0, scale: 0.8, pointerEvents: 'none' });
+        gsap.set('.detail-hero-content', { opacity: 1, scale: 1, pointerEvents: 'auto' });
+        gsap.set('#detail3dCard', { rotateX: 0, rotateY: 0, x: 0, y: 0 });
+        const glare = document.getElementById('detail3dCardGlare');
+        if (glare) {
+          glare.style.opacity = 0;
+          glare.style.background = '';
+        }
+
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
@@ -395,6 +431,9 @@ document.addEventListener('DOMContentLoaded', function() {
   if (lbPrev) lbPrev.addEventListener('click', lightboxPrev);
   if (lbNext) lbNext.addEventListener('click', lightboxNext);
   if (lb) lb.addEventListener('click', function(e) { if (e.target === e.currentTarget) closeLightbox(); });
+
+  // Setup 3D card hover/click interaction
+  setupDetail3DCard();
 });
 
 document.addEventListener('keydown', function(e) {
@@ -410,6 +449,105 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowDown') { e.preventDefault(); window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' }); }
   if (e.key === 'ArrowUp') { e.preventDefault(); window.scrollBy({ top: -window.innerHeight * 0.7, behavior: 'smooth' }); }
 });
+
+function setupDetail3DCard() {
+  const hero = document.querySelector('.detail-hero');
+  const card = document.getElementById('detail3dCard');
+  const container = document.getElementById('detail3dContainer');
+  const glare = document.getElementById('detail3dCardGlare');
+  
+  if (!hero || !card || !container || !glare) return;
+
+  hero.addEventListener('click', function(e) {
+    // Prevent toggle if clicking on the close button or other links/buttons
+    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
+      return;
+    }
+    
+    if (!is3DCardActive) {
+      is3DCardActive = true;
+      gsap.to('#detailHeroImg', { opacity: 0, duration: 0.5, ease: 'power2.out' });
+      gsap.to('.detail-hero-content', { opacity: 0, scale: 0.95, duration: 0.5, ease: 'power2.out', pointerEvents: 'none' });
+      
+      gsap.set(container, { pointerEvents: 'auto' });
+      gsap.fromTo(container,
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }
+      );
+      
+      // Start floating bobbing animation loop
+      if (floatTween) floatTween.kill();
+      floatTween = gsap.fromTo('#detail3dFloatWrapper',
+        { y: -8 },
+        { y: 8, duration: 2, yoyo: true, repeat: -1, ease: 'power1.inOut' }
+      );
+    } else {
+      is3DCardActive = false;
+      gsap.to(container, {
+        opacity: 0,
+        scale: 0.8,
+        duration: 0.5,
+        ease: 'power2.out',
+        pointerEvents: 'none',
+        onComplete: () => {
+          if (floatTween) floatTween.pause();
+        }
+      });
+      gsap.to('#detailHeroImg', { opacity: 1, duration: 0.5, ease: 'power2.out' });
+      gsap.to('.detail-hero-content', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out', pointerEvents: 'auto' });
+      
+      // Reset rotation/translation smoothly
+      gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out' });
+      gsap.to(container, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' });
+      gsap.to(glare, { opacity: 0, duration: 0.8, ease: 'power2.out' });
+    }
+  });
+
+  hero.addEventListener('mousemove', function(e) {
+    if (!is3DCardActive) return;
+    
+    const rect = hero.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Normalized coordinates from -1 to 1
+    const px = (mouseX / rect.width) * 2 - 1;
+    const py = (mouseY / rect.height) * 2 - 1;
+    
+    // Tilt rotation: rotateY responds to X, rotateX responds to Y
+    gsap.to(card, {
+      rotateY: px * 28,
+      rotateX: -py * 28,
+      duration: 0.4,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+    
+    // Parallax container offset
+    gsap.to(container, {
+      x: px * 15,
+      y: py * 15,
+      duration: 0.4,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+    
+    // Gloss overlay reflection
+    const angle = Math.atan2(py, px) * (180 / Math.PI) - 90;
+    const opacity = Math.min(0.65, Math.sqrt(px*px + py*py) * 0.55);
+    glare.style.opacity = opacity;
+    glare.style.background = `linear-gradient(${angle}deg, rgba(255,255,255,${opacity}) 0%, rgba(255,255,255,0) 70%)`;
+  });
+
+  hero.addEventListener('mouseleave', function() {
+    if (!is3DCardActive) return;
+    
+    // Animate back to center
+    gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(container, { x: 0, y: 0, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(glare, { opacity: 0, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
+  });
+}
 
 window.openDetail = openDetail;
 window.closeDetail = closeDetail;
