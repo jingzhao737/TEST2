@@ -1,12 +1,5 @@
 [
   {
-    "step": 85,
-    "timestamp": "2026-06-12 01:14:19",
-    "description": "Change laser canvas mix-blend-mode to normal and allow drawing LERP to catch up to release coordinate",
-    "folder": "step_085_Change_laser_canvas_mix-blend-mode_to_normal_and_allow_drawing_LERP_to_catch_up_to_release_coordinate",
-    "is_auto": false
-  },
-  {
     "step": 86,
     "timestamp": "2026-06-12 01:17:02",
     "description": "Change laser lines mix-blend-mode to screen in dark mode and multiply in light mode to fix visibility and stacking issues",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:04:50",
     "description": "Restore volume HUD font to Climate Crisis",
     "folder": "step_104_Restore_volume_HUD_font_to_Climate_Crisis",
+    "is_auto": false
+  },
+  {
+    "step": 105,
+    "timestamp": "2026-06-16 01:07:40",
+    "description": "Update walkthrough documentation with version tag details",
+    "folder": "step_105_Update_walkthrough_documentation_with_version_tag_details",
     "is_auto": false
   }
 ]
