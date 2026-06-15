@@ -55,16 +55,25 @@ if (!isMobileDevice) {
     // Singleton DOM
     const wrapper = document.createElement('div');
     wrapper.className = 'work-preview-wrapper';
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = '0';
+    wrapper.style.top = '0';
+    wrapper.style.transformStyle = 'preserve-3d';
+    wrapper.style.zIndex = 'auto';
 
     const orangeLayer = document.createElement('div');
     orangeLayer.className = 'work-preview-orange-layer';
+    orangeLayer.style.transformStyle = 'preserve-3d';
+    orangeLayer.style.zIndex = 'auto';
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'work-preview-img-container';
+    imgContainer.style.transformStyle = 'preserve-3d';
+    imgContainer.style.zIndex = 'auto';
 
     wrapper.appendChild(orangeLayer);
     wrapper.appendChild(imgContainer);
-    document.body.appendChild(wrapper);
+    workList.appendChild(wrapper);
 
     // Initial State (only set autoAlpha on wrapper since children scale individually in RAF)
     gsap.set(wrapper, { autoAlpha: 0 });
@@ -238,12 +247,21 @@ if (!isMobileDevice) {
       const offsetX = 30;
       const offsetY = 110;
 
+      // Page-relative mouse coordinates
+      const pageMouseX = rawMouseX + window.scrollX;
+
+      // Local flat X position inside work-list
+      const localX = pageMouseX - wPageRect.left;
+
       if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
-        targetX = rawMouseX - previewWidth - offsetX;
+        targetX = localX - previewWidth - offsetX;
       } else {
-        targetX = rawMouseX + offsetX;
+        targetX = localX + offsetX;
       }
-      targetY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 20, rawMouseY - offsetY);
+
+      // Keep targetY clamped relative to visible viewport bounds, then convert to local coordinate
+      const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 20, rawMouseY - offsetY);
+      targetY = clampedViewportY + window.scrollY - wPageRect.top;
     });
 
     // Helper functions for 3D projection hit-testing
@@ -436,11 +454,11 @@ if (!isMobileDevice) {
         gsap.set(imgContainer, {
           x: currentX,
           y: currentY,
+          z: 15, // Lifted above the cards to hover in 3D space
           scale: currentScale,
           rotationY: currentTiltY,
           rotationX: currentTiltX,
           rotation: currentTiltZ,
-          transformPerspective: 1000,
           force3D: true
         });
 
@@ -449,11 +467,11 @@ if (!isMobileDevice) {
         gsap.set(orangeLayer, {
           x: currentOrangeX,
           y: currentOrangeY,
+          z: 5, // Lifted slightly less than the image container to float underneath
           scale: currentScale,
           rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
           rotationX: currentOrangeTiltX * 0.8,
           rotation: currentOrangeTiltZ * 0.8,
-          transformPerspective: 1000,
           force3D: true
         });
       } else {
