@@ -2805,7 +2805,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 200px;
   height: 138px;
   border-radius: 12px;
-  border: 1px solid var(--accent);
+  border: 2px solid var(--accent);
   z-index: 2;
   overflow: hidden; 
   background: #0d0d0f;
