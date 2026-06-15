@@ -1,12 +1,5 @@
 [
   {
-    "step": 97,
-    "timestamp": "2026-06-16 00:51:55",
-    "description": "Updated walkthrough documentation",
-    "folder": "step_097_Updated_walkthrough_documentation",
-    "is_auto": false
-  },
-  {
     "step": 98,
     "timestamp": "2026-06-16 00:57:16",
     "description": "Fix record playback restart on latch",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:26:37",
     "description": "Compensate for perspective projection shift to align 3D discs with 2D ropes",
     "folder": "step_116_Compensate_for_perspective_projection_shift_to_align_3D_discs_with_2D_ropes",
+    "is_auto": false
+  },
+  {
+    "step": 117,
+    "timestamp": "2026-06-16 01:28:50",
+    "description": "Upgrade rope rendering to 3D spring coiled cord with physical stretch and highlights",
+    "folder": "step_117_Upgrade_rope_rendering_to_3D_spring_coiled_cord_with_physical_stretch_and_highlights",
     "is_auto": false
   }
 ]

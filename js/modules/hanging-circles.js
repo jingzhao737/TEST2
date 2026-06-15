@@ -906,43 +906,80 @@ import * as THREE from 'three';
     }
   }
 
-  function drawString(ax, ay, bx, by, sway) {
+  function drawString(ax, ay, bx, by, sway, restLen) {
     let dx = bx - ax, dy = by - ay;
     let len = Math.sqrt(dx * dx + dy * dy);
     if (len < 2) return;
-    let segments = Math.floor(len * 2);
-    if (segments < 40) segments = 40;
-    let coils = Math.floor(len / 24);
-    if (coils < 2) coils = 2;
-    let amp = 12;
 
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
     let perpX = -dy / len;
     let perpY = dx / len;
-    let subSegs = Math.floor(segments / 6);
-    if (subSegs < 8) subSegs = 8;
-    for (let g = 0; g < subSegs; g++) {
-      let t0 = g / subSegs;
-      let t1 = (g + 1) / subSegs;
-      let alpha = 0.28 * (t0 + t1) / 2;
-      let sc0 = sway * Math.sin(t0 * Math.PI) * len * 0.35;
-      let sc1 = sway * Math.sin(t1 * Math.PI) * len * 0.35;
+
+    // Constant number of coils based on rest length (spring stretches physically!)
+    let coils = Math.max(6, Math.floor(restLen / 20)); 
+    let maxAngle = coils * Math.PI * 2;
+
+    // Physical spring stretch dynamics
+    let stretch = len / restLen;
+    let amp = 10.5 * Math.max(0.35, Math.min(1.8, 1 / Math.sqrt(stretch)));
+    let baseLineWidth = 3.6 * Math.max(0.6, Math.min(1.4, 1 / Math.sqrt(stretch)));
+
+    // We divide the spring into half-loops of angle PI
+    // Odd indices are back loops, Even indices are front loops
+    let totalHalfLoops = Math.ceil(maxAngle / Math.PI);
+
+    // Drop Shadow configuration
+    ctx.save();
+
+    // Helper to draw a single half-loop path
+    function pathHalfLoop(ctx, i) {
+      let thetaS = Math.max(0, i * Math.PI - Math.PI / 2);
+      let thetaE = Math.min(maxAngle, i * Math.PI + Math.PI / 2);
+      if (thetaS >= thetaE) return;
+
       ctx.beginPath();
-      let x0 = ax + dx * t0 + perpX * (Math.sin(t0 * coils * Math.PI * 2) * amp + sc0);
-      let y0 = ay + dy * t0 + perpY * (Math.sin(t0 * coils * Math.PI * 2) * amp + sc0);
-      ctx.moveTo(x0, y0);
-      let steps = Math.floor((t1 - t0) * segments);
-      if (steps < 4) steps = 4;
-      for (let s = 1; s <= steps; s++) {
-        let tt = t0 + (s / steps) * (t1 - t0);
-        let sc = sway * Math.sin(tt * Math.PI) * len * 0.35;
-        let x = ax + dx * tt + perpX * (Math.sin(tt * coils * Math.PI * 2) * amp + sc);
-        let y = ay + dy * tt + perpY * (Math.sin(tt * coils * Math.PI * 2) * amp + sc);
-        ctx.lineTo(x, y);
+      let steps = 12;
+      for (let s = 0; s <= steps; s++) {
+        let theta = thetaS + (thetaE - thetaS) * (s / steps);
+        let t = theta / maxAngle;
+        let Px = ax + dx * t;
+        let Py = ay + dy * t;
+        let swayOffset = sway * Math.sin(t * Math.PI) * len * 0.3;
+        let offsetP = Math.sin(theta) * amp + swayOffset;
+        let x = Px + offsetP * perpX;
+        let y = Py + offsetP * perpY;
+        if (s === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(232,124,80,' + (0.6 + alpha * 1.4) + ')';
-      ctx.lineWidth = 3.5;
+    }
+
+    // 1. Draw all Back loops first (no shadow)
+    ctx.shadowColor = 'transparent';
+    for (let i = 1; i < totalHalfLoops; i += 2) {
+      pathHalfLoop(ctx, i);
+      ctx.strokeStyle = 'rgba(95, 30, 10, 0.65)';
+      ctx.lineWidth = baseLineWidth * 0.7;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 2. Draw all Front loops on top (with shadow & double-stroke highlight)
+    for (let i = 0; i < totalHalfLoops; i += 2) {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.32)';
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 4;
+
+      pathHalfLoop(ctx, i);
+      ctx.strokeStyle = 'rgba(232, 124, 80, 0.95)';
+      ctx.lineWidth = baseLineWidth;
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw the highlight shine on top (no shadow)
+      pathHalfLoop(ctx, i);
+      ctx.strokeStyle = '#ffece0';
+      ctx.lineWidth = baseLineWidth * 0.28;
       ctx.stroke();
     }
   }
@@ -963,7 +1000,8 @@ import * as THREE from 'three';
       let ex = t.x - rdx * (hideBot / rDist);
       let ey = t.y - rdy * (hideBot / rDist);
       let sway = t._sway || 0;
-      drawString(sx, sy, ex, ey, sway);
+      let restVisLen = t.stringLen - hideTop - hideBot;
+      drawString(sx, sy, ex, ey, sway, restVisLen);
     }
   }
 
