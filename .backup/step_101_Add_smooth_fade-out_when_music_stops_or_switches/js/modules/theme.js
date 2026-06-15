@@ -6,21 +6,51 @@
   let btn = document.getElementById('themeToggle');
   let wrapper = document.getElementById('themePullWrapper');
   let stringEl = document.getElementById('themePullString');
+  let anchor = document.getElementById('navThemeAnchor');
+  let menuBtn = document.getElementById('navMenuBtn');
   if (!btn) return;
+
+  // Position the anchor div to align with the nav-menu-btn center
+  function positionAnchor() {
+    if (!anchor || !menuBtn) return;
+    // Read from the nav element for the vertical position so button hover
+    // effects (border/scale changes) don't shift the anchor downward
+    const navEl = document.getElementById('nav');
+    const navBottom = navEl ? navEl.getBoundingClientRect().bottom : menuBtn.getBoundingClientRect().bottom;
+    const r = menuBtn.getBoundingClientRect();
+    anchor.style.top = navBottom + 'px';
+    anchor.style.left = (r.left + r.width / 2) + 'px';
+  }
+  positionAnchor();
+  window.addEventListener('resize', positionAnchor);
+  window.addEventListener('scroll', positionAnchor, { passive: true });
+  // Watch for nav class changes (e.g. 'scrolled' added/removed) instead of
+  // polling every 500ms — avoids repositioning during menu-btn hover states
+  var navEl = document.getElementById('nav');
+  if (navEl) {
+    new MutationObserver(positionAnchor).observe(navEl, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
 
   // ── Audio ──
   let audioCtx = null;
   let clickBuffer = null;
   function initAudio() {
     if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      fetch('sound/sound1/Ding.wav')
-        .then(function(r) { return r.arrayBuffer(); })
-        .then(function(buf) { return audioCtx.decodeAudioData(buf); })
-        .then(function(b) { clickBuffer = b; })
-        .catch(function() {});
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtx = window.__audioCtx || (window.__audioCtx = new AudioContextClass());
+      }
     }
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx) {
+      if (!clickBuffer) {
+        fetch('sound/sound1/Ding.wav')
+          .then(function(r) { return r.arrayBuffer(); })
+          .then(function(buf) { return audioCtx.decodeAudioData(buf); })
+          .then(function(b) { clickBuffer = b; })
+          .catch(function() {});
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
   }
   function playClick() {
     if (!audioCtx || !clickBuffer) return;
@@ -29,7 +59,7 @@
     src.buffer = clickBuffer;
     src.playbackRate.value = 0.92 + Math.random() * 0.16;
     gain.gain.setValueAtTime(0.4 + Math.random() * 0.2, audioCtx.currentTime);
-    src.connect(gain).connect(audioCtx.destination);
+    src.connect(gain).connect(window.__masterGainNode || audioCtx.destination);
     src.start(audioCtx.currentTime);
   }
   function playBounce() { playClick(); }
@@ -65,6 +95,7 @@
       playClick();
       dragging = false;
       springBack();
+      setTimeout(_removeOverlay, 150);
     }
   }
 
@@ -109,10 +140,42 @@
     localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
   }
 
+  // ── Drag Overlay ──
+  // A fullscreen transparent div placed over all content during drag.
+  // This ensures mouseup/click physically land on the overlay, not on
+  // underlying elements like works cards, regardless of JS event order.
+  let _dragOverlay = null;
+
+  function _createOverlay() {
+    if (_dragOverlay) return;
+    _dragOverlay = document.createElement('div');
+    _dragOverlay.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'z-index:150',
+      'pointer-events:auto',
+      'cursor:grabbing',
+      'user-select:none',
+      '-webkit-user-select:none'
+    ].join(';');
+    document.body.appendChild(_dragOverlay);
+    // navThemeAnchor is z-index:202 (above overlay at 150) — no change needed
+  }
+
+  function _removeOverlay() {
+    if (_dragOverlay) {
+      _dragOverlay.remove();
+      _dragOverlay = null;
+    }
+    window.__isDraggingTheme = false;
+  }
+
   function onStart(e) {
     if (dragging || inMotion) return;
     initAudio();
     dragging = true; toggled = false;
+    window.__isDraggingTheme = true;
+    _createOverlay();
     e.preventDefault();
     wrapper.style.transition = 'none';
     stringEl.style.transition = 'none';
@@ -138,6 +201,10 @@
     } else if (!inMotion) {
       springBack();
     }
+    // Remove overlay after a short delay — long enough for the browser's
+    // click event (which fires right after mouseup) to land on the overlay
+    // harmlessly, short enough to not noticeably delay normal interaction.
+    setTimeout(_removeOverlay, 150);
   }
 
   setPull(0);

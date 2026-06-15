@@ -1,12 +1,5 @@
 [
   {
-    "step": 81,
-    "timestamp": "2026-06-12 01:08:28",
-    "description": "Implement global interactive click sound effects using event delegation",
-    "folder": "step_081_Implement_global_interactive_click_sound_effects_using_event_delegation",
-    "is_auto": false
-  },
-  {
     "step": 82,
     "timestamp": "2026-06-12 01:10:35",
     "description": "Add non-interactive laser spark burst and trail drawing overlay using canvas",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 00:59:58",
     "description": "Add smooth fade out transition when music stops or switches",
     "folder": "step_100_Add_smooth_fade_out_transition_when_music_stops_or_switches",
+    "is_auto": false
+  },
+  {
+    "step": 101,
+    "timestamp": "2026-06-16 01:00:18",
+    "description": "Add smooth fade-out when music stops or switches",
+    "folder": "step_101_Add_smooth_fade-out_when_music_stops_or_switches",
     "is_auto": false
   }
 ]
