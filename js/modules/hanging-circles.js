@@ -191,6 +191,7 @@ import * as THREE from 'three';
           ringLoaded[idx] = true;
           if (discs[idx]) {
             discs[idx].labelMesh.material.map = canvasTexture;
+            discs[idx].labelMesh.material.emissiveMap = canvasTexture;
             discs[idx].labelMesh.material.needsUpdate = true;
           }
         }, undefined, function() {
@@ -581,6 +582,8 @@ import * as THREE from 'three';
 
         const labelMat = new THREE.MeshPhysicalMaterial({
           map: ringTextures[i] || null,
+          emissiveMap: ringTextures[i] || null,
+          emissive: 0x777777,
           roughness: 0.55,
           metalness: 0.02,
           clearcoat: 0.12,
