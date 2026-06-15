@@ -1,6 +1,16 @@
 ;// ═══════════ SOUND EFFECTS (Web Audio API Synthesizer) ═══════════
 (function() {
   let audioCtx = null;
+  const cardClickAudio = new Audio('sound/sound1/click1.mp3');
+  cardClickAudio.preload = 'auto';
+  cardClickAudio.volume = 0.5;
+
+  function playCardClickSound() {
+    if (cardClickAudio) {
+      cardClickAudio.currentTime = 0;
+      cardClickAudio.play().catch(e => console.warn('Failed to play card click sound:', e));
+    }
+  }
 
   function getAudioContext() {
     if (!audioCtx) {
@@ -101,6 +111,14 @@
     document.addEventListener('mousedown', (e) => {
       const target = e.target;
       if (!target) return;
+
+      // Check if clicking a works card
+      const isWorkCard = typeof target.closest === 'function' && target.closest('.work-card');
+      if (isWorkCard) {
+        playCardClickSound();
+        return;
+      }
+
       // Check if clicking an interactive element (louder click) vs. blank area (lighter hover tone)
       const isInteractive = typeof target.closest === 'function' && target.closest(interactiveSelector);
       if (isInteractive) {
