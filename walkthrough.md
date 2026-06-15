@@ -594,3 +594,29 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 503），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 解决纯垂直移动时 3D 预览视口产生左右倾斜偏斜的问题
+
+### 1. 问题现象与原因分析
+- **纯垂直移动产生左右倾斜 (Vertical Movement Triggers Side Skew)**:
+  - 现象：当鼠标纯垂直上下移动时，本应只触发纯上下三维倾斜（绕 X 轴旋转 `rotateX`），但视觉上预览图和色块却产生了极明显的左右偏移和侧斜（类似 `rotateY` 或 Z 轴倾斜）。而斜向移动时表现正常。
+  - **JS 逻辑验证**：通过自动化脚本抓取并打印运行时 `.work-preview-img-container` 的 transform 属性，结果显示：在纯垂直移动时，`rotationY`（绕 Y 轴旋转）和 `rotation`（绕 Z 轴旋转）均精准为 `0`，仅有 `rotateX` 产生了对应数值（例如 `rotateX(-0.85deg)`）。这意味着**JS 计算公式和阻尼物理在数学逻辑上是完全正确的**，不存在交叉污染或多余计算。
+  - **根本原因 (CSS 3D Projection Coupling)**：
+    - 在原本的 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中，父容器 `.work-preview-wrapper` 具有全局视角透视属性 `perspective: 1000px`，其物理尺寸为 `width: 0; height: 0; position: fixed; left: 0; top: 0;`。这意味着**透视原点 (Perspective Origin) 强行固定在屏幕左上角 (0, 0)**。
+    - 预览图 `.work-preview-img-container` 被平移到鼠标坐标处（如屏幕右侧 `x = 950px`）。由于它距离透视原点极远，在 CSS 3D 渲染管线中，任何绕 X 轴的旋转都会因为“视角倾斜投射”而在横向产生巨大的透视梯形偏斜。
+    - 随着鼠标上下移动（Y 轴位置变化），投射夹角改变，这种横向梯形偏斜程度和方向也随之剧烈摇摆，因而在视觉上形成了“垂直移动却导致左右倾斜”的假象。
+
+### 2. 解决方案与修改
+- **移去父容器透视 (Remove Wrapper Perspective)**:
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中删除了 `.work-preview-wrapper` 上的 `perspective: 1000px;` 属性。
+- **改用元素局部透视 (Element-Local Perspective)**:
+  - 维持在 [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js) 中通过 GSAP 为两个独立运动层（`.work-preview-img-container` 和 `.work-preview-orange-layer`）设置的 `transformPerspective: 1000` 属性。
+  - **局部透视的优势**：这会让浏览器为每个子元素在其**自身的中心点 (Center Origin)** 建立独立的局部 3D 视椎体。当发生绕 X 轴旋转时，透视变换只基于自身中心发生，完美消除了由屏幕坐标偏置（Off-center placement）带来的三维投影畸变。
+  - 优化后，纯上下移动鼠标只产生纯正的上下倾斜；斜向移动时，横向与纵向偏角完美叠加。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 526/527），自动部署线上页面。

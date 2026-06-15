@@ -2770,7 +2770,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   z-index: 90;
   opacity: 0;
   visibility: hidden;
-  perspective: 1000px;
   overflow: visible;
 }
 
