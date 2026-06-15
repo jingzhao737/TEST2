@@ -1098,3 +1098,29 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新运行 `npx vite build` 完成生产环境打包测试，无任何语法或编译错误。
 - 使用 `git push` 将优化后的逻辑同步推送至远程 `main` 分支，部署上线。
+
+
+---
+
+## 🛠️ Feature: 网页声波 Canvas 音量条与全局 Web Audio Master Gain 调节功能
+
+### 1. 需求分析
+- **声波交互音量化**：左上角的声波 Canvas 在具备切歌/开关音乐的基础上，新增左右拖动（滑动）调节网页音量的功能。
+- **波浪起伏感应**：音量滑动时，波浪的高度与起伏应当跟随音量按比例缩放，静音（0%）时波浪缩窄为平静的水平直线。
+- **全局声音调整**：滑动不仅改变背景音乐，网页里的卡片点击、悬停、拉绳等合成声效的音量需要同步缩放，达到控制“整个网页声音”的效果。
+- **视觉高档反馈**：滑动时叠加绘制出橙色发光的半透明滑动进度，并在中心以 Outfit 字体浮现诸如 `VOL: 80%` 的 HUD 文字标签，停止操作后渐隐淡出。
+
+### 2. 解决方案与修改
+- **Master Gain 全局控制管线**：
+  - 在 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js#L30-L45) 初始化中创建了全局唯一的 `window.__masterGainNode`，负责接管整个网页所有的 Web Audio API 输出。
+  - 在 [sound-effects.js](file:///D:/webprojext/js/modules/sound-effects.js)（卡片点击、悬浮、普通点击音效）和 [theme.js](file:///D:/webprojext/js/modules/theme.js)（拉绳丁音效）中，重构了底层合成器连接，将原本直接输出到 `ctx.destination` 的管线重定向连接至 `window.__masterGainNode`。
+- **防误触双重状态判定（Tap VS Drag）**：
+  - 在 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js#L225-L290) 中重新包装了拖动交互（支持桌面端 Mouse 与移动端 Touch 事件）。
+  - 根据横向拖动像素位移（$< 6\text{px}$）和持续时间（$< 250\text{ ms}$）区分是“轻触点击”（触发网页音乐 Play/Pause）还是“长拖调整音量”（只改音量，不干扰切歌状态）。
+- **持久化与视觉反馈**：
+  - 自动从 `localStorage` 中恢复之前的音量值 `globalVolume`（默认 80%），并在音量变更时同步保存。
+  - 重构 `draw()` 函数，将当前的全局音量直接乘以波浪基础幅度，并在调节音量时绘制发光条和 Outfit 字体音量文本，停止拖动 1.2 秒内完成渐隐过渡。
+
+### 3. 部署与验证
+- 重新运行了 `npx vite build` 生产编译构建，Rolldown 打包无任何报错。
+- 通过 `git push` 同步将更改和日志推送到 GitHub 的 `main` 远程分支。
