@@ -31,17 +31,166 @@ import * as THREE from 'three';
   let ringLoaded = [false, false, false, false];
   const textureLoader = new THREE.TextureLoader();
 
+  function drawArchText(ctx, text, centerX, centerY, radius, startAngle, isUpward) {
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    
+    const chars = text.split('');
+    const widths = chars.map(c => ctx.measureText(c).width);
+    const totalWidth = widths.reduce((a, b) => a + b, 0);
+    const totalAngle = totalWidth / radius;
+    
+    let currentAngle = startAngle - totalAngle / 2;
+    
+    for (let i = 0; i < chars.length; i++) {
+      const char = chars[i];
+      const charAngle = widths[i] / radius;
+      const midAngle = currentAngle + charAngle / 2;
+      
+      ctx.save();
+      ctx.rotate(midAngle);
+      
+      if (isUpward) {
+        ctx.translate(0, radius);
+        ctx.rotate(Math.PI);
+      } else {
+        ctx.translate(0, -radius);
+      }
+      
+      ctx.fillText(char, 0, 0);
+      ctx.restore();
+      
+      currentAngle += charAngle;
+    }
+    
+    ctx.restore();
+  }
+
+  function drawVinylLabel(image, card, knobColor) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Background (deep rich off-black paper)
+    const grad = ctx.createRadialGradient(256, 256, 35, 256, 256, 256);
+    grad.addColorStop(0, '#151518');
+    grad.addColorStop(0.8, '#0f0f11');
+    grad.addColorStop(1, '#0b0b0c');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Draw Cover Image in the center circle (using cover/clip)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(256, 256, 166, 0, Math.PI * 2);
+    ctx.clip();
+
+    const iw = image.naturalWidth || image.width;
+    const ih = image.naturalHeight || image.height;
+    const aspect = iw / ih;
+    let dw, dh, dx, dy;
+    if (aspect > 1) {
+      dh = 332;
+      dw = 332 * aspect;
+      dx = 256 - dw / 2;
+      dy = 256 - dh / 2;
+    } else {
+      dw = 332;
+      dh = 332 / aspect;
+      dx = 256 - dw / 2;
+      dy = 256 - dh / 2;
+    }
+    ctx.drawImage(image, dx, dy, dw, dh);
+    ctx.restore();
+
+    // 3. Draw dividing rings and accents
+    // Accent ring using the specific knob color
+    ctx.strokeStyle = knobColor;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(256, 256, 167.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner shadow ring overlay on cover image for depth
+    const shadowGrad = ctx.createRadialGradient(256, 256, 140, 256, 256, 168);
+    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+    ctx.fillStyle = shadowGrad;
+    ctx.beginPath();
+    ctx.arc(256, 256, 168, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Clean separation rings
+    ctx.strokeStyle = '#2b2b31';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(256, 256, 172, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(256, 256, 250, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Subtly drawn concentric groove lines on the outer label paper
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let r = 180; r < 245; r += 12) {
+      ctx.beginPath();
+      ctx.arc(256, 256, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Inner spindle border
+    ctx.strokeStyle = '#2c2c32';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(256, 256, 36, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 4. Extract card information and draw text
+    let title = card.querySelector('.work-name') ? card.querySelector('.work-name').textContent.trim() : 'TRACK';
+    let idxStr = card.querySelector('.work-idx') ? card.querySelector('.work-idx').textContent.trim() : 'NO. 0';
+    let year = card.querySelector('.work-year') ? card.querySelector('.work-year').textContent.trim() : '2026';
+    let tagsList = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.trim().toUpperCase());
+    let tagsStr = tagsList.join('  •  ') || 'STEREO RECORD';
+
+    let topText = `${title.toUpperCase()}  //  RELEASE ${year}`;
+    let bottomText = `${tagsStr}  •  ${idxStr}`;
+
+    // Text style
+    ctx.fillStyle = '#ecebeb';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    // Top text: Google Sans font for a sleek premium layout
+    ctx.font = "bold 13px 'Google Sans', sans-serif";
+    let spacedTopText = topText.split('').join(' ');
+    drawArchText(ctx, spacedTopText, 256, 256, 210, -Math.PI / 2, false);
+
+    // Bottom text: monospace clean font
+    ctx.fillStyle = '#8a8a93';
+    ctx.font = "9px monospace";
+    let spacedBottomText = bottomText.split('').join(' ');
+    drawArchText(ctx, spacedBottomText, 256, 256, 210, Math.PI / 2, true);
+
+    return canvas;
+  }
+
   (function preloadImages() {
     let cards = document.querySelectorAll('.work-card');
     cards.forEach(function(card, i) {
       if (i >= 4) return;
       (function(idx) {
         textureLoader.load(card.dataset.image, function(texture) {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          ringTextures[idx] = texture;
+          // Generate dynamic vinyl label canvas texture
+          const labelCanvas = drawVinylLabel(texture.image, card, knobColors[idx]);
+          const canvasTexture = new THREE.CanvasTexture(labelCanvas);
+          canvasTexture.colorSpace = THREE.SRGBColorSpace;
+          
+          ringTextures[idx] = canvasTexture;
           ringLoaded[idx] = true;
           if (discs[idx]) {
-            discs[idx].labelMesh.material.map = texture;
+            discs[idx].labelMesh.material.map = canvasTexture;
             discs[idx].labelMesh.material.needsUpdate = true;
           }
         }, undefined, function() {
@@ -427,10 +576,12 @@ import * as THREE from 'three';
         }
         uvL.needsUpdate = true;
 
-        const labelMat = new THREE.MeshStandardMaterial({
+        const labelMat = new THREE.MeshPhysicalMaterial({
           map: ringTextures[i] || null,
-          roughness: 0.6,
-          metalness: 0.05,
+          roughness: 0.55,
+          metalness: 0.02,
+          clearcoat: 0.12,
+          clearcoatRoughness: 0.45,
           side: THREE.DoubleSide
         });
         const labelMesh = new THREE.Mesh(labelGeom, labelMat);

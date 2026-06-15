@@ -1,12 +1,5 @@
 [
   {
-    "step": 94,
-    "timestamp": "2026-06-12 01:38:56",
-    "description": "Disable outer glow drop shadow for grab state cursor",
-    "folder": "step_094_Disable_outer_glow_drop_shadow_for_grab_state_cursor",
-    "is_auto": false
-  },
-  {
     "step": 95,
     "timestamp": "2026-06-16 00:46:33",
     "description": "Adjust volume HUD alignment and delay",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:20:41",
     "description": "Adjust vinyl record proportions to make cover image larger",
     "folder": "step_113_Adjust_vinyl_record_proportions_to_make_cover_image_larger",
+    "is_auto": false
+  },
+  {
+    "step": 114,
+    "timestamp": "2026-06-16 01:22:23",
+    "description": "Optimize vinyl record label graphics and typography",
+    "folder": "step_114_Optimize_vinyl_record_label_graphics_and_typography",
     "is_auto": false
   }
 ]

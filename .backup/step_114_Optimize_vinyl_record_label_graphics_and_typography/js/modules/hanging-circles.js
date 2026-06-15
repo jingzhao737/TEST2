@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 ;// ═══════════ HANGING CIRCLES ═══════════
 (function() {
   // Initialize shared global audio files so mobile can play them
@@ -19,22 +21,181 @@
   if ('ontouchstart' in window) { canvas.style.display = 'none'; return; }
   let ctx = canvas.getContext('2d');
 
+  let scene, camera, renderer, dirLight;
+  let discs = [];
+  let bumpTexture, shadowTexture;
+  let webglCanvas;
+
   let knobColors = ['#e85570', '#444444', '#bbbbbb', '#3ccda0'];
-  let ringImages = [null, null, null, null];
+  let ringTextures = [null, null, null, null];
   let ringLoaded = [false, false, false, false];
+  const textureLoader = new THREE.TextureLoader();
+
+  function drawArchText(ctx, text, centerX, centerY, radius, startAngle, isUpward) {
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    
+    const chars = text.split('');
+    const widths = chars.map(c => ctx.measureText(c).width);
+    const totalWidth = widths.reduce((a, b) => a + b, 0);
+    const totalAngle = totalWidth / radius;
+    
+    let currentAngle = startAngle - totalAngle / 2;
+    
+    for (let i = 0; i < chars.length; i++) {
+      const char = chars[i];
+      const charAngle = widths[i] / radius;
+      const midAngle = currentAngle + charAngle / 2;
+      
+      ctx.save();
+      ctx.rotate(midAngle);
+      
+      if (isUpward) {
+        ctx.translate(0, radius);
+        ctx.rotate(Math.PI);
+      } else {
+        ctx.translate(0, -radius);
+      }
+      
+      ctx.fillText(char, 0, 0);
+      ctx.restore();
+      
+      currentAngle += charAngle;
+    }
+    
+    ctx.restore();
+  }
+
+  function drawVinylLabel(image, card, knobColor) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Background (deep rich off-black paper)
+    const grad = ctx.createRadialGradient(256, 256, 35, 256, 256, 256);
+    grad.addColorStop(0, '#151518');
+    grad.addColorStop(0.8, '#0f0f11');
+    grad.addColorStop(1, '#0b0b0c');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Draw Cover Image in the center circle (using cover/clip)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(256, 256, 166, 0, Math.PI * 2);
+    ctx.clip();
+
+    const iw = image.naturalWidth || image.width;
+    const ih = image.naturalHeight || image.height;
+    const aspect = iw / ih;
+    let dw, dh, dx, dy;
+    if (aspect > 1) {
+      dh = 332;
+      dw = 332 * aspect;
+      dx = 256 - dw / 2;
+      dy = 256 - dh / 2;
+    } else {
+      dw = 332;
+      dh = 332 / aspect;
+      dx = 256 - dw / 2;
+      dy = 256 - dh / 2;
+    }
+    ctx.drawImage(image, dx, dy, dw, dh);
+    ctx.restore();
+
+    // 3. Draw dividing rings and accents
+    // Accent ring using the specific knob color
+    ctx.strokeStyle = knobColor;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(256, 256, 167.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner shadow ring overlay on cover image for depth
+    const shadowGrad = ctx.createRadialGradient(256, 256, 140, 256, 256, 168);
+    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+    ctx.fillStyle = shadowGrad;
+    ctx.beginPath();
+    ctx.arc(256, 256, 168, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Clean separation rings
+    ctx.strokeStyle = '#2b2b31';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(256, 256, 172, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(256, 256, 250, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Subtly drawn concentric groove lines on the outer label paper
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let r = 180; r < 245; r += 12) {
+      ctx.beginPath();
+      ctx.arc(256, 256, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Inner spindle border
+    ctx.strokeStyle = '#2c2c32';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(256, 256, 36, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 4. Extract card information and draw text
+    let title = card.querySelector('.work-name') ? card.querySelector('.work-name').textContent.trim() : 'TRACK';
+    let idxStr = card.querySelector('.work-idx') ? card.querySelector('.work-idx').textContent.trim() : 'NO. 0';
+    let year = card.querySelector('.work-year') ? card.querySelector('.work-year').textContent.trim() : '2026';
+    let tagsList = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.trim().toUpperCase());
+    let tagsStr = tagsList.join('  •  ') || 'STEREO RECORD';
+
+    let topText = `${title.toUpperCase()}  //  RELEASE ${year}`;
+    let bottomText = `${tagsStr}  •  ${idxStr}`;
+
+    // Text style
+    ctx.fillStyle = '#ecebeb';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    // Top text: Google Sans font for a sleek premium layout
+    ctx.font = "bold 13px 'Google Sans', sans-serif";
+    let spacedTopText = topText.split('').join(' ');
+    drawArchText(ctx, spacedTopText, 256, 256, 210, -Math.PI / 2, false);
+
+    // Bottom text: monospace clean font
+    ctx.fillStyle = '#8a8a93';
+    ctx.font = "9px monospace";
+    let spacedBottomText = bottomText.split('').join(' ');
+    drawArchText(ctx, spacedBottomText, 256, 256, 210, Math.PI / 2, true);
+
+    return canvas;
+  }
 
   (function preloadImages() {
     let cards = document.querySelectorAll('.work-card');
     cards.forEach(function(card, i) {
       if (i >= 4) return;
       (function(idx) {
-        let img = new Image();
-        img.src = card.dataset.image;
-        img.onload = function() {
-          ringImages[idx] = img;
+        textureLoader.load(card.dataset.image, function(texture) {
+          // Generate dynamic vinyl label canvas texture
+          const labelCanvas = drawVinylLabel(texture.image, card, knobColors[idx]);
+          const canvasTexture = new THREE.CanvasTexture(labelCanvas);
+          canvasTexture.colorSpace = THREE.SRGBColorSpace;
+          
+          ringTextures[idx] = canvasTexture;
           ringLoaded[idx] = true;
-        };
-        img.onerror = function() { ringLoaded[idx] = true; };
+          if (discs[idx]) {
+            discs[idx].labelMesh.material.map = canvasTexture;
+            discs[idx].labelMesh.material.needsUpdate = true;
+          }
+        }, undefined, function() {
+          ringLoaded[idx] = true;
+        });
       })(i);
     });
   })();
@@ -71,6 +232,50 @@
   }
   scheduleWind();
 
+  if (!window.__fadeOutAndPause) {
+    window.__fadeOutAndPause = function(audio, duration = 300, resetTime = false) {
+      if (!audio) return;
+      if (audio.paused) {
+        if (resetTime) audio.currentTime = 0;
+        return;
+      }
+      if (audio.__fadeTimer) {
+        clearInterval(audio.__fadeTimer);
+      }
+      const startVol = audio.__originalVolume || (audio.__originalVolume = audio.volume) || 0.6;
+      const steps = 15;
+      const interval = duration / steps;
+      let currentStep = 0;
+      
+      audio.__fadeTimer = setInterval(() => {
+        currentStep++;
+        let vol = startVol * (1 - currentStep / steps);
+        if (vol <= 0.01) {
+          clearInterval(audio.__fadeTimer);
+          audio.__fadeTimer = null;
+          audio.pause();
+          audio.volume = startVol;
+          if (resetTime) audio.currentTime = 0;
+        } else {
+          audio.volume = vol;
+        }
+      }, interval);
+    };
+  }
+
+  if (!window.__playAudioWithFade) {
+    window.__playAudioWithFade = function(audio) {
+      if (!audio) return;
+      if (audio.__fadeTimer) {
+        clearInterval(audio.__fadeTimer);
+        audio.__fadeTimer = null;
+      }
+      const startVol = audio.__originalVolume || (audio.__originalVolume = audio.volume) || 0.6;
+      audio.volume = startVol;
+      audio.play().catch(() => {});
+    };
+  }
+
   // --- audio players for each disc ---
   let audios = window.__bgAudios;
   let prevHoveredIdx = -1;
@@ -84,13 +289,17 @@
     if (newIdx === prevHoveredIdx) return;
     // Stop previous
     if (prevHoveredIdx >= 0 && prevHoveredIdx < 4) {
-      audios[prevHoveredIdx].pause();
-      audios[prevHoveredIdx].currentTime = 0;
+      window.__fadeOutAndPause(audios[prevHoveredIdx], 300, true);
     }
     // Play new
     if (newIdx >= 0 && newIdx < 4) {
-      audios[newIdx].currentTime = 0;
-      audios[newIdx].play().catch(function(){});
+      const targetAudio = audios[newIdx];
+      if (targetAudio.__fadeTimer) {
+        clearInterval(targetAudio.__fadeTimer);
+        targetAudio.__fadeTimer = null;
+      }
+      targetAudio.currentTime = 0;
+      window.__playAudioWithFade(targetAudio);
       window.__audioPlaying = true;
       window.__currentTrackIdx = newIdx;
       if (window.__updateNextBtnState) window.__updateNextBtnState();
@@ -105,10 +314,9 @@
   window.__navWaveForcePlay = function(idx) {
     window.__currentTrackIdx = idx;
     for (let i = 0; i < audios.length; i++) {
-      if (i !== idx) { audios[i].pause(); audios[i].currentTime = 0; }
+      if (i !== idx) { window.__fadeOutAndPause(audios[i], 300, true); }
     }
-    audios[idx].currentTime = 0;
-    audios[idx].play().catch(function(){});
+    window.__playAudioWithFade(audios[idx]);
     window.__audioPlaying = true;
     prevHoveredIdx = idx;
     if (window.__updateNextBtnState) window.__updateNextBtnState();
@@ -117,8 +325,7 @@
   // Nav wave stop hook
   window.__navWaveStop = function(idx) {
     if (audios && audios[idx]) {
-      audios[idx].pause();
-      audios[idx].currentTime = 0;
+      window.__fadeOutAndPause(audios[idx], 350, true);
     }
     window.__audioPlaying = false;
     if (window.__updateNextBtnState) window.__updateNextBtnState();
@@ -163,6 +370,80 @@
     if (screenW >= 1024) return 120;
     if (screenW >= 768) return 104;
     return 88;
+  }
+
+  function initWebGL() {
+    // Create the WebGL canvas and insert it right behind the 2D canvas
+    webglCanvas = document.createElement('canvas');
+    webglCanvas.id = 'webglCanvas';
+    webglCanvas.className = 'frames-canvas'; // share styles (position, inset, transform, etc.)
+    webglCanvas.style.pointerEvents = 'none'; // click events pass through to 2D canvas
+    canvas.parentNode.insertBefore(webglCanvas, canvas.nextSibling);
+
+    scene = new THREE.Scene();
+    
+    // Perspective camera set up for pixel-perfect coordinates at Z=0
+    let rect = canvas.getBoundingClientRect();
+    let w = rect.width, h = rect.height;
+    let dpr = window.devicePixelRatio || 1;
+    
+    const depth = 500;
+    const fov = 2 * Math.atan(h / (2 * depth)) * (180 / Math.PI);
+    camera = new THREE.PerspectiveCamera(fov, w / h, 1, 2000);
+    camera.position.set(w / 2, h / 2, depth);
+    camera.lookAt(w / 2, h / 2, 0);
+
+    renderer = new THREE.WebGLRenderer({
+      canvas: webglCanvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(w, h, false);
+    
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+    
+    dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    // Light points from top-left, slightly in front
+    dirLight.position.set(w * 0.2, h * 1.5, 350);
+    scene.add(dirLight);
+    
+    // Generate bump texture for grooves
+    const bumpCanvas = document.createElement('canvas');
+    bumpCanvas.width = 512;
+    bumpCanvas.height = 512;
+    const bCtx = bumpCanvas.getContext('2d');
+    bCtx.fillStyle = '#808080'; // Neutral grey bump height
+    bCtx.fillRect(0, 0, 512, 512);
+    // Draw fine horizontal lines (concentric grooves in polar UVs)
+    for (let y = 0; y < 512; y += Math.random() * 3.5 + 1.2) {
+      let height = Math.random() * 26 - 13;
+      bCtx.strokeStyle = `rgb(${128 + height}, ${128 + height}, ${128 + height})`;
+      bCtx.lineWidth = Math.random() * 1.5 + 0.5;
+      bCtx.beginPath();
+      bCtx.moveTo(0, y);
+      bCtx.lineTo(512, y);
+      bCtx.stroke();
+    }
+    bumpTexture = new THREE.CanvasTexture(bumpCanvas);
+    bumpTexture.wrapS = THREE.RepeatWrapping;
+    bumpTexture.wrapT = THREE.RepeatWrapping;
+    
+    // Generate soft shadow texture
+    const shadowCanvas = document.createElement('canvas');
+    shadowCanvas.width = 128;
+    shadowCanvas.height = 128;
+    const sCtx = shadowCanvas.getContext('2d');
+    let grad = sCtx.createRadialGradient(64, 64, 28, 64, 64, 64);
+    grad.addColorStop(0, 'rgba(0,0,0,1)');
+    grad.addColorStop(0.5, 'rgba(0,0,0,0.45)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    sCtx.fillStyle = grad;
+    sCtx.fillRect(0, 0, 128, 128);
+    shadowTexture = new THREE.CanvasTexture(shadowCanvas);
   }
 
   function resize() {
@@ -226,6 +507,119 @@
         thumbs[j].dispW = cs2;
         thumbs[j].dispH = cs2;
       }
+    }
+
+    // Instantiate 3D meshes in Three.js on resize/first run
+    if (discs.length === 0 && thumbs.length > 0) {
+      for (let i = 0; i < 4; i++) {
+        let t = thumbs[i];
+        let discGroup = new THREE.Group();
+        
+        // 1. Create Shadow Mesh (Plane Geometry with Canvas Soft Shadow)
+        const shadowGeom = new THREE.PlaneGeometry(t.dispW * 2.4, t.dispW * 2.4);
+        const shadowMat = new THREE.MeshBasicMaterial({
+          map: shadowTexture,
+          transparent: true,
+          opacity: 0.4,
+          depthWrite: false
+        });
+        const shadowMesh = new THREE.Mesh(shadowGeom, shadowMat);
+        shadowMesh.position.set(5, -10, -30);
+        discGroup.add(shadowMesh);
+        
+        // 2. Create Vinyl Outer Body (Cylinder for physical thickness and edges)
+        const vinylGeom = new THREE.CylinderGeometry(t.dispW / 2, t.dispW / 2, 1.6, 64, 1, false);
+        vinylGeom.rotateX(Math.PI / 2);
+        
+        // Convert Cap UVs to polar coordinates for circular anisotropic reflections
+        const pos = vinylGeom.attributes.position;
+        const uv = vinylGeom.attributes.uv;
+        let rOuter = t.dispW / 2;
+        let rInner = rOuter * 0.58;
+        for (let j = 0; j < pos.count; j++) {
+          let x = pos.getX(j);
+          let y = pos.getY(j);
+          let dist = Math.sqrt(x * x + y * y);
+          let angle = Math.atan2(y, x);
+          let u = (angle + Math.PI) / (Math.PI * 2);
+          let v = Math.max(0, Math.min(1, (dist - rInner) / (rOuter - rInner)));
+          uv.setXY(j, u, v);
+        }
+        uv.needsUpdate = true;
+
+        const vinylMat = new THREE.MeshPhysicalMaterial({
+          color: 0x111114,
+          roughness: 0.4,
+          metalness: 0.12,
+          anisotropy: 0.85,
+          anisotropyRotation: 0,
+          clearcoat: 0.65,
+          clearcoatRoughness: 0.22,
+          bumpMap: bumpTexture,
+          bumpScale: 0.035,
+          side: THREE.DoubleSide
+        });
+        const vinylMesh = new THREE.Mesh(vinylGeom, vinylMat);
+        discGroup.add(vinylMesh);
+        
+        // 3. Create Label Mesh (Spindle ring)
+        const labelGeom = new THREE.RingGeometry(t.dispW * 0.04, t.dispW * 0.29, 32, 1);
+        const posL = labelGeom.attributes.position;
+        const uvL = labelGeom.attributes.uv;
+        let labelR = t.dispW * 0.29;
+        for (let j = 0; j < posL.count; j++) {
+          let x = posL.getX(j);
+          let y = posL.getY(j);
+          let u = (x / labelR + 1) / 2;
+          let v = (y / labelR + 1) / 2;
+          uvL.setXY(j, u, v);
+        }
+        uvL.needsUpdate = true;
+
+        const labelMat = new THREE.MeshPhysicalMaterial({
+          map: ringTextures[i] || null,
+          roughness: 0.55,
+          metalness: 0.02,
+          clearcoat: 0.12,
+          clearcoatRoughness: 0.45,
+          side: THREE.DoubleSide
+        });
+        const labelMesh = new THREE.Mesh(labelGeom, labelMat);
+        labelMesh.position.z = 0.9; // sit slightly in front
+        discGroup.add(labelMesh);
+        
+        scene.add(discGroup);
+        discs.push({
+          group: discGroup,
+          shadowMesh: shadowMesh,
+          vinylMesh: vinylMesh,
+          labelMesh: labelMesh,
+          baseSz: t.dispW
+        });
+      }
+    }
+
+    // Update WebGL Canvas & Renderer Size
+    if (webglCanvas) {
+      webglCanvas.width = rect.width * dpr;
+      webglCanvas.height = rect.height * dpr;
+      webglCanvas.style.width = rect.width + 'px';
+      webglCanvas.style.height = rect.height + 'px';
+    }
+    if (renderer) {
+      renderer.setSize(w, h, false);
+      renderer.setPixelRatio(dpr);
+    }
+    if (camera) {
+      const depth = 500;
+      camera.fov = 2 * Math.atan(h / (2 * depth)) * (180 / Math.PI);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      camera.position.set(w / 2, h / 2, depth);
+      camera.lookAt(w / 2, h / 2, 0);
+    }
+    if (dirLight) {
+      dirLight.position.set(w * 0.2, h * 1.5, 350);
     }
 
     // Position latch clips: flat edge at nav bottom, centered on disc rest position
@@ -557,64 +951,6 @@
     if (t.y + t.dispH < -20) return;
 
     let r = t.dispW / 2;
-    let ha = t.hoverAlpha || 0;
-
-    let spinning = (idx === hoveredIdx || idx === draggedIdx || idx === latchedIdx) ? 1 : 0;
-    if (t._spin === undefined) t._spin = 0;
-    if (t._spinSpeed === undefined) t._spinSpeed = 0;
-    if (t._spinTimer === undefined) t._spinTimer = 0;
-    if (spinning) {
-      t._spinTimer += 1 / 60;
-    } else {
-      t._spinTimer = 0;
-    }
-    let active = t._spinTimer > 0.2 ? 1 : 0;
-    t._spinSpeed += (active * 0.007 - t._spinSpeed) * 0.04;
-    // When not active, slowly return spin to nearest multiple of 2π (reset position)
-    if (!active) {
-      let mod = t._spin % (Math.PI * 2);
-      if (mod < 0) mod += Math.PI * 2;
-      // snap to nearest 0 or π (pick the closer one)
-      let target = mod < Math.PI ? 0 : Math.PI * 2;
-      t._spin += (target - mod) * 0.03;
-    }
-    t._spin += t._spinSpeed;
-
-    let eased = ha < 0.01 ? 0 : 1 - Math.pow(1 - ha, 3);
-    
-    // Audio Reactive Pulse for playing record
-    let pulse = 0;
-    if (idx === latchedIdx) {
-      let t_sec = Date.now() / 1000;
-      pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
-    }
-    
-    let scaleBoost = 0.05;
-    let scale = 1 + eased * scaleBoost + pulse * 0.25;
-
-    // 常亮白色雾状外发光
-    let softGlow = ctx.createRadialGradient(t.x, t.y, r * 0.8, t.x, t.y, r * 1.8);
-    let baseAlpha = 0.10 + pulse * 0.5;
-    softGlow.addColorStop(0, `rgba(255,255,255,${baseAlpha})`);
-    softGlow.addColorStop(0.5, `rgba(255,255,255,${baseAlpha * 0.3})`);
-    softGlow.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = softGlow;
-    ctx.fillRect(t.x - r * 3, t.y - r * 3, r * 6, r * 6);
-
-    // hover 增强发光 — 统一白色
-    if (ha > 0.01 || pulse > 0) {
-      let glowR = r * 3;
-      let grad = ctx.createRadialGradient(t.x, t.y, r * 0.3, t.x, t.y, glowR);
-      let strongAlpha = (eased * 0.25) + (pulse * 0.6);
-      grad.addColorStop(0, `rgba(255,255,255,${strongAlpha})`);
-      grad.addColorStop(0.5, `rgba(255,255,255,${strongAlpha * 0.3})`);
-      grad.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(t.x - glowR, t.y - glowR, glowR * 2, glowR * 2);
-    }
-
-    // Latch clips handled via HTML overlay, not canvas
-
     // Draw rope from anchor, stopping short of disc edge
     let rdx = t.x - t.anchorX, rdy = t.y - t.anchorY;
     let rDist = Math.sqrt(rdx * rdx + rdy * rdy);
@@ -629,58 +965,6 @@
       let sway = t._sway || 0;
       drawString(sx, sy, ex, ey, sway);
     }
-
-    ctx.save();
-    ctx.translate(t.x, t.y);
-    ctx.rotate(t._spin || 0);
-    ctx.scale(scale, scale);
-
-    // 图片贴到圆环区域（环形 clip，填满裁切，像唱片）
-    if (ringLoaded[idx] && ringImages[idx]) {
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2, true);
-      ctx.save();
-      ctx.clip('evenodd');
-      let img = ringImages[idx];
-      let iw = img.width, ih = img.height;
-      // 按内径填满环形外圈，确保圆环完全被图片覆盖
-      let scaleImg = Math.max(r * 2 / iw, r * 2 / ih) * 1.3;
-      let dw = iw * scaleImg, dh = ih * scaleImg;
-      ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
-      ctx.restore();
-    }
-
-    // 纯色圆环（图片未加载时用）
-    if (!ringLoaded[idx] || !ringImages[idx]) {
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2, true);
-      ctx.fillStyle = t.color;
-      ctx.fill('evenodd');
-    }
-
-    // 圆环外圈深灰描边
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(20,20,20,0.8)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // 唱片内圈深灰描边
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(20,20,20,0.8)';
-    ctx.lineWidth = 12;
-    ctx.stroke();
-
-    // 外发光 - 统一黑白
-    ctx.shadowColor = 'rgba(255,255,255,0.6)';
-    ctx.shadowBlur = 6 + eased * 8;
-
-    ctx.restore();
   }
 
   let isVisible = true;
@@ -689,12 +973,67 @@
   function render(ts) {
     if (!isVisible) { requestAnimationFrame(render); return; }
     update(ts);
-    let cw = canvas.width / (window.devicePixelRatio || 1);
-    let ch = canvas.height / (window.devicePixelRatio || 1);
+    let dpr = window.devicePixelRatio || 1;
+    let cw = canvas.width / dpr;
+    let ch = canvas.height / dpr;
     ctx.clearRect(0, 0, cw, ch);
+    
+    // 1. Draw ropes on 2D Canvas
     for (let i = 0; i < thumbs.length; i++) {
       drawThumb(thumbs[i], i);
     }
+    
+    // 2. Update WebGL discs
+    for (let i = 0; i < thumbs.length; i++) {
+      let t = thumbs[i];
+      let d = discs[i];
+      if (d) {
+        let eased = t.hoverAlpha || 0;
+        eased = 1 - Math.pow(1 - eased, 3);
+        
+        let scaleBoost = 0.05;
+        let pulse = 0;
+        if (i === latchedIdx) {
+          let t_sec = Date.now() / 1000;
+          pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
+        }
+        
+        let scaleFactor = t.dispW / d.baseSz;
+        let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25);
+        
+        // Place in pixel coordinates (invert Y axis for WebGL)
+        d.group.position.x = t.x;
+        d.group.position.y = ch - t.y;
+        d.group.scale.set(scale, scale, 1);
+        
+        // 3D dynamic tilt based on swing velocity
+        let targetTiltX = -t.vy * 0.035;
+        let targetTiltY = t.vx * 0.035;
+        t.tiltX = t.tiltX || 0;
+        t.tiltY = t.tiltY || 0;
+        t.tiltX += (targetTiltX - t.tiltX) * 0.08;
+        t.tiltY += (targetTiltY - t.tiltY) * 0.08;
+        
+        d.group.rotation.x = t.tiltX;
+        d.group.rotation.y = t.tiltY;
+        
+        // Spin the child meshes
+        d.vinylMesh.rotation.z = t._spin || 0;
+        d.labelMesh.rotation.z = t._spin || 0;
+        
+        // Animate shadow position and opacity (depth simulation)
+        d.shadowMesh.position.x = (5 + eased * 6) * scaleFactor;
+        d.shadowMesh.position.y = (-10 - eased * 12) * scaleFactor;
+        d.shadowMesh.position.z = -30 - eased * 15;
+        d.shadowMesh.scale.set(1 + eased * 0.05, 1 + eased * 0.05, 1);
+        d.shadowMesh.material.opacity = 0.45 - eased * 0.08 - (pulse * 0.05);
+      }
+    }
+    
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
+    
     requestAnimationFrame(render);
   }
 
@@ -868,6 +1207,7 @@
   canvas.addEventListener('touchmove', function(e) {}, { passive: true });
   canvas.addEventListener('touchend', function(e) {}, { passive: true });
 
+  initWebGL();
   resize();
   requestAnimationFrame(render);
   window.addEventListener('resize', function() { resize(); });
