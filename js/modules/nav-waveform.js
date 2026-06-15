@@ -165,19 +165,19 @@
         }
         let avgVolume = sum / dataArray.length;
         // Dynamically scale wave amplitude based on volume (spikes and pulses to the beat)
-        // Keep the amplitude increase gentle and elegant to avoid massive overflow
-        targetAmp = 0.32 + (avgVolume / 255.0) * 1.15;
+        // Target an intermediate sweet spot between massive overflow and too flat
+        targetAmp = 0.38 + (avgVolume / 255.0) * 1.6;
       } else {
-        targetAmp = 1.0;
+        targetAmp = 1.3;
       }
     }
     // Dampen amplitude with master volume coefficient
-    targetAmp *= window.__globalVolume * 1.25;
+    targetAmp *= window.__globalVolume * 1.3;
 
     window.__waveAmp += (targetAmp - window.__waveAmp) * 0.08;
     
-    // SAFETY CLIP: Clamp ampScale to 1.15 to keep waveforms highly polished and within safe boundaries
-    let ampScale = Math.min(1.15, window.__waveAmp);
+    // SAFETY CLIP: Clamp ampScale to 1.32 to keep waveforms visually prominent but inside boundary safety margins
+    let ampScale = Math.min(1.32, window.__waveAmp);
 
     // Gradient 1: Accent Orange for Main Wave
     let grad1 = ctx.createLinearGradient(0, 0, waveW, 0);
@@ -213,7 +213,7 @@
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.022 + time * 1.1) * 8.5 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.022 + time * 1.1) * 9.5 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -226,8 +226,8 @@
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.075 - time * 3.3) * 5.2 * envelope * ampScale
-                + Math.sin(x * 0.038 + time * 1.4) * 3.8 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.075 - time * 3.3) * 6.0 * envelope * ampScale
+                + Math.sin(x * 0.038 + time * 1.4) * 4.0 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -240,8 +240,8 @@
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.045 + time * 2.2) * 7.5 * envelope * ampScale
-                + Math.sin(x * 0.11 - time * 4.1) * 2.5 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.045 + time * 2.2) * 8.8 * envelope * ampScale
+                + Math.sin(x * 0.11 - time * 4.1) * 2.8 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
