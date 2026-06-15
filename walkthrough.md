@@ -541,13 +541,14 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
     2. **局部光影扩散 (Glow Ripple)**：从鼠标点击的精确坐标处，以极具表现力的大范围混合模式（`mix-blend-mode: screen`）淡入扩散出带有主色调橙红的柔和光影涟漪，带来光能爆破的微交互细节。
 
 ### 2. 解决方案与修改
-- **3D 挤压触感与回弹实现**:
+- **3D 挤压触感与回弹实现 (Snappy Spring Timeline)**:
   - 在 [work-detail.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/work-detail.js) 中导入 `gsap`。
   - 在卡片被触发点击（包括回车、空格等无障碍按键激活）时，拦截并延迟路由切换时间。
-  - **回弹截断问题解决**：之前我们将延迟设为 150ms，且挤压单向时间为 120ms（往返共需 240ms）。这导致在 150ms 时 `openDetail` 里的 `gsap.killTweensOf('.work-card')` 提前执行，杀掉了还在回弹途中的动画，导致卡片卡在“深陷”状态（没有弹回来）。
-  - **优化方案**：我们将单向凹陷时间优化为 `100ms`（下按 100ms + 弹起 100ms = 200ms），并将路由延迟时间从 150ms 微调至 `220ms`。这不仅让整体点击感更加清脆，也为 3D 触感挤压留出了充裕的 20ms 的安全裕度，保证卡片在页面开始切走前**完整地凹下并完美回弹**，提供极佳的敲击反馈。
-  - 使用 GSAP 对卡片运行的凹陷回弹动效：
-    `gsap.to(card, { scale: 0.96, z: -30, duration: 0.1, ease: 'power2.out', yoyo: true, repeat: 1 });`
+  - **解决回弹死板问题**：原本使用 `yoyo: true` 和 `repeat: 1` 产生的回弹动画是完全对称的，过程十分生硬和机械（死板）。
+  - **物理弹簧效果重构**：我们将其改写为**GSAP Timeline 序列动画**，进行非对称的物理力学模拟：
+    1. **下按阶段**：快速在 80ms 内向内下凹并微缩（`scale: 0.95`, `z: -40`），采用 `power2.out` 缓动，塑造极其干脆的按下感。
+    2. **回弹阶段**：使用 `back.out(2.5)` 缓动（回弹系数 2.5），在 320ms 内回弹至原始大小。`back.out` 缓动会在回弹到原大（scale: 1）后产生一个物理性的**微小超调（Overshoot，即稍微变大再缩回）**并迅速稳定。这完全模拟出了真实物理弹簧的微幅抖动效果，极其生动灵巧。
+  - **路由延迟时间同步**：配合该 200ms 黄金时间点（下按 80ms + 弹起超调 120ms 时分），我们将跳转延迟设为 `280ms`，让用户能完整地在屏幕上看到这一次极具弹性（Wobble）的完美物理回弹，随后再淡出切走。`
 - **坐标感知型光圈涟漪**:
   - 计算点击点在 `.work-card` 局部的相对坐标 `(x, y)`（如果是按键触发，则自动以卡片物理中心点作为 fallback 中心）。
   - 动态在卡片内 append 一个带有 `.card-click-ripple` 类的装饰标签，并将其绝对定位在 `(x, y)`。
@@ -560,4 +561,4 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
-- 执行 `python workflow.py deploy` 推送至 GitHub（Step 501），自动部署线上页面。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 502），自动部署线上页面。

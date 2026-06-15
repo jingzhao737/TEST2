@@ -28,17 +28,22 @@ document.querySelectorAll('.work-card').forEach(function(card) {
     ripple.style.top = y + 'px';
     card.appendChild(ripple);
 
-    // Tactile 3D press - compress scale and push back in Z space (takes 0.1s down + 0.1s back up = 0.2s total)
-    gsap.to(card, {
-      scale: 0.96,
-      z: -30,
-      duration: 0.1,
-      ease: 'power2.out',
-      yoyo: true,
-      repeat: 1
+    // Tactile 3D press - compress quickly and spring back up with a premium back.out ease (wobble overshoot)
+    let tl = gsap.timeline();
+    tl.to(card, {
+      scale: 0.95,
+      z: -40,
+      duration: 0.08,
+      ease: 'power2.out'
+    });
+    tl.to(card, {
+      scale: 1,
+      z: 0,
+      duration: 0.32,
+      ease: 'back.out(2.5)' // snappy spring rebound overshoot
     });
 
-    // Momentarily delay route transition (220ms) to allow full press & bounce-back to complete
+    // Momentarily delay route transition (280ms) to allow the organic spring rebound to be fully visible
     setTimeout(function() {
       let key = card.dataset.work; if (!window.workData || !window.workData[key]) return;
       let data = Object.assign({ slug: key }, window.workData[key]);
@@ -50,7 +55,7 @@ document.querySelectorAll('.work-card').forEach(function(card) {
       setTimeout(function() {
         ripple.remove();
       }, 800);
-    }, 220);
+    }, 280);
   }
 
   card.addEventListener('click', openCard);
