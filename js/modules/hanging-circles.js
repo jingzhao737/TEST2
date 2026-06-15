@@ -599,31 +599,29 @@
     }
   }
 
-  function drawShineWedge(ctx, r, angle, widthRad) {
+  function drawSheenBar(ctx, r, angle) {
     ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, r, angle - widthRad / 2, angle + widthRad / 2);
-    ctx.closePath();
-    
-    // Clip to the vinyl region (from r * 0.38 to r)
+    // Clip to vinyl region (from r * 0.38 to r)
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2, true);
     ctx.clip('evenodd');
-    
-    // Draw the wedge sector
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, r, angle - widthRad / 2, angle + widthRad / 2);
-    ctx.closePath();
-    
-    let grad = ctx.createRadialGradient(0, 0, r * 0.38, 0, 0, r);
+
+    let cos = Math.cos(angle);
+    let sin = Math.sin(angle);
+    // Gradient vector is perpendicular to the light reflection line
+    let grad = ctx.createLinearGradient(-r * sin, r * cos, r * sin, -r * cos);
     grad.addColorStop(0, 'rgba(255, 255, 255, 0.0)');
-    grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.12)');
-    grad.addColorStop(0.7, 'rgba(255, 255, 255, 0.28)');
-    grad.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+    grad.addColorStop(0.38, 'rgba(255, 255, 255, 0.015)');
+    grad.addColorStop(0.47, 'rgba(255, 255, 255, 0.08)');
+    grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.26)'); // Peak shine
+    grad.addColorStop(0.53, 'rgba(255, 255, 255, 0.08)');
+    grad.addColorStop(0.62, 'rgba(255, 255, 255, 0.015)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+
     ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -667,18 +665,18 @@
     let scaleBoost = 0.05;
     let scale = 1 + eased * scaleBoost + pulse * 0.25;
 
-    // === 3D Drop Shadow (drawn first to sit behind everything) ===
+    // === 3D Drop Shadow (soft radial gradient, no solid black circles showing) ===
     ctx.save();
-    // Shadow gets offset downwards/rightwards and more blurred when elevated (hovered/dragged)
-    let shadowX = t.x + 4 + eased * 8;
-    let shadowY = t.y + 8 + eased * 14;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.48)';
-    ctx.shadowBlur = 10 + eased * 12;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
+    let shadowX = t.x + 5 + eased * 8;
+    let shadowY = t.y + 10 + eased * 14;
+    let shadowR = r * scale;
+    let shadowGrad = ctx.createRadialGradient(shadowX, shadowY, shadowR * 0.75, shadowX, shadowY, shadowR * 1.35);
+    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.45)');
+    shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.2)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+    ctx.fillStyle = shadowGrad;
     ctx.beginPath();
-    ctx.arc(shadowX, shadowY, r * scale, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'; // Dark circle to cast shadow
+    ctx.arc(shadowX, shadowY, shadowR * 1.35, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -718,11 +716,14 @@
       drawString(sx, sy, ex, ey, sway);
     }
 
-    // 1. === Rotated components: Disc image, vinyl mask, grooves ===
+    // Draw the disc itself using optimized translated coordinate system
     ctx.save();
     ctx.translate(t.x, t.y);
-    ctx.rotate(t._spin || 0);
     ctx.scale(scale, scale);
+
+    // 1. === Rotated components: Disc image, vinyl mask, grooves, spindle hole ===
+    ctx.save();
+    ctx.rotate(t._spin || 0);
 
     // Draw the image across the entire disc area (clipped to outer radius r)
     if (ringLoaded[idx] && ringImages[idx]) {
@@ -747,51 +748,74 @@
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2, true);
-    ctx.fillStyle = 'rgba(12, 12, 12, 0.85)';
+    ctx.fillStyle = 'rgba(12, 12, 16, 0.76)'; // Subtle dark blue-grey undertone, semi-transparent
     ctx.fill('evenodd');
 
-    // Concentric grooves on the vinyl body
+    // Concentric grooves on the vinyl body (faint and grouped into tracks)
     ctx.save();
-    ctx.lineWidth = 0.5;
-    // Dark grooves
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)';
-    for (let radius = r * 0.40; radius < r * 0.98; radius += 5) {
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
-      ctx.stroke();
+    ctx.lineWidth = 0.35;
+    
+    // Track 1
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let radius = r * 0.42; radius < r * 0.58; radius += 4) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
     }
-    // White groove highlights
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    for (let radius = r * 0.42; radius < r * 0.95; radius += 8) {
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
-      ctx.stroke();
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    for (let radius = r * 0.44; radius < r * 0.56; radius += 6) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    
+    // Track separator gap (leave r * 0.58 to r * 0.62 clean and dark)
+    
+    // Track 2
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let radius = r * 0.64; radius < r * 0.82; radius += 4) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    for (let radius = r * 0.66; radius < r * 0.80; radius += 6) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    // Track 3
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let radius = r * 0.86; radius < r * 0.96; radius += 4) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    for (let radius = r * 0.88; radius < r * 0.94; radius += 6) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.restore();
 
     // Spindle center hole
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.08, 0, Math.PI * 2);
-    ctx.fillStyle = '#0f0f11';
+    ctx.fillStyle = '#0a0a0c';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.lineWidth = 1;
     ctx.stroke();
 
     // Border line between the center paper label and the vinyl body
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    ctx.restore(); // Restore spin, but retain position
+    // Paper label inset shadow (makes it look physically pressed in)
+    let labelInset = ctx.createRadialGradient(0, 0, r * 0.33, 0, 0, r * 0.38);
+    labelInset.addColorStop(0, 'rgba(0, 0, 0, 0.0)');
+    labelInset.addColorStop(1, 'rgba(0, 0, 0, 0.22)');
+    ctx.fillStyle = labelInset;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
 
     // 2. === Static components: Specular butterfly highlights, 3D rims, outer edges ===
-    ctx.save();
-    ctx.translate(t.x, t.y);
-    ctx.scale(scale, scale);
-
     // Calculate light source reflection angle (tracks mouse slightly for interactive depth)
     let dx = mouseCanvasX - t.x;
     let dy = mouseCanvasY - t.y;
@@ -800,42 +824,30 @@
     // Smoothly blend a base light direction (-45 deg) with mouse movement direction
     let reflectionAngle = -Math.PI / 4 + (mouseAngle - (-Math.PI / 4)) * 0.12;
 
-    // Draw the two radial specular shine wedges (butterfly sheen)
-    drawShineWedge(ctx, r, reflectionAngle, 0.55);
-    drawShineWedge(ctx, r, reflectionAngle + Math.PI, 0.55);
-
-    // Add a secondary linear gradient shine over the whole disc surface
-    let linearRef = ctx.createLinearGradient(-r, -r, r, r);
-    linearRef.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
-    linearRef.addColorStop(0.35, 'rgba(255, 255, 255, 0.0)');
-    linearRef.addColorStop(0.5, 'rgba(255, 255, 255, 0.03)');
-    linearRef.addColorStop(0.65, 'rgba(255, 255, 255, 0.0)');
-    linearRef.addColorStop(1, 'rgba(255, 255, 255, 0.08)');
-    ctx.fillStyle = linearRef;
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.fill();
+    // Draw the two crossed linear specular reflection bars (beautifully feathered)
+    drawSheenBar(ctx, r, reflectionAngle);
+    drawSheenBar(ctx, r, reflectionAngle + Math.PI * 0.4);
 
     // 3D Bevel/Rim Highlights
     // Top-left shiny highlight
     ctx.beginPath();
     ctx.arc(0, 0, r, Math.PI * 0.75, Math.PI * 1.75);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
     // Bottom-right shadow rim
     ctx.beginPath();
     ctx.arc(0, 0, r, Math.PI * 1.75, Math.PI * 2.75);
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
     // Fine dark outer boundary edge
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(15, 15, 15, 0.85)';
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(10, 10, 10, 0.85)';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.restore();

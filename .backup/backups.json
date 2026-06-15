@@ -1,12 +1,5 @@
 [
   {
-    "step": 87,
-    "timestamp": "2026-06-12 01:20:47",
-    "description": "Fix laser lines restore sound and hero area drawing",
-    "folder": "step_087_Fix_laser_lines_restore_sound_and_hero_area_drawing",
-    "is_auto": false
-  },
-  {
     "step": 88,
     "timestamp": "2026-06-12 01:22:29",
     "description": "Make click sound play on all clicks globally not just interactive elements",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:09:23",
     "description": "Upgrade vinyl records to realistic 3D appearance and specular reflections",
     "folder": "step_106_Upgrade_vinyl_records_to_realistic_3D_appearance_and_specular_reflections",
+    "is_auto": false
+  },
+  {
+    "step": 107,
+    "timestamp": "2026-06-16 01:11:09",
+    "description": "Upgrade vinyl records 3D reflections hotfix",
+    "folder": "step_107_Upgrade_vinyl_records_3D_reflections_hotfix",
     "is_auto": false
   }
 ]
