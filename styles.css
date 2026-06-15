@@ -1884,22 +1884,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   inset: 0;
   backface-visibility: hidden;
   border-radius: 16px;
-  border: 1px solid rgba(232, 124, 80, 0.35); /* Elegant thin semi-transparent orange border */
+  border: 1px solid #E87C50; /* Crisp solid brand orange border, thinned to 1px but highly visible */
   box-shadow: 
     0 30px 70px rgba(0, 0, 0, 0.55), 
-    0 0 25px rgba(232, 124, 80, 0.06), 
+    0 0 25px rgba(232, 124, 80, 0.1), 
     inset 0 0 0 1px rgba(255, 255, 255, 0.08); /* inner glass border */
   transition: border-color 0.4s ease, box-shadow 0.4s ease;
-  overflow: hidden;
 }
 .detail-3d-card-front {
-  background: #111;
+  background: transparent; /* Transparent so Z-recessed elements are visible without occlusion */
   transform: translate3d(0, 0, 0);
   z-index: 2;
   transform-style: preserve-3d;
 }
 .detail-3d-card-back {
-  background: #0b0b0b;
+  background: transparent;
   transform: rotateY(180deg);
   z-index: 1;
   display: flex;
@@ -1912,6 +1911,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   inset: 0;
   overflow: hidden;
   border-radius: 15px;
+  background: #111; /* Black base behind image */
   transform: translateZ(-15px) scale(1.08); /* Depth recessed look */
   will-change: transform;
 }
@@ -1931,6 +1931,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   mix-blend-mode: screen; /* Brighter and glossier screen mode */
   z-index: 2;
   opacity: 0;
+  border-radius: 15px; /* Prevent corner overflow */
   background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
   transition: opacity 0.15s ease-out;
 }
@@ -1941,6 +1942,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   mix-blend-mode: color-dodge; /* Shimmering holographic colors */
   z-index: 3;
   opacity: 0;
+  border-radius: 15px; /* Prevent corner overflow */
   background: linear-gradient(110deg, 
     rgba(255, 0, 128, 0.2) 0%, 
     rgba(120, 0, 255, 0.15) 25%, 
