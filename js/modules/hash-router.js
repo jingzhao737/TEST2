@@ -486,7 +486,15 @@ function setupDetail3DCard() {
         { y: -8 },
         { y: 8, duration: 2, yoyo: true, repeat: -1, ease: 'power1.inOut' }
       );
-    } else {
+    }
+  });
+
+  hero.addEventListener('dblclick', function(e) {
+    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
+      return;
+    }
+    
+    if (is3DCardActive) {
       is3DCardActive = false;
       gsap.to(container, {
         opacity: 0,
