@@ -36,15 +36,6 @@ if (!isMobileDevice) {
     const baseX = 17;
     const baseZ = 2;
 
-    // Decoupled preview-specific baseline variables and limits
-    let previewBaseY = -39;
-    let previewBaseX = 34;
-    let previewBaseZ = -5;
-    let clampYMax = 16;
-    let clampXMax = 16;
-    let clampZMax = 6;
-    let previewPerspective = 1750; // Match works perspective by default
-    let forceVisible = false; // Disable lock-visible in production
     let targetWorkListY = baseY;
     let targetWorkListX = baseX;
     let targetWorkListZ = baseZ;
@@ -390,12 +381,12 @@ if (!isMobileDevice) {
           currentY = targetY;
           currentOrangeX = targetX + 12;
           currentOrangeY = targetY + 12;
-          currentTiltX = previewBaseX;
-          currentTiltY = previewBaseY;
-          currentTiltZ = previewBaseZ;
-          currentOrangeTiltX = previewBaseX;
-          currentOrangeTiltY = previewBaseY;
-          currentOrangeTiltZ = previewBaseZ;
+          currentTiltX = 0;
+          currentTiltY = 0;
+          currentTiltZ = 0;
+          currentOrangeTiltX = 0;
+          currentOrangeTiltY = 0;
+          currentOrangeTiltZ = 0;
           firstMove = false;
         }
 
@@ -421,20 +412,20 @@ if (!isMobileDevice) {
           imgContainer.innerHTML = '';
         }
         
-        // Calculate target 3D tilts for image container (based on its dx/dy velocity + base preview tilt)
-        let targetTiltY = previewBaseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06);
-        let targetTiltX = previewBaseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06);
-        let targetTiltZ = previewBaseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02);
+        // Calculate target 3D tilts for image container (based on its dx/dy velocity)
+        let targetTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
+        let targetTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
+        let targetTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
         // Smoothly LERP image tilts with more delay (0.02 LERP factor)
         currentTiltX += (targetTiltX - currentTiltX) * 0.02;
         currentTiltY += (targetTiltY - currentTiltY) * 0.02;
         currentTiltZ += (targetTiltZ - currentTiltZ) * 0.02;
 
-        // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity + base preview tilt)
-        let targetOrangeTiltY = previewBaseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06);
-        let targetOrangeTiltX = previewBaseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06);
-        let targetOrangeTiltZ = previewBaseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02);
+        // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity)
+        let targetOrangeTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
+        let targetOrangeTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
+        let targetOrangeTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
         // Smoothly LERP orange layer tilts with even more delay (0.012 LERP factor)
         currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.012;
@@ -449,7 +440,7 @@ if (!isMobileDevice) {
           rotationY: currentTiltY,
           rotationX: currentTiltX,
           rotation: currentTiltZ,
-          transformPerspective: previewPerspective,
+          transformPerspective: 1000,
           force3D: true
         });
 
@@ -462,7 +453,7 @@ if (!isMobileDevice) {
           rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
           rotationX: currentOrangeTiltX * 0.8,
           rotation: currentOrangeTiltZ * 0.8,
-          transformPerspective: previewPerspective,
+          transformPerspective: 1000,
           force3D: true
         });
       } else {
