@@ -1270,3 +1270,17 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证
 - 重新运行了 `npx vite build` 生产打包成功。
 - 使用 `git push` 推送至远程仓库部署上线。
+
+
+---
+
+## 🛠️ Hotfix: 修正音量 HUD 百分比字体为 Josefin Sans (Google Sans)
+
+### 1. 需求分析 & 修改
+- **问题**：音量 HUD 气泡的字体此前误使用了块状创意展示字体 `Climate Crisis`，因为该字体无标准数字及 `%` 字符，导致气泡内的百分比文本在渲染时发生缺失或回退，字形不对。
+- **解决方案**：重构了 [styles.css](file:///D:/webprojext/styles.css#L424) 中的 `.nav-volume-hud` 字体配置。将其改回了真正的整站大标题主英文字体 `Google Sans` (`JosefinSans-Bold.ttf`)。
+- **效果**：气泡内数字和百分号字符得以顺畅加载，并且以优美健朗的 Josefin Sans Bold 粗体风格呈现，完美与首页大标题视觉保持协调一致。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 打包。
+- `git push` 推送上线。
