@@ -553,7 +553,7 @@
       const btnCenterY = hoveredRect.top + hoveredRect.height / 2;
       
       const timeSinceSnap = Date.now() - snapStartTime;
-      const lockDuration = 250; // 250ms of complete lock to give instant snap feedback
+      const lockDuration = 400; // 400ms of complete lock to give instant snap feedback
       
       let targetX = btnCenterX;
       let targetY = btnCenterY;
