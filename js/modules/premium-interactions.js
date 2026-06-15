@@ -133,6 +133,7 @@ if (!isMobileDevice) {
       isVisible = false;
       activeSrc = null;
       hoveredCardIndex = -1;
+      window.__hoveredCardIndex = -1; // Reset globally
       cards.forEach(c => {
         c.classList.remove('hovered');
         c.style.removeProperty('--card-mouse-x');
@@ -312,6 +313,7 @@ if (!isMobileDevice) {
             cards[hoveredCardIndex].classList.remove('hovered');
           }
           hoveredCardIndex = newHoveredIndex;
+          window.__hoveredCardIndex = newHoveredIndex; // Expose globally
           if (newHoveredIndex >= 0) {
             onCardEnter(newHoveredIndex);
           } else {

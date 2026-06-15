@@ -183,8 +183,9 @@
           } else {
             // Check if pointer is currently inside the scrollbar container
             const isInsideScrollbar = target.closest('#scrollBar') !== null;
+            const isOverWorkCard = target.closest('.work-card') !== null || (window.__hoveredCardIndex !== undefined && window.__hoveredCardIndex >= 0);
             
-            if (!isInsideScrollbar) {
+            if (!isInsideScrollbar && !isOverWorkCard) {
               // If in empty space (and not inside the scrollbar), find the closest magnet target based on Euclidean distance to its bounding box
               let minDistance = Infinity;
               const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
@@ -390,6 +391,7 @@
   let isRedirectingMousedown = false;
   document.addEventListener('mousedown', function(e) {
     if (isRedirectingMousedown) return;
+    if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();
@@ -420,6 +422,7 @@
   let isRedirectingMouseup = false;
   document.addEventListener('mouseup', function(e) {
     if (isRedirectingMouseup) return;
+    if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();
@@ -450,6 +453,7 @@
   let isRedirectingClick = false;
   document.addEventListener('click', function(e) {
     if (isRedirectingClick) return;
+    if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
       e.preventDefault();
       e.stopPropagation();
