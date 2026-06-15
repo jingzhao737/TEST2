@@ -13,12 +13,18 @@ if (!isMobileDevice) {
   if (workList && cards.length > 0 && worksEl) {
     let targetX = 0, targetY = 0;
     let currentX = 0, currentY = 0;
-    let targetOrangeScale = 0.5;
-    let currentOrangeScale = 0.5;
-    let targetImgScale = 0.5;
-    let currentImgScale = 0.5;
     let isVisible = false;
     let activeCardIndex = -1;
+
+    // Animation state object driven by GSAP tweens for the staggered entrance & overshoot rebound
+    const previewAnim = {
+      imgScale: 0.5,
+      imgZ: 0,
+      imgOpacity: 0,
+      orangeScale: 0.5,
+      orangeZ: 0,
+      orangeOpacity: 0
+    };
 
     // LERP state variables for the 3D tilt angles to prevent sudden jumping/flattening
     let currentTiltX = 0;
@@ -91,35 +97,30 @@ if (!isMobileDevice) {
       if (isPreviewActive) return;
       isPreviewActive = true;
       
-      gsap.killTweensOf([wrapper, imgContainer, orangeLayer]);
+      gsap.killTweensOf([wrapper, previewAnim]);
       
       // Instantly make the wrapper visible and set opacity to 1.0 to prevent 3D flattening
       gsap.set(wrapper, { autoAlpha: 1 });
       
-      // The orange layer immediately begins to fade in and scale up
-      targetOrangeScale = 1.0;
-      gsap.to(orangeLayer, {
-        opacity: 1,
-        duration: 0.3,
-        ease: 'power2.out',
+      // The preview image container immediately begins to fade in, scale up, and float up with overshoot!
+      gsap.to(previewAnim, {
+        imgOpacity: 1,
+        imgScale: 1.0,
+        imgZ: 15,
+        duration: 0.45,
+        ease: 'back.out(2.0)', // Strong back ease to overshoot beyond z: 15 and rebound
         overwrite: true
       });
       
-      // The image container is kept hidden and small initially
-      targetImgScale = 0.5;
-      gsap.set(imgContainer, { opacity: 0 });
-      
-      // Then the image container scales up and fades in after a slight delay (0.12s)
-      gsap.delayedCall(0.12, () => {
-        if (isPreviewActive) {
-          targetImgScale = 1.0;
-          gsap.to(imgContainer, {
-            opacity: 1,
-            duration: 0.3,
-            ease: 'power2.out',
-            overwrite: true
-          });
-        }
+      // The orange background block follows after a slight delay (0.12s)
+      gsap.to(previewAnim, {
+        orangeOpacity: 1,
+        orangeScale: 1.0,
+        orangeZ: 5,
+        duration: 0.4,
+        ease: 'back.out(1.2)',
+        delay: 0.12,
+        overwrite: true
       });
     }
 
@@ -128,19 +129,20 @@ if (!isMobileDevice) {
       isPreviewActive = false;
       activeCardIndex = -1;
       
-      targetOrangeScale = 0.5;
-      targetImgScale = 0.5;
+      gsap.killTweensOf([wrapper, previewAnim]);
       
-      gsap.killTweensOf([wrapper, imgContainer, orangeLayer]);
-      
-      // Fade out both layers together for a snappy close
-      gsap.to([imgContainer, orangeLayer], {
-        opacity: 0,
+      // Fade out and shrink both layers together for a snappy close
+      gsap.to(previewAnim, {
+        imgOpacity: 0,
+        imgScale: 0.5,
+        imgZ: 0,
+        orangeOpacity: 0,
+        orangeScale: 0.5,
+        orangeZ: 0,
         duration: 0.25,
         ease: 'power2.out',
         overwrite: true,
         onComplete: () => {
-          // Once children are invisible, hide the parent wrapper
           gsap.set(wrapper, { autoAlpha: 0 });
           activeImages = [];
           imgContainer.innerHTML = '';
@@ -458,13 +460,8 @@ if (!isMobileDevice) {
 
       // ── STEP 4: Animate preview thumbnail follow and scale ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
-        // Calculate the dynamic elevation factors for both layers based on their individual scales
-        const orangeElevationFactor = gsap.utils.clamp(0, 1, (currentOrangeScale - 0.5) / 0.5);
-        const imgElevationFactor = gsap.utils.clamp(0, 1, (currentImgScale - 0.5) / 0.5);
-
         if (firstMove) {
-          const initOrangeElevation = gsap.utils.clamp(0, 1, (currentOrangeScale - 0.5) / 0.5);
-          const initOffset = initOrangeElevation * 12;
+          const initOffset = (previewAnim.orangeZ / 5) * 12;
           currentX = targetX;
           currentY = targetY;
           currentOrangeX = targetX + initOffset;
@@ -485,7 +482,7 @@ if (!isMobileDevice) {
         currentY += dy * 0.055;
 
         // 2. LERP orange layer (more delay: 0.035 LERP factor, dynamic offset proportional to orange layer elevation)
-        const currentOffset = orangeElevationFactor * 12;
+        const currentOffset = (previewAnim.orangeZ / 5) * 12;
         const targetOrangeX = targetX + currentOffset;
         const targetOrangeY = targetY + currentOffset;
         const dxOrange = targetOrangeX - currentOrangeX;
@@ -493,11 +490,8 @@ if (!isMobileDevice) {
         currentOrangeX += dxOrange * 0.035;
         currentOrangeY += dyOrange * 0.035;
 
-        // Animate scales separately
-        currentOrangeScale += (targetOrangeScale - currentOrangeScale) * 0.08;
-        currentImgScale += (targetImgScale - currentImgScale) * 0.07;
-
-        if (currentImgScale < 0.02 && hoveredCardIndex === -1 && activeImages.length > 0) {
+        // Clean stack images if hidden
+        if (previewAnim.imgScale < 0.02 && hoveredCardIndex === -1 && activeImages.length > 0) {
           activeImages.forEach(img => img.el.remove());
           activeImages = [];
           imgContainer.innerHTML = '';
@@ -523,32 +517,30 @@ if (!isMobileDevice) {
         currentOrangeTiltY += (targetOrangeTiltY - currentOrangeTiltY) * 0.05;
         currentOrangeTiltZ += (targetOrangeTiltZ - currentOrangeTiltZ) * 0.05;
 
-        // Calculate dynamic 3D elevations based on respective scale factors
-        const currentZ = imgElevationFactor * 15;
-        const currentOrangeZ = orangeElevationFactor * 5;
-
-        // Apply transform to image container (on top, z-index: 2)
+        // Apply transform and opacity to image container (on top, z-index: 2)
         gsap.set(imgContainer, {
           x: currentX,
           y: currentY,
-          z: currentZ, // Dynamically lifted above the cards as it scales up
-          scale: currentImgScale,
+          z: previewAnim.imgZ, // Dynamically driven by GSAP overshoot transition
+          scale: previewAnim.imgScale,
           rotationY: currentTiltY,
           rotationX: currentTiltX,
           rotation: currentTiltZ,
+          opacity: previewAnim.imgOpacity,
           force3D: true
         });
 
-        // Apply transform to orange background shadow layer (underneath, z-index: 1)
+        // Apply transform and opacity to orange background shadow layer (underneath, z-index: 1)
         // Offset is driven by currentOrangeX/Y LERP coordinates
         gsap.set(orangeLayer, {
           x: currentOrangeX,
           y: currentOrangeY,
-          z: currentOrangeZ, // Dynamically lifted underneath the image container
-          scale: currentOrangeScale,
+          z: previewAnim.orangeZ, // Dynamically driven by GSAP overshoot transition
+          scale: previewAnim.orangeScale,
           rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
           rotationX: currentOrangeTiltX * 0.8,
           rotation: currentOrangeTiltZ * 0.8,
+          opacity: previewAnim.orangeOpacity,
           force3D: true
         });
       } else {
