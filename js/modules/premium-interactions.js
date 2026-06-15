@@ -13,8 +13,10 @@ if (!isMobileDevice) {
   if (workList && cards.length > 0 && worksEl) {
     let targetX = 0, targetY = 0;
     let currentX = 0, currentY = 0;
-    let targetScale = 0.5;
-    let currentScale = 0.5;
+    let targetOrangeScale = 0.5;
+    let currentOrangeScale = 0.5;
+    let targetImgScale = 0.5;
+    let currentImgScale = 0.5;
     let isVisible = false;
     let activeCardIndex = -1;
 
@@ -88,19 +90,36 @@ if (!isMobileDevice) {
     function showPreviewDOM() {
       if (isPreviewActive) return;
       isPreviewActive = true;
-      targetScale = 1.0;
       
       gsap.killTweensOf([wrapper, imgContainer, orangeLayer]);
       
       // Instantly make the wrapper visible and set opacity to 1.0 to prevent 3D flattening
       gsap.set(wrapper, { autoAlpha: 1 });
       
-      // Fade in the children layers individually
-      gsap.to([imgContainer, orangeLayer], {
+      // The orange layer immediately begins to fade in and scale up
+      targetOrangeScale = 1.0;
+      gsap.to(orangeLayer, {
         opacity: 1,
         duration: 0.3,
         ease: 'power2.out',
         overwrite: true
+      });
+      
+      // The image container is kept hidden and small initially
+      targetImgScale = 0.5;
+      gsap.set(imgContainer, { opacity: 0 });
+      
+      // Then the image container scales up and fades in after a slight delay (0.12s)
+      gsap.delayedCall(0.12, () => {
+        if (isPreviewActive) {
+          targetImgScale = 1.0;
+          gsap.to(imgContainer, {
+            opacity: 1,
+            duration: 0.3,
+            ease: 'power2.out',
+            overwrite: true
+          });
+        }
       });
     }
 
@@ -108,11 +127,13 @@ if (!isMobileDevice) {
       if (!isPreviewActive) return;
       isPreviewActive = false;
       activeCardIndex = -1;
-      targetScale = 0.5;
+      
+      targetOrangeScale = 0.5;
+      targetImgScale = 0.5;
       
       gsap.killTweensOf([wrapper, imgContainer, orangeLayer]);
       
-      // Fade out the children layers individually
+      // Fade out both layers together for a snappy close
       gsap.to([imgContainer, orangeLayer], {
         opacity: 0,
         duration: 0.25,
@@ -437,12 +458,13 @@ if (!isMobileDevice) {
 
       // ── STEP 4: Animate preview thumbnail follow and scale ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
-        // Calculate the dynamic elevation factor based on currentScale (ranges from 0.5 to 1.0)
-        const elevationFactor = gsap.utils.clamp(0, 1, (currentScale - 0.5) / 0.5);
+        // Calculate the dynamic elevation factors for both layers based on their individual scales
+        const orangeElevationFactor = gsap.utils.clamp(0, 1, (currentOrangeScale - 0.5) / 0.5);
+        const imgElevationFactor = gsap.utils.clamp(0, 1, (currentImgScale - 0.5) / 0.5);
 
         if (firstMove) {
-          const initElevation = gsap.utils.clamp(0, 1, (currentScale - 0.5) / 0.5);
-          const initOffset = initElevation * 12;
+          const initOrangeElevation = gsap.utils.clamp(0, 1, (currentOrangeScale - 0.5) / 0.5);
+          const initOffset = initOrangeElevation * 12;
           currentX = targetX;
           currentY = targetY;
           currentOrangeX = targetX + initOffset;
@@ -462,8 +484,8 @@ if (!isMobileDevice) {
         currentX += dx * 0.055;
         currentY += dy * 0.055;
 
-        // 2. LERP orange layer (more delay: 0.035 LERP factor, dynamic offset proportional to elevation)
-        const currentOffset = elevationFactor * 12;
+        // 2. LERP orange layer (more delay: 0.035 LERP factor, dynamic offset proportional to orange layer elevation)
+        const currentOffset = orangeElevationFactor * 12;
         const targetOrangeX = targetX + currentOffset;
         const targetOrangeY = targetY + currentOffset;
         const dxOrange = targetOrangeX - currentOrangeX;
@@ -471,9 +493,11 @@ if (!isMobileDevice) {
         currentOrangeX += dxOrange * 0.035;
         currentOrangeY += dyOrange * 0.035;
 
-        currentScale += (targetScale - currentScale) * 0.07;
+        // Animate scales separately
+        currentOrangeScale += (targetOrangeScale - currentOrangeScale) * 0.08;
+        currentImgScale += (targetImgScale - currentImgScale) * 0.07;
 
-        if (currentScale < 0.02 && hoveredCardIndex === -1 && activeImages.length > 0) {
+        if (currentImgScale < 0.02 && hoveredCardIndex === -1 && activeImages.length > 0) {
           activeImages.forEach(img => img.el.remove());
           activeImages = [];
           imgContainer.innerHTML = '';
@@ -499,16 +523,16 @@ if (!isMobileDevice) {
         currentOrangeTiltY += (targetOrangeTiltY - currentOrangeTiltY) * 0.05;
         currentOrangeTiltZ += (targetOrangeTiltZ - currentOrangeTiltZ) * 0.05;
 
-        // Calculate dynamic 3D elevations based on current scale factor
-        const currentZ = elevationFactor * 15;
-        const currentOrangeZ = elevationFactor * 5;
+        // Calculate dynamic 3D elevations based on respective scale factors
+        const currentZ = imgElevationFactor * 15;
+        const currentOrangeZ = orangeElevationFactor * 5;
 
         // Apply transform to image container (on top, z-index: 2)
         gsap.set(imgContainer, {
           x: currentX,
           y: currentY,
           z: currentZ, // Dynamically lifted above the cards as it scales up
-          scale: currentScale,
+          scale: currentImgScale,
           rotationY: currentTiltY,
           rotationX: currentTiltX,
           rotation: currentTiltZ,
@@ -521,7 +545,7 @@ if (!isMobileDevice) {
           x: currentOrangeX,
           y: currentOrangeY,
           z: currentOrangeZ, // Dynamically lifted underneath the image container
-          scale: currentScale,
+          scale: currentOrangeScale,
           rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
           rotationX: currentOrangeTiltX * 0.8,
           rotation: currentOrangeTiltZ * 0.8,
