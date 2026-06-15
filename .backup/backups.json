@@ -1,12 +1,5 @@
 [
   {
-    "step": 75,
-    "timestamp": "2026-06-12 01:03:15",
-    "description": "Further reduce record swing damping to 0.993 and active drag damping to 0.98",
-    "folder": "step_075_Further_reduce_record_swing_damping_to_0.993_and_active_drag_damping_to_0.98",
-    "is_auto": false
-  },
-  {
     "step": 76,
     "timestamp": "2026-06-12 01:05:23",
     "description": "Optimize magnetic pocket LERP and boundary rebound bounce to resolve sticky damping",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-12 01:38:56",
     "description": "Disable outer glow drop shadow for grab state cursor",
     "folder": "step_094_Disable_outer_glow_drop_shadow_for_grab_state_cursor",
+    "is_auto": false
+  },
+  {
+    "step": 95,
+    "timestamp": "2026-06-16 00:46:33",
+    "description": "Adjust volume HUD alignment and delay",
+    "folder": "step_095_Adjust_volume_HUD_alignment_and_delay",
     "is_auto": false
   }
 ]

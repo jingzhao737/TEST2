@@ -113,7 +113,7 @@
     // LERP globalVolume towards targetVolume for smooth delay-tracking volume adjusts (feels highly polished)
     let volDiff = window.__targetVolume - window.__globalVolume;
     if (Math.abs(volDiff) > 0.001) {
-      window.__globalVolume += volDiff * 0.095; // lerp smooth factor
+      window.__globalVolume += volDiff * 0.068; // lerp smooth factor (adds silkier delay)
     } else {
       window.__globalVolume = window.__targetVolume;
     }
@@ -273,12 +273,15 @@
       // 1. Draw horizontal volume glow fill with 5px rounded corners and a breathing edge glow
       let barW = waveW * window.__globalVolume;
       if (barW > 0.5) {
+        ctx.save();
         ctx.beginPath();
         if (typeof ctx.roundRect === 'function') {
           ctx.roundRect(0, 0, barW, waveH, 5); // 5px rounded corners
         } else {
           ctx.rect(0, 0, barW, waveH);
         }
+        ctx.clip(); // Ensure all sub-drawings conform to the rounded corners, rounding the right edge
+
         ctx.fillStyle = 'rgba(232, 124, 80, ' + (0.13 * opacity) + ')';
         ctx.fill();
 
@@ -288,11 +291,13 @@
         ctx.shadowColor = 'rgba(232, 124, 80, 0.95)';
         ctx.shadowBlur = 6;
         ctx.fillStyle = 'rgba(232, 124, 80, ' + edgeGlow + ')';
-        ctx.fillRect(barW - 2, 0, 2, waveH);
+        ctx.fillRect(barW - 2.5, 0, 2.5, waveH);
+        ctx.restore();
+
         ctx.restore();
       }
 
-      // 2. Show and update HTML floating HUD underneath the waveform
+      // 2. Show and update HTML floating HUD next to skip button
       if (hudEl) {
         hudEl.classList.add('is-visible');
         if (isDraggingVolume) {
@@ -300,7 +305,7 @@
         } else {
           hudEl.classList.remove('is-dragging');
         }
-        const volPercent = Math.round(window.__targetVolume * 100);
+        const volPercent = Math.round(window.__globalVolume * 100);
         hudEl.textContent = volPercent + '%';
         hudEl.style.opacity = opacity;
       }

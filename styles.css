@@ -413,37 +413,40 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .nav-logo{font-family:'Climate Crisis',sans-serif;font-size:1.3rem;color:var(--fg);letter-spacing:0.03em;text-decoration:none;position:relative;z-index:101;font-weight:700;line-height:1;display:inline-flex;align-items:center;margin-top:-1px;transition:color 0.4s var(--ease-out-expo),transform 0.4s var(--ease-out-expo)}
 .nav-logo:hover, .nav-logo.magnet-hover{color:var(--accent);transform:scale(1.02)}
 .nav-wave-container{display:inline-flex;align-items:center;margin-left:12px;margin-right:auto;position:relative}
-.nav-waveform{width:100px;height:28px;opacity:0.75;pointer-events:auto;cursor:pointer;flex-shrink:0;filter:drop-shadow(0 0 4px rgba(232, 124, 80, 0.25));transition:opacity 0.4s var(--ease-out-expo),filter 0.4s var(--ease-out-expo),transform 0.4s var(--ease-out-expo)}
+.nav-waveform{width:100px;height:28px;opacity:0.75;pointer-events:auto;cursor:pointer;flex-shrink:0;filter:drop-shadow(0 0 4px rgba(232, 124, 80, 0.25));transition:opacity 0.4s var(--ease-out-expo),filter 0.4s var(--ease-out-expo),transform 0.4s var(--ease-out-expo);border-radius:5px}
 .nav-waveform:hover, .nav-waveform.magnet-hover{opacity:1;transform:scale(1.05);filter:drop-shadow(0 0 8px rgba(232, 124, 80, 0.6))}
 .nav-volume-hud {
-  position: absolute;
-  top: 100%;
-  left: 45%;
-  transform: translateX(-50%) translateY(0px) scale(0.9);
-  background: rgba(22, 22, 22, 0.9);
-  border: 1px solid rgba(232, 124, 80, 0.35);
-  border-radius: 6px;
+  display: inline-block;
+  max-width: 0;
+  margin-left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
   color: #fff;
-  font-family: 'Google Sans', sans-serif;
-  font-size: 11px;
+  font-family: 'Climate Crisis', sans-serif;
+  font-size: 13px;
   font-weight: 700;
-  padding: 4px 8px;
+  line-height: 1;
+  letter-spacing: 0.08em;
   pointer-events: none;
   opacity: 0;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.55), 0 0 10px rgba(232, 124, 80, 0.18);
-  transition: opacity 0.25s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 210;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px) scale(0.9);
+  transition: opacity 0.35s ease 0.04s, transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) 0.04s, max-width 0.38s ease 0.04s, margin-left 0.38s ease 0.04s;
+  z-index: 10;
 }
 .nav-volume-hud.is-visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(8px) scale(1);
+  opacity: 0.85;
+  max-width: 60px; /* Expands to fit '100%' percentage width */
+  margin-left: 10px; /* Adds nice padding only when visible */
+  transform: translateY(-2px) scale(1);
 }
 .nav-volume-hud.is-dragging {
-  border-color: rgba(232, 124, 80, 0.7);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(232, 124, 80, 0.35);
-  transform: translateX(-50%) translateY(8px) scale(1.12);
+  opacity: 1;
+  max-width: 60px;
+  margin-left: 10px;
+  transform: translateY(-2px) scale(1.18);
 }
 .nav-next-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--fg);cursor:pointer;outline:none;padding:0;opacity:0;pointer-events:none;overflow:hidden;perspective:800px;transform:rotateY(-120deg) rotateZ(-30deg) scale(0) translateX(-30px);filter:blur(4px);transition:opacity 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),transform 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),color 0.3s ease,filter 0.5s ease;margin-left:8px;flex-shrink:0}
 :root.light .nav-next-btn{border:none;background:transparent}
