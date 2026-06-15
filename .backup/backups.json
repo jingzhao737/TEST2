@@ -1,12 +1,5 @@
 [
   {
-    "step": 92,
-    "timestamp": "2026-06-12 01:34:44",
-    "description": "Fix cursor flickering bug",
-    "folder": "step_092_Fix_cursor_flickering_bug",
-    "is_auto": false
-  },
-  {
     "step": 93,
     "timestamp": "2026-06-12 01:36:43",
     "description": "Fix 3D cursor rendering flicker by moving drop-shadow filter to leaf wrapper elements",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:17:46",
     "description": "Implement Three.js WebGL vinyl records with PBR anisotropic specular shader material and 3D tilt physics",
     "folder": "step_111_Implement_Three.js_WebGL_vinyl_records_with_PBR_anisotropic_specular_shader_material_and_3D_tilt_physics",
+    "is_auto": false
+  },
+  {
+    "step": 112,
+    "timestamp": "2026-06-16 01:18:01",
+    "description": "Deploy Three.js WebGL records documentation and sync files",
+    "folder": "step_112_Deploy_Three.js_WebGL_records_documentation_and_sync_files",
     "is_auto": false
   }
 ]
