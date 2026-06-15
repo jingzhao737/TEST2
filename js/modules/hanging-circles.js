@@ -437,9 +437,10 @@ import * as THREE from 'three';
     shadowCanvas.width = 128;
     shadowCanvas.height = 128;
     const sCtx = shadowCanvas.getContext('2d');
-    let grad = sCtx.createRadialGradient(64, 64, 28, 64, 64, 64);
-    grad.addColorStop(0, 'rgba(0,0,0,1)');
-    grad.addColorStop(0.5, 'rgba(0,0,0,0.45)');
+    let grad = sCtx.createRadialGradient(64, 64, 12, 64, 64, 64);
+    grad.addColorStop(0, 'rgba(0,0,0,0.65)');
+    grad.addColorStop(0.3, 'rgba(0,0,0,0.35)');
+    grad.addColorStop(0.7, 'rgba(0,0,0,0.08)');
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     sCtx.fillStyle = grad;
     sCtx.fillRect(0, 0, 128, 128);
@@ -518,11 +519,11 @@ import * as THREE from 'three';
         let discGroup = new THREE.Group();
         
         // 1. Create Shadow Mesh (Plane Geometry with Canvas Soft Shadow)
-        const shadowGeom = new THREE.PlaneGeometry(t.dispW * 2.4, t.dispW * 2.4);
+        const shadowGeom = new THREE.PlaneGeometry(t.dispW * 1.5, t.dispW * 1.5);
         const shadowMat = new THREE.MeshBasicMaterial({
           map: shadowTexture,
           transparent: true,
-          opacity: 0.4,
+          opacity: 0.22,
           depthWrite: false
         });
         const shadowMesh = new THREE.Mesh(shadowGeom, shadowMat);
@@ -1082,11 +1083,11 @@ import * as THREE from 'three';
         // Animate shadow position and opacity (depth simulation)
         // Keep shadow on the background plane (world Z approx -30) by subtracting t.currentZ
         let lift = (t.currentZ - baseZ) / 45; // 0 to 1 lift ratio
-        d.shadowMesh.position.x = (5 + eased * 6 + lift * 12) * scaleFactor;
-        d.shadowMesh.position.y = (-10 - eased * 12 - lift * 24) * scaleFactor;
-        d.shadowMesh.position.z = -30 - t.currentZ - eased * 15;
-        d.shadowMesh.scale.set(1 + eased * 0.05 + lift * 0.18, 1 + eased * 0.05 + lift * 0.18, 1);
-        d.shadowMesh.material.opacity = Math.max(0.05, 0.45 - eased * 0.08 - lift * 0.15 - (pulse * 0.05));
+        d.shadowMesh.position.x = (4 + eased * 4 + lift * 6) * scaleFactor;
+        d.shadowMesh.position.y = (-6 - eased * 6 - lift * 10) * scaleFactor;
+        d.shadowMesh.position.z = -30 - t.currentZ - eased * 12;
+        d.shadowMesh.scale.set(1 + eased * 0.04 + lift * 0.12, 1 + eased * 0.04 + lift * 0.12, 1);
+        d.shadowMesh.material.opacity = Math.max(0.02, 0.22 - eased * 0.04 - lift * 0.1 - (pulse * 0.03));
       }
     }
     

@@ -1,12 +1,5 @@
 [
   {
-    "step": 100,
-    "timestamp": "2026-06-16 00:59:58",
-    "description": "Add smooth fade out transition when music stops or switches",
-    "folder": "step_100_Add_smooth_fade_out_transition_when_music_stops_or_switches",
-    "is_auto": false
-  },
-  {
     "step": 101,
     "timestamp": "2026-06-16 01:00:18",
     "description": "Add smooth fade-out when music stops or switches",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:30:50",
     "description": "Soften rope highlight sheen to satin matte fabric texture",
     "folder": "step_119_Soften_rope_highlight_sheen_to_satin_matte_fabric_texture",
+    "is_auto": false
+  },
+  {
+    "step": 120,
+    "timestamp": "2026-06-16 01:32:12",
+    "description": "Soften vinyl record shadow size, gradient, and opacity",
+    "folder": "step_120_Soften_vinyl_record_shadow_size,_gradient,_and_opacity",
     "is_auto": false
   }
 ]
