@@ -909,3 +909,39 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 530），自动部署线上页面。
 
+---
+
+## 🛠️ Hotfix: 解决详情页 3D 卡片点击拖拽时由于重置漂移高度导致的瞬间位移与“打滑”手感 Bug
+
+### 1. 问题原因分析
+- **现象**：当卡片在进行自动上下漂浮运动时，用户点击并拖动卡片，卡片会发生瞬间的垂直位移（往下或往上跳跃），并在拖拽过程中产生一种不受控制的“滑动”/“打滑”感，手感与观感不够丝滑和牢固。
+- **根本原因**：
+  - 在原先的拖拽起始逻辑（`handleDragStart`）中，当触发鼠标按下/手指触摸时，代码会立即将自动漂浮容器 `#detail3dFloatWrapper` 的 `y`, `rotateY`, `rotateX` 属性通过一个 0.3s 的 GSAP 动画强行重置归零：
+    ```javascript
+    gsap.to('#detail3dFloatWrapper', { y: 0, rotateY: 0, rotateX: 0, duration: 0.3, ... });
+    ```
+  - 这导致在用户点击并试图移动卡片的最初 300 毫秒内，卡片在外框的漂移归零动画和用户的拖拽旋转动画（针对内层 `#detail3dCardInner`）之间发生**物理位移叠加**。卡片仿佛在光标下方悄悄滑动归零，造成光标与卡片物理定位的“脱节感”和“打滑感”。
+  - 同时，由于卡片是从一个动态的漂移高度瞬间重置到 `0`，这种生硬的重置也会导致视觉上的瞬移跳跃。
+
+### 2. 解决方案与修改
+- **拖拽时静止冷冻（Zero-offset Freeze on Drag Start）**：
+  - 修改 `js/modules/hash-router.js` 中的 `handleDragStart` 逻辑：去除点击时将漂移高度重置归零的 0.3s 动画，而是**仅仅 `.pause()` 暂停当前的漂浮动画**。
+  - 这样，卡片在被点击的一瞬间，会**极其自然地“冻结”在它当前运动所在的漂浮高度和角度**（如 `y = 4.2px`），拖拽过程中它会作为静态偏移量保持完全静止，从而消除了拖动开始时的瞬移和叠加滑移，使光标牢牢抓住卡片，手感极佳。
+- **松手时同步回弹（Synchronized Snap-back on Release）**：
+  - 修改 `handleDragEnd` 逻辑，在卡片松手弹回（Snap-back）的过程中，将外层漂浮容器 `#detail3dFloatWrapper` 同样以与卡片相同的 `duration`、相同的 `ease` 弹性曲线**同步且平滑地弹回 `0`**：
+    ```javascript
+    gsap.to('#detail3dFloatWrapper', {
+      y: 0, rotateY: 0, rotateX: 0,
+      duration: snapDuration,
+      ease: `back.out(${overshoot})`,
+      overwrite: 'auto'
+    });
+    ```
+  - 这实现了卡片旋转、位移、漂浮偏移在松手时的多轨完美同步回弹。
+- **重置起始缓动（Smooth Start on Resume）**：
+  - 修改 `startFloating` 逻辑，当回弹动画结束需要重新开启漂浮循环时，先用一个 1.3s ~ 2.0s 的**单次缓动动画**（半个周期）将容器平滑地由静止状态（`0`）推送到峰值，然后再平滑无缝地切入无限循环的 `yoyo` 漂浮动画。避免了漂浮循环开启时的任何瞬间跳跃。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 531），自动部署线上页面。
+

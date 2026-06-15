@@ -493,10 +493,38 @@ function setupDetail3DCard() {
       if (Array.isArray(floatTween)) floatTween.forEach(t => t.kill());
       else floatTween.kill();
     }
+    // Smoothly transition from 0 (where snap-back left it) to the floating state
     floatTween = [
-      gsap.fromTo('#detail3dFloatWrapper', { y: -10 }, { y: 10, duration: 2.6, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
-      gsap.fromTo('#detail3dFloatWrapper', { rotateY: -6 }, { rotateY: 6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
-      gsap.fromTo('#detail3dFloatWrapper', { rotateX: -4 }, { rotateX: 4, duration: 4.1, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+      gsap.fromTo('#detail3dFloatWrapper', { y: 0 }, { 
+        y: 10, 
+        duration: 1.3, 
+        ease: 'sine.inOut', 
+        onComplete: function() {
+          if (is3DCardActive && !isDragging && floatTween) {
+            floatTween[0] = gsap.fromTo('#detail3dFloatWrapper', { y: 10 }, { y: -10, duration: 2.6, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+          }
+        }
+      }),
+      gsap.fromTo('#detail3dFloatWrapper', { rotateY: 0 }, { 
+        rotateY: 6, 
+        duration: 1.7, 
+        ease: 'sine.inOut', 
+        onComplete: function() {
+          if (is3DCardActive && !isDragging && floatTween) {
+            floatTween[1] = gsap.fromTo('#detail3dFloatWrapper', { rotateY: 6 }, { rotateY: -6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+          }
+        }
+      }),
+      gsap.fromTo('#detail3dFloatWrapper', { rotateX: 0 }, { 
+        rotateX: 4, 
+        duration: 2.05, 
+        ease: 'sine.inOut', 
+        onComplete: function() {
+          if (is3DCardActive && !isDragging && floatTween) {
+            floatTween[2] = gsap.fromTo('#detail3dFloatWrapper', { rotateX: 4 }, { rotateX: -4, duration: 4.1, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+          }
+        }
+      })
     ];
   }
 
@@ -584,21 +612,13 @@ function setupDetail3DCard() {
     currentRotateX = gsap.getProperty(cardInner, "rotateX") || 0;
     
     // Kill active rebound or entry tweens
-    gsap.killTweensOf([cardInner, container, cardImg, sheen, glare]);
+    gsap.killTweensOf([cardInner, container, cardImg, sheen, glare, '#detail3dFloatWrapper']);
     
-    // Pause float loops and stabilize the wrapper to prevent slippery cursor jumps
+    // Pause float loops (keep current position frozen, prevent slippery cursor jumps)
     if (floatTween) {
       if (Array.isArray(floatTween)) floatTween.forEach(t => t.pause());
       else floatTween.pause();
     }
-    gsap.to('#detail3dFloatWrapper', {
-      y: 0,
-      rotateY: 0,
-      rotateX: 0,
-      duration: 0.3,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    });
 
     hero.classList.add('detail-hero-grabbing');
     
@@ -748,6 +768,16 @@ function setupDetail3DCard() {
     gsap.to(container, {
       x: 0,
       y: 0,
+      duration: snapDuration,
+      ease: `back.out(${overshoot})`,
+      overwrite: 'auto'
+    });
+    
+    // Snap float wrapper back to 0 (position and rotation) in sync with the snap duration
+    gsap.to('#detail3dFloatWrapper', {
+      y: 0,
+      rotateY: 0,
+      rotateX: 0,
       duration: snapDuration,
       ease: `back.out(${overshoot})`,
       overwrite: 'auto'
