@@ -409,9 +409,9 @@
           let dx = latchSX - t.x;
           let dy = latchSY2 - t.y;
           
-          // Instantly drop the lerp factor to 0.22 so the first frame doesn't jump, then settle at 0.32
-          if (t._lerp > 0.32) t._lerp = 0.22; 
-          else t._lerp += (0.32 - t._lerp) * 0.1;
+          // Instantly drop the lerp factor to 0.055 (10% faster than 0.05) so the first frame doesn't jump, then settle at 0.09
+          if (t._lerp > 0.09) t._lerp = 0.055; 
+          else t._lerp += (0.09 - t._lerp) * 0.1;
           
           t.x += dx * t._lerp;
           t.y += dy * t._lerp;
@@ -429,7 +429,7 @@
           if (t._wasInZone) {
             t._wasInZone = false;
             t._rippedOut = true;
-            t._lerp = 0.22; // Instantly drop to match entry speed!
+            t._lerp = 0.055; // Instantly drop to match entry speed!
           }
           
           let distToMouse = Math.sqrt(Math.pow(rawTargetX - t.x, 2) + Math.pow(rawTargetY - t.y, 2));
@@ -438,8 +438,8 @@
           }
           
           if (t._rippedOut) {
-            if (t._lerp > 0.32) t._lerp = 0.22;
-            else t._lerp += (0.32 - t._lerp) * 0.1;
+            if (t._lerp > 0.09) t._lerp = 0.055;
+            else t._lerp += (0.09 - t._lerp) * 0.1;
           } else {
             t._lerp += (0.52 - t._lerp) * 0.1; // Smoothly recover normal drag
           }
@@ -483,8 +483,8 @@
         // Remove outward radial velocity (rope can't push, only pull)
         let vradial = t.vx * nx + t.vy * ny;
         if (vradial > 0) {
-          t.vx -= vradial * nx * 1.65;
-          t.vy -= vradial * ny * 1.65;
+          t.vx -= vradial * nx * 1.35;
+          t.vy -= vradial * ny * 1.35;
           if (vradial > 2.5) {
             t._swayV += (Math.random() - 0.5) * 0.08;
           }
