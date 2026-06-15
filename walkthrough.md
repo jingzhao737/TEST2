@@ -527,3 +527,36 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 498），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 增加 Works 卡片点击时 3D 触感挤压与动态光圈涟漪反馈
+
+### 1. 方案设计与意图
+- **提升点击交互的高级感 (Tactile Feedback & Visual Response)**:
+  - 之前用户点击 Works 卡片后，页面会立即触发路由切换，整个列表随之淡出滑离。虽然过渡流畅，但卡片本身在被鼠标或按键“按下”的物理瞬间，缺乏一种按下弹起的物理实感和即时视觉响应（点击反馈）。
+  - 为了给卡片点击增加豪华微交互感，我们决定为其定制双重反馈：
+    1. **物理 3D 挤压 (3D Squeeze)**：卡片瞬间向三维屏幕内凹陷（沿 Z 轴推深、并微缩比例），之后弹性回弹。
+    2. **局部光影扩散 (Glow Ripple)**：从鼠标点击的精确坐标处，以极具表现力的大范围混合模式（`mix-blend-mode: screen`）淡入扩散出带有主色调橙红的柔和光影涟漪，带来光能爆破的微交互细节。
+
+### 2. 解决方案与修改
+- **3D 挤压触感实现**:
+  - 在 [work-detail.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/work-detail.js) 中导入 `gsap`。
+  - 在卡片被触发点击（包括回车、空格等无障碍按键激活）时，拦截并延迟路由切换时间 `150ms`。
+  - 在这 150ms 的极短时间窗口内，使用 GSAP 对卡片运行一个极快的物理内缩动效：
+    `gsap.to(card, { scale: 0.96, z: -30, duration: 0.12, ease: 'power2.out', yoyo: true, repeat: 1 });`
+    这会将卡片在 Z 轴上向深处推出 30 像素，并在 120 毫秒后自动 yoyo 回弹。由于 150ms 延时恰好让卡片在回弹中途开始随页面滑离，使得整个点击到滑出的过程无比连贯自然。
+- **坐标感知型光圈涟漪**:
+  - 计算点击点在 `.work-card` 局部的相对坐标 `(x, y)`（如果是按键触发，则自动以卡片物理中心点作为 fallback 中心）。
+  - 动态在卡片内 append 一个带有 `.card-click-ripple` 类的装饰标签，并将其绝对定位在 `(x, y)`。
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中定义该涟漪：
+    - 使用 `radial-gradient(circle, rgba(255,255,255,0.45) 0%, var(--accent) 40%, transparent 70%)` 建立圆环光圈；
+    - 使用 `mix-blend-mode: screen` 和 `pointer-events: none` 排除事件干扰并实现通透的高亮混合效果；
+    - 绑定自定义 `cardRippleExpand` 动画（从 0 扩散至 `1400px`，同时 `opacity` 从 1 渐变衰减为 0），完美模拟出光波扩散的视觉特效。
+- **双击与连击防抖**:
+  - 在 `openCard` 运行初期为卡片设置 `data-clicked="true"` 并在延迟跳转结束后移除，配合 `hash-router.js` 内部本身的 `isRouteTransitioning` 状态锁，全面杜绝了多重点击和瞬时路由冲突的问题。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 499），自动部署线上页面。

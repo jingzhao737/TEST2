@@ -2935,4 +2935,31 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
 }
 
+/* Card click ripple feedback animation */
+.card-click-ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, var(--accent) 40%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: cardRippleExpand 0.75s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  z-index: 2;
+}
+
+@keyframes cardRippleExpand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 1400px;
+    height: 1400px;
+    opacity: 0;
+  }
+}
+
 
