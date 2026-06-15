@@ -81,6 +81,9 @@
       playClick();
       dragging = false;
       springBack();
+      setTimeout(function() {
+        window.__isDraggingTheme = false;
+      }, 150);
     }
   }
 
@@ -129,6 +132,7 @@
     if (dragging || inMotion) return;
     initAudio();
     dragging = true; toggled = false;
+    window.__isDraggingTheme = true;
     e.preventDefault();
     wrapper.style.transition = 'none';
     stringEl.style.transition = 'none';
@@ -154,6 +158,9 @@
     } else if (!inMotion) {
       springBack();
     }
+    setTimeout(function() {
+      window.__isDraggingTheme = false;
+    }, 150);
   }
 
   setPull(0);

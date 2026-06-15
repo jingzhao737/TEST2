@@ -7,6 +7,7 @@ document.querySelectorAll('.work-card').forEach(function(card) {
   card.setAttribute('tabindex', '0');
 
   function openCard(e) {
+    if (window.__isDraggingTheme) return;
     if (card.getAttribute('data-clicked') === 'true') return;
     card.setAttribute('data-clicked', 'true');
 
@@ -72,6 +73,7 @@ document.querySelectorAll('.work-card').forEach(function(card) {
   const worksEl = document.querySelector('.works');
   if (worksEl) {
     worksEl.addEventListener('click', function(e) {
+      if (window.__isDraggingTheme) return;
       // If the click is inside a work-card or other interactive elements, let them handle it
       if (e.target.closest('.work-card') || e.target.closest('a, button, [role="button"]:not(.work-card)')) {
         return;
