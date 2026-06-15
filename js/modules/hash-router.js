@@ -128,8 +128,9 @@ function openDetail(data, heroImg, pushState) {
   workDetail.style.display = 'flex';
   workDetail.style.visibility = 'visible';
   if (window.__updateMagnetTargets) window.__updateMagnetTargets();
-  if (detailCard) {
-    detailCard.scrollTop = 0;
+  const scrollWrapper = document.getElementById('workDetailScrollWrapper');
+  if (scrollWrapper) {
+    scrollWrapper.scrollTop = 0;
   }
   document.body.style.overflow = 'hidden';
 
@@ -401,11 +402,11 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowUp') { e.preventDefault(); window.scrollBy({ top: -window.innerHeight * 0.7, behavior: 'smooth' }); }
 });
 
-const workDetailCard = document.getElementById('workDetailCard');
-if (workDetailCard) {
-  workDetailCard.addEventListener('wheel', function(e) {
+const workDetailScroll = document.getElementById('workDetailScrollWrapper');
+if (workDetailScroll) {
+  workDetailScroll.addEventListener('wheel', function(e) {
     e.stopPropagation();
-    let atTop = workDetailCard.scrollTop <= 0, atBottom = workDetailCard.scrollTop + workDetailCard.clientHeight >= workDetailCard.scrollHeight - 2;
+    let atTop = workDetailScroll.scrollTop <= 0, atBottom = workDetailScroll.scrollTop + workDetailScroll.clientHeight >= workDetailScroll.scrollHeight - 2;
     if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) e.preventDefault();
   }, { passive: false });
 }

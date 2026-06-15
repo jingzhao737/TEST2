@@ -368,7 +368,7 @@
     // Smooth scroll the details card if open
     const detail = document.getElementById('workDetail');
     if (detail && detail.classList.contains('open')) {
-      const card = document.getElementById('workDetailCard');
+      const card = document.getElementById('workDetailScrollWrapper');
       if (card) {
         e.preventDefault();
         let maxScroll = card.scrollHeight - card.clientHeight;
@@ -381,8 +381,8 @@
           window.__cardWheelTarget = card.scrollTop;
         }
 
-        // Sync with actual scroll position if not animating or if scroll was reset to 0
-        if (!window.__activeCardWheelRaf || card.scrollTop === 0) {
+        // Sync with actual scroll position if not animating or if user scrolled manually
+        if (!window.__activeCardWheelRaf || Math.abs(card.scrollTop - window.__cardWheelCurrent) > 2) {
           window.__cardWheelCurrent = card.scrollTop;
           window.__cardWheelTarget = card.scrollTop;
         }

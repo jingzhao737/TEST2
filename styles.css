@@ -1747,22 +1747,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   background: rgba(245, 240, 232, 0.65);
 }
 
-.work-detail-container {
+.work-detail-card {
   position: relative;
   width: calc(100% - 48px); /* Small gaps on left and right */
   max-width: 1320px;
   height: calc(100vh - 32px); /* Small gap on top, no gap on bottom */
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  pointer-events: none; /* Let clicks fall through to background */
-  z-index: 501;
-}
-
-.work-detail-card {
-  position: relative;
-  width: 100%;
-  height: 100%;
   background: var(--card-bg);
   border-top-left-radius: 24px; /* Round top corners only */
   border-top-right-radius: 24px;
@@ -1771,13 +1760,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border: 1px solid var(--border);
   border-bottom: none; /* No border at the bottom screen edge */
   box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  pointer-events: auto;
+  z-index: 501;
+}
+
+.work-detail-scroll-wrapper {
+  width: 100%;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
-  pointer-events: auto;
   -webkit-overflow-scrolling: touch;
 }
-.work-detail-card::-webkit-scrollbar {
+.work-detail-scroll-wrapper::-webkit-scrollbar {
   display: none;
 }
 
@@ -1853,13 +1849,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 @media (max-width: 768px) {
-  .work-detail-container {
+  .work-detail-card {
     width: calc(100% - 24px); /* Smaller gap on mobile */
     height: calc(100vh - 20px);
-  }
-  .work-detail-card {
-    width: 100%;
-    height: 100%;
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
   }
