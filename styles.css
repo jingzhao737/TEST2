@@ -2007,19 +2007,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
 }
 
-.detail-3d-card-hint {
-  margin-top: 16px;
-  font-family: 'Google Sans', sans-serif;
-  font-size: 0.85rem;
-  color: var(--fg);
-  opacity: 0.5;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-align: center;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
 .detail-hero-content {
   position: relative;
   z-index: 2;

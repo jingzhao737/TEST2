@@ -642,36 +642,40 @@ function setupDetail3DCard() {
     const rotY = currentRotateY + dx * 0.45;
     const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
     
-    // Smooth responsive drag positioning
+    // Smooth responsive drag positioning with weighted delay & unified synchronisation
     gsap.to(cardInner, {
       rotateY: rotY,
       rotateX: rotX,
-      duration: 0.2,
-      ease: 'power1.out',
-      overwrite: 'auto'
-    });
-    
-    // Trigonometric projection for periodic bounded offset & glare updates
-    const px = Math.sin(rotY * Math.PI / 180);
-    const py = Math.sin(-rotX * Math.PI / 180);
-    
-    // Parallax image shift inside visual window (2D displacement shadowbox)
-    // Opposite direction of rotation on both axes
-    gsap.to(cardImg, {
-      x: -px * 15,
-      y: -py * 15,
-      duration: 0.2,
-      ease: 'power1.out',
-      overwrite: 'auto'
-    });
-    
-    // Parallax shift on card container
-    gsap.to(container, {
-      x: px * 15,
-      y: py * 15,
-      duration: 0.2,
-      ease: 'power1.out',
-      overwrite: 'auto'
+      duration: 0.4, // Increased to 0.4 to add a premium weighted lag/delay
+      ease: 'power2.out', // Changed to power2.out for smoother deceleration
+      overwrite: 'auto',
+      onUpdate: () => {
+        const rY = gsap.getProperty(cardInner, "rotateY") || 0;
+        const rX = gsap.getProperty(cardInner, "rotateX") || 0;
+        
+        const px = Math.sin(rY * Math.PI / 180);
+        const py = Math.sin(-rX * Math.PI / 180);
+        
+        // Parallax image shift updates dynamically in perfect sync
+        gsap.set(cardImg, { x: -px * 15, y: -py * 15 });
+        
+        // Parallax container shift updates dynamically in perfect sync
+        gsap.set(container, { x: px * 15, y: py * 15 });
+        
+        // Radial glare reflection update in sync
+        const glareX = 50 - px * 25;
+        const glareY = 50 - py * 25;
+        const glareOpacity = Math.min(0.6, Math.sqrt(px*px + py*py) * 0.4);
+        glare.style.opacity = glareOpacity;
+        glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 70%)`;
+        
+        // Holographic rainbow sheen background-position shift in sync
+        const sheenX = 50 + px * 35;
+        const sheenY = 50 + py * 35;
+        const sheenOpacity = Math.min(0.7, Math.sqrt(px*px + py*py) * 0.5);
+        sheen.style.opacity = sheenOpacity;
+        sheen.style.backgroundPosition = `${sheenX}% ${sheenY}%`;
+      }
     });
     
     // Velocity tracking for spring snap-back dynamic overshoot
@@ -686,20 +690,6 @@ function setupDetail3DCard() {
     lastDragTime = now;
     lastDragX = clientX;
     lastDragY = clientY;
-    
-    // Radial glare reflection update
-    const glareX = 50 - px * 25;
-    const glareY = 50 - py * 25;
-    const glareOpacity = Math.min(0.6, Math.sqrt(px*px + py*py) * 0.4);
-    glare.style.opacity = glareOpacity;
-    glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 70%)`;
-    
-    // Holographic rainbow sheen background-position shift
-    const sheenX = 50 + px * 35;
-    const sheenY = 50 + py * 35;
-    const sheenOpacity = Math.min(0.7, Math.sqrt(px*px + py*py) * 0.5);
-    sheen.style.opacity = sheenOpacity;
-    sheen.style.backgroundPosition = `${sheenX}% ${sheenY}%`;
   }
 
   function handleDragEnd(clientX, clientY) {

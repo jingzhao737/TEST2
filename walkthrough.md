@@ -942,6 +942,31 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
   - 修改 `startFloating` 逻辑，当回弹动画结束需要重新开启漂浮循环时，先用一个 1.3s ~ 2.0s 的**单次缓动动画**（半个周期）将容器平滑地由静止状态（`0`）推送到峰值，然后再平滑无缝地切入无限循环的 `yoyo` 漂浮动画。避免了漂浮循环开启时的任何瞬间跳跃。
 
 ### 3. 部署与验证
-- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建.
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 531），自动部署线上页面。
+
+---
+
+## 🛠️ Hotfix: 去除 3D 卡片下方提示字，并为拖动添加平滑延迟（Inertia Lag）以优化手感
+
+### 1. 问题现象与需求分析
+- **去除提示文字**：详情页 3D 卡片底部的提示小字（"Drag to tilt & rotate • Double click to restore"）需要移除，使视觉界面更加精简、高级，突出 3D 卡片本身。
+- **拖拽加点延迟（Inertia Lag）**：原先拖动卡片时卡片的旋转速度过于紧贴鼠标（几乎零延迟），使得卡片的物理重量感缺失。希望能增加一些延迟和惯性滑动，让卡片旋转时呈现类似“带有重量的实体卡牌在指尖流转”的高级手感。
+
+### 2. 解决方案与修改
+- **删除 HTML & CSS 遗留代码**：
+  - 在 [index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中删除了 ID 为 `detail3dCardHint` 的 `div` 提示文本元素。
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中删除了对应的 `.detail-3d-card-hint` 样式类声明，清理冗余代码。
+- **引入拖拽阻尼与延迟（Lag Damping in drag move）**：
+  - 修改 [hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) 中的 `handleDragMove` 逻辑。
+  - 将 `cardInner` 拖拽时的动画时长 `duration` 从原先的 `0.2` 秒**增加到 `0.4` 秒**，同时将 GSAP 缓动函数由 `power1.out` 变更为**更具平滑减速特征的 `power2.out`**。
+  - **多层视差及反射的同步联动（Unified Update Loop）**：
+    - 在原先的代码中，卡片图片视差平移（`cardImg`）和卡片容器视差平移（`container`）是开启独立 GSAP 动画并排执行的；而反光（`glare`）和彩虹全息图层（`sheen`）则是绕过 GSAP 瞬间根据鼠标绝对坐标更新的。
+    - **改进**：我们废除了这些零散的多轨动画和即时修改，改将 `cardImg`、`container`、`glare` 与 `sheen` 的所有样式更新全部收敛进 `cardInner` 旋转动画的 **`onUpdate` 回调函数**中。
+    - **同步效果**：通过 `gsap.getProperty` 实时读取 `cardInner` 在插值运行时的**当前实际旋转值**，并基于此实时计算偏移和反光。
+    - **体验提升**：这使得在拖拽时，无论卡片受 `0.4s` 延迟拖拽如何落后于鼠标光标，其内部图片的视差位移、外框的位移、高光和彩虹全息反射等物理效果，都与卡片的三维转角**百分之百保持一致且绝对同步**，彻底消除了任何视觉脱节，带来了极其震撼、厚重且有机械延迟的奢华手感。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 532），自动部署线上页面。
 
