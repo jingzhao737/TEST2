@@ -8,10 +8,10 @@ if (!isMobileDevice) {
   const workList = document.querySelector('.work-list');
   const cards = document.querySelectorAll('.work-card');
   const worksEl = document.querySelector('.works');
-  console.log('Premium Interactions JS Initialized (Desktop 3D Projection) - [DECOUPLED ADJUSTER V2].', !!workList, cards.length, !!worksEl);
+  console.log('Premium Interactions JS Initialized (Desktop 3D Projection).', !!workList, cards.length, !!worksEl);
 
   if (workList && cards.length > 0 && worksEl) {
-    let targetX = 650, targetY = 220; // Default centered coordinates for tuning preview
+    let targetX = 0, targetY = 0;
     let currentX = 0, currentY = 0;
     let targetScale = 0.5;
     let currentScale = 0.5;
@@ -32,24 +32,17 @@ if (!isMobileDevice) {
     let currentOrangeX = 0;
     let currentOrangeY = 0;
 
-    const listBaseY = -34;
-    const listBaseX = 17;
-    const listBaseZ = 2;
-    let previewBaseY = -34;
-    let previewBaseX = 17;
-    let previewBaseZ = 2;
-    let clampYMax = 16;
-    let clampXMax = 16;
-    let clampZMax = 6;
-    let forceVisible = true; // Lock preview visible by default for angle tuning
+    const baseY = -34;
+    const baseX = 17;
+    const baseZ = 2;
 
-    let targetWorkListY = listBaseY;
-    let targetWorkListX = listBaseX;
-    let targetWorkListZ = listBaseZ;
+    let targetWorkListY = baseY;
+    let targetWorkListX = baseX;
+    let targetWorkListZ = baseZ;
 
-    let currentWorkListY = listBaseY;
-    let currentWorkListX = listBaseX;
-    let currentWorkListZ = listBaseZ;
+    let currentWorkListY = baseY;
+    let currentWorkListX = baseX;
+    let currentWorkListZ = baseZ;
 
     let mousePercentX = 0;
     let mousePercentY = 0;
@@ -77,7 +70,7 @@ if (!isMobileDevice) {
     gsap.set(wrapper, { autoAlpha: 0 });
 
     // Apply initial 3D tilt transform to workList so it aligns with starting coordinates on load
-    workList.style.transform = `rotateY(${listBaseY}deg) rotateX(${listBaseX}deg) rotateZ(${listBaseZ}deg)`;
+    workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
     let activeImages = []; // Array to keep track of active image items in the stack
 
@@ -165,15 +158,6 @@ if (!isMobileDevice) {
     }
 
     function onListLeave() {
-      if (forceVisible) {
-        // Keep preview active, reset list tilt to base
-        targetWorkListY = listBaseY;
-        targetWorkListX = listBaseX;
-        targetWorkListZ = listBaseZ;
-        mousePercentX = 0;
-        mousePercentY = 0;
-        return;
-      }
       isVisible = false;
       activeCardIndex = -1;
       hoveredCardIndex = -1;
@@ -184,9 +168,9 @@ if (!isMobileDevice) {
         c.style.removeProperty('--card-mouse-y');
       });
       // Reset tilt targets — list will LERP back to base angles
-      targetWorkListY = listBaseY;
-      targetWorkListX = listBaseX;
-      targetWorkListZ = listBaseZ;
+      targetWorkListY = baseY;
+      targetWorkListX = baseX;
+      targetWorkListZ = baseZ;
       mousePercentX = 0;
       mousePercentY = 0;
       
@@ -285,9 +269,9 @@ if (!isMobileDevice) {
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
         mousePercentY = (rawMouseY - window.innerHeight / 2) / (window.innerHeight / 2);
-        targetWorkListY = listBaseY + mousePercentX * 4;
-        targetWorkListX = listBaseX + mousePercentY * 3;
-        targetWorkListZ = listBaseZ + mousePercentX * 1.5;
+        targetWorkListY = baseY + mousePercentX * 4;
+        targetWorkListX = baseX + mousePercentY * 3;
+        targetWorkListZ = baseZ + mousePercentX * 1.5;
       }
 
       // ── STEP 2: Apply LERP to list rotation ──
@@ -315,9 +299,9 @@ if (!isMobileDevice) {
         const d = 1750;
 
         // Rotations at the base tilt angles (makes hit-test static and prevents boundary jitter)
-        const radY = listBaseY * Math.PI / 180;
-        const radX = listBaseX * Math.PI / 180;
-        const radZ = listBaseZ * Math.PI / 180;
+        const radY = baseY * Math.PI / 180;
+        const radX = baseX * Math.PI / 180;
+        const radZ = baseZ * Math.PI / 180;
 
         function projectPoint(pageX, pageY) {
           const vx = pageX - scrollX;
@@ -397,12 +381,12 @@ if (!isMobileDevice) {
           currentY = targetY;
           currentOrangeX = targetX + 12;
           currentOrangeY = targetY + 12;
-          currentTiltX = previewBaseX;
-          currentTiltY = previewBaseY;
-          currentTiltZ = previewBaseZ;
-          currentOrangeTiltX = previewBaseX;
-          currentOrangeTiltY = previewBaseY;
-          currentOrangeTiltZ = previewBaseZ;
+          currentTiltX = 0;
+          currentTiltY = 0;
+          currentTiltZ = 0;
+          currentOrangeTiltX = 0;
+          currentOrangeTiltY = 0;
+          currentOrangeTiltZ = 0;
           firstMove = false;
         }
 
@@ -428,21 +412,20 @@ if (!isMobileDevice) {
           imgContainer.innerHTML = '';
         }
         
-        // Calculate target 3D tilts for image container (based on its dx/dy velocity + base card tilt)
-        let targetTiltY = previewBaseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06);
-        let targetTiltX = previewBaseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06);
-        let targetTiltZ = previewBaseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02);
+        // Calculate target 3D tilts for image container (based on its dx/dy velocity)
+        let targetTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
+        let targetTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
+        let targetTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
         // Smoothly LERP image tilts with more delay (0.02 LERP factor)
         currentTiltX += (targetTiltX - currentTiltX) * 0.02;
         currentTiltY += (targetTiltY - currentTiltY) * 0.02;
         currentTiltZ += (targetTiltZ - currentTiltZ) * 0.02;
 
-        // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity + base card tilt)
-        // Dynamic mouse tilt offset is scaled by 0.8 for parallax depth
-        let targetOrangeTiltY = previewBaseY + gsap.utils.clamp(-clampYMax, clampYMax, dx * 0.06) * 0.8;
-        let targetOrangeTiltX = previewBaseX + gsap.utils.clamp(-clampXMax, clampXMax, -dy * 0.06) * 0.8;
-        let targetOrangeTiltZ = previewBaseZ + gsap.utils.clamp(-clampZMax, clampZMax, dx * 0.02) * 0.8;
+        // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity)
+        let targetOrangeTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
+        let targetOrangeTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
+        let targetOrangeTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
         // Smoothly LERP orange layer tilts with even more delay (0.012 LERP factor)
         currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.012;
@@ -467,9 +450,9 @@ if (!isMobileDevice) {
           x: currentOrangeX,
           y: currentOrangeY,
           scale: currentScale,
-          rotationY: currentOrangeTiltY, 
-          rotationX: currentOrangeTiltX,
-          rotation: currentOrangeTiltZ,
+          rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
+          rotationX: currentOrangeTiltX * 0.8,
+          rotation: currentOrangeTiltZ * 0.8,
           transformPerspective: 1000,
           force3D: true
         });
@@ -478,174 +461,6 @@ if (!isMobileDevice) {
       }
       requestAnimationFrame(animateHover);
     })();
-
-    // === TEMPORARY ANGLE ADJUSTER PANEL ===
-    function createAdjusterPanel() {
-      const panel = document.createElement('div');
-      panel.style.cssText = `
-        position: fixed;
-        bottom: 24px;
-        left: 24px;
-        z-index: 99999;
-        width: 320px;
-        background: rgba(13, 13, 15, 0.92);
-        border: 1px solid rgba(232, 124, 80, 0.25);
-        border-radius: 12px;
-        padding: 20px;
-        color: #fff;
-        font-family: 'Google Sans', sans-serif;
-        font-size: 12px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-        backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        user-select: none;
-      `;
-
-      const title = document.createElement('div');
-      title.innerText = '3D PREVIEW ONLY ADJUSTER (V2)';
-      title.style.cssText = 'font-weight: bold; letter-spacing: 0.1em; color: #52c41a; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;';
-      panel.appendChild(title);
-
-      const subtitle = document.createElement('div');
-      subtitle.innerText = '⚠️ ONLY TUNES HOVER PREVIEW | CARD ROTATION IS STATIC';
-      subtitle.style.cssText = 'font-size: 9px; color: rgba(255,255,255,0.5); font-weight: normal; margin-bottom: 8px; line-height: 1.2;';
-      panel.appendChild(subtitle);
-
-      const sliders = [
-        { label: 'Preview Base Y Rotation (rotateY)', min: -90, max: 90, val: previewBaseY, step: 1, key: 'previewBaseY' },
-        { label: 'Preview Base X Rotation (rotateX)', min: -90, max: 90, val: previewBaseX, step: 1, key: 'previewBaseX' },
-        { label: 'Preview Base Z Rotation (rotateZ)', min: -90, max: 90, val: previewBaseZ, step: 1, key: 'previewBaseZ' },
-        { label: 'Max Mouse Y-Tilt (X-rotation)', min: 0, max: 45, val: clampXMax, step: 1, key: 'clampXMax' },
-        { label: 'Max Mouse X-Tilt (Y-rotation)', min: 0, max: 45, val: clampYMax, step: 1, key: 'clampYMax' },
-        { label: 'Max Mouse Z-Tilt (Z-rotation)', min: 0, max: 30, val: clampZMax, step: 1, key: 'clampZMax' }
-      ];
-
-      const sliderInputs = {};
-
-      sliders.forEach(s => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display: flex; flex-direction: column; gap: 4px;';
-
-        const header = document.createElement('div');
-        header.style.cssText = 'display: flex; justify-content: space-between; color: rgba(255,255,255,0.7); font-size: 11px;';
-        
-        const labelEl = document.createElement('span');
-        labelEl.innerText = s.label;
-        const valEl = document.createElement('span');
-        valEl.innerText = s.val;
-        valEl.style.color = '#e87c50';
-        
-        header.appendChild(labelEl);
-        header.appendChild(valEl);
-        row.appendChild(header);
-
-        const input = document.createElement('input');
-        input.type = 'range';
-        input.min = s.min;
-        input.max = s.max;
-        input.step = s.step;
-        input.value = s.val;
-        input.style.cssText = 'width: 100%; accent-color: #e87c50; background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; outline: none; border: none; cursor: pointer;';
-        
-        input.addEventListener('input', (e) => {
-          const v = parseFloat(e.target.value);
-          valEl.innerText = v;
-          if (s.key === 'previewBaseX') previewBaseX = v;
-          else if (s.key === 'previewBaseY') previewBaseY = v;
-          else if (s.key === 'previewBaseZ') previewBaseZ = v;
-          else if (s.key === 'clampXMax') clampXMax = v;
-          else if (s.key === 'clampYMax') clampYMax = v;
-          else if (s.key === 'clampZMax') clampZMax = v;
-        });
-
-        row.appendChild(input);
-        panel.appendChild(row);
-        sliderInputs[s.key] = input;
-      });
-
-      // Force Visible Toggle
-      const forceRow = document.createElement('div');
-      forceRow.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-top: 4px;';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = forceVisible;
-      checkbox.style.cssText = 'accent-color: #e87c50; cursor: pointer;';
-      checkbox.addEventListener('change', (e) => {
-        forceVisible = e.target.checked;
-        if (forceVisible) {
-          isVisible = true;
-          if (activeImages.length === 0 && cards.length > 0) {
-            onCardEnter(0);
-          }
-          showPreviewDOM();
-        } else {
-          forceVisible = false;
-          onListLeave();
-        }
-      });
-      const forceLabel = document.createElement('label');
-      forceLabel.innerText = 'Lock Preview Visible';
-      forceLabel.style.cssText = 'cursor: pointer; font-size: 11px; color: rgba(255,255,255,0.8);';
-      forceRow.appendChild(checkbox);
-      forceRow.appendChild(forceLabel);
-      panel.appendChild(forceRow);
-
-      // Copy Button
-      const copyBtn = document.createElement('button');
-      copyBtn.innerText = 'COPY PARAMETERS';
-      copyBtn.style.cssText = `
-        background: #e87c50;
-        border: none;
-        border-radius: 6px;
-        color: #000;
-        font-weight: bold;
-        padding: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        margin-top: 8px;
-        font-family: inherit;
-        font-size: 11px;
-        letter-spacing: 0.05em;
-      `;
-      copyBtn.style.color = '#000000';
-      copyBtn.addEventListener('mouseenter', () => copyBtn.style.background = '#f2906b');
-      copyBtn.addEventListener('mouseleave', () => copyBtn.style.background = '#e87c50');
-      copyBtn.addEventListener('click', () => {
-        const config = {
-          previewBaseX: previewBaseX,
-          previewBaseY: previewBaseY,
-          previewBaseZ: previewBaseZ,
-          clampXMax: clampXMax,
-          clampYMax: clampYMax,
-          clampZMax: clampZMax
-        };
-        navigator.clipboard.writeText(JSON.stringify(config, null, 2)).then(() => {
-          copyBtn.innerText = 'COPIED TO CLIPBOARD!';
-          copyBtn.style.background = '#52c41a';
-          setTimeout(() => {
-            copyBtn.innerText = 'COPY PARAMETERS';
-            copyBtn.style.background = '#e87c50';
-          }, 1500);
-        });
-      });
-      panel.appendChild(copyBtn);
-
-      document.body.appendChild(panel);
-    }
-
-    // Call panel creation and force show on startup
-    setTimeout(() => {
-      createAdjusterPanel();
-      if (forceVisible) {
-        isVisible = true;
-        if (activeImages.length === 0 && cards.length > 0) {
-          onCardEnter(0);
-        }
-        showPreviewDOM();
-      }
-    }, 100);
   }
 } else {
   // === MOBILE SCROLL PREVIEW (SCROLL TILT & AUTO SWITCH) ===
