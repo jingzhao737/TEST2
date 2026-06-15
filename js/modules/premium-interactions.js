@@ -275,6 +275,11 @@ if (!isMobileDevice) {
     let firstMove = true;
 
     (function animateHover() {
+      if (forceVisible) {
+        targetX = window.innerWidth * 0.65;
+        targetY = window.innerHeight * 0.38;
+      }
+
       // ── STEP 1: Update 3D list tilt target from mouse position ──
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
@@ -475,7 +480,25 @@ if (!isMobileDevice) {
     // === TEMPORARY ANGLE ADJUSTER PANEL ===
     function createAdjusterPanel() {
       console.log('[3D PREVIEW ONLY ADJUSTER V3] Initializing decoupled panel.');
+
+      // Inject CSS style to restore native cursor on adjuster panel and hide custom cursor when hovered
+      const styleEl = document.createElement('style');
+      styleEl.innerHTML = `
+        body .work-preview-adjuster-panel,
+        body .work-preview-adjuster-panel * {
+          cursor: auto !important;
+        }
+        .work-preview-adjuster-panel:hover ~ #cursorDot,
+        .work-preview-adjuster-panel:hover ~ #cursorTrail1 {
+          opacity: 0 !important;
+          pointer-events: none !important;
+          visibility: hidden !important;
+        }
+      `;
+      document.head.appendChild(styleEl);
+
       const panel = document.createElement('div');
+      panel.className = 'work-preview-adjuster-panel';
       panel.style.cssText = `
         position: fixed;
         bottom: 24px;
