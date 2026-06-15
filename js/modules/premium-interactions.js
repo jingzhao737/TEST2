@@ -65,11 +65,13 @@ if (!isMobileDevice) {
     orangeLayer.className = 'work-preview-orange-layer';
     orangeLayer.style.transformStyle = 'preserve-3d';
     orangeLayer.style.zIndex = 'auto';
+    orangeLayer.style.opacity = '0';
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'work-preview-img-container';
     imgContainer.style.transformStyle = 'preserve-3d';
     imgContainer.style.zIndex = 'auto';
+    imgContainer.style.opacity = '0';
 
     wrapper.appendChild(orangeLayer);
     wrapper.appendChild(imgContainer);
@@ -87,8 +89,19 @@ if (!isMobileDevice) {
       if (isPreviewActive) return;
       isPreviewActive = true;
       targetScale = 1.0;
-      gsap.killTweensOf(wrapper);
-      gsap.to(wrapper, { autoAlpha: 1, duration: 0.3, ease: 'expo.out', overwrite: true });
+      
+      gsap.killTweensOf([wrapper, imgContainer, orangeLayer]);
+      
+      // Instantly make the wrapper visible and set opacity to 1.0 to prevent 3D flattening
+      gsap.set(wrapper, { autoAlpha: 1 });
+      
+      // Fade in the children layers individually
+      gsap.to([imgContainer, orangeLayer], {
+        opacity: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+        overwrite: true
+      });
     }
 
     function hidePreviewDOM() {
@@ -96,14 +109,18 @@ if (!isMobileDevice) {
       isPreviewActive = false;
       activeCardIndex = -1;
       targetScale = 0.5;
-      gsap.killTweensOf(wrapper);
-      gsap.to(wrapper, {
-        autoAlpha: 0,
-        duration: 0.3,
-        ease: 'expo.out',
+      
+      gsap.killTweensOf([wrapper, imgContainer, orangeLayer]);
+      
+      // Fade out the children layers individually
+      gsap.to([imgContainer, orangeLayer], {
+        opacity: 0,
+        duration: 0.25,
+        ease: 'power2.out',
         overwrite: true,
         onComplete: () => {
-          // Clear all images from the container once the preview is invisible
+          // Once children are invisible, hide the parent wrapper
+          gsap.set(wrapper, { autoAlpha: 0 });
           activeImages = [];
           imgContainer.innerHTML = '';
         }
@@ -420,11 +437,16 @@ if (!isMobileDevice) {
 
       // ── STEP 4: Animate preview thumbnail follow and scale ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
+        // Calculate the dynamic elevation factor based on currentScale (ranges from 0.5 to 1.0)
+        const elevationFactor = gsap.utils.clamp(0, 1, (currentScale - 0.5) / 0.5);
+
         if (firstMove) {
+          const initElevation = gsap.utils.clamp(0, 1, (currentScale - 0.5) / 0.5);
+          const initOffset = initElevation * 12;
           currentX = targetX;
           currentY = targetY;
-          currentOrangeX = targetX + 12;
-          currentOrangeY = targetY + 12;
+          currentOrangeX = targetX + initOffset;
+          currentOrangeY = targetY + initOffset;
           currentTiltX = 0;
           currentTiltY = 0;
           currentTiltZ = 0;
@@ -440,9 +462,10 @@ if (!isMobileDevice) {
         currentX += dx * 0.055;
         currentY += dy * 0.055;
 
-        // 2. LERP orange layer (more delay: 0.035 LERP factor, target offset to bottom-right)
-        const targetOrangeX = targetX + 12;
-        const targetOrangeY = targetY + 12;
+        // 2. LERP orange layer (more delay: 0.035 LERP factor, dynamic offset proportional to elevation)
+        const currentOffset = elevationFactor * 12;
+        const targetOrangeX = targetX + currentOffset;
+        const targetOrangeY = targetY + currentOffset;
         const dxOrange = targetOrangeX - currentOrangeX;
         const dyOrange = targetOrangeY - currentOrangeY;
         currentOrangeX += dxOrange * 0.035;
@@ -461,26 +484,30 @@ if (!isMobileDevice) {
         let targetTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
         let targetTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
-        // Smoothly LERP image tilts with more delay (0.02 LERP factor)
-        currentTiltX += (targetTiltX - currentTiltX) * 0.02;
-        currentTiltY += (targetTiltY - currentTiltY) * 0.02;
-        currentTiltZ += (targetTiltZ - currentTiltZ) * 0.02;
+        // Smoothly LERP image tilts with faster response (0.08 LERP factor)
+        currentTiltX += (targetTiltX - currentTiltX) * 0.08;
+        currentTiltY += (targetTiltY - currentTiltY) * 0.08;
+        currentTiltZ += (targetTiltZ - currentTiltZ) * 0.08;
 
         // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity)
         let targetOrangeTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
         let targetOrangeTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
         let targetOrangeTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
-        // Smoothly LERP orange layer tilts with even more delay (0.012 LERP factor)
-        currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.012;
-        currentOrangeTiltY += (targetOrangeTiltY - currentOrangeTiltY) * 0.012;
-        currentOrangeTiltZ += (targetOrangeTiltZ - currentOrangeTiltZ) * 0.012;
+        // Smoothly LERP orange layer tilts with faster response (0.05 LERP factor)
+        currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.05;
+        currentOrangeTiltY += (targetOrangeTiltY - currentOrangeTiltY) * 0.05;
+        currentOrangeTiltZ += (targetOrangeTiltZ - currentOrangeTiltZ) * 0.05;
+
+        // Calculate dynamic 3D elevations based on current scale factor
+        const currentZ = elevationFactor * 15;
+        const currentOrangeZ = elevationFactor * 5;
 
         // Apply transform to image container (on top, z-index: 2)
         gsap.set(imgContainer, {
           x: currentX,
           y: currentY,
-          z: 15, // Lifted above the cards to hover in 3D space
+          z: currentZ, // Dynamically lifted above the cards as it scales up
           scale: currentScale,
           rotationY: currentTiltY,
           rotationX: currentTiltX,
@@ -489,11 +516,11 @@ if (!isMobileDevice) {
         });
 
         // Apply transform to orange background shadow layer (underneath, z-index: 1)
-        // Offset to the bottom-left is driven by currentOrangeX/Y LERP coordinates
+        // Offset is driven by currentOrangeX/Y LERP coordinates
         gsap.set(orangeLayer, {
           x: currentOrangeX,
           y: currentOrangeY,
-          z: 5, // Lifted slightly less than the image container to float underneath
+          z: currentOrangeZ, // Dynamically lifted underneath the image container
           scale: currentScale,
           rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
           rotationX: currentOrangeTiltX * 0.8,
