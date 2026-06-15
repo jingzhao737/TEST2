@@ -1157,3 +1157,19 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证
 - 重新运行了 `npx vite build` 生产编译打包。
 - 使用 `git push` 同步推送到 GitHub 远程仓库的 `main` 分支。
+
+
+---
+
+## 🛠️ Hotfix: 音量波形起伏幅度与线宽极速增强，达到狂野跳动效果
+
+### 1. 需求分析与修改
+- **需求**：大音量下的声波状态要“更加明显、剧烈”。
+- **解决方案**：
+  - **高度常数翻倍**：将 Background Wave 起伏像素常数从 `9` 提高到 `20`；Secondary White Wave 从 `5`/`3.5` 提升到 `11`/`8`；Main Orange Wave 从 `8`/`2.5` 提升到 `18`/`6.5`。这一大波高度常数的大幅提升使得声波在垂直方向具有之前的 2.2 倍的狂野起伏！
+  - **动态线宽技术 (Dynamic Stroke Weights)**：重构了波形线条绘制的 lineWidth。使其直接与音量系数相乘：Background 线宽随音量调节在 `0.8` ~ `2.3` 间变化；Secondary 随音量在 `1.0` ~ `2.8` 间变化；Main Orange 随音量在 `1.5` ~ `4.0` 间变化。音量越大，线纹越粗、发光阴影面积越大。
+  - **非线性乘积暴力放大**：将有声时的 targetAmp 最大系数从原先的 `2.8` 提高到 `4.77`；在乘以音量时，应用 `Math.pow(globalVolume, 1.12) * 2.35` 强力倍率乘积。
+
+### 2. 部署与验证
+- 重新运行了 `npx vite build` 生产编译。
+- 使用 `git push` 同步推送到 GitHub 远程仓库的 `main` 分支。
