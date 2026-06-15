@@ -425,3 +425,26 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 编译与自动化验证
 - 使用 `npx.cmd vite build` 重新编译了最新的生产环境静态资源，改动已完全被打包编译到 dist 目录中。
 - 运行了 Playwright 自动化测试脚本，全面测试了 4 个卡片在不同位置（中心、左边缘、右边缘、文字）的点击成功率。测试结果显示，除 Card 1 左边缘（物理边界已因 3D 偏斜移出卡片，不触发符合预期）外，所有卡片及边缘点击均 100% 成功触发详情页开启，且完全排除了背景磁吸元素干扰。
+
+---
+
+## 🛠️ Hotfix: 详情页关闭按钮悬浮固定与丝滑滚动体验优化
+
+### 1. 问题现象与原因分析
+- **关闭按钮滚动位移**: 详情卡片内容使用了一个可滚动的容器 `.work-detail-card` (`overflow-y: auto`)。原来的关闭按钮 `#detailClose` 是作为它的子元素并采用 `absolute` 定位的。当用户向下滚动查看详情时，关闭按钮会随着卡片内容一起向上滚动，导致用户无法随时点击退出。
+- **详情页内部滚动死板 (Stiff Scroll)**: 页面主容器通过 `back-to-top.js` 重写了 `wheel` 事件，利用 LERP 物理模型（差值衰减因子 `0.065`）实现了非常丝滑的滚动效果。然而，当详情页卡片打开时，滚轮监听器直接返回退出，使得卡片内页退化到浏览器原生的阶梯式滚动，手感和外部相比显得非常生硬和死板。
+
+### 2. 解决方案与修改
+- **全新的固定卡片布局**:
+  - 在 [index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中引入了全新的三层层级关系，将 `#detailClose` 移动到了滚动容器外侧 of the `#workDetailContainer` 下。
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对新结构进行了布局，使 `#workDetailContainer` 作为卡片的外层包裹器（`position: relative`、`max-width: 1320px` 居中、`pointer-events: none`），而 `#detailClose` 设置为它的绝对定位子元素（同时设置 `pointer-events: auto` 保证点击响应）。
+  - 这样，关闭按钮无论在何种分辨率下，都会**悬浮且固定在卡片视口右上角 24px 处**，不随页面滚动移位，完美可达。
+- **滚动模型移植**:
+  - 在 [js/modules/back-to-top.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/back-to-top.js) 中，重写了 `wheel` 的拦截逻辑。当详情内页打开时，不再直接退出，而是调用 `e.preventDefault()` 阻止原生阶梯滚动。
+  - 采用和外部主页相同的 LERP 物理滚屏引擎，通过 `requestAnimationFrame` 自主驱动 `#workDetailCard` 的 `scrollTop`。
+  - 加入了自校准机制：只要检测到页面被重新打开（`scrollTop === 0`）或者滚动动画未运行，即刻对齐物理滚动条与 LERP 虚拟坐标，杜绝出现坐标错位。
+  - 在 `.work-detail-card` 的 CSS 规则中补充了 `-webkit-overflow-scrolling: touch;` 属性，确保移动端/触屏的惯性滚动同样舒适丝滑。
+
+### 3. 编译部署与测试
+- 重新使用 `npx.cmd vite build` 完成生产环境编译。
+- 使用 `python workflow.py deploy` 推送至 GitHub（Step 495），并自动发布生产页面。
