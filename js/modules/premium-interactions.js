@@ -39,19 +39,14 @@ if (!isMobileDevice) {
     const wrapper = document.createElement('div');
     wrapper.className = 'work-preview-wrapper';
 
-    const curtain = document.createElement('div');
-    curtain.className = 'work-preview-curtain';
-
     const imgContainer = document.createElement('div');
     imgContainer.className = 'work-preview-img-container';
 
-    wrapper.appendChild(curtain);
     wrapper.appendChild(imgContainer);
     document.body.appendChild(wrapper);
 
     // Initial State
     gsap.set(wrapper, { autoAlpha: 0 });
-    gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
     gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
 
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
@@ -59,23 +54,20 @@ if (!isMobileDevice) {
     function showPreviewDOM() {
       if (isPreviewActive) return;
       isPreviewActive = true;
-      gsap.killTweensOf([wrapper, curtain, imgContainer]);
+      gsap.killTweensOf([wrapper, imgContainer]);
       gsap.to(wrapper, { autoAlpha: 1, duration: 0.15, overwrite: true });
-      gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, rotationX: 0, duration: 0.6, ease: 'expo.out', overwrite: true });
-      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: -16, x: 16, rotationX: 0, duration: 0.6, ease: 'expo.out', delay: 0.15, overwrite: true });
+      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, x: 0, rotationX: 0, duration: 0.5, ease: 'expo.out', overwrite: true });
     }
 
     function hidePreviewDOM() {
       if (!isPreviewActive) return;
       isPreviewActive = false;
       activeSrc = null;
-      gsap.killTweensOf([wrapper, curtain, imgContainer]);
+      gsap.killTweensOf([wrapper, imgContainer]);
       gsap.to(wrapper, { autoAlpha: 0, duration: 0.2, delay: 0.1, overwrite: true, onComplete: () => {
-        gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
         imgContainer.innerHTML = '';
       }});
-      gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -30, rotationX: 15, duration: 0.5, ease: 'expo.out', overwrite: true });
       gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -46, x: 16, rotationX: 15, duration: 0.5, ease: 'expo.out', delay: 0.05, overwrite: true });
     }
 
@@ -227,7 +219,6 @@ if (!isMobileDevice) {
     }
 
     // RAF Animation Loop
-    let curX1 = 0, curY1 = 0;
     let curX2 = 0, curY2 = 0;
     let firstMove = true;
 
@@ -341,19 +332,12 @@ if (!isMobileDevice) {
         }
       }
 
-      // ── STEP 4: Animate preview thumbnail follow (DOM clip-path animation) ──
+      // ── STEP 4: Animate preview thumbnail follow (Single DOM image container) ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
         if (firstMove) {
-          curX1 = targetX; curY1 = targetY;
           curX2 = targetX; curY2 = targetY;
           firstMove = false;
         }
-
-        let dx1 = targetX - curX1, dy1 = targetY - curY1;
-        curX1 += dx1 * 0.04; curY1 += dy1 * 0.04;
-        let tiltY1 = gsap.utils.clamp(-15, 15, dx1 * 0.05);
-        let tiltX1 = gsap.utils.clamp(-15, 15, -dy1 * 0.05);
-        let tiltZ1 = gsap.utils.clamp(-5, 5, dx1 * 0.015);
 
         let dx2 = targetX - curX2, dy2 = targetY - curY2;
         curX2 += dx2 * 0.06; curY2 += dy2 * 0.06;
@@ -362,10 +346,8 @@ if (!isMobileDevice) {
         let tiltZ2 = gsap.utils.clamp(-6, 6, dx2 * 0.018);
 
         if (isVisible) {
-          gsap.set(curtain, { left: curX1, top: curY1, transformPerspective: 1000, rotationY: tiltY1, rotationX: tiltX1, rotation: tiltZ1 });
           gsap.set(imgContainer, { left: curX2, top: curY2, transformPerspective: 1000, rotationY: tiltY2, rotationX: tiltX2, rotation: tiltZ2 });
         } else {
-          gsap.set(curtain, { left: curX1, top: curY1 });
           gsap.set(imgContainer, { left: curX2, top: curY2 });
         }
       } else {

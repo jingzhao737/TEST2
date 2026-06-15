@@ -2790,6 +2790,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   overflow: hidden; 
   background: #0d0d0f;
   will-change: transform, clip-path;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .work-preview-img {
