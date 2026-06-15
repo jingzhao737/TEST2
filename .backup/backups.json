@@ -1,12 +1,5 @@
 [
   {
-    "step": 84,
-    "timestamp": "2026-06-12 01:12:05",
-    "description": "Fix native cursor flickering and align laser lines with custom cursor LERP delay",
-    "folder": "step_084_Fix_native_cursor_flickering_and_align_laser_lines_with_custom_cursor_LERP_delay",
-    "is_auto": false
-  },
-  {
     "step": 85,
     "timestamp": "2026-06-12 01:14:19",
     "description": "Change laser canvas mix-blend-mode to normal and allow drawing LERP to catch up to release coordinate",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:02:30",
     "description": "Restore volume HUD font description",
     "folder": "step_103_Restore_volume_HUD_font_description",
+    "is_auto": false
+  },
+  {
+    "step": 104,
+    "timestamp": "2026-06-16 01:04:50",
+    "description": "Restore volume HUD font to Climate Crisis",
+    "folder": "step_104_Restore_volume_HUD_font_to_Climate_Crisis",
     "is_auto": false
   }
 ]
