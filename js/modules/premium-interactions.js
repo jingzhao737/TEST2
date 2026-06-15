@@ -88,7 +88,17 @@ if (!isMobileDevice) {
       activeCardIndex = -1;
       targetScale = 0.5;
       gsap.killTweensOf(wrapper);
-      gsap.to(wrapper, { autoAlpha: 0, duration: 0.3, ease: 'expo.out', overwrite: true });
+      gsap.to(wrapper, {
+        autoAlpha: 0,
+        duration: 0.3,
+        ease: 'expo.out',
+        overwrite: true,
+        onComplete: () => {
+          // Clear all images from the container once the preview is invisible
+          activeImages = [];
+          imgContainer.innerHTML = '';
+        }
+      });
     }
 
     // Page-relative flat coordinates for the cards and sections (avoid layout reflows on scroll/RAF)
@@ -184,6 +194,16 @@ if (!isMobileDevice) {
       const img = document.createElement('img');
       img.className = 'work-preview-image-item';
       img.src = src;
+
+      // If this is the first image of the hover session (container is empty),
+      // we disable the fadeInScale keyframe animation on the image itself.
+      // The outer container wrapper is already doing the zoom/scale animation,
+      // so this prevents redundant double-scale artifacts.
+      if (imgContainer.children.length === 0) {
+        img.style.animation = 'none';
+        img.style.opacity = '1';
+        img.style.transform = 'scale(1)';
+      }
 
       const imgId = Math.random().toString(36).substring(2, 9);
       activeImages.push({

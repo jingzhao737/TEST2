@@ -840,3 +840,33 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 528），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 解决鼠标刚移入卡片时相同预览图二次重复缩放动画的问题
+
+### 1. 问题现象与原因分析
+- **移入卡片时同一张图产生重复缩放 (Redundant Inner Image Scale Animation)**:
+  - 现象：当鼠标第一次移入卡片时，预览框内已经立即呈现了对应的作品图片，但在展现的一刹那，同一张图又在容器内部执行了一次从 scale(0) 到 scale(1) 的放大/缩放动画。
+  - **根本原因**：
+    1. **历史图层残留 (DOM Image Leak)**：当鼠标移出 Works 区域时，`onListLeave` 仅对包裹层 `.work-preview-wrapper` 执行了 opacity 隐藏，但**未清空** `.work-preview-img-container` 内部最后一次悬停生成的旧图片元素。当用户再次滑入同一张卡片时，该图片其实早已在 DOM 中渲染完好，形成了“刚进入时本身就有一个图”的现象。
+    2. **冗余的 CSS 动画触发 (Redundant Keyframe Animation)**：在 `styles.css` 中，为新生成的图片项 `.work-preview-image-item` 绑定了默认关键帧动画 `animation: fadeInScale 0.5s ...`。
+       - 当鼠标滑入时，`onCardEnter()` 会在旧图之上的 DOM 树中重新 Append 一个一模一样的图片项。
+       - 此时，新追加的图片立即触发并播放 `fadeInScale` 缩放动画，覆盖在底部完全静态的旧图上，在视觉上让用户感到“相同的图又做了一次扩大的动画”。
+       - **体验重叠**：此时外部容器已经在通过 `animateHover` 里的 `currentScale` LERP 算法由 `0.5` 缩放到 `1.0` 放大展开了。内部图片如果再次做 `scale(0 -> 1)` 的独立缩放，会造成双重缩放叠加，非常突兀和低端。
+
+### 2. 解决方案与修改
+- **移出时优雅清空残留 (Clean Image Stack on mouseleave)**:
+  - 修改 [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js#L84-L103) 中的 `hidePreviewDOM()`，为 wrapper 隐藏的 `gsap.to` 补全 `onComplete` 生命周期回调。
+  - 一旦 3D 浮层完全淡出不可见（`onComplete`），立即将 JS 缓存 `activeImages` 置空，并将 DOM 容器清空：`imgContainer.innerHTML = ''`。从而彻底杜绝旧图在 DOM 中的残留。
+- **智能规避会话首帧缩放 (Skip scale animation on session enter)**:
+  - 修改 `premium-interactions.js` 中的 `onCardEnter(index)` 方法，在新建图片元素并准备 append 时进行判断：
+    - **逻辑**：如果是该悬停会话中产生的**第一张图片**（即容器 `imgContainer.children.length === 0`），代表整个悬浮框处于从无到有的缩放拉伸阶段。
+    - **修改**：对该首张图片直接应用 `img.style.animation = 'none'`，使其默认以 `scale(1)` 静态拉满并随着外框一同进行完美的阻尼变大展开。
+    - **后续过渡保留**：当用户在卡片与卡片之间滑移切换时（由于旧图还没被清空，`children.length > 0`），新进入的图片依旧以 `fadeInScale` 播放极其顺滑的交叉放大淡入过度。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 529），自动部署线上页面。
+
