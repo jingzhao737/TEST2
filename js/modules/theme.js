@@ -13,16 +13,23 @@
   // Position the anchor div to align with the nav-menu-btn center
   function positionAnchor() {
     if (!anchor || !menuBtn) return;
+    // Read from the nav element for the vertical position so button hover
+    // effects (border/scale changes) don't shift the anchor downward
+    const navEl = document.getElementById('nav');
+    const navBottom = navEl ? navEl.getBoundingClientRect().bottom : menuBtn.getBoundingClientRect().bottom;
     const r = menuBtn.getBoundingClientRect();
-    // Anchor top = bottom of nav (bottom of menuBtn area), centered on btn
-    anchor.style.top = r.bottom + 'px';
+    anchor.style.top = navBottom + 'px';
     anchor.style.left = (r.left + r.width / 2) + 'px';
   }
   positionAnchor();
   window.addEventListener('resize', positionAnchor);
   window.addEventListener('scroll', positionAnchor, { passive: true });
-  // Also re-position periodically in case nav transitions (scrolled state changes top)
-  setInterval(positionAnchor, 500);
+  // Watch for nav class changes (e.g. 'scrolled' added/removed) instead of
+  // polling every 500ms — avoids repositioning during menu-btn hover states
+  var navEl = document.getElementById('nav');
+  if (navEl) {
+    new MutationObserver(positionAnchor).observe(navEl, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
 
   // ── Audio ──
   let audioCtx = null;
