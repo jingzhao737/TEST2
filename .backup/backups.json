@@ -1,12 +1,5 @@
 [
   {
-    "step": 91,
-    "timestamp": "2026-06-12 01:31:57",
-    "description": "Upgrade laser lines to premium neon effects with chromatic aberration and starburst particles",
-    "folder": "step_091_Upgrade_laser_lines_to_premium_neon_effects_with_chromatic_aberration_and_starburst_particles",
-    "is_auto": false
-  },
-  {
     "step": 92,
     "timestamp": "2026-06-12 01:34:44",
     "description": "Fix cursor flickering bug",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:13:47",
     "description": "Clean up tasks and walkthrough for record rollback",
     "folder": "step_110_Clean_up_tasks_and_walkthrough_for_record_rollback",
+    "is_auto": false
+  },
+  {
+    "step": 111,
+    "timestamp": "2026-06-16 01:17:46",
+    "description": "Implement Three.js WebGL vinyl records with PBR anisotropic specular shader material and 3D tilt physics",
+    "folder": "step_111_Implement_Three.js_WebGL_vinyl_records_with_PBR_anisotropic_specular_shader_material_and_3D_tilt_physics",
     "is_auto": false
   }
 ]
