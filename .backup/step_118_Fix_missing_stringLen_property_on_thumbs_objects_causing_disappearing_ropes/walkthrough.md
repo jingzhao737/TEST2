@@ -1284,3 +1284,55 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证
 - 重新运行 `npx vite build` 打包。
 - `git push` 推送上线。
+
+---
+
+## 🛠️ Hotfix: 恢复音量 HUD 百分比字体为 Climate Crisis 艺术标题字体
+
+### 1. 需求分析与修改
+- **问题反馈**：用户确认音量 HUD 百分比字体需要使用首页大标题的艺术设计字体 'Climate Crisis'。
+- **解决方案**：重构了 styles.css 中的 .nav-volume-hud 字体配置。将其重新修改为 'Climate Crisis', sans-serif。
+- **效果**：百分比文字展示恢复为与导航栏 LOGO 及首页大标题完全一致的创意艺术字体，保持整站设计风格的统一个性。
+
+### 2. 部署与验证
+- 重新运行 npx vite build 生产打包成功。
+- 使用 git push 推送至远程仓库部署上线。
+
+---
+
+## 🛠️ Version Anchor: 创建稳定版本 v1.0.0-stable 锚点
+
+### 1. 操作概要
+- **目的**：为当前最稳定的产品版本（拥有音量 HUD 的 Climate Crisis 字体风格、音频淡出淡入和唱片挂载接着播机制）创建版本锚点，方便在开发后续功能时进行回滚和状态标记。
+- **解决方案**：
+  - 基于本地第 104 步创建了 Git 标签：v1.0.0-stable。
+  - 运行 git push origin v1.0.0-stable 同步推送该标签至 GitHub 仓库。
+
+### 2. 部署与验证
+- 标签已成功推送到远程仓库，随时可作为稳定分支进行回滚或检出。
+
+---
+
+## 🛠️ Feature: Three.js WebGL 唱片三维化重构 (WebGL 3D Records Reconstruction)
+
+### 1. 需求分析与修改
+- **问题反馈**：此前的 2D Canvas 拟物化（Skeuomorphic）模拟唱片反光与阴影显得劣质、生硬（如阴影硬边、反射角呈锯齿大色块）。用户希望得到高级、高保真的 3D 效果。
+- **解决方案与重构**：
+  - **基于 Three.js WebGL 的三维盘体渲染**：在 hanging-circles.js 中引入 Three.js，将原本 2D 绘制升级为真正的 3D Mesh 渲染。
+  - **物理级各向异性反射 (PBR Anisotropic Specular)**：
+    - 运用 THREE.MeshPhysicalMaterial，启用各向异性反光参数 anisotropy = 0.85 并配合 Clearcoat 清漆表面；
+    - 对圆柱盘面顶盖的 UV 坐标进行极坐标转化（Polar UVs），使切线沿同心圆环绕。同时将动态生成的细密水平微凹槽（Bump Map）纹理射入盘面；
+    - **效果**：呈现出逼真、圆润、随光照和相机角度物理位移的金属各向异性双锥体反光效果，质感极佳。
+  - **真 3D 物理倾斜 (3D Tilt & Inertia Swing)**：
+    - 在 3D 场景中将唱片重构为具有 real 厚度（1.6px）的 3D 圆柱体（CylinderGeometry）。
+    - 结合盘面的弹阻力绳索悬挂，将拉拽和甩动速度映射为 X 和 Y 轴上的 3D 倾斜角。鼠标抓取或盘子在重力作用下晃动时，会产生带有透视关系的 3D 盘身倾侧和旋转起伏。
+  - **分层画布与事件穿透 (Dual Canvas Overlay)**：
+    - 动态插入 #webglCanvas 到 #framesCanvas 下方，并配置 pointer-events: none 让 WebGL 层充当渲染背景；
+    - 顶层 #framesCanvas 依旧为 2D 绘图层，继续用来以高效的 2D 矢量线描绘弹簧拉绳 (drawString) 并捕获全部的鼠标拖拉交互；
+    - 完美维持了既有高度稳定的交互及音频播放系统，实现了 0 摩擦的代码架构迁移。
+  - **动态 3D 投影**：
+    - 采用独立的 Shadow Plane 渲染软渐变粒子投影，其偏移距离、扩散度与透明度会随盘面 3D 悬浮高差发生平滑插值，具有强烈的深浅悬浮感。
+
+### 2. 部署与验证
+- 重新运行 npx vite build 生产打包成功。
+- 使用 git push 推送至远程仓库部署上线。

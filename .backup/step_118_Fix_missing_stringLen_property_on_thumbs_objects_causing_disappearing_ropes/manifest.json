@@ -41,7 +41,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "366c1d8c522c62e5e95f5396df226694b3e8011b3ca15e5989e55cdeb79b1d4d"
+    "hash": "2d77e0e77ab75cc66018b7d1ed97dc4b5eb80e23c298d19acb81c01c2f022b4a"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -85,11 +85,11 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "2722ca4ba00733a72fa4bba43beb81be16ec1212a258ea3f943591ec0db7dd48"
+    "hash": "50431f3191b416d2a6bfc92bdb69cd8e28283d56e2054a8cad629b72724c91d3"
   },
-  "dist\\assets\\index--QrmT40d.js": {
+  "dist\\assets\\index-BP9YKN98.js": {
     "type": "code",
-    "hash": "d2b14cc8739455e519330e462d69d1f605ff625caf2bef9756f9ea5c709a8ab0"
+    "hash": "2f3c05802b317752dd6fd173e1bbbd30aa526423b7aba0be4d48e9453f3d5eb1"
   },
   "dist\\assets\\index-DRYa3_5m.css": {
     "type": "code",
@@ -137,7 +137,7 @@
   },
   "js\\modules\\hanging-circles.js": {
     "type": "code",
-    "hash": "1e7cde2067ae966e739b0f5bd326e6255d2d6e2b6f40aaee8f008b09bca03b87"
+    "hash": "3f463e3a2005e7dabf85a87eac5b2b523f4da20aa6ee1c6ebcbdc1191758663c"
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
@@ -157,7 +157,7 @@
   },
   "js\\modules\\nav-waveform.js": {
     "type": "code",
-    "hash": "6bd6eca4555af40a2a156cbf10ffe1ee4524e6ccff7b4b1e7317075235eba54e"
+    "hash": "f005fdb4dcc213fe502dd4066d8d06388d79a7802b5a8989a7561c3d2fd045da"
   },
   "js\\modules\\nav.js": {
     "type": "code",

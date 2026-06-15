@@ -487,6 +487,7 @@ import * as THREE from 'three';
         thumbs.push({
           x: startX, y: startY, vx: 0, vy: 0,
           anchorX: a.x, anchorY: a.y,
+          stringLen: a.stringLen,
           restX: restX, restY: restY,
           dispW: cs, dispH: cs,
           color: knobColors[i],
@@ -502,6 +503,7 @@ import * as THREE from 'three';
         let b = anchors[j];
         thumbs[j].anchorX = b.x;
         thumbs[j].anchorY = b.y;
+        thumbs[j].stringLen = b.stringLen;
         thumbs[j].restX = b.x + b.restOffX;
         thumbs[j].restY = b.y + b.stringLen;
         thumbs[j].dispW = cs2;

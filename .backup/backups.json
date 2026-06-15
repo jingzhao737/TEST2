@@ -1,12 +1,5 @@
 [
   {
-    "step": 98,
-    "timestamp": "2026-06-16 00:57:16",
-    "description": "Fix record playback restart on latch",
-    "folder": "step_098_Fix_record_playback_restart_on_latch",
-    "is_auto": false
-  },
-  {
     "step": 99,
     "timestamp": "2026-06-16 00:57:33",
     "description": "Updated walkthrough with record play fix",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:28:50",
     "description": "Upgrade rope rendering to 3D spring coiled cord with physical stretch and highlights",
     "folder": "step_117_Upgrade_rope_rendering_to_3D_spring_coiled_cord_with_physical_stretch_and_highlights",
+    "is_auto": false
+  },
+  {
+    "step": 118,
+    "timestamp": "2026-06-16 01:29:39",
+    "description": "Fix missing stringLen property on thumbs objects causing disappearing ropes",
+    "folder": "step_118_Fix_missing_stringLen_property_on_thumbs_objects_causing_disappearing_ropes",
     "is_auto": false
   }
 ]
