@@ -160,10 +160,36 @@ if (!isMobileDevice) {
     window.addEventListener('load', updateFlatPageCoordinates);
     window.addEventListener('resize', updateFlatPageCoordinates);
 
-    function onListEnter() {
+    function onListEnter(e) {
       isVisible = true;
       firstMove = true;
       updateFlatPageCoordinates(); // Refresh coordinates when entering the list
+
+      if (e) {
+        rawMouseX = e.clientX;
+        rawMouseY = e.clientY;
+
+        const previewWidth = 200;
+        const previewHeight = 138;
+        const offsetX = 30;
+        const offsetY = 110;
+
+        // Page-relative mouse coordinates
+        const pageMouseX = rawMouseX + window.scrollX;
+
+        // Local flat X position inside work-list
+        const localX = pageMouseX - wPageRect.left;
+
+        if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
+          targetX = localX - previewWidth - offsetX;
+        } else {
+          targetX = localX + offsetX;
+        }
+
+        // Keep targetY clamped relative to visible viewport bounds, then convert to local coordinate
+        const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 20, rawMouseY - offsetY);
+        targetY = clampedViewportY + window.scrollY - wPageRect.top;
+      }
     }
 
     function onListLeave() {
