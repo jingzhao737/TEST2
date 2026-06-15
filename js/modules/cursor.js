@@ -578,16 +578,18 @@
           pullY = (pullY / pullDist) * maxPull;
         }
         
-        targetX = btnCenterX + pullX;
-        targetY = btnCenterY + pullY;
+        // LERP the snap pull components with a viscous factor (0.15) to add a smooth visual delay/rubber-band lag
+        snapPullX += (pullX - snapPullX) * 0.15;
+        snapPullY += (pullY - snapPullY) * 0.15;
+        snapPullDist = Math.sqrt(snapPullX * snapPullX + snapPullY * snapPullY);
         
-        snapPullX = pullX;
-        snapPullY = pullY;
-        snapPullDist = Math.sqrt(pullX * pullX + pullY * pullY);
+        targetX = btnCenterX + snapPullX;
+        targetY = btnCenterY + snapPullY;
       } else {
-        snapPullX = 0;
-        snapPullY = 0;
-        snapPullDist = 0;
+        // Smoothly return snap pull back to 0 during the lock duration
+        snapPullX += (0 - snapPullX) * 0.15;
+        snapPullY += (0 - snapPullY) * 0.15;
+        snapPullDist = Math.sqrt(snapPullX * snapPullX + snapPullY * snapPullY);
       }
       
       // Glides and snaps to the target coordinate (0.15 LERP) for responsive and soft magnetization
