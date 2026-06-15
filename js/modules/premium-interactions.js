@@ -12,10 +12,25 @@ if (!isMobileDevice) {
 
   if (workList && cards.length > 0 && worksEl) {
     let targetX = 0, targetY = 0;
+    let currentX = 0, currentY = 0;
+    let targetScale = 0.5;
+    let currentScale = 0.5;
     let isVisible = false;
     let activeCardIndex = -1;
-    let targetSliderY = 0;
-    let currentSliderY = 0;
+
+    // LERP state variables for the 3D tilt angles to prevent sudden jumping/flattening
+    let currentTiltX = 0;
+    let currentTiltY = 0;
+    let currentTiltZ = 0;
+
+    // LERP state variables for the orange background layer 3D tilt angles
+    let currentOrangeTiltX = 0;
+    let currentOrangeTiltY = 0;
+    let currentOrangeTiltZ = 0;
+
+    // LERP state variables for the orange background layer
+    let currentOrangeX = 0;
+    let currentOrangeY = 0;
 
     const baseY = -34;
     const baseX = 17;
@@ -41,83 +56,39 @@ if (!isMobileDevice) {
     const wrapper = document.createElement('div');
     wrapper.className = 'work-preview-wrapper';
 
-    const curtain = document.createElement('div');
-    curtain.className = 'work-preview-curtain';
+    const orangeLayer = document.createElement('div');
+    orangeLayer.className = 'work-preview-orange-layer';
 
     const imgContainer = document.createElement('div');
     imgContainer.className = 'work-preview-img-container';
 
-    // A single vertical filmstrip slider container containing all images pre-loaded
-    const slider = document.createElement('div');
-    slider.className = 'work-preview-slider';
-    gsap.set(slider, {
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      height: `${138 * cards.length}px`,
-      width: '100%',
-      willChange: 'transform',
-      force3D: true
-    });
-
-    // Populate all images into the filmstrip
-    cards.forEach(card => {
-      const img = document.createElement('img');
-      img.src = card.dataset.image;
-      gsap.set(img, {
-        position: 'relative',
-        width: '200px',
-        height: '138px',
-        objectFit: 'cover',
-        flexShrink: 0,
-        display: 'block',
-        willChange: 'transform',
-        force3D: true
-      });
-      slider.appendChild(img);
-    });
-
-    imgContainer.appendChild(slider);
-    wrapper.appendChild(curtain);
+    wrapper.appendChild(orangeLayer);
     wrapper.appendChild(imgContainer);
     document.body.appendChild(wrapper);
 
-    // Initial State
+    // Initial State (only set autoAlpha on wrapper since children scale individually in RAF)
     gsap.set(wrapper, { autoAlpha: 0 });
-    gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
-    gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
 
     // Apply initial 3D tilt transform to workList so it aligns with starting coordinates on load
     workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
-
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
+    let activeImages = []; // Array to keep track of active image items in the stack
 
     function showPreviewDOM() {
-      gsap.killTweensOf([curtain, imgContainer]);
-      gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, rotationX: 0, duration: 0.6, ease: 'expo.out', overwrite: true });
-      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, x: 0, rotationX: 0, duration: 0.6, ease: 'expo.out', delay: 0.15, overwrite: true });
-
       if (isPreviewActive) return;
       isPreviewActive = true;
+      targetScale = 1.0;
       gsap.killTweensOf(wrapper);
-      gsap.to(wrapper, { autoAlpha: 1, duration: 0.15, overwrite: true });
+      gsap.to(wrapper, { autoAlpha: 1, duration: 0.3, ease: 'expo.out', overwrite: true });
     }
 
     function hidePreviewDOM() {
       if (!isPreviewActive) return;
       isPreviewActive = false;
       activeCardIndex = -1;
-      gsap.killTweensOf([wrapper, curtain, imgContainer, slider]);
-      gsap.to(wrapper, { autoAlpha: 0, duration: 0.2, delay: 0.1, overwrite: true, onComplete: () => {
-        gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
-        gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
-        // Reset slider position and LERP variables for next entrance
-        targetSliderY = 0;
-        currentSliderY = 0;
-        gsap.set(slider, { y: 0, skewY: 0 });
-      }});
-      gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -30, rotationX: 15, duration: 0.5, ease: 'expo.out', overwrite: true });
-      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -46, x: 16, rotationX: 15, duration: 0.5, ease: 'expo.out', delay: 0.05, overwrite: true });
+      targetScale = 0.5;
+      gsap.killTweensOf(wrapper);
+      gsap.to(wrapper, { autoAlpha: 0, duration: 0.3, ease: 'expo.out', overwrite: true });
     }
 
     // Page-relative flat coordinates for the cards and sections (avoid layout reflows on scroll/RAF)
@@ -206,31 +177,32 @@ if (!isMobileDevice) {
       const src = card.dataset.image;
       if (!src || index === activeCardIndex) return;
       activeCardIndex = index;
+      hoveredCardIndex = index;
+      window.__hoveredCardIndex = index;
 
-      if (!isPreviewActive) {
-        // ── First show: snap slider coordinates and play entrance ──
-        targetSliderY = -index * 138;
-        currentSliderY = -index * 138;
-        gsap.set(slider, { y: currentSliderY, skewY: 0 });
+      // ── Append new image to the stack ──
+      const img = document.createElement('img');
+      img.className = 'work-preview-image-item';
+      img.src = src;
 
-        gsap.killTweensOf([curtain, imgContainer]);
-        gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
-        gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
-        showPreviewDOM();
-      } else {
-        // ── Already visible: update LERP physics target & trigger container jelly squeeze ──
-        targetSliderY = -index * 138;
+      const imgId = Math.random().toString(36).substring(2, 9);
+      activeImages.push({
+        id: imgId,
+        el: img,
+        src: src
+      });
+      imgContainer.appendChild(img);
 
-        gsap.killTweensOf(imgContainer);
-
-        // Container tactile elastic squeeze (jelly effect)
-        gsap.fromTo(imgContainer, 
-          { scaleX: 1.04, scaleY: 0.96 }, 
-          { scaleX: 1, scaleY: 1, duration: 0.45, ease: 'back.out(2)', overwrite: 'auto' }
-        );
+      // Limit stack size to 5, shift the oldest out
+      if (activeImages.length > 5) {
+        const oldest = activeImages.shift();
+        if (oldest && oldest.el) {
+          oldest.el.remove();
+        }
       }
-    }
 
+      showPreviewDOM();
+    }
     // Hook section enter/leave on the works container
     if (worksEl) {
       worksEl.addEventListener('mouseenter', onListEnter);
@@ -382,50 +354,91 @@ if (!isMobileDevice) {
         }
       }
 
-      // ── STEP 4: Animate preview thumbnail follow (Curtain + Image Container dual-layer lag) ──
+      // ── STEP 4: Animate preview thumbnail follow and scale ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
         if (firstMove) {
-          curX1 = targetX; curY1 = targetY;
-          curX2 = targetX; curY2 = targetY;
+          currentX = targetX;
+          currentY = targetY;
+          currentOrangeX = targetX + 12;
+          currentOrangeY = targetY + 12;
+          currentTiltX = 0;
+          currentTiltY = 0;
+          currentTiltZ = 0;
+          currentOrangeTiltX = 0;
+          currentOrangeTiltY = 0;
+          currentOrangeTiltZ = 0;
           firstMove = false;
         }
 
-        let dx1 = targetX - curX1, dy1 = targetY - curY1;
-        curX1 += dx1 * 0.06; curY1 += dy1 * 0.06;
-        let tiltY1 = gsap.utils.clamp(-15, 15, dx1 * 0.05);
-        let tiltX1 = gsap.utils.clamp(-15, 15, -dy1 * 0.05);
-        let tiltZ1 = gsap.utils.clamp(-5, 5, dx1 * 0.015);
+        // 1. LERP image container (less delay: 0.055 LERP factor)
+        const dx = targetX - currentX;
+        const dy = targetY - currentY;
+        currentX += dx * 0.055;
+        currentY += dy * 0.055;
 
-        let dx2 = targetX - curX2, dy2 = targetY - curY2;
-        curX2 += dx2 * 0.09; curY2 += dy2 * 0.09;
-        let tiltY2 = gsap.utils.clamp(-18, 18, dx2 * 0.06);
-        let tiltX2 = gsap.utils.clamp(-18, 18, -dy2 * 0.06);
-        let tiltZ2 = gsap.utils.clamp(-6, 6, dx2 * 0.018);
+        // 2. LERP orange layer (more delay: 0.035 LERP factor, target offset to bottom-right)
+        const targetOrangeX = targetX + 12;
+        const targetOrangeY = targetY + 12;
+        const dxOrange = targetOrangeX - currentOrangeX;
+        const dyOrange = targetOrangeY - currentOrangeY;
+        currentOrangeX += dxOrange * 0.035;
+        currentOrangeY += dyOrange * 0.035;
 
-        if (isVisible) {
-          gsap.set(curtain, { left: curX1, top: curY1, transformPerspective: 1000, rotationY: tiltY1, rotationX: tiltX1, rotation: tiltZ1 });
-          gsap.set(imgContainer, { left: curX2, top: curY2, transformPerspective: 1000, rotationY: tiltY2, rotationX: tiltX2, rotation: tiltZ2 });
-        } else {
-          gsap.set(curtain, { left: curX1, top: curY1 });
-          gsap.set(imgContainer, { left: curX2, top: curY2 });
+        currentScale += (targetScale - currentScale) * 0.07;
+
+        if (currentScale < 0.02 && hoveredCardIndex === -1 && activeImages.length > 0) {
+          activeImages.forEach(img => img.el.remove());
+          activeImages = [];
+          imgContainer.innerHTML = '';
         }
+        
+        // Calculate target 3D tilts for image container (based on its dx/dy velocity)
+        let targetTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
+        let targetTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
+        let targetTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
 
-        // ── STEP 5: Animate filmstrip sliding transition with organic LERP and velocity skew ──
-        const diffSliderY = targetSliderY - currentSliderY;
-        if (Math.abs(diffSliderY) > 0.01) {
-          currentSliderY += diffSliderY * 0.15; // Smooth spring LERP (continuity in velocity)
-          // skewY is calculated proportional to current sliding velocity (diffSliderY)
-          let skewY = gsap.utils.clamp(-10, 10, diffSliderY * 0.05);
-          gsap.set(slider, { y: currentSliderY, skewY: skewY, force3D: true });
-        } else if (gsap.getProperty(slider, 'skewY') !== 0) {
-          // Reset skew when settled
-          gsap.set(slider, { y: targetSliderY, skewY: 0, force3D: true });
-          currentSliderY = targetSliderY;
-        }
+        // Smoothly LERP image tilts with less delay (0.035 LERP factor - matching its coordinates LERP)
+        currentTiltX += (targetTiltX - currentTiltX) * 0.035;
+        currentTiltY += (targetTiltY - currentTiltY) * 0.035;
+        currentTiltZ += (targetTiltZ - currentTiltZ) * 0.035;
+
+        // Calculate target 3D tilts for orange layer (consistent with the image, based on dx/dy velocity)
+        let targetOrangeTiltY = gsap.utils.clamp(-16, 16, dx * 0.06);
+        let targetOrangeTiltX = gsap.utils.clamp(-16, 16, -dy * 0.06);
+        let targetOrangeTiltZ = gsap.utils.clamp(-6, 6, dx * 0.02);
+
+        // Smoothly LERP orange layer tilts with more delay (0.025 LERP factor - matching its coordinates LERP)
+        currentOrangeTiltX += (targetOrangeTiltX - currentOrangeTiltX) * 0.025;
+        currentOrangeTiltY += (targetOrangeTiltY - currentOrangeTiltY) * 0.025;
+        currentOrangeTiltZ += (targetOrangeTiltZ - currentOrangeTiltZ) * 0.025;
+
+        // Apply transform to image container (on top, z-index: 2)
+        gsap.set(imgContainer, {
+          x: currentX,
+          y: currentY,
+          scale: currentScale,
+          rotationY: currentTiltY,
+          rotationX: currentTiltX,
+          rotation: currentTiltZ,
+          transformPerspective: 1000,
+          force3D: true
+        });
+
+        // Apply transform to orange background shadow layer (underneath, z-index: 1)
+        // Offset to the bottom-left is driven by currentOrangeX/Y LERP coordinates
+        gsap.set(orangeLayer, {
+          x: currentOrangeX,
+          y: currentOrangeY,
+          scale: currentScale,
+          rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
+          rotationX: currentOrangeTiltX * 0.8,
+          rotation: currentOrangeTiltZ * 0.8,
+          transformPerspective: 1000,
+          force3D: true
+        });
       } else {
         firstMove = true;
       }
-
       requestAnimationFrame(animateHover);
     })();
   }
