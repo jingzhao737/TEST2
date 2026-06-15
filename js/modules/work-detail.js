@@ -28,17 +28,17 @@ document.querySelectorAll('.work-card').forEach(function(card) {
     ripple.style.top = y + 'px';
     card.appendChild(ripple);
 
-    // Tactile 3D press - compress scale and push back in Z space
+    // Tactile 3D press - compress scale and push back in Z space (takes 0.1s down + 0.1s back up = 0.2s total)
     gsap.to(card, {
       scale: 0.96,
       z: -30,
-      duration: 0.12,
+      duration: 0.1,
       ease: 'power2.out',
       yoyo: true,
       repeat: 1
     });
 
-    // Momentarily delay route transition (150ms) to allow press animation to feel tactile
+    // Momentarily delay route transition (220ms) to allow full press & bounce-back to complete
     setTimeout(function() {
       let key = card.dataset.work; if (!window.workData || !window.workData[key]) return;
       let data = Object.assign({ slug: key }, window.workData[key]);
@@ -50,7 +50,7 @@ document.querySelectorAll('.work-card').forEach(function(card) {
       setTimeout(function() {
         ripple.remove();
       }, 800);
-    }, 150);
+    }, 220);
   }
 
   card.addEventListener('click', openCard);
