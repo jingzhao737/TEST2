@@ -215,7 +215,11 @@ if (!isMobileDevice) {
         const previewWidth = 200;
         const previewHeight = 138;
         const offsetX = 30;
-        const offsetY = 110;
+
+        // Calculate dynamic offsetY to compensate for 3D perspective distortion (which shifts the card downwards on both top/bottom ends)
+        const centerY = window.innerHeight / 2;
+        const distFromCenter = Math.abs(rawMouseY - centerY) / centerY;
+        const dynamicOffsetY = 110 + distFromCenter * 30;
 
         // Page-relative mouse coordinates
         const pageMouseX = rawMouseX + window.scrollX;
@@ -229,8 +233,8 @@ if (!isMobileDevice) {
           targetX = localX + offsetX;
         }
 
-        // Keep targetY clamped relative to visible viewport bounds, then convert to local coordinate
-        const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 20, rawMouseY - offsetY);
+        // Keep targetY clamped relative to visible viewport bounds with extra bottom breathing room (35px), then convert to local coordinate
+        const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - dynamicOffsetY);
         targetY = clampedViewportY + window.scrollY - wPageRect.top;
       }
     }
@@ -314,7 +318,11 @@ if (!isMobileDevice) {
       const previewWidth = 200;
       const previewHeight = 138;
       const offsetX = 30;
-      const offsetY = 110;
+
+      // Calculate dynamic offsetY to compensate for 3D perspective distortion (which shifts the card downwards on both top/bottom ends)
+      const centerY = window.innerHeight / 2;
+      const distFromCenter = Math.abs(rawMouseY - centerY) / centerY;
+      const dynamicOffsetY = 110 + distFromCenter * 30;
 
       // Page-relative mouse coordinates
       const pageMouseX = rawMouseX + window.scrollX;
@@ -328,8 +336,8 @@ if (!isMobileDevice) {
         targetX = localX + offsetX;
       }
 
-      // Keep targetY clamped relative to visible viewport bounds, then convert to local coordinate
-      const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 20, rawMouseY - offsetY);
+      // Keep targetY clamped relative to visible viewport bounds with extra bottom breathing room (35px), then convert to local coordinate
+      const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - dynamicOffsetY);
       targetY = clampedViewportY + window.scrollY - wPageRect.top;
     });
 
