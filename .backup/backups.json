@@ -1,12 +1,5 @@
 [
   {
-    "step": 80,
-    "timestamp": "2026-06-12 01:08:13",
-    "description": "Implement global interactive click sound effects using event delegation",
-    "folder": "step_080_Implement_global_interactive_click_sound_effects_using_event_delegation",
-    "is_auto": false
-  },
-  {
     "step": 81,
     "timestamp": "2026-06-12 01:08:28",
     "description": "Implement global interactive click sound effects using event delegation",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 00:57:33",
     "description": "Updated walkthrough with record play fix",
     "folder": "step_099_Updated_walkthrough_with_record_play_fix",
+    "is_auto": false
+  },
+  {
+    "step": 100,
+    "timestamp": "2026-06-16 00:59:58",
+    "description": "Add smooth fade out transition when music stops or switches",
+    "folder": "step_100_Add_smooth_fade_out_transition_when_music_stops_or_switches",
     "is_auto": false
   }
 ]

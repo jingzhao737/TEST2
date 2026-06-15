@@ -164,8 +164,8 @@
     if (max <= 0) return;
     const pct = h.scrollTop / max;
     const shiftPx = (pct * 100 - 50) / 100 * trackH;
-    // Only translateY — left is fixed, no layout needed
-    thumb.style.transform = 'translateY(calc(-50% + ' + shiftPx + 'px))';
+    // Set CSS custom property to avoid overriding CSS transforms (like hover scale) with inline styles
+    thumb.style.setProperty('--scroll-translate-y', shiftPx + 'px');
   }
 
   function positionDots(){
@@ -365,9 +365,48 @@
     // Don't interfere with bubble-click lerp animation
     if (lerpActive && bubbleLerpStartTime > 0) return;
 
-    // Skip if details modal is open
+    // Smooth scroll the details card if open
     const detail = document.getElementById('workDetail');
-    if (detail && detail.classList.contains('open')) return;
+    if (detail && detail.classList.contains('open')) {
+      const card = document.getElementById('workDetailScrollWrapper');
+      if (card) {
+        e.preventDefault();
+        let maxScroll = card.scrollHeight - card.clientHeight;
+        if (maxScroll <= 0) return;
+
+        // Initialize or update wheel targets for the card
+        if (window.__activeCardWheelRaf === undefined) {
+          window.__activeCardWheelRaf = null;
+          window.__cardWheelCurrent = card.scrollTop;
+          window.__cardWheelTarget = card.scrollTop;
+        }
+
+        // Sync with actual scroll position if not animating or if user scrolled manually
+        if (!window.__activeCardWheelRaf || Math.abs(card.scrollTop - window.__cardWheelCurrent) > 2) {
+          window.__cardWheelCurrent = card.scrollTop;
+          window.__cardWheelTarget = card.scrollTop;
+        }
+
+        window.__cardWheelTarget += e.deltaY * 1.2;
+        window.__cardWheelTarget = Math.max(0, Math.min(maxScroll, window.__cardWheelTarget));
+
+        if (!window.__activeCardWheelRaf) {
+          window.__activeCardWheelRaf = requestAnimationFrame(function tickCard() {
+            let diff = window.__cardWheelTarget - window.__cardWheelCurrent;
+            if (Math.abs(diff) < 0.3) {
+              window.__cardWheelCurrent = window.__cardWheelTarget;
+              card.scrollTop = window.__cardWheelCurrent;
+              window.__activeCardWheelRaf = null;
+              return;
+            }
+            window.__cardWheelCurrent += diff * 0.065;
+            card.scrollTop = window.__cardWheelCurrent;
+            window.__activeCardWheelRaf = requestAnimationFrame(tickCard);
+          });
+        }
+      }
+      return;
+    }
 
     e.preventDefault();
     let totalH = document.documentElement.scrollHeight - document.documentElement.clientHeight;

@@ -71,6 +71,50 @@
   }
   scheduleWind();
 
+  if (!window.__fadeOutAndPause) {
+    window.__fadeOutAndPause = function(audio, duration = 300, resetTime = false) {
+      if (!audio) return;
+      if (audio.paused) {
+        if (resetTime) audio.currentTime = 0;
+        return;
+      }
+      if (audio.__fadeTimer) {
+        clearInterval(audio.__fadeTimer);
+      }
+      const startVol = audio.__originalVolume || (audio.__originalVolume = audio.volume) || 0.6;
+      const steps = 15;
+      const interval = duration / steps;
+      let currentStep = 0;
+      
+      audio.__fadeTimer = setInterval(() => {
+        currentStep++;
+        let vol = startVol * (1 - currentStep / steps);
+        if (vol <= 0.01) {
+          clearInterval(audio.__fadeTimer);
+          audio.__fadeTimer = null;
+          audio.pause();
+          audio.volume = startVol;
+          if (resetTime) audio.currentTime = 0;
+        } else {
+          audio.volume = vol;
+        }
+      }, interval);
+    };
+  }
+
+  if (!window.__playAudioWithFade) {
+    window.__playAudioWithFade = function(audio) {
+      if (!audio) return;
+      if (audio.__fadeTimer) {
+        clearInterval(audio.__fadeTimer);
+        audio.__fadeTimer = null;
+      }
+      const startVol = audio.__originalVolume || (audio.__originalVolume = audio.volume) || 0.6;
+      audio.volume = startVol;
+      audio.play().catch(() => {});
+    };
+  }
+
   // --- audio players for each disc ---
   let audios = window.__bgAudios;
   let prevHoveredIdx = -1;
@@ -84,13 +128,17 @@
     if (newIdx === prevHoveredIdx) return;
     // Stop previous
     if (prevHoveredIdx >= 0 && prevHoveredIdx < 4) {
-      audios[prevHoveredIdx].pause();
-      audios[prevHoveredIdx].currentTime = 0;
+      window.__fadeOutAndPause(audios[prevHoveredIdx], 300, true);
     }
     // Play new
     if (newIdx >= 0 && newIdx < 4) {
-      audios[newIdx].currentTime = 0;
-      audios[newIdx].play().catch(function(){});
+      const targetAudio = audios[newIdx];
+      if (targetAudio.__fadeTimer) {
+        clearInterval(targetAudio.__fadeTimer);
+        targetAudio.__fadeTimer = null;
+      }
+      targetAudio.currentTime = 0;
+      window.__playAudioWithFade(targetAudio);
       window.__audioPlaying = true;
       window.__currentTrackIdx = newIdx;
       if (window.__updateNextBtnState) window.__updateNextBtnState();
@@ -105,9 +153,9 @@
   window.__navWaveForcePlay = function(idx) {
     window.__currentTrackIdx = idx;
     for (let i = 0; i < audios.length; i++) {
-      if (i !== idx) { audios[i].pause(); audios[i].currentTime = 0; }
+      if (i !== idx) { window.__fadeOutAndPause(audios[i], 300, true); }
     }
-    audios[idx].play().catch(function(){});
+    window.__playAudioWithFade(audios[idx]);
     window.__audioPlaying = true;
     prevHoveredIdx = idx;
     if (window.__updateNextBtnState) window.__updateNextBtnState();
@@ -116,8 +164,7 @@
   // Nav wave stop hook
   window.__navWaveStop = function(idx) {
     if (audios && audios[idx]) {
-      audios[idx].pause();
-      audios[idx].currentTime = 0;
+      window.__fadeOutAndPause(audios[idx], 350, true);
     }
     window.__audioPlaying = false;
     if (window.__updateNextBtnState) window.__updateNextBtnState();
