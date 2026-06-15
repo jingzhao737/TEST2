@@ -1832,6 +1832,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 100%;
   height: 100%;
   object-fit: cover;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 .detail-hero-dim {
   position: absolute;
@@ -1873,6 +1875,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   height: 100%;
   object-fit: cover;
   display: block;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 .detail-3d-card-glare {
   position: absolute;

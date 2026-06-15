@@ -458,6 +458,11 @@ function setupDetail3DCard() {
   
   if (!hero || !card || !container || !glare) return;
 
+  // Prevent default image drag-and-drop ghosting behaviour
+  hero.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+  });
+
   hero.addEventListener('click', function(e) {
     // Prevent toggle if clicking on the close button or other links/buttons
     if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
