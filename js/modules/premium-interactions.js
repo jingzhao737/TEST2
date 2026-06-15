@@ -8,7 +8,7 @@ if (!isMobileDevice) {
   const workList = document.querySelector('.work-list');
   const cards = document.querySelectorAll('.work-card');
   const worksEl = document.querySelector('.works');
-  console.log('Premium Interactions JS Initialized (Desktop 3D Projection).', !!workList, cards.length, !!worksEl);
+  console.log('Premium Interactions JS Initialized (Desktop 3D Projection) - [DECOUPLED ADJUSTER V2].', !!workList, cards.length, !!worksEl);
 
   if (workList && cards.length > 0 && worksEl) {
     let targetX = 650, targetY = 220; // Default centered coordinates for tuning preview
@@ -504,9 +504,14 @@ if (!isMobileDevice) {
       `;
 
       const title = document.createElement('div');
-      title.innerText = '3D TILT ADJUSTER PANEL';
-      title.style.cssText = 'font-weight: bold; letter-spacing: 0.1em; color: #e87c50; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;';
+      title.innerText = '3D PREVIEW ONLY ADJUSTER (V2)';
+      title.style.cssText = 'font-weight: bold; letter-spacing: 0.1em; color: #52c41a; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;';
       panel.appendChild(title);
+
+      const subtitle = document.createElement('div');
+      subtitle.innerText = '⚠️ ONLY TUNES HOVER PREVIEW | CARD ROTATION IS STATIC';
+      subtitle.style.cssText = 'font-size: 9px; color: rgba(255,255,255,0.5); font-weight: normal; margin-bottom: 8px; line-height: 1.2;';
+      panel.appendChild(subtitle);
 
       const sliders = [
         { label: 'Preview Base Y Rotation (rotateY)', min: -90, max: 90, val: previewBaseY, step: 1, key: 'previewBaseY' },
