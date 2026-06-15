@@ -1826,6 +1826,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   perspective: 1200px; /* Enable 3D space depth */
   cursor: pointer; /* Indicates toggle clickability */
 }
+.detail-hero.detail-hero-3d-active {
+  cursor: grab;
+}
+.detail-hero.detail-hero-grabbing {
+  cursor: grabbing !important;
+}
 .detail-hero-img {
   position: absolute;
   inset: 0;

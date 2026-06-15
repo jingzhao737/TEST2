@@ -19,6 +19,11 @@ window.__isDetailClosing = false;
 
 let is3DCardActive = false;
 let floatTween = null;
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+let currentRotateX = 0;
+let currentRotateY = 0;
 
 function buildGalleryHTML(gallery) {
   if (!gallery || !gallery.length) return '';
@@ -313,6 +318,14 @@ function closeDetail(popState) {
 
         // Reset 3D Card active state and float animations
         is3DCardActive = false;
+        isDragging = false;
+        currentRotateX = 0;
+        currentRotateY = 0;
+        const heroEl = document.querySelector('.detail-hero');
+        if (heroEl) {
+          heroEl.classList.remove('detail-hero-3d-active');
+          heroEl.classList.remove('detail-hero-grabbing');
+        }
         if (floatTween) {
           floatTween.kill();
           floatTween = null;
@@ -471,6 +484,7 @@ function setupDetail3DCard() {
     
     if (!is3DCardActive) {
       is3DCardActive = true;
+      hero.classList.add('detail-hero-3d-active');
       gsap.to('#detailHeroImg', { opacity: 0, duration: 0.5, ease: 'power2.out' });
       gsap.to('.detail-hero-content', { opacity: 0, scale: 0.95, duration: 0.5, ease: 'power2.out', pointerEvents: 'none' });
       
@@ -496,6 +510,8 @@ function setupDetail3DCard() {
     
     if (is3DCardActive) {
       is3DCardActive = false;
+      hero.classList.remove('detail-hero-3d-active');
+      hero.classList.remove('detail-hero-grabbing');
       gsap.to(container, {
         opacity: 0,
         scale: 0.8,
@@ -516,49 +532,109 @@ function setupDetail3DCard() {
     }
   });
 
-  hero.addEventListener('mousemove', function(e) {
+  // Drag-to-rotate event listeners
+  hero.addEventListener('mousedown', function(e) {
     if (!is3DCardActive) return;
+    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
+      return;
+    }
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    hero.classList.add('detail-hero-grabbing');
+    e.preventDefault(); // prevents text selections
+  });
+
+  hero.addEventListener('touchstart', function(e) {
+    if (!is3DCardActive) return;
+    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
+      return;
+    }
+    isDragging = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    hero.classList.add('detail-hero-grabbing');
+  }, { passive: true });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!is3DCardActive || !isDragging) return;
     
-    const rect = hero.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
     
-    // Normalized coordinates from -1 to 1
-    const px = (mouseX / rect.width) * 2 - 1;
-    const py = (mouseY / rect.height) * 2 - 1;
+    // Rotate card based on drag distance: rotateY responds to X drag, rotateX to Y drag
+    const rotY = currentRotateY + dx * 0.45;
+    const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
     
-    // Tilt rotation: rotateY responds to X, rotateX responds to Y
-    gsap.to(card, {
-      rotateY: px * 28,
-      rotateX: -py * 28,
-      duration: 0.4,
-      ease: 'power2.out',
-      overwrite: 'auto'
+    gsap.set(card, {
+      rotateY: rotY,
+      rotateX: rotX
     });
     
-    // Parallax container offset
-    gsap.to(container, {
+    // Parallax container shift slightly following drag direction
+    const px = Math.max(-1, Math.min(1, rotY / 45));
+    const py = Math.max(-1, Math.min(1, -rotX / 45));
+    gsap.set(container, {
       x: px * 15,
-      y: py * 15,
-      duration: 0.4,
-      ease: 'power2.out',
-      overwrite: 'auto'
+      y: py * 15
     });
     
-    // Gloss overlay reflection
+    // Glare reflection overlay updates
     const angle = Math.atan2(py, px) * (180 / Math.PI) - 90;
-    const opacity = Math.min(0.65, Math.sqrt(px*px + py*py) * 0.55);
+    const opacity = Math.min(0.65, Math.sqrt(px*px + py*py) * 0.5);
     glare.style.opacity = opacity;
     glare.style.background = `linear-gradient(${angle}deg, rgba(255,255,255,${opacity}) 0%, rgba(255,255,255,0) 70%)`;
   });
 
-  hero.addEventListener('mouseleave', function() {
-    if (!is3DCardActive) return;
+  window.addEventListener('touchmove', function(e) {
+    if (!is3DCardActive || !isDragging || !e.touches.length) return;
     
-    // Animate back to center
-    gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
-    gsap.to(container, { x: 0, y: 0, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
-    gsap.to(glare, { opacity: 0, duration: 0.8, ease: 'power2.out', overwrite: 'auto' });
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    
+    const rotY = currentRotateY + dx * 0.45;
+    const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
+    
+    gsap.set(card, {
+      rotateY: rotY,
+      rotateX: rotX
+    });
+    
+    const px = Math.max(-1, Math.min(1, rotY / 45));
+    const py = Math.max(-1, Math.min(1, -rotX / 45));
+    gsap.set(container, {
+      x: px * 15,
+      y: py * 15
+    });
+    
+    const angle = Math.atan2(py, px) * (180 / Math.PI) - 90;
+    const opacity = Math.min(0.65, Math.sqrt(px*px + py*py) * 0.5);
+    glare.style.opacity = opacity;
+    glare.style.background = `linear-gradient(${angle}deg, rgba(255,255,255,${opacity}) 0%, rgba(255,255,255,0) 70%)`;
+  });
+
+  window.addEventListener('mouseup', function(e) {
+    if (!is3DCardActive || !isDragging) return;
+    isDragging = false;
+    hero.classList.remove('detail-hero-grabbing');
+    
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    currentRotateY = currentRotateY + dx * 0.45;
+    currentRotateX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
+  });
+
+  window.addEventListener('touchend', function(e) {
+    if (!is3DCardActive || !isDragging) return;
+    isDragging = false;
+    hero.classList.remove('detail-hero-grabbing');
+    
+    if (e.changedTouches && e.changedTouches.length) {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      currentRotateY = currentRotateY + dx * 0.45;
+      currentRotateX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
+    }
   });
 }
 
