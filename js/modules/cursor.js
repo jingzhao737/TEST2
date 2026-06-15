@@ -60,6 +60,7 @@
   let snapPullX = 0;
   let snapPullY = 0;
   let snapPullDist = 0;
+  let smoothedSpeed = 0;
 
   function setHoveredElement(el) {
     if (hoveredElement === el) return;
@@ -495,6 +496,9 @@
     const vx = mouseX - lastMouseX;
     const vy = mouseY - lastMouseY;
     const speed = Math.sqrt(vx * vx + vy * vy);
+    
+    // Smooth speed using a LERP filter to prevent mouse coordinate noise from causing jitter
+    smoothedSpeed += (speed - smoothedSpeed) * 0.10;
 
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
     if (hoveredElement) {
@@ -564,8 +568,9 @@
         const mouseDy = mouseY - btnCenterY;
         
         // Elastic rubber-band stretch: pulls custom cursor slightly towards mouse position
-        // Constant pull factor to ensure a perfectly smooth, noise-free position tracking
-        const pullFactor = 0.38; // Pull up to 38% towards physical mouse
+        // Scale the pull based on LERP-smoothed mouse speed so it decays to 0 when stationary
+        const speedScale = Math.min(smoothedSpeed * 0.15, 1.0);
+        const pullFactor = 0.38 * speedScale; // Pull up to 38% towards physical mouse when moving
         const maxPull = 15; // Cap stretch at 15px max displacement so it stays within trigger area
         
         let pullX = mouseDx * pullFactor;
