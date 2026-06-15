@@ -145,15 +145,14 @@
     _dragOverlay.style.cssText = [
       'position:fixed',
       'inset:0',
-      'z-index:9998',
+      'z-index:150',
       'pointer-events:auto',
       'cursor:grabbing',
       'user-select:none',
       '-webkit-user-select:none'
     ].join(';');
     document.body.appendChild(_dragOverlay);
-    // Keep the theme anchor (z-index:202 normally) above the overlay
-    if (anchor) anchor.style.zIndex = '9999';
+    // navThemeAnchor is z-index:202 (above overlay at 150) — no change needed
   }
 
   function _removeOverlay() {
@@ -161,7 +160,6 @@
       _dragOverlay.remove();
       _dragOverlay = null;
     }
-    if (anchor) anchor.style.zIndex = '';
     window.__isDraggingTheme = false;
   }
 
