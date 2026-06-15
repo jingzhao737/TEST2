@@ -1772,7 +1772,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border-top-right-radius: 24px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  border: 2px solid var(--accent);
+  border: 3px solid #E87C50;
   border-bottom: none;
   pointer-events: none;
   z-index: 10; /* Draw border on top of card content to prevent gap showing through */
