@@ -43,9 +43,8 @@ if (!isMobileDevice) {
     let clampYMax = 16;
     let clampXMax = 16;
     let clampZMax = 6;
+    let previewPerspective = 1750; // Match works perspective by default
     let forceVisible = true; // Lock preview visible by default for tuning
-
-
     let targetWorkListY = baseY;
     let targetWorkListX = baseX;
     let targetWorkListZ = baseZ;
@@ -455,7 +454,7 @@ if (!isMobileDevice) {
           rotationY: currentTiltY,
           rotationX: currentTiltX,
           rotation: currentTiltZ,
-          transformPerspective: 1000,
+          transformPerspective: previewPerspective,
           force3D: true
         });
 
@@ -468,7 +467,7 @@ if (!isMobileDevice) {
           rotationY: currentOrangeTiltY * 0.8, // Slightly less tilt for parallax depth
           rotationX: currentOrangeTiltX * 0.8,
           rotation: currentOrangeTiltZ * 0.8,
-          transformPerspective: 1000,
+          transformPerspective: previewPerspective,
           force3D: true
         });
       } else {
@@ -538,6 +537,7 @@ if (!isMobileDevice) {
         { label: 'Preview Base Y Rotation (rotateY)', min: -90, max: 90, val: previewBaseY, step: 1, key: 'previewBaseY' },
         { label: 'Preview Base X Rotation (rotateX)', min: -90, max: 90, val: previewBaseX, step: 1, key: 'previewBaseX' },
         { label: 'Preview Base Z Rotation (rotateZ)', min: -90, max: 90, val: previewBaseZ, step: 1, key: 'previewBaseZ' },
+        { label: 'Perspective Depth (px)', min: 200, max: 3000, val: previewPerspective, step: 50, key: 'previewPerspective' },
         { label: 'Max Mouse Y-Tilt (X-rotation)', min: 0, max: 45, val: clampXMax, step: 1, key: 'clampXMax' },
         { label: 'Max Mouse X-Tilt (Y-rotation)', min: 0, max: 45, val: clampYMax, step: 1, key: 'clampYMax' },
         { label: 'Max Mouse Z-Tilt (Z-rotation)', min: 0, max: 30, val: clampZMax, step: 1, key: 'clampZMax' }
@@ -576,6 +576,7 @@ if (!isMobileDevice) {
           if (s.key === 'previewBaseX') previewBaseX = v;
           else if (s.key === 'previewBaseY') previewBaseY = v;
           else if (s.key === 'previewBaseZ') previewBaseZ = v;
+          else if (s.key === 'previewPerspective') previewPerspective = v;
           else if (s.key === 'clampXMax') clampXMax = v;
           else if (s.key === 'clampYMax') clampYMax = v;
           else if (s.key === 'clampZMax') clampZMax = v;
@@ -639,6 +640,7 @@ if (!isMobileDevice) {
           previewBaseX: previewBaseX,
           previewBaseY: previewBaseY,
           previewBaseZ: previewBaseZ,
+          previewPerspective: previewPerspective,
           clampXMax: clampXMax,
           clampYMax: clampYMax,
           clampZMax: clampZMax
