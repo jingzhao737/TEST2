@@ -599,6 +599,33 @@
     }
   }
 
+  function drawSheenBar(ctx, r, angle) {
+    ctx.save();
+    // Clip to vinyl region (from r * 0.38 to r)
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2, true);
+    ctx.clip('evenodd');
+
+    let cos = Math.cos(angle);
+    let sin = Math.sin(angle);
+    // Gradient vector is perpendicular to the light reflection line
+    let grad = ctx.createLinearGradient(-r * sin, r * cos, r * sin, -r * cos);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0.0)');
+    grad.addColorStop(0.38, 'rgba(255, 255, 255, 0.015)');
+    grad.addColorStop(0.47, 'rgba(255, 255, 255, 0.08)');
+    grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.26)'); // Peak shine
+    grad.addColorStop(0.53, 'rgba(255, 255, 255, 0.08)');
+    grad.addColorStop(0.62, 'rgba(255, 255, 255, 0.015)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
   function drawThumb(t, idx) {
     if (t.y + t.dispH < -20) return;
 
@@ -638,7 +665,22 @@
     let scaleBoost = 0.05;
     let scale = 1 + eased * scaleBoost + pulse * 0.25;
 
-    // 常亮白色雾状外发光
+    // === 3D Drop Shadow (soft radial gradient, no solid black circles showing) ===
+    ctx.save();
+    let shadowX = t.x + 5 + eased * 8;
+    let shadowY = t.y + 10 + eased * 14;
+    let shadowR = r * scale;
+    let shadowGrad = ctx.createRadialGradient(shadowX, shadowY, shadowR * 0.75, shadowX, shadowY, shadowR * 1.35);
+    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.45)');
+    shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.2)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+    ctx.fillStyle = shadowGrad;
+    ctx.beginPath();
+    ctx.arc(shadowX, shadowY, shadowR * 1.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 常亮白色雾状外发光 (glowing halo)
     let softGlow = ctx.createRadialGradient(t.x, t.y, r * 0.8, t.x, t.y, r * 1.8);
     let baseAlpha = 0.10 + pulse * 0.5;
     softGlow.addColorStop(0, `rgba(255,255,255,${baseAlpha})`);
@@ -659,8 +701,6 @@
       ctx.fillRect(t.x - glowR, t.y - glowR, glowR * 2, glowR * 2);
     }
 
-    // Latch clips handled via HTML overlay, not canvas
-
     // Draw rope from anchor, stopping short of disc edge
     let rdx = t.x - t.anchorX, rdy = t.y - t.anchorY;
     let rDist = Math.sqrt(rdx * rdx + rdy * rdy);
@@ -676,55 +716,139 @@
       drawString(sx, sy, ex, ey, sway);
     }
 
+    // Draw the disc itself using optimized translated coordinate system
     ctx.save();
     ctx.translate(t.x, t.y);
-    ctx.rotate(t._spin || 0);
     ctx.scale(scale, scale);
 
-    // 图片贴到圆环区域（环形 clip，填满裁切，像唱片）
+    // 1. === Rotated components: Disc image, vinyl mask, grooves, spindle hole ===
+    ctx.save();
+    ctx.rotate(t._spin || 0);
+
+    // Draw the image across the entire disc area (clipped to outer radius r)
     if (ringLoaded[idx] && ringImages[idx]) {
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2, true);
       ctx.save();
-      ctx.clip('evenodd');
+      ctx.clip();
       let img = ringImages[idx];
       let iw = img.width, ih = img.height;
-      // 按内径填满环形外圈，确保圆环完全被图片覆盖
-      let scaleImg = Math.max(r * 2 / iw, r * 2 / ih) * 1.3;
+      let scaleImg = Math.max(r * 2 / iw, r * 2 / ih) * 1.05;
       let dw = iw * scaleImg, dh = ih * scaleImg;
       ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
       ctx.restore();
-    }
-
-    // 纯色圆环（图片未加载时用）
-    if (!ringLoaded[idx] || !ringImages[idx]) {
+    } else {
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2, true);
       ctx.fillStyle = t.color;
-      ctx.fill('evenodd');
+      ctx.fill();
     }
 
-    // 圆环外圈深灰描边
+    // Translucent dark vinyl mask overlaying the outer body (leaving r*0.38 center label bright)
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(20,20,20,0.8)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2, true);
+    ctx.fillStyle = 'rgba(12, 12, 16, 0.76)'; // Subtle dark blue-grey undertone, semi-transparent
+    ctx.fill('evenodd');
 
-    // 唱片内圈深灰描边
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
+    // Concentric grooves on the vinyl body (faint and grouped into tracks)
+    ctx.save();
+    ctx.lineWidth = 0.35;
+    
+    // Track 1
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let radius = r * 0.42; radius < r * 0.58; radius += 4) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    for (let radius = r * 0.44; radius < r * 0.56; radius += 6) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    
+    // Track separator gap (leave r * 0.58 to r * 0.62 clean and dark)
+    
+    // Track 2
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let radius = r * 0.64; radius < r * 0.82; radius += 4) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    for (let radius = r * 0.66; radius < r * 0.80; radius += 6) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    // Track 3
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let radius = r * 0.86; radius < r * 0.96; radius += 4) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+    for (let radius = r * 0.88; radius < r * 0.94; radius += 6) {
+      ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+
+    // Spindle center hole
     ctx.beginPath();
-    ctx.arc(0, 0, r * 0.25, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(20,20,20,0.8)';
-    ctx.lineWidth = 12;
+    ctx.arc(0, 0, r * 0.08, 0, Math.PI * 2);
+    ctx.fillStyle = '#0a0a0c';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.lineWidth = 1;
     ctx.stroke();
 
-    // 外发光 - 统一黑白
-    ctx.shadowColor = 'rgba(255,255,255,0.6)';
-    ctx.shadowBlur = 6 + eased * 8;
+    // Border line between the center paper label and the vinyl body
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Paper label inset shadow (makes it look physically pressed in)
+    let labelInset = ctx.createRadialGradient(0, 0, r * 0.33, 0, 0, r * 0.38);
+    labelInset.addColorStop(0, 'rgba(0, 0, 0, 0.0)');
+    labelInset.addColorStop(1, 'rgba(0, 0, 0, 0.22)');
+    ctx.fillStyle = labelInset;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.38, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+
+    // 2. === Static components: Specular butterfly highlights, 3D rims, outer edges ===
+    // Calculate light source reflection angle (tracks mouse slightly for interactive depth)
+    let dx = mouseCanvasX - t.x;
+    let dy = mouseCanvasY - t.y;
+    let dist = Math.sqrt(dx * dx + dy * dy);
+    let mouseAngle = dist > 10 ? Math.atan2(dy, dx) : -Math.PI / 4;
+    // Smoothly blend a base light direction (-45 deg) with mouse movement direction
+    let reflectionAngle = -Math.PI / 4 + (mouseAngle - (-Math.PI / 4)) * 0.12;
+
+    // Draw the two crossed linear specular reflection bars (beautifully feathered)
+    drawSheenBar(ctx, r, reflectionAngle);
+    drawSheenBar(ctx, r, reflectionAngle + Math.PI * 0.4);
+
+    // 3D Bevel/Rim Highlights
+    // Top-left shiny highlight
+    ctx.beginPath();
+    ctx.arc(0, 0, r, Math.PI * 0.75, Math.PI * 1.75);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Bottom-right shadow rim
+    ctx.beginPath();
+    ctx.arc(0, 0, r, Math.PI * 1.75, Math.PI * 2.75);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Fine dark outer boundary edge
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(10, 10, 10, 0.85)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
     ctx.restore();
   }
