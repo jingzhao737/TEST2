@@ -171,6 +171,17 @@
     initEvents();
   }
 
+  // Auto-resume global AudioContext on user interactions to prevent browser autoplay suspensions
+  function resumeGlobalContext() {
+    const ctx = window.__audioCtx;
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(function(e) { console.warn('Failed to resume AudioContext:', e); });
+    }
+  }
+  window.addEventListener('mousedown', resumeGlobalContext, { passive: true });
+  window.addEventListener('touchstart', resumeGlobalContext, { passive: true });
+  window.addEventListener('keydown', resumeGlobalContext, { passive: true });
+
   window.__playHoverSound = playHoverSound;
   window.__playClickSound = playClickSound;
 })();

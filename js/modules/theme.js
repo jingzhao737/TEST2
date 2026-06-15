@@ -36,14 +36,21 @@
   let clickBuffer = null;
   function initAudio() {
     if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      fetch('sound/sound1/Ding.wav')
-        .then(function(r) { return r.arrayBuffer(); })
-        .then(function(buf) { return audioCtx.decodeAudioData(buf); })
-        .then(function(b) { clickBuffer = b; })
-        .catch(function() {});
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtx = window.__audioCtx || (window.__audioCtx = new AudioContextClass());
+      }
     }
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx) {
+      if (!clickBuffer) {
+        fetch('sound/sound1/Ding.wav')
+          .then(function(r) { return r.arrayBuffer(); })
+          .then(function(buf) { return audioCtx.decodeAudioData(buf); })
+          .then(function(b) { clickBuffer = b; })
+          .catch(function() {});
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
   }
   function playClick() {
     if (!audioCtx || !clickBuffer) return;
