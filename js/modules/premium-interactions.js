@@ -215,11 +215,7 @@ if (!isMobileDevice) {
         const previewWidth = 200;
         const previewHeight = 138;
         const offsetX = 30;
-
-        // Calculate dynamic offsetY to compensate for 3D perspective distortion (which shifts the card downwards on both top/bottom ends)
-        const centerY = window.innerHeight / 2;
-        const distFromCenter = Math.abs(rawMouseY - centerY) / centerY;
-        const dynamicOffsetY = 110 + distFromCenter * 30;
+        const offsetY = 120; // Comfortable constant gap above the cursor
 
         // Page-relative mouse coordinates
         const pageMouseX = rawMouseX + window.scrollX;
@@ -233,9 +229,23 @@ if (!isMobileDevice) {
           targetX = localX + offsetX;
         }
 
-        // Keep targetY clamped relative to visible viewport bounds with extra bottom breathing room (35px), then convert to local coordinate
-        const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - dynamicOffsetY);
-        targetY = clampedViewportY + window.scrollY - wPageRect.top;
+        // Keep targetY clamped relative to visible viewport bounds
+        const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - offsetY);
+        const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top;
+
+        // Apply 3D perspective projection compensation to keep vertical visual gap perfectly uniform
+        const xLocal = localX - wPageRect.width / 2;
+        const yDesiredLocal = targetYFlat - wPageRect.height / 2;
+
+        const cosX = 0.9563; // cos(17deg)
+        const sinY = -0.5592; // sin(-34deg)
+        const B = 0.2421; // sin(17deg) * cos(-34deg)
+        const d = 1750;
+
+        const A = d - sinY * xLocal;
+        const yCompensatedLocal = (yDesiredLocal * A) / (cosX * d + yDesiredLocal * B);
+
+        targetY = yCompensatedLocal + wPageRect.height / 2;
       }
     }
 
@@ -318,11 +328,7 @@ if (!isMobileDevice) {
       const previewWidth = 200;
       const previewHeight = 138;
       const offsetX = 30;
-
-      // Calculate dynamic offsetY to compensate for 3D perspective distortion (which shifts the card downwards on both top/bottom ends)
-      const centerY = window.innerHeight / 2;
-      const distFromCenter = Math.abs(rawMouseY - centerY) / centerY;
-      const dynamicOffsetY = 110 + distFromCenter * 30;
+      const offsetY = 120; // Comfortable constant gap above the cursor
 
       // Page-relative mouse coordinates
       const pageMouseX = rawMouseX + window.scrollX;
@@ -336,9 +342,23 @@ if (!isMobileDevice) {
         targetX = localX + offsetX;
       }
 
-      // Keep targetY clamped relative to visible viewport bounds with extra bottom breathing room (35px), then convert to local coordinate
-      const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - dynamicOffsetY);
-      targetY = clampedViewportY + window.scrollY - wPageRect.top;
+      // Keep targetY clamped relative to visible viewport bounds
+      const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - offsetY);
+      const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top;
+
+      // Apply 3D perspective projection compensation to keep vertical visual gap perfectly uniform
+      const xLocal = localX - wPageRect.width / 2;
+      const yDesiredLocal = targetYFlat - wPageRect.height / 2;
+
+      const cosX = 0.9563; // cos(17deg)
+      const sinY = -0.5592; // sin(-34deg)
+      const B = 0.2421; // sin(17deg) * cos(-34deg)
+      const d = 1750;
+
+      const A = d - sinY * xLocal;
+      const yCompensatedLocal = (yDesiredLocal * A) / (cosX * d + yDesiredLocal * B);
+
+      targetY = yCompensatedLocal + wPageRect.height / 2;
     });
 
     // Helper functions for 3D projection hit-testing
