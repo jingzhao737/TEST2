@@ -60,6 +60,7 @@
   let snapPullX = 0;
   let snapPullY = 0;
   let snapPullDist = 0;
+  let smoothedSpeed = 0;
 
   function setHoveredElement(el) {
     if (hoveredElement === el) return;
@@ -495,6 +496,9 @@
     const vx = mouseX - lastMouseX;
     const vy = mouseY - lastMouseY;
     const speed = Math.sqrt(vx * vx + vy * vy);
+    
+    // Smooth speed using a LERP filter to prevent mouse coordinate noise from causing jitter
+    smoothedSpeed += (speed - smoothedSpeed) * 0.12;
 
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
     if (hoveredElement) {
@@ -564,8 +568,8 @@
         const mouseDy = mouseY - btnCenterY;
         
         // Elastic rubber-band stretch: pulls custom cursor slightly towards mouse position
-        // Scale the pull based on mouse movement speed so that it returns to center when stationary
-        const speedScale = Math.min(speed * 0.15, 1.0);
+        // Scale the pull based on LERP-smoothed mouse movement speed so that it returns to center when stationary
+        const speedScale = Math.min(smoothedSpeed * 0.15, 1.0);
         const pullFactor = 0.38 * speedScale; // Pull up to 38% towards physical mouse when moving fast
         const maxPull = 15; // Cap stretch at 15px max displacement so it stays within trigger area
         
@@ -578,16 +582,18 @@
           pullY = (pullY / pullDist) * maxPull;
         }
         
-        targetX = btnCenterX + pullX;
-        targetY = btnCenterY + pullY;
+        // LERP the pull offset components to filter high-frequency mouse event jitter
+        snapPullX += (pullX - snapPullX) * 0.15;
+        snapPullY += (pullY - snapPullY) * 0.15;
+        snapPullDist = Math.sqrt(snapPullX * snapPullX + snapPullY * snapPullY);
         
-        snapPullX = pullX;
-        snapPullY = pullY;
-        snapPullDist = Math.sqrt(pullX * pullX + pullY * pullY);
+        targetX = btnCenterX + snapPullX;
+        targetY = btnCenterY + snapPullY;
       } else {
-        snapPullX = 0;
-        snapPullY = 0;
-        snapPullDist = 0;
+        // Smoothly return snap pull back to 0 during the lock duration
+        snapPullX += (0 - snapPullX) * 0.15;
+        snapPullY += (0 - snapPullY) * 0.15;
+        snapPullDist = Math.sqrt(snapPullX * snapPullX + snapPullY * snapPullY);
       }
       
       // Glides and snaps to the target coordinate (0.15 LERP) for responsive and soft magnetization
