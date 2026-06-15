@@ -29,3 +29,9 @@
   - `[x]` Update `styles.css` to add `.work-card.hovered` styles parallel to `.work-card:hover`.
   - `[x]` Verify layout correctness and fix the hover loop.
 
+- `[x]` **详情大图与卡片同步滑入转场优化 (Bypassing WebGL Morph / Card-Aligned Image Reveal)**
+  - `[x]` 停用 WebGL 形变（Morph）转场动画以满足用户关于“大图跟着出现的卡片一同出现”的要求。
+  - `[x]` 详情大图转由 DOM 方式随详情卡片同步滑入，实现平滑的视差滑动位移。
+  - `[x]` 运行 Playwright 对点击详情、同步滑入转场以及关闭详情的过程进行逐帧抓取和截图测试验证。
+  - `[x]` 提交并推送至 GitHub 并自动触发部署发布。
+
