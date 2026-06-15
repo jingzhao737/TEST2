@@ -424,7 +424,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border: 1px solid rgba(232, 124, 80, 0.35);
   border-radius: 6px;
   color: #fff;
-  font-family: 'Climate Crisis', 'Google Sans', sans-serif;
+  font-family: 'Google Sans', sans-serif;
   font-size: 11px;
   font-weight: 700;
   padding: 4px 8px;
