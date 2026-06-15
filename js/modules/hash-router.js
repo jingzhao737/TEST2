@@ -631,17 +631,19 @@ function setupDetail3DCard() {
       overwrite: 'auto'
     });
     
+    // Trigonometric projection for periodic bounded offset & glare updates
+    const px = Math.sin(rotY * Math.PI / 180);
+    const py = Math.sin(-rotX * Math.PI / 180);
+    
     // Parallax image shift inside visual window (2D displacement shadowbox)
+    // Opposite direction of rotation on both axes
     gsap.to(cardImg, {
-      x: -rotY * 0.15,
-      y: rotX * 0.15,
+      x: -px * 15,
+      y: -py * 15,
       duration: 0.2,
       ease: 'power1.out',
       overwrite: 'auto'
     });
-    
-    const px = Math.max(-1, Math.min(1, rotY / 45));
-    const py = Math.max(-1, Math.min(1, -rotX / 45));
     
     // Parallax shift on card container
     gsap.to(container, {
@@ -714,11 +716,11 @@ function setupDetail3DCard() {
         const rotY = gsap.getProperty(cardInner, "rotateY") || 0;
         const rotX = gsap.getProperty(cardInner, "rotateX") || 0;
         
-        const px = Math.max(-1, Math.min(1, rotY / 45));
-        const py = Math.max(-1, Math.min(1, -rotX / 45));
+        const px = Math.sin(rotY * Math.PI / 180);
+        const py = Math.sin(-rotX * Math.PI / 180);
         
         // Image parallax shift updates dynamically during snap-back
-        gsap.set(cardImg, { x: -rotY * 0.15, y: rotX * 0.15 });
+        gsap.set(cardImg, { x: -px * 15, y: -py * 15 });
         
         // Glare updates
         const glareX = 50 - px * 25;
