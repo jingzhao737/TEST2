@@ -2889,6 +2889,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .work-list {
     transform-style: preserve-3d;
     transition: none;
+    transform: rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
   }
 
   .work-list .work-card {

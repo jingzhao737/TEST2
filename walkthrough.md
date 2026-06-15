@@ -502,3 +502,28 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `cmd /c "npx vite build"`，项目构建打包成功，生成最新编译后的生产静态资源。
 - 确认 LERP 滚动、一体化滑入、0.2秒退出键即刻淡出完全生效。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 497），发布线上。
+
+
+---
+
+## 🛠️ Hotfix: 解决 Works 页面初次加载时 3D 倾斜列表呈扁平状态的问题
+
+### 1. 问题现象与原因分析
+- **页面初次加载呈扁平状态 (Flat State on Fresh Load)**: 
+  - 在大屏桌面端（`min-width: 1025px`），Works 列表 `.work-list` 在初次刷新载入时呈完全扁平（未偏斜倾斜）的普通列表布局。
+  - 只有当用户的鼠标物理性地首次移动进入 Works 区域（触发 `onListEnter()` 将 `isVisible` 置为 `true` 并且在 RAF 帧计算中产生 `diff > 0.001` 的角度偏移）后，系统才会首次对 `workList.style.transform` 注入偏斜坐标属性。一旦滑过一次，偏斜角度就会记忆并以 `baseX`, `baseY`, `baseZ` 作为静息状态基础偏角驻留。
+  - 这导致了用户第一次进入或刷新页面时，页面先呈现扁平排布，鼠标挪入又突然切变为 3D 效果的不连贯、非拟真的断档体验。
+
+### 2. 解决方案与修改
+- **CSS 静态 3D 倾斜初始化 (CSS 3D Initial State)**:
+  - 修改 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对 `.work-list` 处的桌面媒体查询块（`@media(min-width: 1025px)`），为其加入初始静态 transform 偏斜值：
+    `transform: rotateY(-34deg) rotateX(17deg) rotateZ(2deg);`
+    这保证了浏览器在首次渲染 DOM 并解析 CSS 之后，Works 列表就**在没有任何 JS 执行或鼠标交互前，就已经默认完美呈偏斜 3D 空间状态**。
+- **JS 初始化对齐 (JS State Synchronization)**:
+  - 修改 [js/modules/premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js) 的初始化流程，在脚本开始运行时直接为 `workList.style.transform` 分配初始旋转矩阵字符串：
+    `workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;`
+    让 JS 的默认偏斜值（`baseY = -34`, `baseX = 17`, `baseZ = 2`）与 CSS 静态样式处于 100% 对齐的状态。当后续鼠标切入切出时，能够在这套精准的 3D 静息点之上实现绝对丝滑的 LERP 渐变阻尼偏斜，彻底消除界面加载时的闪动与突变。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 498），自动部署线上页面。

@@ -49,6 +49,9 @@ if (!isMobileDevice) {
     gsap.set(wrapper, { autoAlpha: 0 });
     gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
 
+    // Apply initial 3D tilt transform to workList so it aligns with starting coordinates on load
+    workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
+
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
 
     function showPreviewDOM() {
