@@ -1060,3 +1060,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 535），自动部署线上页面。
 
+
+---
+
+## 🛠️ Hotfix: 将大图与3D卡牌切换胶囊按钮英文本地化（大图改为Image，3D/3D卡牌改为Card）
+
+### 1. 需求分析
+- **外语本地化与精简**：
+  - 现象：详情页大图与3D卡牌切换的胶囊按钮中，文字显示为中文“大图”和“3D卡牌”。
+  - 需求：为了提高界面的国际化与现代视觉审美，需要将大图和3D的文本描述用英文表示，其中“大图”翻译为 **“Image”**，原本的“3D/3D卡牌”翻译/更改为 **“Card”**。
+
+### 2. 解决方案与修改
+- **更新 HTML 文本（HTML Content Update）**：
+  - 修改 [index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中 ID 为 `togglePillImg` 和 `togglePillCard` 的按钮文本内容：
+    - `#togglePillImg` 的文字由 `大图` 改为 `Image`。
+    - `#togglePillCard` 的文字由 `3D卡牌` 改为 `Card`。
+- **更新 JS 代码注释（JS Code Comment Update）**：
+  - 修改 [js/modules/hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) 中的相关注释，将“大图”更改为 “Image” 以匹配新的本地化语境。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 536），自动部署线上页面。

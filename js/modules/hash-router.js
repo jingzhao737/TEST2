@@ -179,7 +179,7 @@ function openDetail(data, heroImg, pushState) {
   }
   if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
   
-  // Reset the Apple-style capsule toggle pill button to "大图" state
+  // Reset the Apple-style capsule toggle pill button to "Image" state
   const togglePill = document.getElementById('heroTogglePill');
   const togglePillImg = document.getElementById('togglePillImg');
   const togglePillCard = document.getElementById('togglePillCard');
