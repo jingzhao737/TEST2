@@ -93,8 +93,8 @@ if (!isMobileDevice) {
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
         // Reset both layers for next entrance
         imgLayerA.src = ''; imgLayerB.src = '';
-        gsap.set(imgLayerA, { opacity: 1 });
-        gsap.set(imgLayerB, { opacity: 0 });
+        gsap.set(imgLayerA, { opacity: 1, scale: 1 });
+        gsap.set(imgLayerB, { opacity: 0, scale: 1 });
         currentLayer = imgLayerA;
         nextLayer = imgLayerB;
       }});
@@ -190,25 +190,54 @@ if (!isMobileDevice) {
       activeSrc = src;
 
       if (!isPreviewActive) {
-        // ── First show: entrance clip-path animation ──
+        // ── First show: entrance clip-path animation with initial zoom-out ──
         currentLayer.src = src;
-        gsap.set(currentLayer, { opacity: 1 });
-        gsap.set(nextLayer, { opacity: 0 });
+        gsap.set(currentLayer, { opacity: 1, scale: 1 });
+        gsap.set(nextLayer, { opacity: 0, scale: 1 });
+        
+        gsap.fromTo(currentLayer, { scale: 1.25 }, { scale: 1, duration: 0.8, ease: 'power3.out' });
 
         gsap.killTweensOf([curtain, imgContainer]);
         gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
         showPreviewDOM();
       } else {
-        // ── Already visible: smooth crossfade to next image ──
+        // ── Already visible: premium tactile elastic squeeze + camera focus parallax ──
         const oldLayer = currentLayer;
         const newLayer = nextLayer;
         newLayer.src = src;
-        gsap.killTweensOf([oldLayer, newLayer]);
-        gsap.to(newLayer, { opacity: 1, duration: 0.28, ease: 'power2.inOut', overwrite: true });
-        gsap.to(oldLayer, { opacity: 0, duration: 0.28, ease: 'power2.inOut', overwrite: true, onComplete: () => {
-          oldLayer.src = '';
-        }});
+
+        gsap.killTweensOf([oldLayer, newLayer, imgContainer]);
+
+        // 1. Container tactile elastic squeeze (jelly effect)
+        gsap.fromTo(imgContainer, 
+          { scaleX: 1.08, scaleY: 0.92 }, 
+          { scaleX: 1, scaleY: 1, duration: 0.6, ease: 'back.out(2.5)', overwrite: 'auto' }
+        );
+
+        // 2. Incoming image: focus zoom-out and fade-in
+        gsap.set(newLayer, { scale: 1.2, opacity: 0 });
+        gsap.to(newLayer, { 
+          scale: 1, 
+          opacity: 1, 
+          duration: 0.45, 
+          ease: 'power3.out', 
+          overwrite: true 
+        });
+
+        // 3. Outgoing image: shrink down and fade-out
+        gsap.to(oldLayer, { 
+          scale: 0.9, 
+          opacity: 0, 
+          duration: 0.4, 
+          ease: 'power3.out', 
+          overwrite: true, 
+          onComplete: () => {
+            oldLayer.src = '';
+            gsap.set(oldLayer, { scale: 1 });
+          }
+        });
+
         // Swap layer references
         [currentLayer, nextLayer] = [newLayer, oldLayer];
       }
