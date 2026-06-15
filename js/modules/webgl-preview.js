@@ -292,6 +292,7 @@ import gsap from 'gsap';
         if (!isMorphing) {
           mesh.visible = false;
           mesh.rotation.set(0, 0, 0);
+          renderer.render(scene, camera); // Force clear the canvas since render loop will pause
         }
       }
     });
@@ -354,6 +355,7 @@ import gsap from 'gsap';
       onComplete: () => {
         isMorphing = false;
         mesh.visible = false;
+        renderer.render(scene, camera); // Force clear the canvas since render loop will pause
         canvas.style.zIndex = '90';
         if (onComplete) onComplete();
       }
@@ -364,7 +366,18 @@ import gsap from 'gsap';
     return { ...currentRect };
   }
 
-  window.__worksWebGL = { showPreview, updatePreviewRect, hidePreview, morphTo, getCurrentRect, isActive: true };
+  function reset() {
+    isMorphing = false;
+    isHoverActive = false;
+    gsap.killTweensOf(currentRect);
+    gsap.killTweensOf(material.uniforms.uTransition);
+    gsap.killTweensOf(material.uniforms.uOpacity);
+    mesh.visible = false;
+    renderer.render(scene, camera);
+    canvas.style.zIndex = '90';
+  }
+
+  window.__worksWebGL = { showPreview, updatePreviewRect, hidePreview, morphTo, getCurrentRect, reset, isActive: true };
   document.body.classList.add('webgl-active');
   console.log('[Works WebGL] Full preview & transition renderer initialized successfully.');
 })();

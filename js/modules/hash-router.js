@@ -203,6 +203,11 @@ function closeDetail(popState) {
   // Allow closing even if isRouteTransitioning is true (e.g. still opening),
   // but prevent closing if we are already closed or closing (checked via classList.contains('open'))
   if (!workDetail.classList.contains('open')) return;
+
+  if (window.__worksWebGL) {
+    window.__worksWebGL.reset();
+  }
+
   isRouteTransitioning = true;
   window.__isDetailClosing = true;
   workDetail.classList.remove('open');
