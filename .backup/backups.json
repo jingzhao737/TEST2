@@ -1,12 +1,5 @@
 [
   {
-    "step": 78,
-    "timestamp": "2026-06-12 01:07:06",
-    "description": "Auto-backup before rollback to Step 75",
-    "folder": "auto_078_Auto-backup_before_rollback_to_Step_75",
-    "is_auto": true
-  },
-  {
     "step": 79,
     "timestamp": "2026-06-12 01:07:12",
     "description": "Roll back record physics changes to Step 75",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 00:51:55",
     "description": "Updated walkthrough documentation",
     "folder": "step_097_Updated_walkthrough_documentation",
+    "is_auto": false
+  },
+  {
+    "step": 98,
+    "timestamp": "2026-06-16 00:57:16",
+    "description": "Fix record playback restart on latch",
+    "folder": "step_098_Fix_record_playback_restart_on_latch",
     "is_auto": false
   }
 ]
