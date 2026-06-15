@@ -970,3 +970,27 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 532），自动部署线上页面。
 
+---
+
+## 🛠️ Hotfix: 将详情页卡片外围显眼的粗橙色边框修改为半透明白色/深色细线以提升高级感
+
+### 1. 问题现象与需求分析
+- **粗橙色边框过于显眼 (Conspicuous Orange Border)**：
+  - 现象：详情弹窗卡片（`.work-detail-card`）外圈有一圈 3px 粗的品牌橙色（`#E87C50`）上边框。在整体页面中，这道橙色边界线占比太重，显得有些喧宾夺主，不够精细，拉低了整体设计的轻盈质感和高级感。
+  - **需求**：将这圈橙色边框改为**半透明的白色细线**（在暗色主题下为白色，在亮色主题下为相对应的深色细线），使其优雅地融于背景中，成为一个高级的磨砂玻璃边缘般的点缀。
+
+### 2. 解决方案与修改
+- **引入 CSS 边框变量（CSS Custom Border Variable）**：
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 的全局根变量（`:root`）声明中新增了边框颜色变量：
+    - **暗色模式（Dark Mode）**：`--detail-card-border: rgba(255, 255, 255, 0.15)` （15% 不透明度的白色，看起来像极细的磨砂玻璃光泽）。
+    - **亮色模式（Light Mode）**：`--detail-card-border: rgba(0, 0, 0, 0.12)` （12% 不透明度的黑色，提供轻盈的层次划分）。
+- **细化边框样式（Thinner Semitransparent Border）**：
+  - 修改 `.work-detail-card::after` 伪元素的边框属性：
+    - 将边框宽度由 `3px` 减至 **`1px`**。
+    - 将边框颜色从原先的硬编码颜色 `#E87C50` 变更为 CSS 变量 `var(--detail-card-border)`。
+  - **效果提升**：卡片边缘瞬间脱去了厚重感，转而呈现出一种极为纤细、低调且极具现代感的微弱边缘微光，完全融入了页面的大背景。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 533），自动部署线上页面。
+

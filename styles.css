@@ -12,6 +12,7 @@
   --accent-glow:rgba(232,124,80,.11);--accent-soft:rgba(232,124,80,.04);
   --accent-hover:#F09568;
   --muted:#6e6c66;--border:rgba(255,255,255,.05);--card-bg:#161616;
+  --detail-card-border: rgba(255, 255, 255, 0.15);
   --nav-bg:rgba(0,0,0,.35);--nav-bg-scrolled:rgba(0,0,0,.55);
   --nav-border:rgba(255,255,255,.15);
   --nav-inner-glow:rgba(255,255,255,.12);
@@ -44,6 +45,7 @@
   --accent-glow:rgba(155,142,126,.12);--accent-soft:rgba(155,142,126,.04);
   --accent-hover:#B0A397;
   --muted:#888;--border:rgba(0,0,0,.08);--card-bg:#fff;
+  --detail-card-border: rgba(0, 0, 0, 0.12);
   --nav-bg:rgba(255,255,255,.85);--nav-bg-scrolled:rgba(255,255,255,.95);
   --nav-border:rgba(0,0,0,.08);
   --nav-inner-glow:rgba(0,0,0,.04);
@@ -1772,7 +1774,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border-top-right-radius: 24px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  border: 3px solid #E87C50;
+  border: 1px solid var(--detail-card-border);
   border-bottom: none;
   pointer-events: none;
   z-index: 10; /* Draw border on top of card content to prevent gap showing through */
