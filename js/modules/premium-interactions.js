@@ -14,6 +14,8 @@ if (!isMobileDevice) {
     let targetX = 0, targetY = 0;
     let isVisible = false;
     let activeCardIndex = -1;
+    let targetSliderY = 0;
+    let currentSliderY = 0;
 
     const baseY = -34;
     const baseX = 17;
@@ -109,8 +111,10 @@ if (!isMobileDevice) {
       gsap.to(wrapper, { autoAlpha: 0, duration: 0.2, delay: 0.1, overwrite: true, onComplete: () => {
         gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
-        // Reset slider position for next entrance
-        gsap.set(slider, { y: 0 });
+        // Reset slider position and LERP variables for next entrance
+        targetSliderY = 0;
+        currentSliderY = 0;
+        gsap.set(slider, { y: 0, skewY: 0 });
       }});
       gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -30, rotationX: 15, duration: 0.5, ease: 'expo.out', overwrite: true });
       gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -46, x: 16, rotationX: 15, duration: 0.5, ease: 'expo.out', delay: 0.05, overwrite: true });
@@ -204,30 +208,26 @@ if (!isMobileDevice) {
       activeCardIndex = index;
 
       if (!isPreviewActive) {
-        // ── First show: snap slider to index and play entrance ──
-        gsap.set(slider, { y: -index * 138 });
+        // ── First show: snap slider coordinates and play entrance ──
+        targetSliderY = -index * 138;
+        currentSliderY = -index * 138;
+        gsap.set(slider, { y: currentSliderY, skewY: 0 });
 
         gsap.killTweensOf([curtain, imgContainer]);
         gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
         showPreviewDOM();
       } else {
-        // ── Already visible: premium slide transition with tactile elastic squeeze ──
-        gsap.killTweensOf([slider, imgContainer]);
+        // ── Already visible: update LERP physics target & trigger container jelly squeeze ──
+        targetSliderY = -index * 138;
 
-        // 1. Container tactile elastic squeeze (jelly effect)
+        gsap.killTweensOf(imgContainer);
+
+        // Container tactile elastic squeeze (jelly effect)
         gsap.fromTo(imgContainer, 
           { scaleX: 1.04, scaleY: 0.96 }, 
           { scaleX: 1, scaleY: 1, duration: 0.45, ease: 'back.out(2)', overwrite: 'auto' }
         );
-
-        // 2. Slide the filmstrip to the new index (expo.out for instant snapping feel)
-        gsap.to(slider, {
-          y: -index * 138,
-          duration: 0.38,
-          ease: 'expo.out',
-          overwrite: true
-        });
       }
     }
 
@@ -408,6 +408,19 @@ if (!isMobileDevice) {
         } else {
           gsap.set(curtain, { left: curX1, top: curY1 });
           gsap.set(imgContainer, { left: curX2, top: curY2 });
+        }
+
+        // ── STEP 5: Animate filmstrip sliding transition with organic LERP and velocity skew ──
+        const diffSliderY = targetSliderY - currentSliderY;
+        if (Math.abs(diffSliderY) > 0.01) {
+          currentSliderY += diffSliderY * 0.15; // Smooth spring LERP (continuity in velocity)
+          // skewY is calculated proportional to current sliding velocity (diffSliderY)
+          let skewY = gsap.utils.clamp(-10, 10, diffSliderY * 0.05);
+          gsap.set(slider, { y: currentSliderY, skewY: skewY, force3D: true });
+        } else if (gsap.getProperty(slider, 'skewY') !== 0) {
+          // Reset skew when settled
+          gsap.set(slider, { y: targetSliderY, skewY: 0, force3D: true });
+          currentSliderY = targetSliderY;
         }
       } else {
         firstMove = true;
