@@ -1001,9 +1001,21 @@ import * as THREE from 'three';
         let scaleFactor = t.dispW / d.baseSz;
         let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25);
         
+        // Dynamic Z depth lift to prevent clipping (穿模) and simulate physical height
+        let baseZ = i * 4;
+        let targetZ = baseZ;
+        if (i === draggedIdx) {
+          targetZ = baseZ + 45;
+        } else if (i === hoveredIdx) {
+          targetZ = baseZ + 15;
+        }
+        t.currentZ = t.currentZ || baseZ;
+        t.currentZ += (targetZ - t.currentZ) * 0.12;
+
         // Place in pixel coordinates (invert Y axis for WebGL)
         d.group.position.x = t.x;
         d.group.position.y = ch - t.y;
+        d.group.position.z = t.currentZ;
         d.group.scale.set(scale, scale, 1);
         
         // 3D dynamic tilt based on swing velocity
@@ -1022,11 +1034,13 @@ import * as THREE from 'three';
         d.labelMesh.rotation.z = t._spin || 0;
         
         // Animate shadow position and opacity (depth simulation)
-        d.shadowMesh.position.x = (5 + eased * 6) * scaleFactor;
-        d.shadowMesh.position.y = (-10 - eased * 12) * scaleFactor;
-        d.shadowMesh.position.z = -30 - eased * 15;
-        d.shadowMesh.scale.set(1 + eased * 0.05, 1 + eased * 0.05, 1);
-        d.shadowMesh.material.opacity = 0.45 - eased * 0.08 - (pulse * 0.05);
+        // Keep shadow on the background plane (world Z approx -30) by subtracting t.currentZ
+        let lift = (t.currentZ - baseZ) / 45; // 0 to 1 lift ratio
+        d.shadowMesh.position.x = (5 + eased * 6 + lift * 12) * scaleFactor;
+        d.shadowMesh.position.y = (-10 - eased * 12 - lift * 24) * scaleFactor;
+        d.shadowMesh.position.z = -30 - t.currentZ - eased * 15;
+        d.shadowMesh.scale.set(1 + eased * 0.05 + lift * 0.18, 1 + eased * 0.05 + lift * 0.18, 1);
+        d.shadowMesh.material.opacity = Math.max(0.05, 0.45 - eased * 0.08 - lift * 0.15 - (pulse * 0.05));
       }
     }
     
