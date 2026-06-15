@@ -106,23 +106,23 @@ if (!isMobileDevice) {
       
       activeTimeline = gsap.timeline();
       
-      // The preview image container immediately begins to fade in, scale up, and float up with overshoot!
+      // Awwwards-style premium liquid spring animation for the image container
       activeTimeline.to(previewAnim, {
         imgOpacity: 1,
         imgScale: 1.0,
         imgZ: 15,
-        duration: 0.45,
-        ease: 'back.out(2.0)' // Strong back ease to overshoot beyond z: 15 and rebound
+        duration: 0.8,
+        ease: 'elastic.out(1.1, 0.55)' // Elegant, fluid overshoot and single gentle bounce-back
       }, 0);
       
-      // The orange background block follows after a slight delay (0.12s)
+      // The orange shadow block follows closely, creating a fluid wave/peel-off effect
       activeTimeline.to(previewAnim, {
         orangeOpacity: 1,
         orangeScale: 1.0,
         orangeZ: 5,
-        duration: 0.4,
-        ease: 'back.out(1.2)'
-      }, 0.12);
+        duration: 0.7,
+        ease: 'elastic.out(1.0, 0.6)'
+      }, 0.08); // Staggered by 0.08s for a tight, high-end feel
     }
 
     function hidePreviewDOM() {
