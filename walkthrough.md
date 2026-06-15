@@ -612,6 +612,201 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 解决方案与修改
 - **移去父容器透视 (Remove Wrapper Perspective)**:
   - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中删除了 `.work-preview-wrapper` 上的 `perspective: 1000px;` 属性。
+### 2. 解决方案与修改
+- **悬停时绕过磁吸**: 在 [cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) 中，判断当前鼠标如果物理上处于 `.work-card` 上，或者在 3D 投影判断中处于悬停卡片状态（`window.__hoveredCardIndex >= 0`），则**完全禁止**距离磁吸到任何背景组件，从而断开磁吸重定向。
+- **Works 区域拦截豁免**: 在 `cursor.js` 的 `mousedown`、`mouseup` 和 `click` 拦截监听器中添加豁免：如果点击落在 `.works` 区域内且当前有卡片处于 3D 悬停状态，**直接放行，不作任何拦截与重定向**。
+- **健壮的背景 Fallback 点击**: 优化 [work-detail.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/work-detail.js) 的 fallback 机制，将监听目标放大到整个 `.works`。只要点击落在区域内，且不是卡片本身或其他链接/按钮，但在 3D 投影检测下当前处于卡片悬停状态，就自动触发该卡片的 click 动作。
+
+### 3. 编译与自动化验证
+- 使用 `npx.cmd vite build` 重新编译了最新的生产环境静态资源，改动已完全被打包编译到 dist 目录中。
+- 运行了 Playwright 自动化测试脚本，全面测试了 4 个卡片在不同位置（中心、左边缘、右边缘、文字）的点击成功率。测试结果显示，除 Card 1 左边缘（物理边界已因 3D 偏斜移出卡片，不触发符合预期）外，所有卡片及边缘点击均 100% 成功触发详情页开启，且完全排除了背景磁吸元素干扰。
+
+---
+
+## 🛠️ Hotfix: 详情页关闭按钮悬浮固定与丝滑滚动体验优化
+
+### 1. 问题现象与原因分析
+- **关闭按钮滚动位移**: 详情卡片内容使用了一个可滚动的容器 `.work-detail-card` (`overflow-y: auto`)。原来的关闭按钮 `#detailClose` 是作为它的子元素并采用 `absolute` 定位的。当用户向下滚动查看详情时，关闭按钮会随着卡片内容一起向上滚动，导致用户无法随时点击退出。
+- **详情页内部滚动死板 (Stiff Scroll)**: 页面主容器通过 `back-to-top.js` 重写了 `wheel` 事件，利用 LERP 物理模型（差值衰减因子 `0.065`）实现了非常丝滑的滚动效果。然而，当详情页卡片打开时，滚轮监听器直接返回退出，使得卡片内页退化到浏览器原生的阶梯式滚动，手感和外部相比显得非常生硬和死板。
+
+### 2. 解决方案与修改
+- **全新的固定卡片布局**:
+  - 在 [index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中引入了全新的三层层级关系，将 `#detailClose` 移动到了滚动容器外侧 of the `#workDetailContainer` 下。
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对新结构进行了布局，使 `#workDetailContainer` 作为卡片的外层包裹器（`position: relative`、`max-width: 1320px` 居中、`pointer-events: none`），而 `#detailClose` 设置为它的绝对定位子元素（同时设置 `pointer-events: auto` 保证点击响应）。
+  - 这样，关闭按钮无论在何种分辨率下，都会**悬浮且固定在卡片视口右上角 24px 处**，不随页面滚动移位，完美可达。
+- **滚动模型移植**:
+  - 在 [js/modules/back-to-top.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/back-to-top.js) 中，重写了 `wheel` 的拦截逻辑。当详情内页打开时，不再直接退出，而是调用 `e.preventDefault()` 阻止原生阶梯滚动。
+  - 采用和外部主页相同的 LERP 物理滚屏引擎，通过 `requestAnimationFrame` 自主驱动 `#workDetailCard` 的 `scrollTop`。
+  - 加入了自校准机制：只要检测到页面被重新打开（`scrollTop === 0`）或者滚动动画未运行，即刻对齐物理滚动条与 LERP 虚拟坐标，杜绝出现坐标错位。
+  - 在 `.work-detail-card` 的 CSS 规则中补充了 `-webkit-overflow-scrolling: touch;` 属性，确保移动端/触屏的惯性滚动同样舒适丝滑。
+
+### 3. 编译部署与测试
+- 重新使用 `npx.cmd vite build` 完成生产环境编译。
+- 使用 `python workflow.py deploy` 推送至 GitHub（Step 495），并自动发布生产页面。
+
+
+---
+
+## 🛠️ Hotfix: 详情页关闭按钮一体化固定与滚轮/触屏丝滑滚动优化
+
+### 1. 问题现象与原因分析
+- **关闭按钮悬浮分离/留存滞后**: 在之前的修复方案中，为了让关闭按钮 `#detailClose` 固定，我们将其移出了 `.work-detail-card`，作为独立视口浮层定位。这导致了三个严重的视觉硬伤：
+  1. 卡片淡出关闭时，由于卡片容器在做向下滑动动画（GSAP），而按钮是外部独立的，它会呆立在原处，直到 0.65 秒动画结束才随遮罩一起突兀地消失（造成“留存一会”）。
+  2. 卡片淡入开启时，按钮是凭空在右上角飞入，和卡片之间没有一体感，显得像个独立插头。
+  3. 如果在大屏上，卡片有最大宽度限制居中，而按钮若采用视口定位会离卡片太远。
+- **详情页内部滚动失效与死板 (Scroll Stiff / No Effect)**: 之前虽然尝试接管 wheel 事件，但在同步实际滚动位置时误使用了 `card.scrollTop === 0` 作为条件。这导致每次滚动回到顶部或初始触发时，动画状态会被频繁意外清零或无法正确捕获实际的滚动偏移（特别是使用触控板、滚轮多重滑动时），使得丝滑 LERP 滚动完全未生效。
+
+### 2. 解决方案与修改
+- **一体化嵌套固定卡片布局 (Close Button Card Integration)**:
+  - 移除了无意义的外部包裹容器，保持原有的干净 HTML 树形结构。
+  - 将 `.work-detail-card` 设置为 `overflow: hidden;`，使其成为不滚动的基准背景（滑动进出时，所有子元素作为整体运动，关闭按钮天然和卡片随形，完美解决制造的滞后留存和分离问题）。
+  - 在 `.work-detail-card` 内部建立直接子元素 `#detailClose`（`position: absolute; top: 24px; right: 24px;`）。因为卡片本身不滚动，该按钮将完美静止钉在卡片右上角。
+  - 在卡片内新建真正的滚动容器 `.work-detail-scroll-wrapper`（`overflow-y: auto; height: 100%;`），将所有图文内容放入其中进行实际滚动。
+- **高阶 LERP 滚动与自校准移植**:
+  - 在 [js/modules/back-to-top.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/back-to-top.js) 中，当详情内页打开时，拦截 `wheel` 事件，将平滑滚动的操作对象重新路由到新的子滚动容器 `#workDetailScrollWrapper`。
+  - 精准的坐标偏差同步：丢弃容易导致重置死锁的 `scrollTop === 0` 静态判断，升级为差值动态捕获 `Math.abs(card.scrollTop - window.__cardWheelCurrent) > 2`。只要用户通过手动拖拽滚动条、触控板或者新页面打开时产生了任意超过 2 像素的错位，LERP 引擎会在下一帧立即零延迟自动校准，绝无跳变和卡死。
+  - 在 [js/modules/hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) 中，将页面路由切换时的 `scrollTop` 重置和卡片边缘滚轮截断全部重新定向至 `#workDetailScrollWrapper`。
+  - 对 `.work-detail-scroll-wrapper` 增加了 `-webkit-overflow-scrolling: touch;` 与 `-ms-overflow-style: none`，实现了移动端原生的高性能惯性缓冲滑动。
+
+### 3. 编译部署与测试
+- 重新使用 `npx.cmd vite build` 完成生产环境编译。
+- 使用 `python workflow.py deploy` 推送至 GitHub（Step 496），自动发布最新的线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 详情页关闭按钮一体化飞入与零延迟淡出 & 解决 LERP 滚动失效
+
+### 1. 问题现象与原因分析
+- **退出键仍有留存/独立感 (Exit Button Detached & Lingering)**: 
+  - 之前虽然将 `#detailClose` 嵌套在了 `#workDetailCard` 内部，但在打开卡片时，依然使用了 `gsap.set(detailClose, { opacity: 0, y: 30 })` 并以 `delay: 0.3` 延迟淡出和向上位移。这使得卡片滑动时按钮是不可见的，之后又单独在卡片上漂移出现，破坏了“一体感”（看着像个独立的东西）。
+  - 在关闭卡片时，由于只动了 `#workDetailCard` 的 slide-down 动画（0.65 秒），虽然按钮随着卡片向下移出，但在关闭过程中按钮依然以 100% 不透明度显示在卡片上，造成视觉上关闭按钮“仍留存一会”的感觉。
+- **丝滑滚动没有生效 (Smooth LERP Scroll Not Working)**:
+  - 之前我们在 `hash-router.js` 中给 `#workDetailScrollWrapper` 绑定了一个拦截滚动的监听器，其中使用了 `e.stopPropagation()` 阻止事件冒泡。
+  - 由于这行代码，当用户在详情页滚动时，滚轮事件（`wheel`）被完全拦截在容器层，无法冒泡到 `document` 上。而我们定义在 `back-to-top.js` 中的全局 LERP 平滑滚动引擎正是监听的 `document` 的 `wheel` 事件，这就导致 LERP 平滑滚动彻底失效，退化为原生阶梯滚动。
+
+### 2. 解决方案与修改
+- **关闭按钮完全一体化 (Close Button Integration)**:
+  - **开启时同频滑入**: 修改 [hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js)，在 `openDetail` 时直接设置 `gsap.set(detailClose, { opacity: 1, y: 0 })`，并彻底去除了针对 `detailClose` 的单独 `gsap.to` 延迟移动动画。使关闭按钮作为卡片的固定右上角部分，在卡片从底部滑入的那一刻起就完美呈现在其原本位置，与卡片浑然一体一同滑入。
+  - **关闭时即刻淡出**: 在 `closeDetail` 开始时，立即对 `#detailClose` 进行 `gsap.to(detailClose, { opacity: 0, duration: 0.2, ease: 'power2.out' })` 的淡出动画。在 0.2 秒内将退出键完全隐藏，绝不在屏幕上多留存一会，而卡片则在 0.65 秒内平滑滑出。
+- **释放滚轮冒泡启用 LERP 滚动 (Enable LERP Scrolling)**:
+  - 移除了 [hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) 中对 `#workDetailScrollWrapper` 绑定 `e.stopPropagation()` 的 `wheel` 监听器，同时清理了背景层 `#workDetail` 上的冗余 `wheel` 拦截，让滚轮事件能够顺利冒泡到 `document`。
+  - 事件冒泡后，[back-to-top.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/back-to-top.js) 中的全局 `wheel` 监听器正常捕获该事件，对其调用 `preventDefault()` 并顺利介入 LERP 滚动物理引擎（衰减系数 `0.065`），完美实现了和主页外网一样丝滑的内页滚动效果。
+
+### 3. 部署与验证
+- 运行 `cmd /c "npx vite build"`，项目构建打包成功，生成最新编译后的生产静态资源。
+- 确认 LERP 滚动、一体化滑入、0.2秒退出键即刻淡出完全生效。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 497），发布线上。
+
+
+---
+
+## 🛠️ Hotfix: 解决 Works 页面初次加载时 3D 倾斜列表呈扁平状态的问题
+
+### 1. 问题现象与原因分析
+- **页面初次加载呈扁平状态 (Flat State on Fresh Load)**: 
+  - 在大屏桌面端（`min-width: 1025px`），Works 列表 `.work-list` 在初次刷新载入时呈完全扁平（未偏斜倾斜）的普通列表布局。
+  - 只有当用户的鼠标物理性地首次移动进入 Works 区域（触发 `onListEnter()` 将 `isVisible` 置为 `true` 并且在 RAF 帧计算中产生 `diff > 0.001` 的角度偏移）后，系统才会首次对 `workList.style.transform` 注入偏斜坐标属性。一旦滑过一次，偏斜角度就会记忆并以 `baseX`, `baseY`, `baseZ` 作为静息状态基础偏角驻留。
+  - 这导致了用户第一次进入或刷新页面时，页面先呈现扁平排布，鼠标挪入又突然切变为 3D 效果的不连贯、非拟真的断档体验。
+
+### 2. 解决方案与修改
+- **CSS 静态 3D 倾斜初始化 (CSS 3D Initial State)**:
+  - 修改 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对 `.work-list` 处的桌面媒体查询块（`@media(min-width: 1025px)`），为其加入初始静态 transform 偏斜值：
+    `transform: rotateY(-34deg) rotateX(17deg) rotateZ(2deg);`
+    这保证了浏览器在首次渲染 DOM 并解析 CSS 之后，Works 列表就**在没有任何 JS 执行或鼠标交互前，就已经默认完美呈偏斜 3D 空间状态**。
+- **JS 初始化对齐 (JS State Synchronization)**:
+  - 修改 [js/modules/premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js) 的初始化流程，在脚本开始运行时直接为 `workList.style.transform` 分配初始旋转矩阵字符串：
+    `workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;`
+    让 JS 的默认偏斜值（`baseY = -34`, `baseX = 17`, `baseZ = 2`）与 CSS 静态样式处于 100% 对齐的状态。当后续鼠标切入切出时，能够在这套精准的 3D 静息点之上实现绝对丝滑的 LERP 渐变阻尼偏斜，彻底消除界面加载时的闪动与突变。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 498），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 增加 Works 卡片点击时 3D 触感挤压与动态光圈涟漪反馈
+
+### 1. 方案设计与意图
+- **提升点击交互的高级感 (Tactile Feedback & Visual Response)**:
+  - 之前用户点击 Works 卡片后，页面会立即触发路由切换，整个列表随之淡出滑离。虽然过渡流畅，但卡片本身在被鼠标或按键“按下”的物理瞬间，缺乏一种按下弹起的物理实感和即时视觉响应（点击反馈）。
+  - 为了给卡片点击增加豪华微交互感，我们决定为其定制双重反馈：
+    1. **物理 3D 挤压 (3D Squeeze)**：卡片瞬间向三维屏幕内凹陷（沿 Z 轴推深、并微缩比例），之后弹性回弹。
+    2. **局部光影扩散 (Glow Ripple)**：从鼠标点击的精确坐标处，以极具表现力的大范围混合模式（`mix-blend-mode: screen`）淡入扩散出带有主色调橙红的柔和光影涟漪，带来光能爆破的微交互细节。
+
+### 2. 解决方案与修改
+- **3D 挤压触感与回弹实现 (Snappy Spring Timeline)**:
+  - 在 [work-detail.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/work-detail.js) 中导入 `gsap`。
+  - 在卡片被触发点击（包括回车、空格等无障碍按键激活）时，拦截并延迟路由切换时间。
+  - **解决回弹死板问题**：原本使用 `yoyo: true` 和 `repeat: 1` 产生的回弹动画是完全对称的，过程十分生硬和机械（死板）。
+  - **物理弹簧效果重构**：我们将其改写为**GSAP Timeline 序列动画**，进行非对称的物理力学模拟：
+    1. **下按阶段**：快速在 80ms 内向内下凹并微缩（`scale: 0.95`, `z: -40`），采用 `power2.out` 缓动，塑造极其干脆的按下感。
+    2. **回弹阶段**：使用 `back.out(2.5)` 缓动（回弹系数 2.5），在 320ms 内回弹至原始大小。`back.out` 缓动会在回弹到原大（scale: 1）后产生一个物理性的**微小超调（Overshoot，即稍微变大再缩回）**并迅速稳定。这完全模拟出了真实物理弹簧的微幅抖动效果，极其生动灵巧。
+  - **路由延迟时间同步**：配合该 200ms 黄金时间点（下按 80ms + 弹起超调 120ms 时分），我们将跳转延迟设为 `280ms`，让用户能完整地在屏幕上看到这一次极具弹性（Wobble）的完美物理回弹，随后再淡出切走。`
+- **坐标感知型光圈涟漪**:
+  - 计算点击点在 `.work-card` 局部的相对坐标 `(x, y)`（如果是按键触发，则自动以卡片物理中心点作为 fallback 中心）。
+  - 动态在卡片内 append 一个带有 `.card-click-ripple` 类的装饰标签，并将其绝对定位在 `(x, y)`。
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中定义该涟漪：
+    - 使用 `radial-gradient(circle, rgba(255,255,255,0.45) 0%, var(--accent) 40%, transparent 70%)` 建立圆环光圈；
+    - 使用 `mix-blend-mode: screen` 和 `pointer-events: none` 排除事件干扰并实现通透的高亮混合效果；
+    - 绑定自定义 `cardRippleExpand` 动画（从 0 扩散至 `1400px`，同时 `opacity` 从 1 渐变衰减为 0），完美模拟出光波扩散的视觉特效。
+- **双击与连击防抖**:
+  - 在 `openCard` 运行初期为卡片设置 `data-clicked="true"` 并在延迟跳转结束后移除，配合 `hash-router.js` 内部本身的 `isRouteTransitioning` 状态锁，全面杜绝了多重点击和瞬时路由冲突的问题。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 502），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 解决拉动右上角黑白模式开关放手时触发背景元素误点击的问题
+
+### 1. 问题现象与原因分析
+- **释放拖拽误触点击 (Drag Release False Click)**:
+  - 页面右上角的黑白主题切换是一个需要鼠标/触屏下拉并释放的拉绳开关（Pull-to-toggle String）。
+  - 用户在下拉开关并释放（`mouseup` 或 `touchend`）时，若此时鼠标位置正好处于页面其他可点击元素（例如导航栏链接、按钮或页面下方组件）上方，这些背景元素就会被意外触发点击动作。
+  - **根本原因**：
+    - 为了解决自定义磁吸鼠标在按钮边缘点击容易偏离脱靶的问题，[cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) 引入了**鼠标事件重定向机制**：一旦鼠标磁吸吸附在某个 `hoveredElement`（磁吸目标）上，系统就会截断全局的 `mousedown`、`mouseup` 和 `click` 事件，并强行将其分发重定向给该磁吸元素。
+    - 当用户在拉绳开关上按下鼠标并向下拖拽时，原本处于拖拽状态。但当鼠标下滑经过其他吸附节点（例如 `.logo-wrapper`、`.nav-menu-btn` 等）时，鼠标因为距离近而被磁吸过去，将 `hoveredElement` 更新为了该背景节点。
+    - 此时用户释放鼠标（产生 `mouseup`），重定向代码在没有任何手势逻辑校验的情况下，直接把 `mouseup` 和 `click` 派发给了当前吸附的背景节点，造成即使在拖拽拉绳中途松手，也会误点击下方按钮的重大 Bug。
+
+### 2. 解决方案与修改
+- **手势源头追踪与手势闭环校验 (Gesture Origin Validation)**:
+  - 在 [cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) 的事件代理中，定义一个模块级别的全局变量 `mousedownTarget` 用以追踪**当前点击手势在哪个物理元素上发起**。
+  - 在 `mousedown` 监听器最前端记录首发目标：
+    `mousedownTarget = e.target;`
+  - 在拦截并分发 `mouseup` 和 `click` 的逻辑中增加一致性审查：
+    ```javascript
+    // 只有当这次点击手势的首发起点 (mousedownTarget) 也是在当前磁吸元素内部时，才允许进行事件重定向分发
+    if (!mousedownTarget || !hoveredElement.contains(mousedownTarget)) return;
+    ```
+  - **效果评估**：
+    - 如果用户正常点击某磁吸按钮，`mousedown` 起点与释放终点均在该按钮内，重定向校验通过，磁吸点击正常工作。
+    - 如果用户是从拉绳开关（或其他拖拽源）拖出并在其他按钮上释放，由于 `mousedownTarget` 依然为拉绳元素，重定向逻辑会立即触发豁免并直接 `return` 拦截，浏览器此时也绝不会触发对该背景按钮的原生 click。误触 Bug 被彻底完美解决。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 503），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 解决纯垂直移动时 3D 预览视口产生左右倾斜偏斜的问题
+
+### 1. 问题现象与原因分析
+- **纯垂直移动产生左右倾斜 (Vertical Movement Triggers Side Skew)**:
+  - 现象：当鼠标纯垂直上下移动时，本应只触发纯上下三维倾斜（绕 X 轴旋转 `rotateX`），但视觉上预览图和色块却产生了极明显的左右偏移和侧斜（类似 `rotateY` 或 Z 轴倾斜）。而斜向移动时表现正常。
+  - **JS 逻辑验证**：通过自动化脚本抓取并打印运行时 `.work-preview-img-container` 的 transform 属性，结果显示：在纯垂直移动时，`rotationY`（绕 Y 轴旋转）和 `rotation`（绕 Z 轴旋转）均精准为 `0`，仅有 `rotateX` 产生了对应数值（例如 `rotateX(-0.85deg)`）。这意味着**JS 计算公式和阻尼物理在数学逻辑上是完全正确的**，不存在交叉污染或多余计算。
+  - **根本原因 (CSS 3D Projection Coupling)**：
+    - 在原本的 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中，父容器 `.work-preview-wrapper` 具有全局视角透视属性 `perspective: 1000px`，其物理尺寸为 `width: 0; height: 0; position: fixed; left: 0; top: 0;`。这意味着**透视原点 (Perspective Origin) 强行固定在屏幕左上角 (0, 0)**。
+    - 预览图 `.work-preview-img-container` 被平移到鼠标坐标处（如屏幕右侧 `x = 950px`）。由于它距离透视原点极远，在 CSS 3D 渲染管线中，任何绕 X 轴的旋转都会因为“视角倾斜投射”而在横向产生巨大的透视梯形偏斜。
+    - 随着鼠标上下移动（Y 轴位置变化），投射夹角改变，这种横向梯形偏斜程度和方向也随之剧烈摇摆，因而在视觉上形成了“垂直移动却导致左右倾斜”的假象。
+
+### 2. 解决方案与修改
+- **移去父容器透视 (Remove Wrapper Perspective)**:
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中删除了 `.work-preview-wrapper` 上的 `perspective: 1000px;` 属性。
 - **改用元素局部透视 (Element-Local Perspective)**:
   - 维持在 [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js) 中通过 GSAP 为两个独立运动层（`.work-preview-img-container` 和 `.work-preview-orange-layer`）设置的 `transformPerspective: 1000` 属性。
   - **局部透视的优势**：这会让浏览器为每个子元素在其**自身的中心点 (Center Origin)** 建立独立的局部 3D 视椎体。当发生绕 X 轴旋转时，透视变换只基于自身中心发生，完美消除了由屏幕坐标偏置（Off-center placement）带来的三维投影畸变。
@@ -620,3 +815,28 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 526/527），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 优化 3D 预览图在离开卡片时的消失边界与响应速度
+
+### 1. 问题现象与原因分析
+- **出卡片区域后需移动很远预览图才消失 (Huge Dead-zone on Mouse Leave)**:
+  - 现象：当鼠标离开 Works 区域的四个卡片时，向上或向下需要移动超过 200px 甚至更远，悬浮预览图层才会隐藏。这使交互显得非常迟钝和粘滞。
+  - **根本原因**：
+    - 在 [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js) 中，三维悬浮列表的进入（`onListEnter`）与离开（`onListLeave`）事件监听器被绑定在全局容器 `worksEl`（即 `.works` 元素）上。
+    - 在 CSS 中，为了视觉排布，`.works` section 被赋予了极大的上下内边距：`padding: 240px 64px 220px;`（桌面端）。
+    - 导致鼠标指针即使离开了实际的卡片展示区，只要还没滑出 `.works` 的 240px/220px 巨大 Padding 边界，系统就不会触发 `mouseleave` 事件。这就造成了预览图依旧悬空并跟随指针移动的迟钝现象。
+
+### 2. 解决方案与修改
+- **将事件源收敛至卡片列表容器 (Narrow Event Target to workList)**:
+  - 修改 [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js#L206-L210)，将 `mouseenter` 和 `mouseleave` 监听器从全局大容器 `worksEl`（`.works`）改绑在紧贴卡片区域包裹的 `workList`（`.work-list`）上。
+  - **为何不触发频繁闪烁 (Why it doesn't flicker/jump between cards)**：
+    - 虽然四张卡片之间存在 `16px` 的外边距（`margin-bottom`），但它们是 `.work-list` 的直接子元素，且该 flex 列表充满整个列，因此在卡片间隙移动时鼠标仍处于 `.work-list` 的几何边界内。
+    - 系统的隐藏逻辑 `hidePreviewDOM()` 仅在 `.work-list` 整体触发 `mouseleave` 时执行；卡片切换时的 `newHoveredIndex = -1` 只清除卡片高亮状态，预览图依旧驻留并连贯跟随。
+  - 修改后，一旦鼠标向上滑离第一张卡片 1px 或是向下滑离最后一张卡片 1px，便能立即精准触发 `onListLeave()` 并实现 300ms 快速淡出隐藏。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 528），自动部署线上页面。

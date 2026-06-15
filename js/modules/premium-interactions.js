@@ -203,10 +203,10 @@ if (!isMobileDevice) {
 
       showPreviewDOM();
     }
-    // Hook section enter/leave on the works container
-    if (worksEl) {
-      worksEl.addEventListener('mouseenter', onListEnter);
-      worksEl.addEventListener('mouseleave', onListLeave);
+    // Hook enter/leave on the work-list container instead of the entire padded section
+    if (workList) {
+      workList.addEventListener('mouseenter', onListEnter);
+      workList.addEventListener('mouseleave', onListLeave);
     }
 
     window.addEventListener('mousemove', (e) => {
