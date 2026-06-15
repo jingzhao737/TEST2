@@ -348,7 +348,6 @@ if (!isMobileDevice) {
             onCardEnter(newHoveredIndex);
           } else {
             cards.forEach(c => c.classList.remove('hovered'));
-            hidePreviewDOM();
           }
         }
 
