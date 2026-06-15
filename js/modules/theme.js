@@ -88,9 +88,7 @@
       playClick();
       dragging = false;
       springBack();
-      setTimeout(function() {
-        window.__isDraggingTheme = false;
-      }, 150);
+      setTimeout(_removeOverlay, 150);
     }
   }
 
@@ -135,11 +133,44 @@
     localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
   }
 
+  // ── Drag Overlay ──
+  // A fullscreen transparent div placed over all content during drag.
+  // This ensures mouseup/click physically land on the overlay, not on
+  // underlying elements like works cards, regardless of JS event order.
+  let _dragOverlay = null;
+
+  function _createOverlay() {
+    if (_dragOverlay) return;
+    _dragOverlay = document.createElement('div');
+    _dragOverlay.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'z-index:9998',
+      'pointer-events:auto',
+      'cursor:grabbing',
+      'user-select:none',
+      '-webkit-user-select:none'
+    ].join(';');
+    document.body.appendChild(_dragOverlay);
+    // Keep the theme anchor (z-index:202 normally) above the overlay
+    if (anchor) anchor.style.zIndex = '9999';
+  }
+
+  function _removeOverlay() {
+    if (_dragOverlay) {
+      _dragOverlay.remove();
+      _dragOverlay = null;
+    }
+    if (anchor) anchor.style.zIndex = '';
+    window.__isDraggingTheme = false;
+  }
+
   function onStart(e) {
     if (dragging || inMotion) return;
     initAudio();
     dragging = true; toggled = false;
     window.__isDraggingTheme = true;
+    _createOverlay();
     e.preventDefault();
     wrapper.style.transition = 'none';
     stringEl.style.transition = 'none';
@@ -165,9 +196,10 @@
     } else if (!inMotion) {
       springBack();
     }
-    setTimeout(function() {
-      window.__isDraggingTheme = false;
-    }, 150);
+    // Remove overlay after a short delay — long enough for the browser's
+    // click event (which fires right after mouseup) to land on the overlay
+    // harmlessly, short enough to not noticeably delay normal interaction.
+    setTimeout(_removeOverlay, 150);
   }
 
   setPull(0);
