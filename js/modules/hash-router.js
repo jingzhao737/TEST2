@@ -105,11 +105,12 @@ function openDetail(data, heroImg, pushState) {
 
   const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);
   const webgl = window.__worksWebGL;
-  const hasWebGL = !isMobile && webgl && webgl.isActive;
+  // Disable WebGL morph transition; detail hero image slides up together with the card container
+  const hasWebGL = false;
 
   // ── 1. Smooth fade out the hover preview card ──
   if (previewContainer) {
-    gsap.to(previewContainer, { opacity: 0, duration: 0.25, ease: 'power2.out' });
+    gsap.to(previewContainer, { opacity: 0, duration: 0.15, ease: 'power2.out' });
   }
 
   // ── 2. Slide and fade out original works page elements immediately ──

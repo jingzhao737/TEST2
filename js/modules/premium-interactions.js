@@ -52,11 +52,13 @@ if (!isMobileDevice) {
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
 
     function showPreviewDOM() {
+      gsap.killTweensOf(imgContainer);
+      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, x: 0, rotationX: 0, duration: 0.5, ease: 'expo.out', overwrite: true });
+
       if (isPreviewActive) return;
       isPreviewActive = true;
-      gsap.killTweensOf([wrapper, imgContainer]);
+      gsap.killTweensOf(wrapper);
       gsap.to(wrapper, { autoAlpha: 1, duration: 0.15, overwrite: true });
-      gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', y: 0, x: 0, rotationX: 0, duration: 0.5, ease: 'expo.out', overwrite: true });
     }
 
     function hidePreviewDOM() {
@@ -152,33 +154,31 @@ if (!isMobileDevice) {
         if (idx !== index) c.classList.remove('hovered');
       });
       card.classList.add('hovered');
+
+      // Clear previous image instantly
+      imgContainer.innerHTML = '';
+
+      // Reset the container instantly to collapsed state so it plays entrance from scratch
+      gsap.killTweensOf(imgContainer);
+      gsap.set(imgContainer, { 
+        clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', 
+        y: 14, 
+        x: 16, 
+        rotationX: -15 
+      });
       
       showPreviewDOM();
 
       const src = card.dataset.image;
-      if (src && src !== activeSrc) {
+      if (src) {
         activeSrc = src;
         const newImg = document.createElement('img');
         newImg.className = 'work-preview-img';
         newImg.src = src;
-        const hasExistingImg = imgContainer.querySelectorAll('.work-preview-img').length > 0;
-        if (!hasExistingImg) {
-          gsap.set(newImg, { clipPath: 'none', y: 0, rotationX: 0 });
-          imgContainer.appendChild(newImg);
-        } else {
-          gsap.set(newImg, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
-          imgContainer.appendChild(newImg);
-          gsap.to(newImg, {
-            clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
-            y: 0, rotationX: 0, duration: 0.6, ease: 'expo.out', overwrite: 'auto',
-            onComplete: () => {
-              const imgs = imgContainer.querySelectorAll('.work-preview-img');
-              if (imgs.length > 1) {
-                for (let i = 0; i < imgs.length - 1; i++) imgs[i].remove();
-              }
-            }
-          });
-        }
+        
+        // Render immediately in full inside the collapsed parent container
+        gsap.set(newImg, { clipPath: 'none', y: 0, rotationX: 0 });
+        imgContainer.appendChild(newImg);
       }
     }
 
