@@ -327,7 +327,11 @@ function closeDetail(popState) {
           heroEl.classList.remove('detail-hero-grabbing');
         }
         if (floatTween) {
-          floatTween.kill();
+          if (Array.isArray(floatTween)) {
+            floatTween.forEach(t => t.kill());
+          } else {
+            floatTween.kill();
+          }
           floatTween = null;
         }
         gsap.set('#detail3dContainer', { opacity: 0, scale: 0.8, pointerEvents: 'none' });
@@ -494,12 +498,16 @@ function setupDetail3DCard() {
         { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }
       );
       
-      // Start floating bobbing animation loop
-      if (floatTween) floatTween.kill();
-      floatTween = gsap.fromTo('#detail3dFloatWrapper',
-        { y: -8 },
-        { y: 8, duration: 2, yoyo: true, repeat: -1, ease: 'power1.inOut' }
-      );
+      // Start multi-axis organic floating & swaying loops with coprime periods
+      if (floatTween) {
+        if (Array.isArray(floatTween)) floatTween.forEach(t => t.kill());
+        else floatTween.kill();
+      }
+      floatTween = [
+        gsap.fromTo('#detail3dFloatWrapper', { y: -10 }, { y: 10, duration: 2.6, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
+        gsap.fromTo('#detail3dFloatWrapper', { rotateY: -6 }, { rotateY: 6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
+        gsap.fromTo('#detail3dFloatWrapper', { rotateX: -4 }, { rotateX: 4, duration: 4.1, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+      ];
     }
   });
 
@@ -519,7 +527,10 @@ function setupDetail3DCard() {
         ease: 'power2.out',
         pointerEvents: 'none',
         onComplete: () => {
-          if (floatTween) floatTween.pause();
+          if (floatTween) {
+            if (Array.isArray(floatTween)) floatTween.forEach(t => t.pause());
+            else floatTween.pause();
+          }
         }
       });
       gsap.to('#detailHeroImg', { opacity: 1, duration: 0.5, ease: 'power2.out' });
@@ -566,17 +577,24 @@ function setupDetail3DCard() {
     const rotY = currentRotateY + dx * 0.45;
     const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
     
-    gsap.set(card, {
+    // Animate smoothly to target rotation with GSAP (creates momentum and weight feel)
+    gsap.to(card, {
       rotateY: rotY,
-      rotateX: rotX
+      rotateX: rotX,
+      duration: 0.5,
+      ease: 'power2.out',
+      overwrite: 'auto'
     });
     
     // Parallax container shift slightly following drag direction
     const px = Math.max(-1, Math.min(1, rotY / 45));
     const py = Math.max(-1, Math.min(1, -rotX / 45));
-    gsap.set(container, {
+    gsap.to(container, {
       x: px * 15,
-      y: py * 15
+      y: py * 15,
+      duration: 0.5,
+      ease: 'power2.out',
+      overwrite: 'auto'
     });
     
     // Glare reflection overlay updates
@@ -595,16 +613,22 @@ function setupDetail3DCard() {
     const rotY = currentRotateY + dx * 0.45;
     const rotX = Math.max(-80, Math.min(80, currentRotateX - dy * 0.45));
     
-    gsap.set(card, {
+    gsap.to(card, {
       rotateY: rotY,
-      rotateX: rotX
+      rotateX: rotX,
+      duration: 0.5,
+      ease: 'power2.out',
+      overwrite: 'auto'
     });
     
     const px = Math.max(-1, Math.min(1, rotY / 45));
     const py = Math.max(-1, Math.min(1, -rotX / 45));
-    gsap.set(container, {
+    gsap.to(container, {
       x: px * 15,
-      y: py * 15
+      y: py * 15,
+      duration: 0.5,
+      ease: 'power2.out',
+      overwrite: 'auto'
     });
     
     const angle = Math.atan2(py, px) * (180 / Math.PI) - 90;

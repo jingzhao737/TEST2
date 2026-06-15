@@ -1870,8 +1870,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  border: 3px solid #E87C50; /* Brand accent orange */
-  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  border: 1.5px solid #E87C50; /* Brand accent orange - thinner & crispier */
+  box-shadow: 0 30px 65px rgba(0, 0, 0, 0.6), 0 0 20px rgba(232, 124, 80, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
   transform-style: preserve-3d;
   background: #111;
   will-change: transform;
