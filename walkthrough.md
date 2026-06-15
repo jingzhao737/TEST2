@@ -1081,3 +1081,20 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 536），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 优化网页音频上下文共享与全局唤醒机制，解决偶发性网页完全失声问题
+
+### 1. 需求分析与隐患排查
+- **多实例冲突导致的网页失声**：网页中虽然没有操作系统级别的“音频独占”设置，但由于多处单独实例化了浏览器 `AudioContext`，容易触发浏览器对同一个页面并发音频上下文（AudioContext）数量的上限限制（如 Chrome 限制 6 个），从而导致部分通道或整个网页随机完全失声。
+- **Web Audio 绑架音轨与挂起**：Web Audio API 的 `MediaElementAudioSourceNode` 包装了背景音乐 `.mp3` 资源，会强行独占音轨。当 `AudioContext` 在移动端或某些状态下因浏览器安全限制处于挂起状态（`suspended`）时，被包装的背景音乐会由于无法通过 Web Audio 管道输出而变为静音。
+
+### 2. 解决方案与修改
+- **共享全局 AudioContext**：重构了 [theme.js](file:///D:/webprojext/js/modules/theme.js#L34-L52) 的 `initAudio`，使其优先获取全局唯一的 `window.__audioCtx`，与 [sound-effects.js](file:///D:/webprojext/js/modules/sound-effects.js) 和 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js) 统一使用同一个音频引擎，避免多实例超限被浏览器查杀。
+- **全局交互自动唤醒**：在 [sound-effects.js](file:///D:/webprojext/js/modules/sound-effects.js#L174-L182) 中注册了全局性的用户交互辅助监听（监听 `mousedown`、`touchstart` 和 `keydown`），在交互触发的同步瞬间主动对共享上下文执行 `resume()` 操作，保障所有独占劫持的音轨不会在后台被静默挂起。
+
+### 3. 部署与验证
+- 重新运行 `npx vite build` 完成生产环境打包测试，无任何语法或编译错误。
+- 使用 `git push` 将优化后的逻辑同步推送至远程 `main` 分支，部署上线。
