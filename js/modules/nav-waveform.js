@@ -31,11 +31,14 @@
   let dragStartTime = 0;
   let volumeFeedbackTimer = 0;
   let isShowingVolumeText = false;
+  let dragStartVolume = 0.8; // Store baseline volume when starting a drag
 
   // Load and initialize global volume config
   (function initVolumeConfig() {
     let savedVolume = localStorage.getItem('globalVolume');
-    window.__globalVolume = savedVolume !== null ? parseFloat(savedVolume) : 0.8;
+    let startVol = savedVolume !== null ? parseFloat(savedVolume) : 0.8;
+    window.__targetVolume = startVol;
+    window.__globalVolume = startVol;
   })();
 
   function getOrInitMasterGain(ctx) {
@@ -49,13 +52,8 @@
 
   function setGlobalVolume(val) {
     val = Math.max(0, Math.min(1, val));
-    window.__globalVolume = val;
+    window.__targetVolume = val;
     localStorage.setItem('globalVolume', val);
-    if (window.__masterGainNode) {
-      const ctx = window.__audioCtx || audioCtx;
-      const now = ctx ? ctx.currentTime : 0;
-      window.__masterGainNode.gain.setTargetAtTime(val, now, 0.015); // Smooth linear transition to prevent audio clicks
-    }
   }
   window.__setGlobalVolume = setGlobalVolume;
 
@@ -111,6 +109,20 @@
     initSize();
     if (waveW < 2 || waveH < 2) { requestAnimationFrame(draw); return; }
     ctx.clearRect(0, 0, waveW, waveH);
+
+    // LERP globalVolume towards targetVolume for smooth delay-tracking volume adjusts (feels highly polished)
+    let volDiff = window.__targetVolume - window.__globalVolume;
+    if (Math.abs(volDiff) > 0.001) {
+      window.__globalVolume += volDiff * 0.095; // lerp smooth factor
+    } else {
+      window.__globalVolume = window.__targetVolume;
+    }
+    window.__globalVolume = Math.max(0, Math.min(1, window.__globalVolume));
+
+    // Update actual Web Audio master gain smoothly on each frame if it is lerping
+    if (window.__masterGainNode && window.__audioCtx) {
+      window.__masterGainNode.gain.setValueAtTime(window.__globalVolume, window.__audioCtx.currentTime);
+    }
 
     let playing = window.__audioPlaying === true;
     let mid = waveH / 2;
@@ -233,35 +245,45 @@
     }
     ctx.stroke();
 
-    // --- Draw Volume Feedback Overlay ---
+    // --- Draw Volume Feedback Overlay & Update HTML HUD ---
     const feedbackDuration = 1200; // Keep label visible for 1.2s
     const timeSinceFeedback = Date.now() - volumeFeedbackTimer;
-    if (isShowingVolumeText && timeSinceFeedback > feedbackDuration) {
-      isShowingVolumeText = false;
+    const isFeedbackActive = isShowingVolumeText || isDraggingVolume;
+
+    let hudEl = document.getElementById('navVolumeHud');
+    if (!hudEl) {
+      const container = document.getElementById('navWaveContainer');
+      if (container) {
+        hudEl = document.createElement('div');
+        hudEl.id = 'navVolumeHud';
+        hudEl.className = 'nav-volume-hud';
+        container.appendChild(hudEl);
+      }
     }
 
-    if (isShowingVolumeText || isDraggingVolume) {
+    if (isFeedbackActive && timeSinceFeedback <= feedbackDuration) {
       let opacity = 1.0;
       if (!isDraggingVolume && timeSinceFeedback > (feedbackDuration - 300)) {
         opacity = 1.0 - (timeSinceFeedback - (feedbackDuration - 300)) / 300;
         opacity = Math.max(0, Math.min(1, opacity));
       }
 
-      // 1. Draw subtle horizontal volume glow fill
+      // 1. Draw subtle horizontal volume glow fill (no text drawn inside canvas now)
       ctx.fillStyle = 'rgba(232, 124, 80, ' + (0.13 * opacity) + ')';
       ctx.fillRect(0, 0, waveW * window.__globalVolume, waveH);
 
-      // 2. Draw text label (VOL: 80%)
-      ctx.save();
-      ctx.font = 'bold 9px "Outfit", "Google Sans", sans-serif';
-      ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.75 * opacity) + ')';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.shadowColor = 'rgba(232, 124, 80, ' + (0.35 * opacity) + ')';
-      ctx.shadowBlur = 4;
-      const volPercent = Math.round(window.__globalVolume * 100);
-      ctx.fillText('VOL: ' + volPercent + '%', waveW / 2, waveH / 2);
-      ctx.restore();
+      // 2. Show and update HTML floating HUD underneath the waveform
+      if (hudEl) {
+        hudEl.classList.add('is-visible');
+        const volPercent = Math.round(window.__targetVolume * 100);
+        hudEl.textContent = volPercent + '%';
+        hudEl.style.opacity = opacity;
+      }
+    } else {
+      if (hudEl) {
+        hudEl.classList.remove('is-visible');
+      }
+      isShowingVolumeText = false;
     }
 
     requestAnimationFrame(draw);
@@ -284,8 +306,7 @@
     dragStartClientX = clientX;
     dragStartClientY = clientY;
     dragStartTime = Date.now();
-
-    updateVolumeFromEvent(clientX);
+    dragStartVolume = window.__targetVolume; // Pin starting target volume
 
     window.addEventListener('mousemove', onVolumeDragMove);
     window.addEventListener('touchmove', onVolumeDragMove, { passive: false });
@@ -298,16 +319,18 @@
   function onVolumeDragMove(e) {
     if (!isDraggingVolume) return;
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    updateVolumeFromEvent(clientX);
+    
+    const dx = clientX - dragStartClientX;
+    const rect = waveCanvas.getBoundingClientRect();
+    
+    // Calculate delta change based on horizontal drag distance relative to canvas width
+    let deltaVolume = dx / rect.width;
+    let newVolume = dragStartVolume + deltaVolume;
+    
+    setGlobalVolume(newVolume);
+    
     volumeFeedbackTimer = Date.now();
     if (e.cancelable) e.preventDefault();
-  }
-
-  function updateVolumeFromEvent(clientX) {
-    const rect = waveCanvas.getBoundingClientRect();
-    const relativeX = clientX - rect.left;
-    let val = relativeX / rect.width;
-    setGlobalVolume(val);
   }
 
   function onVolumeDragEnd(e) {
