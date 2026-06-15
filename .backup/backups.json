@@ -1,12 +1,5 @@
 [
   {
-    "step": 86,
-    "timestamp": "2026-06-12 01:17:02",
-    "description": "Change laser lines mix-blend-mode to screen in dark mode and multiply in light mode to fix visibility and stacking issues",
-    "folder": "step_086_Change_laser_lines_mix-blend-mode_to_screen_in_dark_mode_and_multiply_in_light_mode_to_fix_visibility_and_stacking_issues",
-    "is_auto": false
-  },
-  {
     "step": 87,
     "timestamp": "2026-06-12 01:20:47",
     "description": "Fix laser lines restore sound and hero area drawing",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:07:40",
     "description": "Update walkthrough documentation with version tag details",
     "folder": "step_105_Update_walkthrough_documentation_with_version_tag_details",
+    "is_auto": false
+  },
+  {
+    "step": 106,
+    "timestamp": "2026-06-16 01:09:23",
+    "description": "Upgrade vinyl records to realistic 3D appearance and specular reflections",
+    "folder": "step_106_Upgrade_vinyl_records_to_realistic_3D_appearance_and_specular_reflections",
     "is_auto": false
   }
 ]

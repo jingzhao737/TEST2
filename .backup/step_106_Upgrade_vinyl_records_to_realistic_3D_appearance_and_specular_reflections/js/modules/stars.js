@@ -11,6 +11,116 @@ import * as THREE from 'three';
   const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
+  // --- CPU-based Fluid Simulation for Navigation Canvas Sync ---
+  class CPUFluid {
+    constructor(resX, resY) {
+      this.resX = resX;
+      this.resY = resY;
+      this.vx = new Float32Array(resX * resY);
+      this.vy = new Float32Array(resX * resY);
+      this.vx_prev = new Float32Array(resX * resY);
+      this.vy_prev = new Float32Array(resX * resY);
+    }
+    
+    addForce(x, y, fx, fy, radius) {
+      const rx = Math.floor(radius * this.resX);
+      const ry = Math.floor(radius * this.resY);
+      const cx = Math.floor(x * this.resX);
+      const cy = Math.floor(y * this.resY);
+      
+      for (let dy = -ry; dy <= ry; dy++) {
+        for (let dx = -rx; dx <= rx; dx++) {
+          const nx = cx + dx;
+          const ny = cy + dy;
+          if (nx >= 0 && nx < this.resX && ny >= 0 && ny < this.resY) {
+            const idx = ny * this.resX + nx;
+            const d2 = (dx / this.resX) ** 2 + (dy / this.resY) ** 2;
+            const r2 = radius ** 2;
+            if (d2 < r2) {
+              const w = Math.exp(-d2 / r2);
+              this.vx[idx] += fx * w;
+              this.vy[idx] += fy * w;
+            }
+          }
+        }
+      }
+    }
+    
+    step(dt, dissipation) {
+      // Swap buffers
+      const tempX = this.vx_prev; this.vx_prev = this.vx; this.vx = tempX;
+      const tempY = this.vy_prev; this.vy_prev = this.vy; this.vy = tempY;
+      
+      // Advection & Dissipation
+      for (let y = 0; y < this.resY; y++) {
+        for (let x = 0; x < this.resX; x++) {
+          const idx = y * this.resX + x;
+          const vx_val = this.vx_prev[idx];
+          const vy_val = this.vy_prev[idx];
+          
+          let prevX = x - vx_val * dt * this.resX;
+          let prevY = y - vy_val * dt * this.resY;
+          
+          if (prevX < 0) prevX = 0;
+          if (prevX > this.resX - 1) prevX = this.resX - 1;
+          if (prevY < 0) prevY = 0;
+          if (prevY > this.resY - 1) prevY = this.resY - 1;
+          
+          const x0 = Math.floor(prevX);
+          const x1 = Math.min(x0 + 1, this.resX - 1);
+          const y0 = Math.floor(prevY);
+          const y1 = Math.min(y0 + 1, this.resY - 1);
+          
+          const tx = prevX - x0;
+          const ty = prevY - y0;
+          
+          const i00 = y0 * this.resX + x0;
+          const i10 = y0 * this.resX + x1;
+          const i01 = y1 * this.resX + x0;
+          const i11 = y1 * this.resX + x1;
+          
+          const vx0 = this.vx_prev[i00] * (1 - tx) + this.vx_prev[i10] * tx;
+          const vx1 = this.vx_prev[i01] * (1 - tx) + this.vx_prev[i11] * tx;
+          this.vx[idx] = (vx0 * (1 - ty) + vx1 * ty) * dissipation;
+          
+          const vy0 = this.vy_prev[i00] * (1 - tx) + this.vy_prev[i10] * tx;
+          const vy1 = this.vy_prev[i01] * (1 - tx) + this.vy_prev[i11] * tx;
+          this.vy[idx] = (vy0 * (1 - ty) + vy1 * ty) * dissipation;
+        }
+      }
+    }
+    
+    getVelocity(x, y) {
+      const px = x * (this.resX - 1);
+      const py = y * (this.resY - 1);
+      
+      const x0 = Math.floor(px);
+      const x1 = Math.min(x0 + 1, this.resX - 1);
+      const y0 = Math.floor(py);
+      const y1 = Math.min(y0 + 1, this.resY - 1);
+      
+      const tx = px - x0;
+      const ty = py - y0;
+      
+      const i00 = y0 * this.resX + x0;
+      const i10 = y0 * this.resX + x1;
+      const i01 = y1 * this.resX + x0;
+      const i11 = y1 * this.resX + x1;
+      
+      const vx0 = this.vx[i00] * (1 - tx) + this.vx[i10] * tx;
+      const vx1 = this.vx[i01] * (1 - tx) + this.vx[i11] * tx;
+      const vx = vx0 * (1 - ty) + vx1 * ty;
+      
+      const vy0 = this.vy[i00] * (1 - tx) + this.vy[i10] * tx;
+      const vy1 = this.vy[i01] * (1 - tx) + this.vy[i11] * tx;
+      const vy = vy0 * (1 - ty) + vy1 * ty;
+      
+      return { x: vx, y: vy };
+    }
+  }
+  
+  window.cpuFluid = new CPUFluid(32, 18);
+
   // --- 1. Setup Three.js ---
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -76,7 +186,7 @@ import * as THREE from 'three';
   // Parameters
   const config = {
     DISSIPATION: 0.99,      // How fast the fluid dye fades (longer trails)
-    VELOCITY_DISSIPATION: 0.985, // Damped decay for smoother, less abrupt movements
+    VELOCITY_DISSIPATION: 0.994, // Damped decay for smoother, less abrupt movements (optimized for dual-ripple animation)
     PRESSURE: 0.8,          // Pressure solve multiplier
     PRESSURE_ITERATIONS: 20,// Quality of the swirls
     CURL: 30.0,             // Vorticity confinement (adds micro-swirls)
@@ -462,12 +572,19 @@ import * as THREE from 'three';
     renderer.render(quadScene, quadCamera);
   }
 
-  function splat(x, y, dx, dy, color) {
+  function splat(x, y, dx, dy, color, customRadius) {
+    const radius = customRadius !== undefined ? customRadius : config.SPLAT_RADIUS;
+
+    // Synchronize force to CPU fluid
+    if (window.cpuFluid) {
+      window.cpuFluid.addForce(x, y, dx * 35.0, dy * 35.0, radius);
+    }
+
     // Velocity splat (adds force)
     matSplat.uniforms.uTarget.value = velocity.read.texture;
     matSplat.uniforms.uPoint.value.set(x, y);
-    matSplat.uniforms.uColor.value.set(dx * 35.0, dy * 35.0, 0.0);
-    matSplat.uniforms.uRadius.value = config.SPLAT_RADIUS;
+    matSplat.uniforms.uColor.value.set(dx * 35.0, dy * 35.0, 0.0); // Reset to 35.0 for rich hover trails
+    matSplat.uniforms.uRadius.value = radius;
     matSplat.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
     renderPass(matSplat, velocity.write);
     velocity.swap();
@@ -476,10 +593,34 @@ import * as THREE from 'three';
     matSplat.uniforms.uTarget.value = density.read.texture;
     matSplat.uniforms.uPoint.value.set(x, y);
     matSplat.uniforms.uColor.value.set(color.r, color.g, color.b);
-    matSplat.uniforms.uRadius.value = config.SPLAT_RADIUS;
+    matSplat.uniforms.uRadius.value = radius;
     matSplat.uniforms.uAspect.value = window.innerWidth / window.innerHeight;
     renderPass(matSplat, density.write);
     density.swap();
+  }
+
+  function clickSplat(x, y) {
+    // 蜻蜓点水：点击产生两次扩散的涟漪，第二重延迟 0.15 秒触发（配合 0.6s 周期缩短延迟）
+    createSingleRipple(x, y, 0.0);
+    createSingleRipple(x, y, 0.15);
+  }
+
+  function createSingleRipple(x, y, delay) {
+    // 限制最大活跃波纹数，防止狂点导致多帧渲染卡顿
+    if (activeRipples.length >= 6) {
+      activeRipples.shift();
+    }
+    
+    activeRipples.push({
+      x,
+      y,
+      delay,      // 延迟触发的时间（秒）
+      age: 0,     // 已存活时间
+      duration: 0.6,   // 生命周期进一步缩短至 0.6s，使起伏和消散更加快速利落
+      maxRadius: 0.11, // 最大范围限制在 0.11 (原先 0.16 的 70% 左右)
+      color: new THREE.Color(pointer.color.r, pointer.color.g, pointer.color.b),
+      isCurrentPress: true // 标记属于当前按下的波纹，用于精准追随和锁死
+    });
   }
 
   function step(dt) {
@@ -539,6 +680,10 @@ import * as THREE from 'three';
     moved: false,
     color: new THREE.Color()
   };
+  
+  // 存储所有处于活动状态的“蜻蜓点水”涟漪数据
+  const activeRipples = [];
+  let isPointerDown = false;
 
   function updatePointerColor(time) {
     const r = Math.sin(time * 0.5) * 0.5 + 0.5;
@@ -566,6 +711,33 @@ import * as THREE from 'three';
       updatePointer(e.touches[0].clientX, e.touches[0].clientY);
     }
   }, { passive: true });
+
+  window.addEventListener('mousedown', (e) => {
+    isPointerDown = true;
+    const x = e.clientX / window.innerWidth;
+    const y = 1.0 - (e.clientY / window.innerHeight);
+    clickSplat(x, y);
+  });
+
+  window.addEventListener('touchstart', (e) => {
+    isPointerDown = true;
+    if (e.touches.length > 0) {
+      const x = e.touches[0].clientX / window.innerWidth;
+      const y = 1.0 - (e.touches[0].clientY / window.innerHeight);
+      clickSplat(x, y);
+    }
+  }, { passive: true });
+
+  function releasePointer() {
+    isPointerDown = false;
+    activeRipples.forEach(rp => {
+      rp.isCurrentPress = false;
+    });
+  }
+
+  window.addEventListener('mouseup', releasePointer);
+  window.addEventListener('touchend', releasePointer);
+  window.addEventListener('mouseleave', releasePointer);
 
   let dividers = [];
   function initDividers() {
@@ -625,6 +797,12 @@ import * as THREE from 'three';
     const dt = Math.min(clock.getDelta(), 0.033);
     const time = clock.getElapsedTime();
 
+    // Export simulation state for nav canvas sync
+    window.fluidSimulationTime = time;
+    if (window.cpuFluid) {
+      window.cpuFluid.step(dt, config.VELOCITY_DISSIPATION);
+    }
+
     updatePointerColor(time);
 
     // Smoothly LERP pointer velocity to create a soft, liquid glide
@@ -645,12 +823,76 @@ import * as THREE from 'three';
       const dy = Math.cos(time * 4.0) * 0.0015;
       splat(automoveX, automoveY, dx, dy, pointer.color);
     }
+    
+    // 注入并渲染所有“蜻蜓点水”涟漪的波浪变化
+    for (let i = activeRipples.length - 1; i >= 0; i--) {
+      const rp = activeRipples[i];
+      
+      // 实时跟随鼠标指针移动，使用 LERP 缓动提供极其高级的水流物理滞后感（即便处于延迟阶段，也提前同步起点）
+      if (isPointerDown && rp.isCurrentPress) {
+        rp.x += (pointer.x - rp.x) * 0.25;
+        rp.y += (pointer.y - rp.y) * 0.25;
+      }
+
+      if (rp.delay > 0) {
+        rp.delay -= dt;
+        continue;
+      }
+      
+      rp.age += dt;
+      
+      let progress = rp.age / rp.duration;
+      let isHolding = false;
+      
+      // 若处于长按状态且波纹扩散至后期 (progress >= 0.85)，卡住进度以保持最大的波折形变状态
+      if (isPointerDown && rp.isCurrentPress && progress >= 0.85) {
+        rp.age = rp.duration * 0.85;
+        progress = 0.85;
+        isHolding = true;
+      }
+      
+      if (rp.age >= rp.duration) {
+        activeRipples.splice(i, 1);
+        continue;
+      }
+      
+      // 径向扩散半径使用 sine 缓动，先快后慢
+      const currentRadius = Math.sin(progress * Math.PI * 0.5) * rp.maxRadius;
+      
+      // 力道随着扩散加速衰减 (1 - p)^2，长按卡点时施加恒定的微弱维持力，消除来回震荡及反复触发水纹的碎乱感
+      const baseForce = (1.0 - progress) * (1.0 - progress) * 0.024;
+      const force = isHolding 
+        ? baseForce * 2.2 // 恒定补偿流体物理耗散，实现稳态最大形变
+        : baseForce;
+      
+      // splat 画笔尺寸随扩散缓慢变大
+      const splatRadius = config.SPLAT_RADIUS * (3.0 + progress * 2.5);
+      
+      const numAngles = 8;
+      for (let j = 0; j < numAngles; j++) {
+        const angle = (j / numAngles) * Math.PI * 2;
+        const splatX = rp.x + Math.cos(angle) * currentRadius;
+        const splatY = rp.y + Math.sin(angle) * currentRadius;
+        
+        // 速度矢量朝内，在折射贴图转换中呈现向外不断推开的涟漪层
+        const fx = -Math.cos(angle) * force;
+        const fy = -Math.sin(angle) * force;
+        splat(splatX, splatY, fx, fy, rp.color, splatRadius);
+      }
+    }
 
     // Calculate Y coordinates of horizontal dividers relative to the viewport
     const dividerYs = new Float32Array(10);
     let dividerCount = 0;
     for (let i = 0; i < dividers.length && dividerCount < 10; i++) {
-      const rect = dividers[i].getBoundingClientRect();
+      const div = dividers[i];
+      // Skip the divider immediately below the works section on desktop
+      if (window.innerWidth > 1024) {
+        if (div.previousElementSibling && div.previousElementSibling.id === 'work') {
+          continue;
+        }
+      }
+      const rect = div.getBoundingClientRect();
       if (rect.top >= -20 && rect.top <= window.innerHeight + 20) {
         dividerYs[dividerCount] = 1.0 - (rect.top + rect.height / 2) / window.innerHeight;
         dividerCount++;
@@ -666,29 +908,31 @@ import * as THREE from 'three';
         textCtx.save();
         textCtx.scale(dpr, dpr);
 
-        // Draw work card borders
-        workCardElements.forEach((el, idx) => {
-          const rect = el.getBoundingClientRect();
-          if (rect.bottom >= -100 && rect.top <= window.innerHeight + 100) {
-            textCtx.save();
-            const style = window.getComputedStyle(el);
-            const opacity = parseFloat(style.opacity);
-            textCtx.globalAlpha = opacity;
+        // Draw work card borders (skip on desktop to avoid flat wiggling lines behind 3D cards)
+        if (window.innerWidth <= 1024) {
+          workCardElements.forEach((el, idx) => {
+            const rect = el.getBoundingClientRect();
+            if (rect.bottom >= -100 && rect.top <= window.innerHeight + 100) {
+              textCtx.save();
+              const style = window.getComputedStyle(el);
+              const opacity = parseFloat(style.opacity);
+              textCtx.globalAlpha = opacity;
 
-            const isLight = document.documentElement.classList.contains('light');
-            const color = isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)';
-            textCtx.fillStyle = color;
+              const isLight = document.documentElement.classList.contains('light');
+              const color = isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)';
+              textCtx.fillStyle = color;
 
-            // Draw top border line
-            textCtx.fillRect(rect.left, rect.top - 0.5, rect.width, 1);
+              // Draw top border line
+              textCtx.fillRect(rect.left, rect.top - 0.5, rect.width, 1);
 
-            // Draw bottom border line for the last card
-            if (idx === workCardElements.length - 1) {
-              textCtx.fillRect(rect.left, rect.bottom - 0.5, rect.width, 1);
+              // Draw bottom border line for the last card
+              if (idx === workCardElements.length - 1) {
+                textCtx.fillRect(rect.left, rect.bottom - 0.5, rect.width, 1);
+              }
+              textCtx.restore();
             }
-            textCtx.restore();
-          }
-        });
+          });
+        }
 
         webglTextElements.forEach(el => {
           const style = window.getComputedStyle(el);
