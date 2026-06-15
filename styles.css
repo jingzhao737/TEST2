@@ -2781,7 +2781,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 200px;
   height: 138px;
   background: var(--accent); 
-  border-radius: 0;
+  border-radius: 3px;
   box-shadow: 0 40px 100px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05);
   z-index: 1;
   will-change: transform, clip-path;
@@ -2794,7 +2794,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 200px;
   height: 138px;
   background: var(--accent);
-  border-radius: 0;
+  border-radius: 3px;
   z-index: 1;
   will-change: transform;
 }
@@ -2805,7 +2805,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   top: 0;
   width: 200px;
   height: 138px;
-  border-radius: 0;
+  border-radius: 3px;
   border: 1px solid var(--accent);
   z-index: 2;
   overflow: hidden; 
@@ -2829,7 +2829,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   height: 100%;
   object-fit: cover;
   transform-origin: center;
-  border-radius: 0;
+  border-radius: 3px;
   will-change: transform, opacity;
   animation: fadeInScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
