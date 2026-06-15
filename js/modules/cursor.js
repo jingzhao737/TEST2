@@ -60,7 +60,6 @@
   let snapPullX = 0;
   let snapPullY = 0;
   let snapPullDist = 0;
-  let smoothedSpeed = 0;
 
   function setHoveredElement(el) {
     if (hoveredElement === el) return;
@@ -496,9 +495,6 @@
     const vx = mouseX - lastMouseX;
     const vy = mouseY - lastMouseY;
     const speed = Math.sqrt(vx * vx + vy * vy);
-    
-    // Smooth speed using a LERP filter to prevent mouse coordinate noise from causing jitter
-    smoothedSpeed += (speed - smoothedSpeed) * 0.12;
 
     // 1. Position follow with LERP delay (Magnetic snap + normal lag physics)
     if (hoveredElement) {
@@ -568,9 +564,8 @@
         const mouseDy = mouseY - btnCenterY;
         
         // Elastic rubber-band stretch: pulls custom cursor slightly towards mouse position
-        // Scale the pull based on LERP-smoothed mouse movement speed so that it returns to center when stationary
-        const speedScale = Math.min(smoothedSpeed * 0.15, 1.0);
-        const pullFactor = 0.38 * speedScale; // Pull up to 38% towards physical mouse when moving fast
+        // Constant pull factor to ensure a perfectly smooth, noise-free position tracking
+        const pullFactor = 0.38; // Pull up to 38% towards physical mouse
         const maxPull = 15; // Cap stretch at 15px max displacement so it stays within trigger area
         
         let pullX = mouseDx * pullFactor;
@@ -591,8 +586,8 @@
         targetY = btnCenterY + snapPullY;
       } else {
         // Smoothly return snap pull back to 0 during the lock duration
-        snapPullX += (0 - snapPullX) * 0.15;
-        snapPullY += (0 - snapPullY) * 0.15;
+        snapPullX += (0 - snapPullX) * 0.20;
+        snapPullY += (0 - snapPullY) * 0.20;
         snapPullDist = Math.sqrt(snapPullX * snapPullX + snapPullY * snapPullY);
       }
       
@@ -780,10 +775,12 @@
 
     if (isActuallyHovered) {
       if (snapPullDist > 1.0) {
-        // Roll: horizontal tilt from snapPullX (cap at 15px pull -> 18deg tilt)
-        // Pitch: vertical tilt from snapPullY (cap at 15px pull -> 18deg tilt)
-        targetRoll = (snapPullX / 15) * 18;
-        targetPitch = -(snapPullY / 15) * 18;
+        // Continuous tilt: start tilting smoothly from 0 at the 1.0px threshold
+        const activePull = snapPullDist - 1.0;
+        const ux = snapPullX / snapPullDist;
+        const uy = snapPullY / snapPullDist;
+        targetRoll = (ux * activePull / 14) * 18;
+        targetPitch = -(uy * activePull / 14) * 18;
       } else {
         targetPitch = 0;
         targetRoll = 0;
@@ -861,9 +858,11 @@
     
     if (isActuallyHovered) {
       if (snapPullDist > 1.0) {
+        // Continuous stretch: start stretching smoothly from 0 at the 1.0px threshold
         const pullAngle = Math.atan2(snapPullY, snapPullX);
-        const stretchAmt = (snapPullDist / 15) * 0.12;
-        const squeezeAmt = (snapPullDist / 15) * 0.08;
+        const activePull = snapPullDist - 1.0;
+        const stretchAmt = (activePull / 14) * 0.12;
+        const squeezeAmt = (activePull / 14) * 0.08;
         transform3dStr += ` scale(${currentScale}) rotate(${pullAngle}rad) scale(${1 + stretchAmt}, ${1 - squeezeAmt}) rotate(${-pullAngle}rad)`;
         trailTransform3dStr += ` scale(${currentTrailScale}) rotate(${pullAngle}rad) scale(${1 + stretchAmt}, ${1 - squeezeAmt}) rotate(${-pullAngle}rad)`;
       } else {
