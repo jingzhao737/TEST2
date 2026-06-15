@@ -59,7 +59,7 @@
     src.buffer = clickBuffer;
     src.playbackRate.value = 0.92 + Math.random() * 0.16;
     gain.gain.setValueAtTime(0.4 + Math.random() * 0.2, audioCtx.currentTime);
-    src.connect(gain).connect(audioCtx.destination);
+    src.connect(gain).connect(window.__masterGainNode || audioCtx.destination);
     src.start(audioCtx.currentTime);
   }
   function playBounce() { playClick(); }

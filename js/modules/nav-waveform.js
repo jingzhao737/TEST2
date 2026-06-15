@@ -24,6 +24,33 @@
   let dataArray = null;
   const sourceNodes = new Map();
 
+  // Load and initialize global volume config
+  (function initVolumeConfig() {
+    let savedVolume = localStorage.getItem('globalVolume');
+    window.__globalVolume = savedVolume !== null ? parseFloat(savedVolume) : 0.8;
+  })();
+
+  function getOrInitMasterGain(ctx) {
+    if (!window.__masterGainNode && ctx) {
+      window.__masterGainNode = ctx.createGain();
+      window.__masterGainNode.gain.setValueAtTime(window.__globalVolume, ctx.currentTime);
+      window.__masterGainNode.connect(ctx.destination);
+    }
+    return window.__masterGainNode;
+  }
+
+  function setGlobalVolume(val) {
+    val = Math.max(0, Math.min(1, val));
+    window.__globalVolume = val;
+    localStorage.setItem('globalVolume', val);
+    if (window.__masterGainNode) {
+      const ctx = window.__audioCtx || audioCtx;
+      const now = ctx ? ctx.currentTime : 0;
+      window.__masterGainNode.gain.setTargetAtTime(val, now, 0.015); // Smooth linear transition to prevent audio clicks
+    }
+  }
+  window.__setGlobalVolume = setGlobalVolume;
+
   function initAudioAnalyser() {
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -34,6 +61,8 @@
       analyser.fftSize = 128; // 64 frequency bins, perfect resolution for a small canvas
       const bufferLength = analyser.frequencyBinCount;
       dataArray = new Uint8Array(bufferLength);
+      
+      getOrInitMasterGain(audioCtx);
     } catch (e) {
       console.warn("[Waveform] AudioContext failed to initialize:", e);
     }
@@ -46,7 +75,14 @@
         audioElement.crossOrigin = "anonymous";
         const source = audioCtx.createMediaElementSource(audioElement);
         source.connect(analyser);
-        analyser.connect(audioCtx.destination);
+        
+        const masterGain = getOrInitMasterGain(audioCtx);
+        if (masterGain) {
+          analyser.connect(masterGain);
+        } else {
+          analyser.connect(audioCtx.destination);
+        }
+        
         sourceNodes.set(audioElement, source);
       } catch (err) {
         // Safe catch if already connected in another context
@@ -114,6 +150,9 @@
         targetAmp = 1.0;
       }
     }
+    // Dampen amplitude by master volume
+    targetAmp *= window.__globalVolume;
+
     window.__waveAmp += (targetAmp - window.__waveAmp) * 0.08;
     let ampScale = window.__waveAmp;
 
@@ -185,11 +224,115 @@
     }
     ctx.stroke();
 
+    // --- Draw Volume Feedback Overlay ---
+    const feedbackDuration = 1200; // Keep label visible for 1.2s
+    const timeSinceFeedback = Date.now() - volumeFeedbackTimer;
+    if (isShowingVolumeText && timeSinceFeedback > feedbackDuration) {
+      isShowingVolumeText = false;
+    }
+
+    if (isShowingVolumeText || isDraggingVolume) {
+      let opacity = 1.0;
+      if (!isDraggingVolume && timeSinceFeedback > (feedbackDuration - 300)) {
+        opacity = 1.0 - (timeSinceFeedback - (feedbackDuration - 300)) / 300;
+        opacity = Math.max(0, Math.min(1, opacity));
+      }
+
+      // 1. Draw subtle horizontal volume glow fill
+      ctx.fillStyle = 'rgba(232, 124, 80, ' + (0.13 * opacity) + ')';
+      ctx.fillRect(0, 0, waveW * window.__globalVolume, waveH);
+
+      // 2. Draw text label (VOL: 80%)
+      ctx.save();
+      ctx.font = 'bold 9px "Outfit", "Google Sans", sans-serif';
+      ctx.fillStyle = 'rgba(255, 255, 255, ' + (0.75 * opacity) + ')';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(232, 124, 80, ' + (0.35 * opacity) + ')';
+      ctx.shadowBlur = 4;
+      const volPercent = Math.round(window.__globalVolume * 100);
+      ctx.fillText('VOL: ' + volPercent + '%', waveW / 2, waveH / 2);
+      ctx.restore();
+    }
+
     requestAnimationFrame(draw);
   }
   draw();
 
   window.addEventListener('resize', initSize);
+
+  // Volume Slider Interactive Drag State
+  let isDraggingVolume = false;
+  let dragStartClientX = 0;
+  let dragStartClientY = 0;
+  let dragStartTime = 0;
+  let volumeFeedbackTimer = 0;
+  let isShowingVolumeText = false;
+
+  function onVolumeDragStart(e) {
+    initSharedAudios();
+    if (!audioCtx) initAudioAnalyser();
+    if (audioCtx) resumeCtx();
+
+    isDraggingVolume = true;
+    isShowingVolumeText = true;
+    volumeFeedbackTimer = Date.now();
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragStartClientX = clientX;
+    dragStartClientY = clientY;
+    dragStartTime = Date.now();
+
+    updateVolumeFromEvent(clientX);
+
+    window.addEventListener('mousemove', onVolumeDragMove);
+    window.addEventListener('touchmove', onVolumeDragMove, { passive: false });
+    window.addEventListener('mouseup', onVolumeDragEnd);
+    window.addEventListener('touchend', onVolumeDragEnd);
+    
+    if (e.cancelable) e.preventDefault();
+  }
+
+  function onVolumeDragMove(e) {
+    if (!isDraggingVolume) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    updateVolumeFromEvent(clientX);
+    volumeFeedbackTimer = Date.now();
+    if (e.cancelable) e.preventDefault();
+  }
+
+  function updateVolumeFromEvent(clientX) {
+    const rect = waveCanvas.getBoundingClientRect();
+    const relativeX = clientX - rect.left;
+    let val = relativeX / rect.width;
+    setGlobalVolume(val);
+  }
+
+  function onVolumeDragEnd(e) {
+    if (!isDraggingVolume) return;
+    isDraggingVolume = false;
+
+    window.removeEventListener('mousemove', onVolumeDragMove);
+    window.removeEventListener('touchmove', onVolumeDragMove);
+    window.removeEventListener('mouseup', onVolumeDragEnd);
+    window.removeEventListener('touchend', onVolumeDragEnd);
+
+    const endClientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const endClientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    const dx = endClientX - dragStartClientX;
+    const dy = endClientY - dragStartClientY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const duration = Date.now() - dragStartTime;
+
+    // Click VS Drag Discrimination: Tap/Click under 250ms and 6px drift toggles play/pause
+    if (dist < 6 && duration < 250) {
+      togglePlayPause();
+    }
+  }
+
+  waveCanvas.addEventListener('mousedown', onVolumeDragStart);
+  waveCanvas.addEventListener('touchstart', onVolumeDragStart, { passive: false });
 
   // Initialize shared audio files in case hanging-circles.js didn't run
   function initSharedAudios() {
@@ -218,8 +361,7 @@
   }
   window.__updateNextBtnState = updateNextBtnState;
 
-  // Toggle play/pause when tapping/clicking the wave canvas
-  waveCanvas.addEventListener('click', function() {
+  function togglePlayPause() {
     initSharedAudios();
     
     let isPlaying = window.__audioPlaying === true;
@@ -248,7 +390,7 @@
       }
     }
     updateNextBtnState();
-  });
+  }
 
   // Cycle tracks when tapping/clicking next button
   if (nextBtn) {

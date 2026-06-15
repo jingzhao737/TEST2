@@ -42,7 +42,7 @@
     gainNode.gain.setValueAtTime(0.5, now); // Set custom card click volume
 
     source.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(window.__masterGainNode || ctx.destination);
     source.start(now);
   }
 
@@ -86,7 +86,7 @@
     // Connections
     osc.connect(filter);
     filter.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(window.__masterGainNode || ctx.destination);
 
     // Play & Stop
     osc.start(now);
@@ -122,7 +122,7 @@
     // Connections
     osc.connect(filter);
     filter.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(window.__masterGainNode || ctx.destination);
 
     // Play & Stop
     osc.start(now);
