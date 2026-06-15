@@ -53,7 +53,9 @@ if (!isMobileDevice) {
       display: 'flex',
       flexDirection: 'column',
       height: `${138 * cards.length}px`,
-      width: '100%'
+      width: '100%',
+      willChange: 'transform',
+      force3D: true
     });
 
     // Populate all images into the filmstrip
@@ -66,7 +68,9 @@ if (!isMobileDevice) {
         height: '138px',
         objectFit: 'cover',
         flexShrink: 0,
-        display: 'block'
+        display: 'block',
+        willChange: 'transform',
+        force3D: true
       });
       slider.appendChild(img);
     });
@@ -213,15 +217,15 @@ if (!isMobileDevice) {
 
         // 1. Container tactile elastic squeeze (jelly effect)
         gsap.fromTo(imgContainer, 
-          { scaleX: 1.05, scaleY: 0.95 }, 
-          { scaleX: 1, scaleY: 1, duration: 0.5, ease: 'back.out(2)', overwrite: 'auto' }
+          { scaleX: 1.04, scaleY: 0.96 }, 
+          { scaleX: 1, scaleY: 1, duration: 0.45, ease: 'back.out(2)', overwrite: 'auto' }
         );
 
-        // 2. Slide the filmstrip to the new index
+        // 2. Slide the filmstrip to the new index (expo.out for instant snapping feel)
         gsap.to(slider, {
           y: -index * 138,
-          duration: 0.45,
-          ease: 'power3.out',
+          duration: 0.38,
+          ease: 'expo.out',
           overwrite: true
         });
       }
@@ -387,13 +391,13 @@ if (!isMobileDevice) {
         }
 
         let dx1 = targetX - curX1, dy1 = targetY - curY1;
-        curX1 += dx1 * 0.04; curY1 += dy1 * 0.04;
+        curX1 += dx1 * 0.06; curY1 += dy1 * 0.06;
         let tiltY1 = gsap.utils.clamp(-15, 15, dx1 * 0.05);
         let tiltX1 = gsap.utils.clamp(-15, 15, -dy1 * 0.05);
         let tiltZ1 = gsap.utils.clamp(-5, 5, dx1 * 0.015);
 
         let dx2 = targetX - curX2, dy2 = targetY - curY2;
-        curX2 += dx2 * 0.06; curY2 += dy2 * 0.06;
+        curX2 += dx2 * 0.09; curY2 += dy2 * 0.09;
         let tiltY2 = gsap.utils.clamp(-18, 18, dx2 * 0.06);
         let tiltX2 = gsap.utils.clamp(-18, 18, -dy2 * 0.06);
         let tiltZ2 = gsap.utils.clamp(-6, 6, dx2 * 0.018);
