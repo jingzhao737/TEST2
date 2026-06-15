@@ -481,7 +481,7 @@ if (!isMobileDevice) {
     function createAdjusterPanel() {
       console.log('[3D PREVIEW ONLY ADJUSTER V3] Initializing decoupled panel.');
 
-      // Inject CSS style to restore native cursor on adjuster panel and hide custom cursor when hovered
+      // Inject CSS style to restore native cursor, force preview visible, and hide custom cursor when hovered
       const styleEl = document.createElement('style');
       styleEl.innerHTML = `
         body .work-preview-adjuster-panel,
@@ -493,6 +493,10 @@ if (!isMobileDevice) {
           opacity: 0 !important;
           pointer-events: none !important;
           visibility: hidden !important;
+        }
+        body .work-preview-wrapper.force-preview-visible {
+          opacity: 1 !important;
+          visibility: visible !important;
         }
       `;
       document.head.appendChild(styleEl);
@@ -593,12 +597,14 @@ if (!isMobileDevice) {
         forceVisible = e.target.checked;
         if (forceVisible) {
           isVisible = true;
+          wrapper.classList.add('force-preview-visible');
           if (activeImages.length === 0 && cards.length > 0) {
             onCardEnter(0);
           }
           showPreviewDOM();
         } else {
           forceVisible = false;
+          wrapper.classList.remove('force-preview-visible');
           onListLeave();
         }
       });
@@ -658,6 +664,7 @@ if (!isMobileDevice) {
       createAdjusterPanel();
       if (forceVisible) {
         isVisible = true;
+        wrapper.classList.add('force-preview-visible');
         if (activeImages.length === 0 && cards.length > 0) {
           onCardEnter(0);
         }
