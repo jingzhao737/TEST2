@@ -165,17 +165,19 @@
         }
         let avgVolume = sum / dataArray.length;
         // Dynamically scale wave amplitude based on volume (spikes and pulses to the beat)
-        // Significantly boost the amplitude factor for prominent waves at high volume
-        targetAmp = 0.62 + (avgVolume / 255.0) * 4.15;
+        // Keep the amplitude increase gentle and elegant to avoid massive overflow
+        targetAmp = 0.32 + (avgVolume / 255.0) * 1.15;
       } else {
-        targetAmp = 2.4;
+        targetAmp = 1.0;
       }
     }
-    // Dampen amplitude with non-linear scaling for extra prominence at high volumes
-    targetAmp *= Math.pow(window.__globalVolume, 1.12) * 2.35;
+    // Dampen amplitude with master volume coefficient
+    targetAmp *= window.__globalVolume * 1.25;
 
     window.__waveAmp += (targetAmp - window.__waveAmp) * 0.08;
-    let ampScale = window.__waveAmp;
+    
+    // SAFETY CLIP: Clamp ampScale to 1.15 to keep waveforms highly polished and within safe boundaries
+    let ampScale = Math.min(1.15, window.__waveAmp);
 
     // Gradient 1: Accent Orange for Main Wave
     let grad1 = ctx.createLinearGradient(0, 0, waveW, 0);
@@ -206,12 +208,12 @@
 
     // Wave 3: Deep Background wave - dynamic thickness and amplitude
     ctx.strokeStyle = grad3;
-    ctx.lineWidth = 0.8 + window.__globalVolume * 1.5;
+    ctx.lineWidth = 0.8 + window.__globalVolume * 0.7;
     ctx.beginPath();
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.022 + time * 1.1) * 20 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.022 + time * 1.1) * 8.5 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -219,13 +221,13 @@
 
     // Wave 2: Secondary White Wave - dynamic thickness and amplitude
     ctx.strokeStyle = grad2;
-    ctx.lineWidth = 1.0 + window.__globalVolume * 1.8;
+    ctx.lineWidth = 0.9 + window.__globalVolume * 0.9;
     ctx.beginPath();
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.075 - time * 3.3) * 11 * envelope * ampScale
-                + Math.sin(x * 0.038 + time * 1.4) * 8 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.075 - time * 3.3) * 5.2 * envelope * ampScale
+                + Math.sin(x * 0.038 + time * 1.4) * 3.8 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -233,13 +235,13 @@
 
     // Wave 1: Main Orange Wave - dynamic thickness and amplitude
     ctx.strokeStyle = grad1;
-    ctx.lineWidth = 1.5 + window.__globalVolume * 2.5;
+    ctx.lineWidth = 1.3 + window.__globalVolume * 1.2;
     ctx.beginPath();
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.045 + time * 2.2) * 18 * envelope * ampScale
-                + Math.sin(x * 0.11 - time * 4.1) * 6.5 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.045 + time * 2.2) * 7.5 * envelope * ampScale
+                + Math.sin(x * 0.11 - time * 4.1) * 2.5 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
