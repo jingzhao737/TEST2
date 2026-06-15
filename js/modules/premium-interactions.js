@@ -13,7 +13,7 @@ if (!isMobileDevice) {
   if (workList && cards.length > 0 && worksEl) {
     let targetX = 0, targetY = 0;
     let isVisible = false;
-    let activeSrc = null;
+    let activeCardIndex = -1;
 
     const baseY = -34;
     const baseX = 17;
@@ -45,22 +45,36 @@ if (!isMobileDevice) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'work-preview-img-container';
 
-    // Two persistent image layers for smooth crossfade between cards
-    const imgLayerA = document.createElement('img');
-    imgLayerA.className = 'work-preview-img';
-    const imgLayerB = document.createElement('img');
-    imgLayerB.className = 'work-preview-img';
-    gsap.set(imgLayerB, { opacity: 0 });
+    // A single vertical filmstrip slider container containing all images pre-loaded
+    const slider = document.createElement('div');
+    slider.className = 'work-preview-slider';
+    gsap.set(slider, {
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      height: `${138 * cards.length}px`,
+      width: '100%'
+    });
 
-    imgContainer.appendChild(imgLayerA);
-    imgContainer.appendChild(imgLayerB);
+    // Populate all images into the filmstrip
+    cards.forEach(card => {
+      const img = document.createElement('img');
+      img.src = card.dataset.image;
+      gsap.set(img, {
+        position: 'relative',
+        width: '200px',
+        height: '138px',
+        objectFit: 'cover',
+        flexShrink: 0,
+        display: 'block'
+      });
+      slider.appendChild(img);
+    });
+
+    imgContainer.appendChild(slider);
     wrapper.appendChild(curtain);
     wrapper.appendChild(imgContainer);
     document.body.appendChild(wrapper);
-
-    // Track which layer is currently visible vs incoming
-    let currentLayer = imgLayerA;
-    let nextLayer = imgLayerB;
 
     // Initial State
     gsap.set(wrapper, { autoAlpha: 0 });
@@ -86,17 +100,13 @@ if (!isMobileDevice) {
     function hidePreviewDOM() {
       if (!isPreviewActive) return;
       isPreviewActive = false;
-      activeSrc = null;
-      gsap.killTweensOf([wrapper, curtain, imgContainer, imgLayerA, imgLayerB]);
+      activeCardIndex = -1;
+      gsap.killTweensOf([wrapper, curtain, imgContainer, slider]);
       gsap.to(wrapper, { autoAlpha: 0, duration: 0.2, delay: 0.1, overwrite: true, onComplete: () => {
         gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
-        // Reset both layers for next entrance
-        imgLayerA.src = ''; imgLayerB.src = '';
-        gsap.set(imgLayerA, { opacity: 1, scale: 1 });
-        gsap.set(imgLayerB, { opacity: 0, scale: 1 });
-        currentLayer = imgLayerA;
-        nextLayer = imgLayerB;
+        // Reset slider position for next entrance
+        gsap.set(slider, { y: 0 });
       }});
       gsap.to(curtain, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -30, rotationX: 15, duration: 0.5, ease: 'expo.out', overwrite: true });
       gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -46, x: 16, rotationX: 15, duration: 0.5, ease: 'expo.out', delay: 0.05, overwrite: true });
@@ -160,7 +170,7 @@ if (!isMobileDevice) {
 
     function onListLeave() {
       isVisible = false;
-      activeSrc = null;
+      activeCardIndex = -1;
       hoveredCardIndex = -1;
       window.__hoveredCardIndex = -1; // Reset globally
       cards.forEach(c => {
@@ -186,60 +196,34 @@ if (!isMobileDevice) {
       card.classList.add('hovered');
 
       const src = card.dataset.image;
-      if (!src || src === activeSrc) return;
-      activeSrc = src;
+      if (!src || index === activeCardIndex) return;
+      activeCardIndex = index;
 
       if (!isPreviewActive) {
-        // ── First show: entrance clip-path animation with initial zoom-out ──
-        currentLayer.src = src;
-        gsap.set(currentLayer, { opacity: 1, scale: 1 });
-        gsap.set(nextLayer, { opacity: 0, scale: 1 });
-        
-        gsap.fromTo(currentLayer, { scale: 1.25 }, { scale: 1, duration: 0.8, ease: 'power3.out' });
+        // ── First show: snap slider to index and play entrance ──
+        gsap.set(slider, { y: -index * 138 });
 
         gsap.killTweensOf([curtain, imgContainer]);
         gsap.set(curtain, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 30, rotationX: -15 });
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
         showPreviewDOM();
       } else {
-        // ── Already visible: premium tactile elastic squeeze + camera focus parallax ──
-        const oldLayer = currentLayer;
-        const newLayer = nextLayer;
-        newLayer.src = src;
-
-        gsap.killTweensOf([oldLayer, newLayer, imgContainer]);
+        // ── Already visible: premium slide transition with tactile elastic squeeze ──
+        gsap.killTweensOf([slider, imgContainer]);
 
         // 1. Container tactile elastic squeeze (jelly effect)
         gsap.fromTo(imgContainer, 
-          { scaleX: 1.08, scaleY: 0.92 }, 
-          { scaleX: 1, scaleY: 1, duration: 0.6, ease: 'back.out(2.5)', overwrite: 'auto' }
+          { scaleX: 1.05, scaleY: 0.95 }, 
+          { scaleX: 1, scaleY: 1, duration: 0.5, ease: 'back.out(2)', overwrite: 'auto' }
         );
 
-        // 2. Incoming image: focus zoom-out and fade-in
-        gsap.set(newLayer, { scale: 1.2, opacity: 0 });
-        gsap.to(newLayer, { 
-          scale: 1, 
-          opacity: 1, 
-          duration: 0.45, 
-          ease: 'power3.out', 
-          overwrite: true 
+        // 2. Slide the filmstrip to the new index
+        gsap.to(slider, {
+          y: -index * 138,
+          duration: 0.45,
+          ease: 'power3.out',
+          overwrite: true
         });
-
-        // 3. Outgoing image: shrink down and fade-out
-        gsap.to(oldLayer, { 
-          scale: 0.9, 
-          opacity: 0, 
-          duration: 0.4, 
-          ease: 'power3.out', 
-          overwrite: true, 
-          onComplete: () => {
-            oldLayer.src = '';
-            gsap.set(oldLayer, { scale: 1 });
-          }
-        });
-
-        // Swap layer references
-        [currentLayer, nextLayer] = [newLayer, oldLayer];
       }
     }
 
