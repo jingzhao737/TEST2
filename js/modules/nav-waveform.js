@@ -24,6 +24,14 @@
   let dataArray = null;
   const sourceNodes = new Map();
 
+  // Volume Slider Interactive Drag State
+  let isDraggingVolume = false;
+  let dragStartClientX = 0;
+  let dragStartClientY = 0;
+  let dragStartTime = 0;
+  let volumeFeedbackTimer = 0;
+  let isShowingVolumeText = false;
+
   // Load and initialize global volume config
   (function initVolumeConfig() {
     let savedVolume = localStorage.getItem('globalVolume');
@@ -260,14 +268,6 @@
   draw();
 
   window.addEventListener('resize', initSize);
-
-  // Volume Slider Interactive Drag State
-  let isDraggingVolume = false;
-  let dragStartClientX = 0;
-  let dragStartClientY = 0;
-  let dragStartTime = 0;
-  let volumeFeedbackTimer = 0;
-  let isShowingVolumeText = false;
 
   function onVolumeDragStart(e) {
     initSharedAudios();
