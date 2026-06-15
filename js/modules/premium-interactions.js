@@ -37,14 +37,14 @@ if (!isMobileDevice) {
     const baseZ = 2;
 
     // Decoupled preview-specific baseline variables and limits
-    let previewBaseY = -34;
-    let previewBaseX = 17;
-    let previewBaseZ = 2;
+    let previewBaseY = -39;
+    let previewBaseX = 34;
+    let previewBaseZ = -5;
     let clampYMax = 16;
     let clampXMax = 16;
     let clampZMax = 6;
     let previewPerspective = 1750; // Match works perspective by default
-    let forceVisible = true; // Lock preview visible by default for tuning
+    let forceVisible = false; // Disable lock-visible in production
     let targetWorkListY = baseY;
     let targetWorkListX = baseX;
     let targetWorkListZ = baseZ;
@@ -274,11 +274,6 @@ if (!isMobileDevice) {
     let firstMove = true;
 
     (function animateHover() {
-      if (forceVisible) {
-        targetX = window.innerWidth * 0.65;
-        targetY = window.innerHeight * 0.38;
-      }
-
       // ── STEP 1: Update 3D list tilt target from mouse position ──
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
@@ -475,204 +470,6 @@ if (!isMobileDevice) {
       }
       requestAnimationFrame(animateHover);
     })();
-
-    // === TEMPORARY ANGLE ADJUSTER PANEL ===
-    function createAdjusterPanel() {
-      console.log('[3D PREVIEW ONLY ADJUSTER V3] Initializing decoupled panel.');
-
-      // Inject CSS style to restore native cursor, force preview visible, and hide custom cursor when hovered
-      const styleEl = document.createElement('style');
-      styleEl.innerHTML = `
-        body .work-preview-adjuster-panel,
-        body .work-preview-adjuster-panel * {
-          cursor: auto !important;
-        }
-        .work-preview-adjuster-panel:hover ~ #cursorDot,
-        .work-preview-adjuster-panel:hover ~ #cursorTrail1 {
-          opacity: 0 !important;
-          pointer-events: none !important;
-          visibility: hidden !important;
-        }
-        body .work-preview-wrapper.force-preview-visible {
-          opacity: 1 !important;
-          visibility: visible !important;
-        }
-      `;
-      document.head.appendChild(styleEl);
-
-      const panel = document.createElement('div');
-      panel.className = 'work-preview-adjuster-panel';
-      panel.style.cssText = `
-        position: fixed;
-        bottom: 24px;
-        left: 24px;
-        z-index: 99999;
-        width: 320px;
-        background: rgba(13, 13, 15, 0.92);
-        border: 1px solid rgba(82, 196, 26, 0.35);
-        border-radius: 12px;
-        padding: 20px;
-        color: #fff;
-        font-family: 'Google Sans', sans-serif;
-        font-size: 12px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-        backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        user-select: none;
-      `;
-
-      const title = document.createElement('div');
-      title.innerText = '3D PREVIEW ONLY ADJUSTER (V3)';
-      title.style.cssText = 'font-weight: bold; letter-spacing: 0.1em; color: #52c41a; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;';
-      panel.appendChild(title);
-
-      const subtitle = document.createElement('div');
-      subtitle.innerText = '⚠️ ONLY TUNES HOVER PREVIEW | CARD ROTATION IS STATIC';
-      subtitle.style.cssText = 'font-size: 9px; color: rgba(255,255,255,0.5); font-weight: normal; margin-bottom: 8px; line-height: 1.2;';
-      panel.appendChild(subtitle);
-
-      const sliders = [
-        { label: 'Preview Base Y Rotation (rotateY)', min: -90, max: 90, val: previewBaseY, step: 1, key: 'previewBaseY' },
-        { label: 'Preview Base X Rotation (rotateX)', min: -90, max: 90, val: previewBaseX, step: 1, key: 'previewBaseX' },
-        { label: 'Preview Base Z Rotation (rotateZ)', min: -90, max: 90, val: previewBaseZ, step: 1, key: 'previewBaseZ' },
-        { label: 'Perspective Depth (px)', min: 200, max: 3000, val: previewPerspective, step: 50, key: 'previewPerspective' },
-        { label: 'Max Mouse Y-Tilt (X-rotation)', min: 0, max: 45, val: clampXMax, step: 1, key: 'clampXMax' },
-        { label: 'Max Mouse X-Tilt (Y-rotation)', min: 0, max: 45, val: clampYMax, step: 1, key: 'clampYMax' },
-        { label: 'Max Mouse Z-Tilt (Z-rotation)', min: 0, max: 30, val: clampZMax, step: 1, key: 'clampZMax' }
-      ];
-
-      const sliderInputs = {};
-
-      sliders.forEach(s => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display: flex; flex-direction: column; gap: 4px;';
-
-        const header = document.createElement('div');
-        header.style.cssText = 'display: flex; justify-content: space-between; color: rgba(255,255,255,0.7); font-size: 11px;';
-        
-        const labelEl = document.createElement('span');
-        labelEl.innerText = s.label;
-        const valEl = document.createElement('span');
-        valEl.innerText = s.val;
-        valEl.style.color = '#52c41a';
-        
-        header.appendChild(labelEl);
-        header.appendChild(valEl);
-        row.appendChild(header);
-
-        const input = document.createElement('input');
-        input.type = 'range';
-        input.min = s.min;
-        input.max = s.max;
-        input.step = s.step;
-        input.value = s.val;
-        input.style.cssText = 'width: 100%; accent-color: #52c41a; background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; outline: none; border: none; cursor: pointer;';
-        
-        input.addEventListener('input', (e) => {
-          const v = parseFloat(e.target.value);
-          valEl.innerText = v;
-          if (s.key === 'previewBaseX') previewBaseX = v;
-          else if (s.key === 'previewBaseY') previewBaseY = v;
-          else if (s.key === 'previewBaseZ') previewBaseZ = v;
-          else if (s.key === 'previewPerspective') previewPerspective = v;
-          else if (s.key === 'clampXMax') clampXMax = v;
-          else if (s.key === 'clampYMax') clampYMax = v;
-          else if (s.key === 'clampZMax') clampZMax = v;
-        });
-
-        row.appendChild(input);
-        panel.appendChild(row);
-        sliderInputs[s.key] = input;
-      });
-
-      // Force Visible Toggle
-      const forceRow = document.createElement('div');
-      forceRow.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-top: 4px;';
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = forceVisible;
-      checkbox.style.cssText = 'accent-color: #52c41a; cursor: pointer;';
-      checkbox.addEventListener('change', (e) => {
-        forceVisible = e.target.checked;
-        if (forceVisible) {
-          isVisible = true;
-          wrapper.classList.add('force-preview-visible');
-          if (activeImages.length === 0 && cards.length > 0) {
-            onCardEnter(0);
-          }
-          showPreviewDOM();
-        } else {
-          forceVisible = false;
-          wrapper.classList.remove('force-preview-visible');
-          onListLeave();
-        }
-      });
-      const forceLabel = document.createElement('label');
-      forceLabel.innerText = 'Lock Preview Visible';
-      forceLabel.style.cssText = 'cursor: pointer; font-size: 11px; color: rgba(255,255,255,0.8);';
-      forceRow.appendChild(checkbox);
-      forceRow.appendChild(forceLabel);
-      panel.appendChild(forceRow);
-
-      // Copy Button
-      const copyBtn = document.createElement('button');
-      copyBtn.innerText = 'COPY PARAMETERS';
-      copyBtn.style.cssText = `
-        background: #52c41a;
-        border: none;
-        border-radius: 6px;
-        color: #000;
-        font-weight: bold;
-        padding: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        margin-top: 8px;
-        font-family: inherit;
-        font-size: 11px;
-        letter-spacing: 0.05em;
-      `;
-      copyBtn.addEventListener('mouseenter', () => copyBtn.style.background = '#73d13d');
-      copyBtn.addEventListener('mouseleave', () => copyBtn.style.background = '#52c41a');
-      copyBtn.addEventListener('click', () => {
-        const config = {
-          previewBaseX: previewBaseX,
-          previewBaseY: previewBaseY,
-          previewBaseZ: previewBaseZ,
-          previewPerspective: previewPerspective,
-          clampXMax: clampXMax,
-          clampYMax: clampYMax,
-          clampZMax: clampZMax
-        };
-        navigator.clipboard.writeText(JSON.stringify(config, null, 2)).then(() => {
-          copyBtn.innerText = 'COPIED TO CLIPBOARD!';
-          copyBtn.style.background = '#389e0d';
-          copyBtn.style.color = '#fff';
-          setTimeout(() => {
-            copyBtn.innerText = 'COPY PARAMETERS';
-            copyBtn.style.background = '#52c41a';
-            copyBtn.style.color = '#000';
-          }, 1500);
-        });
-      });
-      panel.appendChild(copyBtn);
-
-      document.body.appendChild(panel);
-    }
-
-    // Call panel creation and force show on startup
-    setTimeout(() => {
-      createAdjusterPanel();
-      if (forceVisible) {
-        isVisible = true;
-        wrapper.classList.add('force-preview-visible');
-        if (activeImages.length === 0 && cards.length > 0) {
-          onCardEnter(0);
-        }
-        showPreviewDOM();
-      }
-    }, 100);
   }
 } else {
   // === MOBILE SCROLL PREVIEW (SCROLL TILT & AUTO SWITCH) ===
