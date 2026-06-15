@@ -994,3 +994,34 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 533），自动部署线上页面。
 
+---
+
+## 🛠️ Hotfix: 将大图到 3D 卡片激活状态的生硬渐隐渐现升级为高阶电影感“变焦模糊”（Zoom-Blur）过渡动画
+
+### 1. 问题现象与需求分析
+- **图片切换生硬 (Stiff Cross-fade)**：
+  - 现象：点击大图激活 3D 卡牌时，大图 `#detailHeroImg` 执行 `opacity: 0` 的淡出，同时 3D 卡片执行淡入。由于两者展示的是完全相同的内容，这种“一个消失、另一个出现”的粗糙淡入淡出（Cross-fade）在视觉上显得支离破碎、缺乏关联，切换感十分生硬和廉价。
+  - **需求**：让切换过程富有弹性、连贯并且高级，像镜头变焦一样平滑。
+
+### 2. 解决方案与修改
+- **高阶“电影感变焦模糊”过渡（Cinematic Zoom-Blur Transition）**：
+  - 修改 [hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) 中 3D 卡片激活与退出的动画逻辑：
+    - **激活时（点击大图）**：大图 `#detailHeroImg` 不再淡出隐藏，而是通过 GSAP 在 0.8s 内将其**平滑模糊至 15px 并调暗（brightness）**，同时**轻微放大（scale: 1.06）**：
+      ```javascript
+      gsap.to('#detailHeroImg', { 
+        filter: 'blur(15px) brightness(0.35)', 
+        scale: 1.06, 
+        duration: 0.8, 
+        ease: 'power2.out' 
+      });
+      ```
+      这营造出电影镜头中“背景深焦虚化、焦点移向中心”的高级感。
+    - **卡牌登场同步优化**：伴随着背景的变焦虚化，3D 卡片容器从 `scale: 0.75` 弹性放大并旋转登场，且初始 3D 自转角度增加到 `-70deg`，使得翻转自转动作更加帅气、立体。
+    - **还原时（双击卡片）**：背景大图在 0.65s 内平滑地由模糊和暗调**恢复为清晰无畸变状态（`blur(0px) brightness(1)`，`scale: 1.0`）**，在视觉上将用户的焦点拉回正轨。
+    - **关闭清理**：在 `closeDetail` 重置周期中，为大图补全 `filter: 'none'` 的初始化设置，确保项目切换时状态洁净。
+  - **体验提升**：这一过渡给用户带来的心理感受是“大图凝聚成了中心的 3D 实体卡牌”，两者的图源得到了自然的继承与过度，整体动画如丝般顺滑，科技感和奢侈感拉满。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 534），自动部署线上页面。
+

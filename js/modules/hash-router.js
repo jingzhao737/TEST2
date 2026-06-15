@@ -175,7 +175,7 @@ function openDetail(data, heroImg, pushState) {
   if (hasWebGL) {
     gsap.set(detailHeroImg, { opacity: 0 }); // Hide DOM image during morph
   } else {
-    gsap.set(detailHeroImg, { opacity: 1, y: -80, scale: 1.15 });
+    gsap.set(detailHeroImg, { opacity: 1, y: -80, scale: 1.15, filter: 'none' });
   }
   if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
   
@@ -308,7 +308,7 @@ function closeDetail(popState) {
         // Reset ALL inline styles for next open cycle
         gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
         if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1, scaleX: 1, transformOrigin: '50% 50%' });
-        if (detailHeroImg) gsap.set(detailHeroImg, { y: 0, scale: 1 });
+        if (detailHeroImg) gsap.set(detailHeroImg, { y: 0, scale: 1, filter: 'none' });
 
         // Reset dim overlay
         if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
@@ -537,13 +537,19 @@ function setupDetail3DCard() {
     if (!is3DCardActive) {
       is3DCardActive = true;
       hero.classList.add('detail-hero-3d-active');
-      gsap.to('#detailHeroImg', { opacity: 0, duration: 0.5, ease: 'power2.out' });
+      // Smooth cinematic zoom and blur instead of abrupt cross-fade
+      gsap.to('#detailHeroImg', { 
+        filter: 'blur(15px) brightness(0.35)', 
+        scale: 1.06, 
+        duration: 0.8, 
+        ease: 'power2.out' 
+      });
       gsap.to('.detail-hero-content', { opacity: 0, scale: 0.95, duration: 0.5, ease: 'power2.out', pointerEvents: 'none' });
       
       gsap.set(container, { pointerEvents: 'auto' });
       gsap.fromTo(container,
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }
+        { opacity: 0, scale: 0.75 },
+        { opacity: 1, scale: 1, duration: 0.7, ease: 'back.out(1.2)' }
       );
 
       // Reset values
@@ -558,7 +564,7 @@ function setupDetail3DCard() {
 
       // Introduce card with tilted 3D entry spin
       gsap.fromTo(cardInner,
-        { rotateY: -45, rotateX: 18 },
+        { rotateY: -70, rotateX: 18 },
         { rotateY: 0, rotateX: 0, duration: 1.2, ease: 'power3.out' }
       );
       
@@ -578,7 +584,7 @@ function setupDetail3DCard() {
       hero.classList.remove('detail-hero-grabbing');
       gsap.to(container, {
         opacity: 0,
-        scale: 0.8,
+        scale: 0.75,
         duration: 0.5,
         ease: 'power2.out',
         pointerEvents: 'none',
@@ -589,8 +595,14 @@ function setupDetail3DCard() {
           }
         }
       });
-      gsap.to('#detailHeroImg', { opacity: 1, duration: 0.5, ease: 'power2.out' });
-      gsap.to('.detail-hero-content', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out', pointerEvents: 'auto' });
+      // Restore background image from blurred state
+      gsap.to('#detailHeroImg', { 
+        filter: 'blur(0px) brightness(1)', 
+        scale: 1.0, 
+        duration: 0.65, 
+        ease: 'power2.out' 
+      });
+      gsap.to('.detail-hero-content', { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out', pointerEvents: 'auto' });
       
       // Reset rotation/translation smoothly
       gsap.to(cardInner, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out' });
