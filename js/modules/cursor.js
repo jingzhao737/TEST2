@@ -388,8 +388,10 @@
   });
 
   // Intercept and redirect mouse events to the snapped element
+  let mousedownTarget = null;
   let isRedirectingMousedown = false;
   document.addEventListener('mousedown', function(e) {
+    mousedownTarget = e.target;
     if (isRedirectingMousedown) return;
     if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
@@ -424,6 +426,9 @@
     if (isRedirectingMouseup) return;
     if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
+      // Only redirect if the gesture also started inside this hovered element
+      if (!mousedownTarget || !hoveredElement.contains(mousedownTarget)) return;
+
       e.preventDefault();
       e.stopPropagation();
       
@@ -455,6 +460,9 @@
     if (isRedirectingClick) return;
     if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
+      // Only redirect if the gesture also started inside this hovered element
+      if (!mousedownTarget || !hoveredElement.contains(mousedownTarget)) return;
+
       e.preventDefault();
       e.stopPropagation();
       

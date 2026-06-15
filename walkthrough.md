@@ -562,3 +562,35 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 502），自动部署线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 解决拉动右上角黑白模式开关放手时触发背景元素误点击的问题
+
+### 1. 问题现象与原因分析
+- **释放拖拽误触点击 (Drag Release False Click)**:
+  - 页面右上角的黑白主题切换是一个需要鼠标/触屏下拉并释放的拉绳开关（Pull-to-toggle String）。
+  - 用户在下拉开关并释放（`mouseup` 或 `touchend`）时，若此时鼠标位置正好处于页面其他可点击元素（例如导航栏链接、按钮或页面下方组件）上方，这些背景元素就会被意外触发点击动作。
+  - **根本原因**：
+    - 为了解决自定义磁吸鼠标在按钮边缘点击容易偏离脱靶的问题，[cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) 引入了**鼠标事件重定向机制**：一旦鼠标磁吸吸附在某个 `hoveredElement`（磁吸目标）上，系统就会截断全局的 `mousedown`、`mouseup` 和 `click` 事件，并强行将其分发重定向给该磁吸元素。
+    - 当用户在拉绳开关上按下鼠标并向下拖拽时，原本处于拖拽状态。但当鼠标下滑经过其他吸附节点（例如 `.logo-wrapper`、`.nav-menu-btn` 等）时，鼠标因为距离近而被磁吸过去，将 `hoveredElement` 更新为了该背景节点。
+    - 此时用户释放鼠标（产生 `mouseup`），重定向代码在没有任何手势逻辑校验的情况下，直接把 `mouseup` 和 `click` 派发给了当前吸附的背景节点，造成即使在拖拽拉绳中途松手，也会误点击下方按钮的重大 Bug。
+
+### 2. 解决方案与修改
+- **手势源头追踪与手势闭环校验 (Gesture Origin Validation)**:
+  - 在 [cursor.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/cursor.js) 的事件代理中，定义一个模块级别的全局变量 `mousedownTarget` 用以追踪**当前点击手势在哪个物理元素上发起**。
+  - 在 `mousedown` 监听器最前端记录首发目标：
+    `mousedownTarget = e.target;`
+  - 在拦截并分发 `mouseup` 和 `click` 的逻辑中增加一致性审查：
+    ```javascript
+    // 只有当这次点击手势的首发起点 (mousedownTarget) 也是在当前磁吸元素内部时，才允许进行事件重定向分发
+    if (!mousedownTarget || !hoveredElement.contains(mousedownTarget)) return;
+    ```
+  - **效果评估**：
+    - 如果用户正常点击某磁吸按钮，`mousedown` 起点与释放终点均在该按钮内，重定向校验通过，磁吸点击正常工作。
+    - 如果用户是从拉绳开关（或其他拖拽源）拖出并在其他按钮上释放，由于 `mousedownTarget` 依然为拉绳元素，重定向逻辑会立即触发豁免并直接 `return` 拦截，浏览器此时也绝不会触发对该背景按钮的原生 click。误触 Bug 被彻底完美解决。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 503），自动部署线上页面。
