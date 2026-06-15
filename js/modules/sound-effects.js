@@ -1,15 +1,49 @@
 ;// ═══════════ SOUND EFFECTS (Web Audio API Synthesizer) ═══════════
 (function() {
   let audioCtx = null;
-  const cardClickAudio = new Audio('sound/sound1/click1.mp3');
-  cardClickAudio.preload = 'auto';
-  cardClickAudio.volume = 0.5;
+  let cardClickBuffer = null;
+  
+  // Download the audio file immediately on load
+  const arrayBufferPromise = fetch('sound/sound1/click1.mp3')
+    .then(r => r.arrayBuffer())
+    .catch(e => console.error('Failed to fetch card click sound:', e));
+
+  function decodeCardSound() {
+    const ctx = getAudioContext();
+    if (!ctx || cardClickBuffer) return;
+    if (arrayBufferPromise) {
+      arrayBufferPromise
+        .then(ab => {
+          if (ab) return ctx.decodeAudioData(ab);
+        })
+        .then(buffer => {
+          if (buffer) cardClickBuffer = buffer;
+        })
+        .catch(e => console.error('Error decoding card click sound:', e));
+    }
+  }
 
   function playCardClickSound() {
-    if (cardClickAudio) {
-      cardClickAudio.currentTime = 0;
-      cardClickAudio.play().catch(e => console.warn('Failed to play card click sound:', e));
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    if (!cardClickBuffer) {
+      // Fallback if not decoded yet
+      playClickSound();
+      return;
     }
+
+    const now = ctx.currentTime;
+    const source = ctx.createBufferSource();
+    source.buffer = cardClickBuffer;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0.5, now); // Set custom card click volume
+
+    source.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    source.start(now);
   }
 
   function getAudioContext() {
@@ -17,6 +51,7 @@
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (AudioContextClass) {
         audioCtx = window.__audioCtx || (window.__audioCtx = new AudioContextClass());
+        decodeCardSound(); // Decode downloaded buffer as soon as context is created
       }
     }
     return audioCtx;
