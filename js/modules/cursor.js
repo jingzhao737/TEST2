@@ -583,8 +583,8 @@
         }
         
         // LERP the pull offset components to filter high-frequency mouse event jitter
-        snapPullX += (pullX - snapPullX) * 0.15;
-        snapPullY += (pullY - snapPullY) * 0.15;
+        snapPullX += (pullX - snapPullX) * 0.20;
+        snapPullY += (pullY - snapPullY) * 0.20;
         snapPullDist = Math.sqrt(snapPullX * snapPullX + snapPullY * snapPullY);
         
         targetX = btnCenterX + snapPullX;
@@ -779,7 +779,7 @@
       : Math.max(-30, Math.min(30, diff * 1.5)) * Math.min(cursorSpeed / 6.0, 1.0); // Driven by LERP-smoothed cursorSpeed
 
     if (isActuallyHovered) {
-      if (snapPullDist > 0) {
+      if (snapPullDist > 1.0) {
         // Roll: horizontal tilt from snapPullX (cap at 15px pull -> 18deg tilt)
         // Pitch: vertical tilt from snapPullY (cap at 15px pull -> 18deg tilt)
         targetRoll = (snapPullX / 15) * 18;
@@ -860,7 +860,7 @@
     let trailTransform3dStr = `rotate(${arrowRotation}deg) rotateX(${currentPitch}deg) rotateY(${currentRoll}deg)`;
     
     if (isActuallyHovered) {
-      if (snapPullDist > 0.01) {
+      if (snapPullDist > 1.0) {
         const pullAngle = Math.atan2(snapPullY, snapPullX);
         const stretchAmt = (snapPullDist / 15) * 0.12;
         const squeezeAmt = (snapPullDist / 15) * 0.08;
