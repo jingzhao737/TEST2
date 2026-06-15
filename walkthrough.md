@@ -1246,3 +1246,27 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证
 - 重新运行 `npx vite build` 生产打包成功。
 - 使用 `git push` 推送至远程仓库部署上线。
+
+
+---
+
+## 🛠️ Feature: 网页音量条圆角呼吸效果、弹簧弹性 HUD 气泡与 Climate Crisis 大标题字体整合
+
+### 1. 需求分析与修改
+- **需求**：
+  - 音量调节的橙色进度底色条需要增加圆角和过渡动画。
+  - 百分比气泡文本增加弹出弹性动画。
+  - 将音量 HUD 百分比字体的 font-family 修改为首页大标题的字体样式（Climate Crisis）。
+- **解决方案与重构**：
+  - **Canvas 圆角与呼吸边缘滑线 (Round Bar & Glowing Slider Edge)**：
+    - 重构了 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js#L265-L290)，将原先直角的 `fillRect` 改为了圆润得体且现代感十足的 `roundRect(0, 0, barW, waveH, 5)`（5px 圆角矩形绘制）。
+    - 额外在进度条右侧边界绘制了一条 $2\text{px}$ 宽的极亮橙色滑轨线，并附加了 `Math.sin(Date.now() * 0.007)` 动态呼吸波动发光动画，大大提升了拉拽调节时的动感与高档质感。
+  - **弹簧弹性动效 HUD 标签 (Spring Cubic-bezier HUD Pop)**：
+    - 针对 [styles.css](file:///D:/webprojext/styles.css#L418-L448) 里的 `.nav-volume-hud` 气泡过渡动画，引进了弹簧三次贝塞尔曲线：`transition: ... 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);`，使得气泡浮现时带有一种极具物理回弹感的“小Q弹”动画。
+    - 联动 `nav-waveform.js` 自动分发 `is-dragging` 类。拖拽时气泡会自动平滑缩放放大至 $1.12$ 倍，橙色发光微边框与阴影加深；松手后立刻弹性缩回并渐隐，极具操控反馈感。
+  - **Climate Crisis 大标题字体套用**：
+    - 在 CSS 中，将气泡文本字体正式更换为了与导航栏 LOGO 及首页大标题完全一致的精品大标题字体 `Climate Crisis` (`'Climate Crisis', 'Google Sans', sans-serif`)。在大写与数字符号的视觉呈现上与整站现代特粗大标题风格完美呼应。
+
+### 2. 部署与验证
+- 重新运行了 `npx vite build` 生产打包成功。
+- 使用 `git push` 推送至远程仓库部署上线。
