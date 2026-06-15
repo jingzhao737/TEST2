@@ -488,6 +488,18 @@ function setupDetail3DCard() {
     e.preventDefault();
   });
 
+  function startFloating() {
+    if (floatTween) {
+      if (Array.isArray(floatTween)) floatTween.forEach(t => t.kill());
+      else floatTween.kill();
+    }
+    floatTween = [
+      gsap.fromTo('#detail3dFloatWrapper', { y: -10 }, { y: 10, duration: 2.6, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
+      gsap.fromTo('#detail3dFloatWrapper', { rotateY: -6 }, { rotateY: 6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
+      gsap.fromTo('#detail3dFloatWrapper', { rotateX: -4 }, { rotateX: 4, duration: 4.1, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+    ];
+  }
+
   hero.addEventListener('click', function(e) {
     // Prevent toggle if clicking on the close button or other links/buttons
     if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
@@ -522,16 +534,8 @@ function setupDetail3DCard() {
         { rotateY: 0, rotateX: 0, duration: 1.2, ease: 'power3.out' }
       );
       
-      // Start multi-axis organic floating & swaying loops with coprime periods
-      if (floatTween) {
-        if (Array.isArray(floatTween)) floatTween.forEach(t => t.kill());
-        else floatTween.kill();
-      }
-      floatTween = [
-        gsap.fromTo('#detail3dFloatWrapper', { y: -10 }, { y: 10, duration: 2.6, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
-        gsap.fromTo('#detail3dFloatWrapper', { rotateY: -6 }, { rotateY: 6, duration: 3.4, yoyo: true, repeat: -1, ease: 'sine.inOut' }),
-        gsap.fromTo('#detail3dFloatWrapper', { rotateX: -4 }, { rotateX: 4, duration: 4.1, yoyo: true, repeat: -1, ease: 'sine.inOut' })
-      ];
+      // Start multi-axis organic floating & swaying loops
+      startFloating();
     }
   });
 
@@ -582,6 +586,20 @@ function setupDetail3DCard() {
     // Kill active rebound or entry tweens
     gsap.killTweensOf([cardInner, container, cardImg, sheen, glare]);
     
+    // Pause float loops and stabilize the wrapper to prevent slippery cursor jumps
+    if (floatTween) {
+      if (Array.isArray(floatTween)) floatTween.forEach(t => t.pause());
+      else floatTween.pause();
+    }
+    gsap.to('#detail3dFloatWrapper', {
+      y: 0,
+      rotateY: 0,
+      rotateX: 0,
+      duration: 0.3,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+
     hero.classList.add('detail-hero-grabbing');
     
     lastDragTime = performance.now();
@@ -613,7 +631,7 @@ function setupDetail3DCard() {
       overwrite: 'auto'
     });
     
-    // Parallax image shift inside visual window
+    // Parallax image shift inside visual window (2D displacement shadowbox)
     gsap.to(cardImg, {
       x: -rotY * 0.15,
       y: rotX * 0.15,
@@ -668,9 +686,12 @@ function setupDetail3DCard() {
     hero.classList.remove('detail-hero-grabbing');
     
     // Calculate rebound snap duration and overshoot based on release velocity
-    const velocity = Math.sqrt(velocityRotateX * velocityRotateX + velocityRotateY * velocityRotateY) || 0;
-    const overshoot = Math.max(1.0, Math.min(3.5, 1.2 + velocity * 0.5));
-    const snapDuration = Math.max(0.7, Math.min(1.5, 0.9 + velocity * 0.1));
+    // Reset velocity if user paused for more than 100ms before releasing
+    const timeSinceLastMove = performance.now() - lastDragTime;
+    const activeVelocity = (timeSinceLastMove < 100) ? Math.sqrt(velocityRotateX * velocityRotateX + velocityRotateY * velocityRotateY) : 0;
+    
+    const overshoot = Math.max(1.0, Math.min(3.5, 1.2 + activeVelocity * 0.5));
+    const snapDuration = Math.max(0.7, Math.min(1.5, 0.9 + activeVelocity * 0.1));
     
     // Elastic spring snap back to 0 rotation
     gsap.to(cardInner, {
@@ -702,6 +723,12 @@ function setupDetail3DCard() {
         const sheenOpacity = Math.min(0.7, Math.sqrt(px*px + py*py) * 0.5);
         sheen.style.opacity = sheenOpacity;
         sheen.style.backgroundPosition = `${sheenX}% ${sheenY}%`;
+      },
+      onComplete: () => {
+        // Resume floating loops once snap animation completes successfully
+        if (is3DCardActive && !isDragging) {
+          startFloating();
+        }
       }
     });
     
@@ -740,7 +767,7 @@ function setupDetail3DCard() {
     handleDragEnd(e.clientX, e.clientY);
   });
 
-  // Bind Touch Listeners
+  // Bind Touch Listeners (with passive: false to allow preventDefault page scroll suppression)
   hero.addEventListener('touchstart', function(e) {
     if (!is3DCardActive) return;
     if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
@@ -752,7 +779,12 @@ function setupDetail3DCard() {
   window.addEventListener('touchmove', function(e) {
     if (!is3DCardActive || !isDragging || !e.touches.length) return;
     handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
-  });
+    
+    // Suppress scroll gestures while dragging/rotating the interactive 3D card
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+  }, { passive: false });
 
   window.addEventListener('touchend', function(e) {
     if (!is3DCardActive || !isDragging) return;

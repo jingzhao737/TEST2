@@ -1890,16 +1890,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     0 0 25px rgba(232, 124, 80, 0.1), 
     inset 0 0 0 1px rgba(255, 255, 255, 0.08); /* inner glass border */
   transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  overflow: hidden; /* Restored to clip children and allow smooth rendering */
 }
 .detail-3d-card-front {
-  background: transparent; /* Transparent so Z-recessed elements are visible without occlusion */
-  transform: translate3d(0, 0, 0);
+  background: #111; /* Solid base background */
+  transform: translate3d(0, 0, 1px); /* Z-offset to prevent Z-fighting */
   z-index: 2;
   transform-style: preserve-3d;
 }
 .detail-3d-card-back {
-  background: transparent;
-  transform: rotateY(180deg);
+  background: #0b0b0b;
+  transform: rotateY(180deg) translate3d(0, 0, 1px); /* Z-offset to prevent Z-fighting */
   z-index: 1;
   display: flex;
   align-items: center;
@@ -1911,8 +1912,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   inset: 0;
   overflow: hidden;
   border-radius: 15px;
-  background: #111; /* Black base behind image */
-  transform: translateZ(-15px) scale(1.08); /* Depth recessed look */
+  background: #111;
+  /* Flat 2D plane to avoid safari/chrome Z-buffering issues */
   will-change: transform;
 }
 .detail-3d-card-img {
@@ -1922,6 +1923,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   display: block;
   -webkit-user-drag: none;
   user-select: none;
+  transform: scale(1.08); /* Pre-scale image to allow room for parallax translation */
   will-change: transform;
 }
 .detail-3d-card-glare {
