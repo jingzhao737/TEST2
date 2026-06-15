@@ -158,14 +158,16 @@ function openDetail(data, heroImg, pushState) {
   gsap.set(detailHeroContent, { opacity: 1, y: 0 });
   gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
 
-  // ── 5. Slide up the card panel from the bottom ──
+  // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
     gsap.fromTo(detailCard, {
       y: '100%',
+      scaleX: 0.7,
+      transformOrigin: '50% 100%',
       opacity: 1
     }, {
       y: 0,
-      opacity: 1,
+      scaleX: 1,
       duration: 1.2,
       ease: 'expo.out',
       onComplete: () => {
@@ -257,10 +259,12 @@ function closeDetail(popState) {
   const sbRestore = document.getElementById('scrollBar');
   if (sbRestore) sbRestore.style.pointerEvents = '';
 
-  // Slide down the entire card panel to the bottom!
+  // Slide down and shrink the card panel horizontally
   if (detailCard) {
     gsap.to(detailCard, {
       y: '100%',
+      scaleX: 0.7,
+      transformOrigin: '50% 100%',
       duration: 0.65,
       ease: 'power3.inOut',
       onComplete: function() {
@@ -272,7 +276,7 @@ function closeDetail(popState) {
 
         // Reset ALL inline styles for next open cycle
         gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
-        if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1 });
+        if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1, scaleX: 1, transformOrigin: '50% 50%' });
         if (detailHeroImg) gsap.set(detailHeroImg, { y: 0, scale: 1 });
 
         // Reset dim overlay
