@@ -1810,8 +1810,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top-left-radius: 23px; /* Match card top rounding */
-  border-top-right-radius: 23px;
 }
 .detail-hero-img {
   position: absolute;
@@ -1819,8 +1817,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-top-left-radius: 23px;
-  border-top-right-radius: 23px;
 }
 .detail-hero-dim {
   position: absolute;
@@ -1857,12 +1853,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .detail-hero {
     height: 45vh;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-  }
-  .detail-hero-img {
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
   }
   .detail-close {
     top: 16px;
