@@ -1,5 +1,49 @@
 ;// ═══════════ NAV WAVEFORM (Audio Analyser reactive) ═══════════
 (function(){
+  if (!window.__fadeOutAndPause) {
+    window.__fadeOutAndPause = function(audio, duration = 300, resetTime = false) {
+      if (!audio) return;
+      if (audio.paused) {
+        if (resetTime) audio.currentTime = 0;
+        return;
+      }
+      if (audio.__fadeTimer) {
+        clearInterval(audio.__fadeTimer);
+      }
+      const startVol = audio.__originalVolume || (audio.__originalVolume = audio.volume) || 0.6;
+      const steps = 15;
+      const interval = duration / steps;
+      let currentStep = 0;
+      
+      audio.__fadeTimer = setInterval(() => {
+        currentStep++;
+        let vol = startVol * (1 - currentStep / steps);
+        if (vol <= 0.01) {
+          clearInterval(audio.__fadeTimer);
+          audio.__fadeTimer = null;
+          audio.pause();
+          audio.volume = startVol;
+          if (resetTime) audio.currentTime = 0;
+        } else {
+          audio.volume = vol;
+        }
+      }, interval);
+    };
+  }
+
+  if (!window.__playAudioWithFade) {
+    window.__playAudioWithFade = function(audio) {
+      if (!audio) return;
+      if (audio.__fadeTimer) {
+        clearInterval(audio.__fadeTimer);
+        audio.__fadeTimer = null;
+      }
+      const startVol = audio.__originalVolume || (audio.__originalVolume = audio.volume) || 0.6;
+      audio.volume = startVol;
+      audio.play().catch(() => {});
+    };
+  }
+
   let waveCanvas = document.getElementById('navWaveform');
   if (!waveCanvas) return;
   let ctx = waveCanvas.getContext('2d');
@@ -421,8 +465,8 @@
     
     let isPlaying = window.__audioPlaying === true;
     if (isPlaying) {
-      // Pause track
-      window.__bgAudios.forEach(a => a.pause());
+      // Pause track with smooth fade out
+      window.__bgAudios.forEach(a => window.__fadeOutAndPause(a, 400, false));
       window.__audioPlaying = false;
       // Sync desktop circles (unlatch all)
       if (typeof window.__unlatchAll === 'function') {
@@ -433,11 +477,10 @@
       let idx = window.__currentTrackIdx || 0;
       window.__bgAudios.forEach((a, i) => {
         if (i !== idx) {
-          a.pause();
-          a.currentTime = 0;
+          window.__fadeOutAndPause(a, 300, true);
         }
       });
-      window.__bgAudios[idx].play().catch(e => console.log("Audio play failed:", e));
+      window.__playAudioWithFade(window.__bgAudios[idx]);
       window.__audioPlaying = true;
       // Sync desktop circles (latch corresponding disc)
       if (typeof window.__latchDisc === 'function') {
@@ -458,11 +501,10 @@
       
       // Stop current & play next
       window.__bgAudios.forEach((a, i) => {
-        a.pause();
-        a.currentTime = 0;
+        window.__fadeOutAndPause(a, 350, true);
       });
       
-      window.__bgAudios[nextIdx].play().catch(e => console.log("Audio play failed:", e));
+      window.__playAudioWithFade(window.__bgAudios[nextIdx]);
       window.__audioPlaying = true;
       window.__waveAmp = 1.8; // Awwwards-level: spike the soundwave amplitude on skip!
       

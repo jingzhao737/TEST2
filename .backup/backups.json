@@ -1,12 +1,5 @@
 [
   {
-    "step": 99,
-    "timestamp": "2026-06-16 00:57:33",
-    "description": "Updated walkthrough with record play fix",
-    "folder": "step_099_Updated_walkthrough_with_record_play_fix",
-    "is_auto": false
-  },
-  {
     "step": 100,
     "timestamp": "2026-06-16 00:59:58",
     "description": "Add smooth fade out transition when music stops or switches",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:29:39",
     "description": "Fix missing stringLen property on thumbs objects causing disappearing ropes",
     "folder": "step_118_Fix_missing_stringLen_property_on_thumbs_objects_causing_disappearing_ropes",
+    "is_auto": false
+  },
+  {
+    "step": 119,
+    "timestamp": "2026-06-16 01:30:50",
+    "description": "Soften rope highlight sheen to satin matte fabric texture",
+    "folder": "step_119_Soften_rope_highlight_sheen_to_satin_matte_fabric_texture",
     "is_auto": false
   }
 ]

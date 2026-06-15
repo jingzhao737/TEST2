@@ -958,8 +958,8 @@ import * as THREE from 'three';
     ctx.shadowColor = 'transparent';
     for (let i = 1; i < totalHalfLoops; i += 2) {
       pathHalfLoop(ctx, i);
-      ctx.strokeStyle = 'rgba(95, 30, 10, 0.65)';
-      ctx.lineWidth = baseLineWidth * 0.7;
+      ctx.strokeStyle = 'rgba(145, 65, 35, 0.8)'; // Softer warm terracotta shadow (less harsh metallic contrast)
+      ctx.lineWidth = baseLineWidth * 0.72;
       ctx.stroke();
     }
     ctx.restore();
@@ -967,10 +967,10 @@ import * as THREE from 'three';
     // 2. Draw all Front loops on top (with shadow & double-stroke highlight)
     for (let i = 0; i < totalHalfLoops; i += 2) {
       ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.32)';
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetX = 3;
-      ctx.shadowOffsetY = 4;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.28)'; // Softer shadow
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetX = 2.5;
+      ctx.shadowOffsetY = 3.5;
 
       pathHalfLoop(ctx, i);
       ctx.strokeStyle = 'rgba(232, 124, 80, 0.95)';
@@ -978,10 +978,10 @@ import * as THREE from 'three';
       ctx.stroke();
       ctx.restore();
 
-      // Draw the highlight shine on top (no shadow)
+      // Draw a soft satin/matte highlight (instead of bright metallic white)
       pathHalfLoop(ctx, i);
-      ctx.strokeStyle = '#ffece0';
-      ctx.lineWidth = baseLineWidth * 0.28;
+      ctx.strokeStyle = 'rgba(255, 225, 200, 0.38)'; // Transparent warm peach highlight for soft satin sheen
+      ctx.lineWidth = baseLineWidth * 0.25;
       ctx.stroke();
     }
   }
