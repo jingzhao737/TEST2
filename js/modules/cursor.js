@@ -424,6 +424,8 @@
   let isRedirectingMouseup = false;
   document.addEventListener('mouseup', function(e) {
     if (isRedirectingMouseup) return;
+    // Do not redirect mouseup while theme cord is being dragged
+    if (window.__isDraggingTheme) return;
     if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
       // Only redirect if the gesture also started inside this hovered element
@@ -458,6 +460,12 @@
   let isRedirectingClick = false;
   document.addEventListener('click', function(e) {
     if (isRedirectingClick) return;
+    // Block ALL clicks while the theme cord is being dragged
+    if (window.__isDraggingTheme) {
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
     if (e.target.closest && (e.target.closest('.work-card') || (window.__hoveredCardIndex >= 0 && e.target.closest('.works')))) return; // Do not redirect clicks on works cards or inside works section when a card is hovered
     if (hoveredElement && !hoveredElement.contains(e.target)) {
       // Only redirect if the gesture also started inside this hovered element
