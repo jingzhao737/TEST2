@@ -1012,9 +1012,15 @@ import * as THREE from 'three';
         t.currentZ = t.currentZ || baseZ;
         t.currentZ += (targetZ - t.currentZ) * 0.12;
 
-        // Place in pixel coordinates (invert Y axis for WebGL)
-        d.group.position.x = t.x;
-        d.group.position.y = ch - t.y;
+        // Place in pixel coordinates, correcting for perspective projection shift 
+        // so that the projected 3D disc center aligns perfectly with (t.x, ch - t.y) in 2D space.
+        const cameraDepth = 500;
+        let pFactor = (cameraDepth - t.currentZ) / cameraDepth;
+        let centerX = cw / 2;
+        let centerY = ch / 2;
+        
+        d.group.position.x = centerX + (t.x - centerX) * pFactor;
+        d.group.position.y = centerY + ((ch - t.y) - centerY) * pFactor;
         d.group.position.z = t.currentZ;
         d.group.scale.set(scale, scale, 1);
         

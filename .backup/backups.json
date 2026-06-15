@@ -1,12 +1,5 @@
 [
   {
-    "step": 96,
-    "timestamp": "2026-06-16 00:48:33",
-    "description": "Make volume HUD occupy next button space when inactive",
-    "folder": "step_096_Make_volume_HUD_occupy_next_button_space_when_inactive",
-    "is_auto": false
-  },
-  {
     "step": 97,
     "timestamp": "2026-06-16 00:51:55",
     "description": "Updated walkthrough documentation",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:25:01",
     "description": "Fix vinyl record mesh overlapping and Z-clipping",
     "folder": "step_115_Fix_vinyl_record_mesh_overlapping_and_Z-clipping",
+    "is_auto": false
+  },
+  {
+    "step": 116,
+    "timestamp": "2026-06-16 01:26:37",
+    "description": "Compensate for perspective projection shift to align 3D discs with 2D ropes",
+    "folder": "step_116_Compensate_for_perspective_projection_shift_to_align_3D_discs_with_2D_ropes",
     "is_auto": false
   }
 ]
