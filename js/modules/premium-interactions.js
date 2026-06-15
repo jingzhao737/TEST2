@@ -15,6 +15,7 @@ if (!isMobileDevice) {
     let currentX = 0, currentY = 0;
     let isVisible = false;
     let activeCardIndex = -1;
+    let activeTimeline = null;
 
     // Animation state object driven by GSAP tweens for the staggered entrance & overshoot rebound
     const previewAnim = {
@@ -97,31 +98,31 @@ if (!isMobileDevice) {
       if (isPreviewActive) return;
       isPreviewActive = true;
       
+      if (activeTimeline) activeTimeline.kill();
       gsap.killTweensOf([wrapper, previewAnim]);
       
       // Instantly make the wrapper visible and set opacity to 1.0 to prevent 3D flattening
       gsap.set(wrapper, { autoAlpha: 1 });
       
+      activeTimeline = gsap.timeline();
+      
       // The preview image container immediately begins to fade in, scale up, and float up with overshoot!
-      gsap.to(previewAnim, {
+      activeTimeline.to(previewAnim, {
         imgOpacity: 1,
         imgScale: 1.0,
         imgZ: 15,
         duration: 0.45,
-        ease: 'back.out(2.0)', // Strong back ease to overshoot beyond z: 15 and rebound
-        overwrite: true
-      });
+        ease: 'back.out(2.0)' // Strong back ease to overshoot beyond z: 15 and rebound
+      }, 0);
       
       // The orange background block follows after a slight delay (0.12s)
-      gsap.to(previewAnim, {
+      activeTimeline.to(previewAnim, {
         orangeOpacity: 1,
         orangeScale: 1.0,
         orangeZ: 5,
         duration: 0.4,
-        ease: 'back.out(1.2)',
-        delay: 0.12,
-        overwrite: true
-      });
+        ease: 'back.out(1.2)'
+      }, 0.12);
     }
 
     function hidePreviewDOM() {
@@ -129,10 +130,13 @@ if (!isMobileDevice) {
       isPreviewActive = false;
       activeCardIndex = -1;
       
+      if (activeTimeline) activeTimeline.kill();
       gsap.killTweensOf([wrapper, previewAnim]);
       
+      activeTimeline = gsap.timeline();
+      
       // Fade out and shrink both layers together for a snappy close
-      gsap.to(previewAnim, {
+      activeTimeline.to(previewAnim, {
         imgOpacity: 0,
         imgScale: 0.5,
         imgZ: 0,
@@ -141,7 +145,6 @@ if (!isMobileDevice) {
         orangeZ: 0,
         duration: 0.25,
         ease: 'power2.out',
-        overwrite: true,
         onComplete: () => {
           gsap.set(wrapper, { autoAlpha: 0 });
           activeImages = [];
