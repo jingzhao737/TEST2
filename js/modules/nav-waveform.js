@@ -153,13 +153,14 @@
         }
         let avgVolume = sum / dataArray.length;
         // Dynamically scale wave amplitude based on volume (spikes and pulses to the beat)
-        targetAmp = 0.28 + (avgVolume / 255.0) * 1.35;
+        // Significantly boost the amplitude factor for prominent waves at high volume
+        targetAmp = 0.42 + (avgVolume / 255.0) * 2.45;
       } else {
-        targetAmp = 1.0;
+        targetAmp = 1.6;
       }
     }
-    // Dampen amplitude by master volume
-    targetAmp *= window.__globalVolume;
+    // Dampen amplitude with non-linear scaling for extra prominence at high volumes
+    targetAmp *= Math.pow(window.__globalVolume, 1.15) * 1.55;
 
     window.__waveAmp += (targetAmp - window.__waveAmp) * 0.08;
     let ampScale = window.__waveAmp;
