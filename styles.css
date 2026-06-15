@@ -1747,11 +1747,22 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   background: rgba(245, 240, 232, 0.65);
 }
 
-.work-detail-card {
+.work-detail-container {
   position: relative;
   width: calc(100% - 48px); /* Small gaps on left and right */
   max-width: 1320px;
   height: calc(100vh - 32px); /* Small gap on top, no gap on bottom */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none; /* Let clicks fall through to background */
+  z-index: 501;
+}
+
+.work-detail-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
   background: var(--card-bg);
   border-top-left-radius: 24px; /* Round top corners only */
   border-top-right-radius: 24px;
@@ -1764,6 +1775,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   overflow-x: hidden;
   scrollbar-width: none;
   pointer-events: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .work-detail-card::-webkit-scrollbar {
   display: none;
@@ -1786,6 +1798,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   font-size: 1.1rem;
   color: var(--bg);
   transition: all 0.3s var(--ease-out-expo);
+  pointer-events: auto; /* Clickable despite parent pointer-events: none */
 }
 .detail-close:hover, .detail-close.magnet-hover {
   background: var(--card-bg);
@@ -1840,9 +1853,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 @media (max-width: 768px) {
-  .work-detail-card {
+  .work-detail-container {
     width: calc(100% - 24px); /* Smaller gap on mobile */
     height: calc(100vh - 20px);
+  }
+  .work-detail-card {
+    width: 100%;
+    height: 100%;
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
   }
