@@ -223,10 +223,10 @@ if (!isMobileDevice) {
         // Local flat X position inside work-list
         const localX = pageMouseX - wPageRect.left;
 
-        if (rawMouseX < previewWidth + offsetX + 20) {
-          targetX = localX + offsetX;
-        } else {
+        if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
           targetX = localX - previewWidth - offsetX;
+        } else {
+          targetX = localX + offsetX;
         }
 
         // Keep targetY clamped relative to visible viewport bounds, then convert to local coordinate
@@ -322,10 +322,10 @@ if (!isMobileDevice) {
       // Local flat X position inside work-list
       const localX = pageMouseX - wPageRect.left;
 
-      if (rawMouseX < previewWidth + offsetX + 20) {
-        targetX = localX + offsetX;
-      } else {
+      if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
         targetX = localX - previewWidth - offsetX;
+      } else {
+        targetX = localX + offsetX;
       }
 
       // Keep targetY clamped relative to visible viewport bounds, then convert to local coordinate
