@@ -1,12 +1,5 @@
 [
   {
-    "step": 90,
-    "timestamp": "2026-06-12 01:24:57",
-    "description": "Before premium laser effect upgrade",
-    "folder": "step_090_Before_premium_laser_effect_upgrade",
-    "is_auto": false
-  },
-  {
     "step": 91,
     "timestamp": "2026-06-12 01:31:57",
     "description": "Upgrade laser lines to premium neon effects with chromatic aberration and starburst particles",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:13:22",
     "description": "Restore original vinyl record rendering style",
     "folder": "step_109_Restore_original_vinyl_record_rendering_style",
+    "is_auto": false
+  },
+  {
+    "step": 110,
+    "timestamp": "2026-06-16 01:13:47",
+    "description": "Clean up tasks and walkthrough for record rollback",
+    "folder": "step_110_Clean_up_tasks_and_walkthrough_for_record_rollback",
     "is_auto": false
   }
 ]

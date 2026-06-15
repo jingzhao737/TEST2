@@ -1,12 +1,57 @@
 ;// ═══════════ SOUND EFFECTS (Web Audio API Synthesizer) ═══════════
 (function() {
   let audioCtx = null;
+  let cardClickBuffer = null;
+  
+  // Download the audio file immediately on load
+  const arrayBufferPromise = fetch('sound/sound1/click1.mp3')
+    .then(r => r.arrayBuffer())
+    .catch(e => console.error('Failed to fetch card click sound:', e));
+
+  function decodeCardSound() {
+    const ctx = getAudioContext();
+    if (!ctx || cardClickBuffer) return;
+    if (arrayBufferPromise) {
+      arrayBufferPromise
+        .then(ab => {
+          if (ab) return ctx.decodeAudioData(ab);
+        })
+        .then(buffer => {
+          if (buffer) cardClickBuffer = buffer;
+        })
+        .catch(e => console.error('Error decoding card click sound:', e));
+    }
+  }
+
+  function playCardClickSound() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    if (!cardClickBuffer) {
+      // Fallback if not decoded yet
+      playClickSound();
+      return;
+    }
+
+    const now = ctx.currentTime;
+    const source = ctx.createBufferSource();
+    source.buffer = cardClickBuffer;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0.5, now); // Set custom card click volume
+
+    source.connect(gainNode);
+    gainNode.connect(window.__masterGainNode || ctx.destination);
+    source.start(now);
+  }
 
   function getAudioContext() {
     if (!audioCtx) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (AudioContextClass) {
         audioCtx = window.__audioCtx || (window.__audioCtx = new AudioContextClass());
+        decodeCardSound(); // Decode downloaded buffer as soon as context is created
       }
     }
     return audioCtx;
@@ -41,7 +86,7 @@
     // Connections
     osc.connect(filter);
     filter.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(window.__masterGainNode || ctx.destination);
 
     // Play & Stop
     osc.start(now);
@@ -77,7 +122,7 @@
     // Connections
     osc.connect(filter);
     filter.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(window.__masterGainNode || ctx.destination);
 
     // Play & Stop
     osc.start(now);
@@ -101,6 +146,14 @@
     document.addEventListener('mousedown', (e) => {
       const target = e.target;
       if (!target) return;
+
+      // Check if clicking a works card
+      const isWorkCard = typeof target.closest === 'function' && target.closest('.work-card');
+      if (isWorkCard) {
+        playCardClickSound();
+        return;
+      }
+
       // Check if clicking an interactive element (louder click) vs. blank area (lighter hover tone)
       const isInteractive = typeof target.closest === 'function' && target.closest(interactiveSelector);
       if (isInteractive) {
@@ -117,6 +170,17 @@
   } else {
     initEvents();
   }
+
+  // Auto-resume global AudioContext on user interactions to prevent browser autoplay suspensions
+  function resumeGlobalContext() {
+    const ctx = window.__audioCtx;
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(function(e) { console.warn('Failed to resume AudioContext:', e); });
+    }
+  }
+  window.addEventListener('mousedown', resumeGlobalContext, { passive: true });
+  window.addEventListener('touchstart', resumeGlobalContext, { passive: true });
+  window.addEventListener('keydown', resumeGlobalContext, { passive: true });
 
   window.__playHoverSound = playHoverSound;
   window.__playClickSound = playClickSound;
