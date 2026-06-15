@@ -2009,6 +2009,89 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
 }
 
+/* Apple-style Capsule Switch Button */
+.hero-toggle-pill {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100; /* Extremely high to stay on top of everything inside detail-hero */
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 3px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  pointer-events: auto; /* Ensure clickable */
+  user-select: none;
+}
+:root.light .hero-toggle-pill {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.toggle-pill-bg {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: rgba(255, 255, 255, 0.12); /* Apple light blur indicator */
+  border-radius: 99px;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 1;
+}
+:root.light .toggle-pill-bg {
+  background: #ffffff;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.toggle-pill-btn {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  padding: 8px 20px;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  border-radius: 99px;
+  transition: color 0.3s ease;
+  outline: none;
+  white-space: nowrap;
+}
+:root.light .toggle-pill-btn {
+  color: rgba(0, 0, 0, 0.45);
+}
+.toggle-pill-btn.active {
+  color: #ffffff;
+}
+:root.light .toggle-pill-btn.active {
+  color: #000000;
+}
+.toggle-pill-btn:hover:not(.active) {
+  color: rgba(255, 255, 255, 0.8);
+}
+:root.light .toggle-pill-btn:hover:not(.active) {
+  color: rgba(0, 0, 0, 0.7);
+}
+.hero-toggle-pill.card-active .toggle-pill-bg {
+  transform: translateX(100%);
+}
+
 .detail-hero-content {
   position: relative;
   z-index: 2;

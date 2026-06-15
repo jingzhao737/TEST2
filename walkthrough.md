@@ -1025,3 +1025,38 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub（Step 534），自动部署线上页面。
 
+---
+
+## 🛠️ Hotfix: 将 3D 卡片与大图的切换触发方式重构为 Apple 风格的胶囊式滑动切换按钮
+
+### 1. 问题现象与需求分析
+- **原本触发方式盲目且低频**：
+  - 现象：原先通过“单点大图区域”激活 3D 卡牌，“双击任意处”弹回还原。这两种手势由于缺乏直观的 UI 视觉引导，用户很难自发发现；且在移动端上，全屏盲点容易与滑动页面或卡牌本身发生点击误触。
+  - **需求**：将切换卡片和大图的方式，改造为**苹果风格的胶囊式滑动切换按钮（Pill Switch）**，并放置在大图底部的正中间，提供最直观、高级且零误触的交互入口。
+
+### 2. 解决方案与修改
+- **胶囊按钮 HTML 骨架（Capsule Toggle Markup）**：
+  - 在 [index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中的 `.detail-hero` 容器尾部，添加了 Pill 按钮：
+    ```html
+    <div class="hero-toggle-pill" id="heroTogglePill">
+      <div class="toggle-pill-bg"></div>
+      <button class="toggle-pill-btn active" data-mode="image" id="togglePillImg">大图</button>
+      <button class="toggle-pill-btn" data-mode="card" id="togglePillCard">3D卡牌</button>
+    </div>
+    ```
+- **苹果风高透玻璃态 CSS 设计（Apple Glassmorphism CSS）**：
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对胶囊切换器进行了全面设计：
+    - **毛玻璃滤镜**：应用 `background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(20px)` 实现半透明高级苹果毛玻璃背景。
+    - **平滑滑动片**：滑块 `.toggle-pill-bg` 使用 `absolute` 宽度占 50%，通过 `transform: translateX(100%)` 实现苹果标志性的平滑缓动滑移（400ms cubic-bezier 缓动）。
+    - **自适应高亮**：通过 `.card-active` 状态类控制滑块滑移和文本高亮激活态。同时为 Light/Dark 模式定制了自适应高对比色（亮色下白色滑块+黑色字，暗色下半透滑块+白色字）。
+- **重构 JS 驱动逻辑（Refactored Event Routing）**：
+  - 修改 [hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js)：
+    - **废除盲点触发**：删除了原先绑定在全局 `hero` 上的 `click` 和 `dblclick` 切换触发器。
+    - **精准按钮路由**：为胶囊按钮的“大图”和“3D卡牌”子选项分别绑定 `click` 事件监听，分别路由调用 `deactivate3DCard()` 和 `activate3DCard()` 核心转换函数，并且通过 `e.stopPropagation()` 阻止事件向父级冒泡。
+    - **拦截拖拽误触**：在卡牌原先的 `mousedown` 和 `touchstart` 拖拽监听器中，补充了对胶囊控制条的阻断条件：`e.target.closest('#heroTogglePill')`。**这极其关键**，它能彻底阻止用户在点击或滑动切换胶囊按钮时，后台意外启动 3D 卡牌拖拽物理引擎的 Bug。
+    - **重置复位生命周期**：在 `openDetail` 开启以及 `closeDetail` 关闭的完整生命周期中，补全了对胶囊切换器激活状态重置回 `大图 (active)` 的逻辑，保障项目进出时状态一致。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 535），自动部署线上页面。
+

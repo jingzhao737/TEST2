@@ -179,6 +179,16 @@ function openDetail(data, heroImg, pushState) {
   }
   if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
   
+  // Reset the Apple-style capsule toggle pill button to "大图" state
+  const togglePill = document.getElementById('heroTogglePill');
+  const togglePillImg = document.getElementById('togglePillImg');
+  const togglePillCard = document.getElementById('togglePillCard');
+  if (togglePill && togglePillImg && togglePillCard) {
+    togglePill.classList.remove('card-active');
+    togglePillImg.classList.add('active');
+    togglePillCard.classList.remove('active');
+  }
+  
   // Backdrop fades in immediately in sync with card slide-up
   if (detailBg) {
     gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power2.out' });
@@ -326,6 +336,14 @@ function closeDetail(popState) {
         isDragging = false;
         currentRotateX = 0;
         currentRotateY = 0;
+        const togglePill = document.getElementById('heroTogglePill');
+        const togglePillImg = document.getElementById('togglePillImg');
+        const togglePillCard = document.getElementById('togglePillCard');
+        if (togglePill && togglePillImg && togglePillCard) {
+          togglePill.classList.remove('card-active');
+          togglePillImg.classList.add('active');
+          togglePillCard.classList.remove('active');
+        }
         const heroEl = document.querySelector('.detail-hero');
         if (heroEl) {
           heroEl.classList.remove('detail-hero-3d-active');
@@ -528,90 +546,110 @@ function setupDetail3DCard() {
     ];
   }
 
-  hero.addEventListener('click', function(e) {
-    // Prevent toggle if clicking on the close button or other links/buttons
-    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
-      return;
-    }
+  const togglePill = document.getElementById('heroTogglePill');
+  const togglePillImg = document.getElementById('togglePillImg');
+  const togglePillCard = document.getElementById('togglePillCard');
+
+  function activate3DCard() {
+    if (is3DCardActive) return;
+    is3DCardActive = true;
+    hero.classList.add('detail-hero-3d-active');
     
-    if (!is3DCardActive) {
-      is3DCardActive = true;
-      hero.classList.add('detail-hero-3d-active');
-      // Smooth cinematic zoom and blur instead of abrupt cross-fade
-      gsap.to('#detailHeroImg', { 
-        filter: 'blur(15px) brightness(0.35)', 
-        scale: 1.06, 
-        duration: 0.8, 
-        ease: 'power2.out' 
-      });
-      gsap.to('.detail-hero-content', { opacity: 0, scale: 0.95, duration: 0.5, ease: 'power2.out', pointerEvents: 'none' });
-      
-      gsap.set(container, { pointerEvents: 'auto' });
-      gsap.fromTo(container,
-        { opacity: 0, scale: 0.75 },
-        { opacity: 1, scale: 1, duration: 0.7, ease: 'back.out(1.2)' }
-      );
-
-      // Reset values
-      gsap.set(cardInner, { rotateX: 0, rotateY: 0 });
-      gsap.set(cardImg, { x: 0, y: 0 });
-      gsap.set(sheen, { opacity: 0 });
-      gsap.set(glare, { opacity: 0 });
-      currentRotateX = 0;
-      currentRotateY = 0;
-      velocityRotateX = 0;
-      velocityRotateY = 0;
-
-      // Introduce card with tilted 3D entry spin
-      gsap.fromTo(cardInner,
-        { rotateY: -70, rotateX: 18 },
-        { rotateY: 0, rotateX: 0, duration: 1.2, ease: 'power3.out' }
-      );
-      
-      // Start multi-axis organic floating & swaying loops
-      startFloating();
+    if (togglePill && togglePillImg && togglePillCard) {
+      togglePill.classList.add('card-active');
+      togglePillCard.classList.add('active');
+      togglePillImg.classList.remove('active');
     }
-  });
 
-  hero.addEventListener('dblclick', function(e) {
-    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
-      return;
-    }
+    // Smooth cinematic zoom and blur instead of abrupt cross-fade
+    gsap.to('#detailHeroImg', { 
+      filter: 'blur(15px) brightness(0.35)', 
+      scale: 1.06, 
+      duration: 0.8, 
+      ease: 'power2.out' 
+    });
+    gsap.to('.detail-hero-content', { opacity: 0, scale: 0.95, duration: 0.5, ease: 'power2.out', pointerEvents: 'none' });
     
-    if (is3DCardActive) {
-      is3DCardActive = false;
-      hero.classList.remove('detail-hero-3d-active');
-      hero.classList.remove('detail-hero-grabbing');
-      gsap.to(container, {
-        opacity: 0,
-        scale: 0.75,
-        duration: 0.5,
-        ease: 'power2.out',
-        pointerEvents: 'none',
-        onComplete: () => {
-          if (floatTween) {
-            if (Array.isArray(floatTween)) floatTween.forEach(t => t.pause());
-            else floatTween.pause();
-          }
+    gsap.set(container, { pointerEvents: 'auto' });
+    gsap.fromTo(container,
+      { opacity: 0, scale: 0.75 },
+      { opacity: 1, scale: 1, duration: 0.7, ease: 'back.out(1.2)' }
+    );
+
+    // Reset values
+    gsap.set(cardInner, { rotateX: 0, rotateY: 0 });
+    gsap.set(cardImg, { x: 0, y: 0 });
+    gsap.set(sheen, { opacity: 0 });
+    gsap.set(glare, { opacity: 0 });
+    currentRotateX = 0;
+    currentRotateY = 0;
+    velocityRotateX = 0;
+    velocityRotateY = 0;
+
+    // Introduce card with tilted 3D entry spin
+    gsap.fromTo(cardInner,
+      { rotateY: -70, rotateX: 18 },
+      { rotateY: 0, rotateX: 0, duration: 1.2, ease: 'power3.out' }
+    );
+    
+    // Start multi-axis organic floating & swaying loops
+    startFloating();
+  }
+
+  function deactivate3DCard() {
+    if (!is3DCardActive) return;
+    is3DCardActive = false;
+    hero.classList.remove('detail-hero-3d-active');
+    hero.classList.remove('detail-hero-grabbing');
+    
+    if (togglePill && togglePillImg && togglePillCard) {
+      togglePill.classList.remove('card-active');
+      togglePillImg.classList.add('active');
+      togglePillCard.classList.remove('active');
+    }
+
+    gsap.to(container, {
+      opacity: 0,
+      scale: 0.75,
+      duration: 0.5,
+      ease: 'power2.out',
+      pointerEvents: 'none',
+      onComplete: () => {
+        if (floatTween) {
+          if (Array.isArray(floatTween)) floatTween.forEach(t => t.pause());
+          else floatTween.pause();
         }
-      });
-      // Restore background image from blurred state
-      gsap.to('#detailHeroImg', { 
-        filter: 'blur(0px) brightness(1)', 
-        scale: 1.0, 
-        duration: 0.65, 
-        ease: 'power2.out' 
-      });
-      gsap.to('.detail-hero-content', { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out', pointerEvents: 'auto' });
-      
-      // Reset rotation/translation smoothly
-      gsap.to(cardInner, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out' });
-      gsap.to(container, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' });
-      gsap.to(cardImg, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' });
-      gsap.to(glare, { opacity: 0, duration: 0.8, ease: 'power2.out' });
-      gsap.to(sheen, { opacity: 0, duration: 0.8, ease: 'power2.out' });
-    }
-  });
+      }
+    });
+    // Restore background image from blurred state
+    gsap.to('#detailHeroImg', { 
+      filter: 'blur(0px) brightness(1)', 
+      scale: 1.0, 
+      duration: 0.65, 
+      ease: 'power2.out' 
+    });
+    gsap.to('.detail-hero-content', { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out', pointerEvents: 'auto' });
+    
+    // Reset rotation/translation smoothly
+    gsap.to(cardInner, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out' });
+    gsap.to(container, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' });
+    gsap.to(cardImg, { x: 0, y: 0, duration: 0.8, ease: 'power2.out' });
+    gsap.to(glare, { opacity: 0, duration: 0.8, ease: 'power2.out' });
+    gsap.to(sheen, { opacity: 0, duration: 0.8, ease: 'power2.out' });
+  }
+
+  if (togglePillImg) {
+    togglePillImg.addEventListener('click', function(e) {
+      e.stopPropagation();
+      deactivate3DCard();
+    });
+  }
+  if (togglePillCard) {
+    togglePillCard.addEventListener('click', function(e) {
+      e.stopPropagation();
+      activate3DCard();
+    });
+  }
 
   // Helper functions for drag lifecycle
   function handleDragStart(clientX, clientY) {
@@ -791,10 +829,9 @@ function setupDetail3DCard() {
     velocityRotateY = 0;
   }
 
-  // Bind Mouse Listeners
   hero.addEventListener('mousedown', function(e) {
     if (!is3DCardActive) return;
-    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
+    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button') || e.target.closest('#heroTogglePill')) {
       return;
     }
     handleDragStart(e.clientX, e.clientY);
@@ -811,10 +848,9 @@ function setupDetail3DCard() {
     handleDragEnd(e.clientX, e.clientY);
   });
 
-  // Bind Touch Listeners (with passive: false to allow preventDefault page scroll suppression)
   hero.addEventListener('touchstart', function(e) {
     if (!is3DCardActive) return;
-    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button')) {
+    if (e.target.closest('#detailClose') || e.target.closest('a') || e.target.closest('button') || e.target.closest('#heroTogglePill')) {
       return;
     }
     handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
