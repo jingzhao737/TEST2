@@ -42,8 +42,21 @@ if (!isMobileDevice) {
     const imgContainer = document.createElement('div');
     imgContainer.className = 'work-preview-img-container';
 
+    // Two persistent image layers for smooth crossfade between cards
+    const imgLayerA = document.createElement('img');
+    imgLayerA.className = 'work-preview-img';
+    const imgLayerB = document.createElement('img');
+    imgLayerB.className = 'work-preview-img';
+    gsap.set(imgLayerB, { opacity: 0 });
+
+    imgContainer.appendChild(imgLayerA);
+    imgContainer.appendChild(imgLayerB);
     wrapper.appendChild(imgContainer);
     document.body.appendChild(wrapper);
+
+    // Track which layer is currently visible vs incoming
+    let currentLayer = imgLayerA;
+    let nextLayer = imgLayerB;
 
     // Initial State
     gsap.set(wrapper, { autoAlpha: 0 });
@@ -68,10 +81,15 @@ if (!isMobileDevice) {
       if (!isPreviewActive) return;
       isPreviewActive = false;
       activeSrc = null;
-      gsap.killTweensOf([wrapper, imgContainer]);
+      gsap.killTweensOf([wrapper, imgContainer, imgLayerA, imgLayerB]);
       gsap.to(wrapper, { autoAlpha: 0, duration: 0.2, delay: 0.1, overwrite: true, onComplete: () => {
         gsap.set(imgContainer, { clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', y: 14, x: 16, rotationX: -15 });
-        imgContainer.innerHTML = '';
+        // Reset both layers for next entrance
+        imgLayerA.src = ''; imgLayerB.src = '';
+        gsap.set(imgLayerA, { opacity: 1 });
+        gsap.set(imgLayerB, { opacity: 0 });
+        currentLayer = imgLayerA;
+        nextLayer = imgLayerB;
       }});
       gsap.to(imgContainer, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)', y: -46, x: 16, rotationX: 15, duration: 0.5, ease: 'expo.out', delay: 0.05, overwrite: true });
     }
@@ -159,30 +177,32 @@ if (!isMobileDevice) {
       });
       card.classList.add('hovered');
 
-      // Clear previous image instantly
-      imgContainer.innerHTML = '';
-
-      // Reset the container instantly to collapsed state so it plays entrance from scratch
-      gsap.killTweensOf(imgContainer);
-      gsap.set(imgContainer, { 
-        clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)', 
-        y: 14, 
-        x: 16, 
-        rotationX: -15 
-      });
-      
-      showPreviewDOM();
-
       const src = card.dataset.image;
-      if (src) {
-        activeSrc = src;
-        const newImg = document.createElement('img');
-        newImg.className = 'work-preview-img';
-        newImg.src = src;
-        
-        // Render immediately in full inside the collapsed parent container
-        gsap.set(newImg, { clipPath: 'none', y: 0, rotationX: 0 });
-        imgContainer.appendChild(newImg);
+      if (!src || src === activeSrc) return;
+      activeSrc = src;
+
+      if (!isPreviewActive) {
+        // ── First show: entrance clip-path animation ──
+        currentLayer.src = src;
+        gsap.set(currentLayer, { opacity: 1 });
+        gsap.set(nextLayer, { opacity: 0 });
+
+        gsap.killTweensOf(imgContainer);
+        gsap.set(imgContainer, {
+          clipPath: 'polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)',
+          y: 14, x: 16, rotationX: -15
+        });
+        showPreviewDOM();
+      } else {
+        // ── Already visible: smooth crossfade to next image ──
+        nextLayer.src = src;
+        gsap.killTweensOf([currentLayer, nextLayer]);
+        gsap.to(nextLayer, { opacity: 1, duration: 0.28, ease: 'power2.inOut', overwrite: true });
+        gsap.to(currentLayer, { opacity: 0, duration: 0.28, ease: 'power2.inOut', overwrite: true, onComplete: () => {
+          currentLayer.src = '';
+        }});
+        // Swap layer references
+        [currentLayer, nextLayer] = [nextLayer, currentLayer];
       }
     }
 
