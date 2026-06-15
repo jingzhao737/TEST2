@@ -1,12 +1,5 @@
 [
   {
-    "step": 82,
-    "timestamp": "2026-06-12 01:10:35",
-    "description": "Add non-interactive laser spark burst and trail drawing overlay using canvas",
-    "folder": "step_082_Add_non-interactive_laser_spark_burst_and_trail_drawing_overlay_using_canvas",
-    "is_auto": false
-  },
-  {
     "step": 83,
     "timestamp": "2026-06-12 01:11:45",
     "description": "Fix native cursor flickering and apply LERP delay to laser lines",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:00:18",
     "description": "Add smooth fade-out when music stops or switches",
     "folder": "step_101_Add_smooth_fade-out_when_music_stops_or_switches",
+    "is_auto": false
+  },
+  {
+    "step": 102,
+    "timestamp": "2026-06-16 01:02:10",
+    "description": "Restore volume HUD font back to Google Sans",
+    "folder": "step_102_Restore_volume_HUD_font_back_to_Google_Sans",
     "is_auto": false
   }
 ]

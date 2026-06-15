@@ -18,7 +18,7 @@ A personal portfolio website for a visual artist (YYJZ / JingZhao). It showcases
 
 ## 2. The User (Who You're Working For)
 
-- Communicates in **Chinese (Mandarin)**. Respond in Chinese unless they write in English.
+- Communicates in **Chinese (Mandarin)**. Respond in Chinese unless they write in English. **All generated markdown files (such as implementation_plan.md, task.md, walkthrough.md) must be written in Chinese.**
 - Has a strong aesthetic sense. They care deeply about visual quality — pixel-level details matter.
 - Prefers **restraint and elegance** over flashy or excessive effects.
 - Gets frustrated when agents change things they didn't ask for.
