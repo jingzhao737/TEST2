@@ -68,6 +68,7 @@
       snapOffsetY = cY - mouseY;
     }
     hoveredElement = el;
+    window.__hoveredElement = el; // Expose globally for diagnostics
     if (hoveredElement) {
       hoveredElement.classList.add('magnet-hover');
       if (isClicked) {
