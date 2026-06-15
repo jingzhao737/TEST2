@@ -201,14 +201,16 @@ if (!isMobileDevice) {
         showPreviewDOM();
       } else {
         // ── Already visible: smooth crossfade to next image ──
-        nextLayer.src = src;
-        gsap.killTweensOf([currentLayer, nextLayer]);
-        gsap.to(nextLayer, { opacity: 1, duration: 0.28, ease: 'power2.inOut', overwrite: true });
-        gsap.to(currentLayer, { opacity: 0, duration: 0.28, ease: 'power2.inOut', overwrite: true, onComplete: () => {
-          currentLayer.src = '';
+        const oldLayer = currentLayer;
+        const newLayer = nextLayer;
+        newLayer.src = src;
+        gsap.killTweensOf([oldLayer, newLayer]);
+        gsap.to(newLayer, { opacity: 1, duration: 0.28, ease: 'power2.inOut', overwrite: true });
+        gsap.to(oldLayer, { opacity: 0, duration: 0.28, ease: 'power2.inOut', overwrite: true, onComplete: () => {
+          oldLayer.src = '';
         }});
         // Swap layer references
-        [currentLayer, nextLayer] = [nextLayer, currentLayer];
+        [currentLayer, nextLayer] = [newLayer, oldLayer];
       }
     }
 
