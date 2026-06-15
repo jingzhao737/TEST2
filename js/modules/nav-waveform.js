@@ -270,13 +270,36 @@
         opacity = Math.max(0, Math.min(1, opacity));
       }
 
-      // 1. Draw subtle horizontal volume glow fill (no text drawn inside canvas now)
-      ctx.fillStyle = 'rgba(232, 124, 80, ' + (0.13 * opacity) + ')';
-      ctx.fillRect(0, 0, waveW * window.__globalVolume, waveH);
+      // 1. Draw horizontal volume glow fill with 5px rounded corners and a breathing edge glow
+      let barW = waveW * window.__globalVolume;
+      if (barW > 0.5) {
+        ctx.beginPath();
+        if (typeof ctx.roundRect === 'function') {
+          ctx.roundRect(0, 0, barW, waveH, 5); // 5px rounded corners
+        } else {
+          ctx.rect(0, 0, barW, waveH);
+        }
+        ctx.fillStyle = 'rgba(232, 124, 80, ' + (0.13 * opacity) + ')';
+        ctx.fill();
+
+        // High-end breathing edge glow line at the right edge
+        let edgeGlow = (0.55 + Math.sin(Date.now() * 0.007) * 0.20) * opacity;
+        ctx.save();
+        ctx.shadowColor = 'rgba(232, 124, 80, 0.95)';
+        ctx.shadowBlur = 6;
+        ctx.fillStyle = 'rgba(232, 124, 80, ' + edgeGlow + ')';
+        ctx.fillRect(barW - 2, 0, 2, waveH);
+        ctx.restore();
+      }
 
       // 2. Show and update HTML floating HUD underneath the waveform
       if (hudEl) {
         hudEl.classList.add('is-visible');
+        if (isDraggingVolume) {
+          hudEl.classList.add('is-dragging');
+        } else {
+          hudEl.classList.remove('is-dragging');
+        }
         const volPercent = Math.round(window.__targetVolume * 100);
         hudEl.textContent = volPercent + '%';
         hudEl.style.opacity = opacity;
@@ -284,6 +307,7 @@
     } else {
       if (hudEl) {
         hudEl.classList.remove('is-visible');
+        hudEl.classList.remove('is-dragging');
       }
       isShowingVolumeText = false;
     }

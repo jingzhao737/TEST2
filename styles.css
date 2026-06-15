@@ -419,26 +419,31 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   position: absolute;
   top: 100%;
   left: 45%;
-  transform: translateX(-50%) translateY(0px);
-  background: rgba(22, 22, 22, 0.88);
-  border: 1px solid rgba(232, 124, 80, 0.28);
-  border-radius: 5px;
+  transform: translateX(-50%) translateY(0px) scale(0.9);
+  background: rgba(22, 22, 22, 0.9);
+  border: 1px solid rgba(232, 124, 80, 0.35);
+  border-radius: 6px;
   color: #fff;
-  font-family: "Outfit", "Google Sans", sans-serif;
-  font-size: 10px;
+  font-family: 'Climate Crisis', 'Google Sans', sans-serif;
+  font-size: 11px;
   font-weight: 700;
-  padding: 3px 7px;
+  padding: 4px 8px;
   pointer-events: none;
   opacity: 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), 0 0 6px rgba(232, 124, 80, 0.12);
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.55), 0 0 10px rgba(232, 124, 80, 0.18);
+  transition: opacity 0.25s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 210;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .nav-volume-hud.is-visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(6px);
+  transform: translateX(-50%) translateY(8px) scale(1);
+}
+.nav-volume-hud.is-dragging {
+  border-color: rgba(232, 124, 80, 0.7);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(232, 124, 80, 0.35);
+  transform: translateX(-50%) translateY(8px) scale(1.12);
 }
 .nav-next-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--fg);cursor:pointer;outline:none;padding:0;opacity:0;pointer-events:none;overflow:hidden;perspective:800px;transform:rotateY(-120deg) rotateZ(-30deg) scale(0) translateX(-30px);filter:blur(4px);transition:opacity 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),transform 0.6s cubic-bezier(0.34, 1.75, 0.4, 1),color 0.3s ease,filter 0.5s ease;margin-left:8px;flex-shrink:0}
 :root.light .nav-next-btn{border:none;background:transparent}
