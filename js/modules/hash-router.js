@@ -153,7 +153,8 @@ function openDetail(data, heroImg, pushState) {
     gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power2.out' });
   }
 
-  gsap.set([detailBody, detailClose], { opacity: 0, y: 30 });
+  gsap.set(detailBody, { opacity: 0, y: 30 });
+  gsap.set(detailClose, { opacity: 1, y: 0 });
   gsap.set(detailHeroContent, { opacity: 1, y: 0 });
   gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
 
@@ -194,7 +195,6 @@ function openDetail(data, heroImg, pushState) {
   }
 
   // ── 7. Stagger text content animations ──
-  gsap.to(detailClose, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.3 });
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.4 });
   gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.5 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.6 });
@@ -235,6 +235,11 @@ function closeDetail(popState) {
   // Fade out backdrop smoothly
   if (detailBg) {
     gsap.to(detailBg, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
+  }
+
+  // Fade out close button immediately to prevent lingering
+  if (detailClose) {
+    gsap.to(detailClose, { opacity: 0, duration: 0.2, ease: 'power2.out' });
   }
 
   // Fade original preview container back in smoothly
@@ -401,19 +406,6 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowDown') { e.preventDefault(); window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' }); }
   if (e.key === 'ArrowUp') { e.preventDefault(); window.scrollBy({ top: -window.innerHeight * 0.7, behavior: 'smooth' }); }
 });
-
-const workDetailScroll = document.getElementById('workDetailScrollWrapper');
-if (workDetailScroll) {
-  workDetailScroll.addEventListener('wheel', function(e) {
-    e.stopPropagation();
-    let atTop = workDetailScroll.scrollTop <= 0, atBottom = workDetailScroll.scrollTop + workDetailScroll.clientHeight >= workDetailScroll.scrollHeight - 2;
-    if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) e.preventDefault();
-  }, { passive: false });
-}
-
-workDetail.addEventListener('wheel', function(e) {
-  e.preventDefault();
-}, { passive: false });
 
 window.openDetail = openDetail;
 window.closeDetail = closeDetail;

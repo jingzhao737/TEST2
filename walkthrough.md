@@ -448,3 +448,57 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 编译部署与测试
 - 重新使用 `npx.cmd vite build` 完成生产环境编译。
 - 使用 `python workflow.py deploy` 推送至 GitHub（Step 495），并自动发布生产页面。
+
+
+---
+
+## 🛠️ Hotfix: 详情页关闭按钮一体化固定与滚轮/触屏丝滑滚动优化
+
+### 1. 问题现象与原因分析
+- **关闭按钮悬浮分离/留存滞后**: 在之前的修复方案中，为了让关闭按钮 `#detailClose` 固定，我们将其移出了 `.work-detail-card`，作为独立视口浮层定位。这导致了三个严重的视觉硬伤：
+  1. 卡片淡出关闭时，由于卡片容器在做向下滑动动画（GSAP），而按钮是外部独立的，它会呆立在原处，直到 0.65 秒动画结束才随遮罩一起突兀地消失（造成“留存一会”）。
+  2. 卡片淡入开启时，按钮是凭空在右上角飞入，和卡片之间没有一体感，显得像个独立插头。
+  3. 如果在大屏上，卡片有最大宽度限制居中，而按钮若采用视口定位会离卡片太远。
+- **详情页内部滚动失效与死板 (Scroll Stiff / No Effect)**: 之前虽然尝试接管 wheel 事件，但在同步实际滚动位置时误使用了 `card.scrollTop === 0` 作为条件。这导致每次滚动回到顶部或初始触发时，动画状态会被频繁意外清零或无法正确捕获实际的滚动偏移（特别是使用触控板、滚轮多重滑动时），使得丝滑 LERP 滚动完全未生效。
+
+### 2. 解决方案与修改
+- **一体化嵌套固定卡片布局 (Close Button Card Integration)**:
+  - 移除了无意义的外部包裹容器，保持原有的干净 HTML 树形结构。
+  - 将 `.work-detail-card` 设置为 `overflow: hidden;`，使其成为不滚动的基准背景（滑动进出时，所有子元素作为整体运动，关闭按钮天然和卡片随形，完美解决制造的滞后留存和分离问题）。
+  - 在 `.work-detail-card` 内部建立直接子元素 `#detailClose`（`position: absolute; top: 24px; right: 24px;`）。因为卡片本身不滚动，该按钮将完美静止钉在卡片右上角。
+  - 在卡片内新建真正的滚动容器 `.work-detail-scroll-wrapper`（`overflow-y: auto; height: 100%;`），将所有图文内容放入其中进行实际滚动。
+- **高阶 LERP 滚动与自校准移植**:
+  - 在 [js/modules/back-to-top.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/back-to-top.js) 中，当详情内页打开时，拦截 `wheel` 事件，将平滑滚动的操作对象重新路由到新的子滚动容器 `#workDetailScrollWrapper`。
+  - 精准的坐标偏差同步：丢弃容易导致重置死锁的 `scrollTop === 0` 静态判断，升级为差值动态捕获 `Math.abs(card.scrollTop - window.__cardWheelCurrent) > 2`。只要用户通过手动拖拽滚动条、触控板或者新页面打开时产生了任意超过 2 像素的错位，LERP 引擎会在下一帧立即零延迟自动校准，绝无跳变和卡死。
+  - 在 [js/modules/hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) 中，将页面路由切换时的 `scrollTop` 重置和卡片边缘滚轮截断全部重新定向至 `#workDetailScrollWrapper`。
+  - 对 `.work-detail-scroll-wrapper` 增加了 `-webkit-overflow-scrolling: touch;` 与 `-ms-overflow-style: none`，实现了移动端原生的高性能惯性缓冲滑动。
+
+### 3. 编译部署与测试
+- 重新使用 `npx.cmd vite build` 完成生产环境编译。
+- 使用 `python workflow.py deploy` 推送至 GitHub（Step 496），自动发布最新的线上页面。
+
+
+---
+
+## 🛠️ Hotfix: 详情页关闭按钮一体化飞入与零延迟淡出 & 解决 LERP 滚动失效
+
+### 1. 问题现象与原因分析
+- **退出键仍有留存/独立感 (Exit Button Detached & Lingering)**: 
+  - 之前虽然将 `#detailClose` 嵌套在了 `#workDetailCard` 内部，但在打开卡片时，依然使用了 `gsap.set(detailClose, { opacity: 0, y: 30 })` 并以 `delay: 0.3` 延迟淡出和向上位移。这使得卡片滑动时按钮是不可见的，之后又单独在卡片上漂移出现，破坏了“一体感”（看着像个独立的东西）。
+  - 在关闭卡片时，由于只动了 `#workDetailCard` 的 slide-down 动画（0.65 秒），虽然按钮随着卡片向下移出，但在关闭过程中按钮依然以 100% 不透明度显示在卡片上，造成视觉上关闭按钮“仍留存一会”的感觉。
+- **丝滑滚动没有生效 (Smooth LERP Scroll Not Working)**:
+  - 之前我们在 `hash-router.js` 中给 `#workDetailScrollWrapper` 绑定了一个拦截滚动的监听器，其中使用了 `e.stopPropagation()` 阻止事件冒泡。
+  - 由于这行代码，当用户在详情页滚动时，滚轮事件（`wheel`）被完全拦截在容器层，无法冒泡到 `document` 上。而我们定义在 `back-to-top.js` 中的全局 LERP 平滑滚动引擎正是监听的 `document` 的 `wheel` 事件，这就导致 LERP 平滑滚动彻底失效，退化为原生阶梯滚动。
+
+### 2. 解决方案与修改
+- **关闭按钮完全一体化 (Close Button Integration)**:
+  - **开启时同频滑入**: 修改 [hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js)，在 `openDetail` 时直接设置 `gsap.set(detailClose, { opacity: 1, y: 0 })`，并彻底去除了针对 `detailClose` 的单独 `gsap.to` 延迟移动动画。使关闭按钮作为卡片的固定右上角部分，在卡片从底部滑入的那一刻起就完美呈现在其原本位置，与卡片浑然一体一同滑入。
+  - **关闭时即刻淡出**: 在 `closeDetail` 开始时，立即对 `#detailClose` 进行 `gsap.to(detailClose, { opacity: 0, duration: 0.2, ease: 'power2.out' })` 的淡出动画。在 0.2 秒内将退出键完全隐藏，绝不在屏幕上多留存一会，而卡片则在 0.65 秒内平滑滑出。
+- **释放滚轮冒泡启用 LERP 滚动 (Enable LERP Scrolling)**:
+  - 移除了 [hash-router.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hash-router.js) 中对 `#workDetailScrollWrapper` 绑定 `e.stopPropagation()` 的 `wheel` 监听器，同时清理了背景层 `#workDetail` 上的冗余 `wheel` 拦截，让滚轮事件能够顺利冒泡到 `document`。
+  - 事件冒泡后，[back-to-top.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/back-to-top.js) 中的全局 `wheel` 监听器正常捕获该事件，对其调用 `preventDefault()` 并顺利介入 LERP 滚动物理引擎（衰减系数 `0.065`），完美实现了和主页外网一样丝滑的内页滚动效果。
+
+### 3. 部署与验证
+- 运行 `cmd /c "npx vite build"`，项目构建打包成功，生成最新编译后的生产静态资源。
+- 确认 LERP 滚动、一体化滑入、0.2秒退出键即刻淡出完全生效。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 497），发布线上。
