@@ -1124,3 +1124,21 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新运行了 `npx vite build` 生产编译构建，Rolldown 打包无任何报错。
 - 通过 `git push` 同步将更改和日志推送到 GitHub 的 `main` 远程分支。
+
+
+---
+
+## 🛠️ Hotfix: 解决 nav-waveform.js 因 Temporal Dead Zone 导致的 ReferenceError 崩溃问题
+
+### 1. 需求分析与隐患排查
+- **问题反馈**：用户反映在拖拽声波 Canvas 时没有任何音量改变或视觉反馈。
+- **定位排查**：在本地使用无头浏览器调试时，控制台抛出 `ReferenceError: Cannot access 'volumeFeedbackTimer' before initialization` 错误。
+- **原因分析**：这是由于音量相关的临时状态变量（如 `volumeFeedbackTimer`）声明定义在了 `draw()` 同步自执行函数的下方。由于自执行函数会在加载时立刻同步调用 `draw()`，导致在执行该函数内部逻辑时，这些变量由于暂存死区（Temporal Dead Zone）限制还未被声明，引发 JS 脚本执行直接中断，后续的所有点击、拖动事件监听器注册流程彻底无法被执行。
+
+### 2. 解决方案与修改
+- **变量提升重构**：将 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js) 中的所有拖拽交互临时状态变量（如 `isDraggingVolume`、`volumeFeedbackTimer` 等）移动到了文件顶部（约第 25 行之后），在自执行函数和 `draw()` 调用之前完全初始化完毕，彻底消除 TDZ 崩溃隐患。
+- **验证**：重新运行 Playwright 自动化仿真调试，确认无头 Chrome 能够正常处理 Canvas 的点击与滑动手势，控制台未再抛出任何异常，全局交互和音量条绘制已全部恢复正常。
+
+### 3. 部署与验证
+- 重新运行了 `npx vite build` 生产编译打包。
+- 使用 `git push` 将热修复同步推送到 GitHub 远程仓库中。
