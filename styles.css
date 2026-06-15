@@ -1757,12 +1757,25 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border-top-right-radius: 24px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  border: 2px solid var(--accent);
-  border-bottom: none; /* No border at the bottom screen edge */
   box-shadow: 0 -15px 50px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   pointer-events: auto;
   z-index: 501;
+}
+
+/* Use overlay pseudo-element border to eliminate subpixel anti-aliasing gaps between inner content and card edge */
+.work-detail-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border: 2px solid var(--accent);
+  border-bottom: none;
+  pointer-events: none;
+  z-index: 10; /* Draw border on top of card content to prevent gap showing through */
 }
 
 .work-detail-scroll-wrapper {
@@ -1848,6 +1861,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .work-detail-card {
     width: calc(100% - 24px); /* Smaller gap on mobile */
     height: calc(100vh - 20px);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+  .work-detail-card::after {
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
   }
