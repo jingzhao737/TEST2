@@ -1,12 +1,5 @@
 [
   {
-    "step": 79,
-    "timestamp": "2026-06-12 01:07:12",
-    "description": "Roll back record physics changes to Step 75",
-    "folder": "step_079_Roll_back_record_physics_changes_to_Step_75",
-    "is_auto": false
-  },
-  {
     "step": 80,
     "timestamp": "2026-06-12 01:08:13",
     "description": "Implement global interactive click sound effects using event delegation",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 00:57:16",
     "description": "Fix record playback restart on latch",
     "folder": "step_098_Fix_record_playback_restart_on_latch",
+    "is_auto": false
+  },
+  {
+    "step": 99,
+    "timestamp": "2026-06-16 00:57:33",
+    "description": "Updated walkthrough with record play fix",
+    "folder": "step_099_Updated_walkthrough_with_record_play_fix",
     "is_auto": false
   }
 ]

@@ -107,7 +107,6 @@
     for (let i = 0; i < audios.length; i++) {
       if (i !== idx) { audios[i].pause(); audios[i].currentTime = 0; }
     }
-    audios[idx].currentTime = 0;
     audios[idx].play().catch(function(){});
     window.__audioPlaying = true;
     prevHoveredIdx = idx;
