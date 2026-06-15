@@ -162,7 +162,7 @@ function openDetail(data, heroImg, pushState) {
   if (detailCard) {
     gsap.fromTo(detailCard, {
       y: '100%',
-      scaleX: 0.7,
+      scaleX: 0.4,
       transformOrigin: '50% 100%',
       opacity: 1
     }, {
@@ -263,7 +263,7 @@ function closeDetail(popState) {
   if (detailCard) {
     gsap.to(detailCard, {
       y: '100%',
-      scaleX: 0.7,
+      scaleX: 0.4,
       transformOrigin: '50% 100%',
       duration: 0.65,
       ease: 'power3.inOut',
