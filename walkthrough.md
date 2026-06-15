@@ -1173,3 +1173,40 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证
 - 重新运行了 `npx vite build` 生产编译。
 - 使用 `git push` 同步推送到 GitHub 远程仓库的 `main` 分支。
+
+
+---
+
+## 🛠️ Hotfix: 大音量状态下网页声波起伏幅度增强优化
+
+### 1. 需求分析与修改
+- **需求**：用户反馈在大音量状态下，希望声波起伏能更明显一些。
+- **解决方案**：
+  - 重构了 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js#L150-L167) 里的 `targetAmp` 计算常数：将有背景音乐播放时的振幅增幅由 `0.28 + (avgVolume / 255.0) * 1.35` 提高到了 `0.42 + (avgVolume / 255.0) * 2.45`（起伏和跳动度提升了近一倍）；将无声分析数据时的占位振幅从 `1.0` 提高到 `1.6`。
+  - 在乘以音量系数时，引入了 $1.15$ 次方的非线性幂次缩放 `Math.pow(globalVolume, 1.15) * 1.55`。这使得当音量拉至较大（如 $80\% \sim 100\%$）时，声波的运动具有更强的视觉冲击力和纵向拉伸感，在低音量时依然能快速收缩，过度更加饱满剧烈。
+
+### 2. 部署与验证
+- 重新运行了 `npx vite build` 生产编译打包。
+- 使用 `git push` 同步推送到 GitHub 远程仓库的 `main` 分支。
+
+
+---
+
+## 🛠️ Hotfix: 重构声波音量拖拽机制，实现相对位移拖拽、LERP 缓动延迟以及 HTML 悬浮 HUD 标签
+
+### 1. 需求分析与修改
+- **问题反馈**：
+  - 波形起伏在大音量下太夸张以至于超出 Canvas 限制边界。
+  - 音量调节基准突跳：点击声波 Canvas 的任意一处时，音量会瞬间跳变到对应绝对比例（如从 20% 突跳到 80%），而非平滑拉动。
+  - 用户希望音量数值不要叠在波浪上，而是“悬浮在下方”。
+  - 左右滑动调整音量时希望加点“delay 延迟”，使手感更丝滑。
+- **解决方案与重构**：
+  - **垂直高度上限限制 (Amplitude Clamping)**：重构了 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js#L145-L167) 里的绘制逻辑。将三层正弦波的高度系数回缩到合理水平（Background 为 9.5，Secondary 为 5.8/4.2，Main 为 8.5/3.0），同时设定了 `ampScale = Math.min(1.45, ampScale)`。这起到了物理约束层的作用，使得不管声音在最大音量下动态摆动多剧烈，波形整体高度也**被牢牢限制在 Canvas 内部，绝不出框**。
+  - **基于相对位移的滑块物理**：重构了 `onVolumeDragStart` 和 `onVolumeDragMove` 中的事件计算逻辑。摒弃了以鼠标点击绝对 X 坐标设值的做法，改为在 `mousedown` 时记录起始目标音量 `dragStartVolume`。在移动过程中，根据拖动改变量 $\Delta X / \text{Canvas宽度}$ 相对累加到起始音量上。**效果**：无论从 Canvas 哪一处开始按住拉动，音量均以当前值为基准顺畅调整，彻底消除了音量跳变缺陷。
+  - **滑音平滑缓动追随 (LERP Volume)**：引入了 `window.__targetVolume`（目标值）与 `window.__globalVolume`（实际渲染值）双变量体系。在 `draw()` 帧循环中，通过 `window.__globalVolume += (targetVolume - globalVolume) * 0.095` 进行平滑缓动追随。**效果**：无论拖动拉得多快，音量变化、波形高低和 Canvas 进度底色都带有极其高档的“弹性阻尼阻滞”追随效果，手感极为丝滑。
+  - **独立 HTML 悬浮 HUD 标签**：在 [styles.css](file:///D:/webprojext/styles.css#L418-L440) 中追加了 `.nav-volume-hud` 毛玻璃发光气泡样式，并在 [nav-waveform.js](file:///D:/webprojext/js/modules/nav-waveform.js) 中自动在下方动态挂载该 DOM。拖拽时该气泡会向下微移并淡入浮现在声波正下方，松开 1.2 秒后渐隐，Canvas 内部恢复纯净只绘制波线。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 生产打包，Rolldown 编译通过。
+- 通过 Playwright 跑通浏览器模拟拖拽测试，控制台零报错。
+- `git push` 推送至远程 `main` 分支。
