@@ -1,12 +1,5 @@
 [
   {
-    "step": 93,
-    "timestamp": "2026-06-12 01:36:43",
-    "description": "Fix 3D cursor rendering flicker by moving drop-shadow filter to leaf wrapper elements",
-    "folder": "step_093_Fix_3D_cursor_rendering_flicker_by_moving_drop-shadow_filter_to_leaf_wrapper_elements",
-    "is_auto": false
-  },
-  {
     "step": 94,
     "timestamp": "2026-06-12 01:38:56",
     "description": "Disable outer glow drop shadow for grab state cursor",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:18:01",
     "description": "Deploy Three.js WebGL records documentation and sync files",
     "folder": "step_112_Deploy_Three.js_WebGL_records_documentation_and_sync_files",
+    "is_auto": false
+  },
+  {
+    "step": 113,
+    "timestamp": "2026-06-16 01:20:41",
+    "description": "Adjust vinyl record proportions to make cover image larger",
+    "folder": "step_113_Adjust_vinyl_record_proportions_to_make_cover_image_larger",
     "is_auto": false
   }
 ]

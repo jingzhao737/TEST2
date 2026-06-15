@@ -386,7 +386,7 @@ import * as THREE from 'three';
         const pos = vinylGeom.attributes.position;
         const uv = vinylGeom.attributes.uv;
         let rOuter = t.dispW / 2;
-        let rInner = rOuter * 0.38;
+        let rInner = rOuter * 0.58;
         for (let j = 0; j < pos.count; j++) {
           let x = pos.getX(j);
           let y = pos.getY(j);
@@ -414,10 +414,10 @@ import * as THREE from 'three';
         discGroup.add(vinylMesh);
         
         // 3. Create Label Mesh (Spindle ring)
-        const labelGeom = new THREE.RingGeometry(t.dispW * 0.04, t.dispW * 0.19, 32, 1);
+        const labelGeom = new THREE.RingGeometry(t.dispW * 0.04, t.dispW * 0.29, 32, 1);
         const posL = labelGeom.attributes.position;
         const uvL = labelGeom.attributes.uv;
-        let labelR = t.dispW * 0.19;
+        let labelR = t.dispW * 0.29;
         for (let j = 0; j < posL.count; j++) {
           let x = posL.getX(j);
           let y = posL.getY(j);
