@@ -1459,3 +1459,33 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub，自动部署线上页面。
+
+---
+
+## 🛠️ Step 591: 优化吸附缩小动画，使其更慢、更平滑且具有高级弹性 (Optimize Snap-to-Latch Scale-Down Animation for Slower, Smoother, and More Premium Elastic Response)
+
+### 1. 问题与优化思路
+- **原问题**：唱片吸附到导航栏时触发的缩小缩放动画速度太快。
+- **原因剖析**：
+  - 在之前的实现中，吸附瞬间 `t.latchScale` 被直接在 1 帧内设置成了终点缩放值 `0.65`（这是一个瞬时的阶跃变化，相当于瞬间缩小到 65%），接着仅用了 ~14 帧（约 230ms）的时间通过弹簧力（Stiffness 0.035, Damping 0.82）回弹至 1.0。
+  - 由于缩小是“瞬间发生”的，且回弹速度极快，整个动画看起来非常急促，缺乏高级物理动效的阻尼感和重量感。
+- **优化设计**：
+  - **渐进式收缩（Impulse-Based Shrink）**：取消吸附时的瞬间尺度阶跃。吸附瞬间将 `latchScale` 保持在正常大小 `1.0`，而是向其施加一个负向的初速度冲量（`t.latchScaleVelocity = -0.055`）。
+  - **弹性回弹参数调优**：
+    - 将弹簧刚度（Stiffness）从 `0.035` 降低至 `0.006`，使形变恢复的拉力更柔和。
+    - 将阻尼系数（Damping）从 `0.82` 提高至 `0.92`，让盘面在收缩和回弹的过程中像高级液压阻尼器一样平滑过渡。
+  - **动画运行轨迹**：
+    - **帧 0 (吸附瞬间)**: 缩放比例为 `1.0`，速度为 `-0.055`（完全无瞬间跳变闪烁）。
+    - **帧 1 - 15 (约 250ms)**: 盘面受负向速度惯性影响，在 0.25 秒内以柔和的曲线平滑收缩到最小的 `0.637`，形成极具物理重量感的“被磁力吸入挤压”视觉效果。
+    - **帧 15 - 50 (约 800ms)**: 弹簧力开始将缩放比平滑推回至 1.0。
+    - **帧 50 - 80 (约 1.3s)**: 在 1.0 附近微幅平滑衰减，最终完成静止，整体动画历时约 1.3 秒，阻尼感极其奢华、高级。
+
+### 2. 代码实现
+- 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 中的三处逻辑：
+  - 在 `window.__latchDisc` 触发吸附时：将 `t.latchScale` 初始化为 `1.0`，并赋予 `t.latchScaleVelocity = -0.055`。
+  - 在拖拽结束的 `mouseup`/`touchend` 吸附时：同样初始化 `t.latchScale = 1.0`，并赋予 `t.latchScaleVelocity = -0.055`。
+  - 在 `render` 物理引擎循环中：更新物理弹簧系数为 `stiffness = 0.006` 和 `damping = 0.92`。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，吸附动画呈现出极其流畅、缓慢且带有高阻尼物理弹性的视觉质感，完全符合预期。
