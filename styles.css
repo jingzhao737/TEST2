@@ -451,6 +451,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 #navLogo.console-active {
   -webkit-text-stroke: 0.4px var(--fg) !important;
   pointer-events: auto !important;
+  transition: none !important;
 }
 
 :root.light #navLogo.console-active {

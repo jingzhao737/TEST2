@@ -75,11 +75,12 @@ import gsap from 'gsap';
 
       const tl = gsap.timeline({
         onComplete: () => {
+          // Clear only temporary x/transform styles after landing BEFORE restoring transitions
+          // to prevent the browser from animating the clearProps transform reset (which causes subpixel layout shifting)
+          gsap.set(logo, { clearProps: 'x,transform' });
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
           consoleEl.style.transition = '';
-          // Clear only temporary x/transform styles after landing
-          gsap.set(logo, { clearProps: 'x,transform' });
           _animating = false;
         }
       });
