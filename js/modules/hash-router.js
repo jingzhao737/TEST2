@@ -359,7 +359,6 @@ function closeDetail(popState) {
   window.__isDetailClosing = true;
   workDetail.classList.remove('open');
   workDetail.style.pointerEvents = 'none';
-  dispatchWakeupEvents();
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');

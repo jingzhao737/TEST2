@@ -1853,19 +1853,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .work-detail-bg {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: #000;
   z-index: -1;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
 :root.light .work-detail-bg {
-  background: rgba(245, 240, 232, 0.65);
-}
-.work-detail-bg.active-blur {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: backdrop-filter 0.4s ease-out;
-  -webkit-transition: -webkit-backdrop-filter 0.4s ease-out;
+  background: #f5f0e8;
 }
 
 .work-detail-card {
@@ -2249,6 +2243,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     right: 16px;
     width: 44px;
     height: 44px;
+  }
+  .detail-body {
+    padding: 40px 20px 60px !important;
+  }
+  .detail-meta {
+    flex-wrap: wrap !important;
+    gap: 20px 32px !important;
+    padding: 20px 0 36px !important;
+    margin-bottom: 36px !important;
+  }
+  .detail-gallery {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin: 36px 0 !important;
   }
 }
 

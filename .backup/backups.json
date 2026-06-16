@@ -1,12 +1,5 @@
 [
   {
-    "step": 155,
-    "timestamp": "2026-06-17 00:37:33",
-    "description": "Optimize Works detail card transitions with uniform scale, choreographed fade timelines and dynamic active-blur helpers",
-    "folder": "step_155_Optimize_Works_detail_card_transitions_with_uniform_scale,_choreographed_fade_timelines_and_dynamic_active-blur_helpers",
-    "is_auto": false
-  },
-  {
     "step": 156,
     "timestamp": "2026-06-17 00:40:54",
     "description": "Auto-backup before rollback to Step 154",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:24:58",
     "description": "Update walkthrough.md with ReferenceError hotfix details",
     "folder": "step_174_Update_walkthrough.md_with_ReferenceError_hotfix_details",
+    "is_auto": false
+  },
+  {
+    "step": 175,
+    "timestamp": "2026-06-17 01:30:10",
+    "description": "Fix delay hover wakeup to prevent PC preview flash on exit",
+    "folder": "step_175_Fix_delay_hover_wakeup_to_prevent_PC_preview_flash_on_exit",
     "is_auto": false
   }
 ]

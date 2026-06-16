@@ -204,6 +204,7 @@ if (!isMobileDevice) {
     window.addEventListener('resize', updateFlatPageCoordinates);
 
     function onListEnter(e) {
+      if (window.__isRouteTransitioning || window.__isDetailClosing) return;
       isVisible = true;
       firstMove = true;
       
@@ -274,6 +275,7 @@ if (!isMobileDevice) {
     }
 
     function onCardEnter(index) {
+      if (window.__isRouteTransitioning || window.__isDetailClosing) return;
       const card = cards[index];
       cards.forEach((c, idx) => {
         if (idx !== index) c.classList.remove('hovered');
