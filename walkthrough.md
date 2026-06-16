@@ -1648,3 +1648,45 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与同步
 - 执行 `git tag -a v3.5-stable -m "Release v3.5-stable - 2D elastic collision physics between hanging records"` 本地创建标签。
 - 执行 `git push origin v3.5-stable` 推送锚点至 GitHub，完成版本发布与锚定。
+
+---
+
+## 🛠️ Step 605: 重构左上角 YYJZ 徽标为交互式调色控制台 (Interactive Theme Color Palette Control Console via YYJZ Logo)
+
+### 1. 交互与视觉设计
+- **需求**：点击左上角的“YYJZ”文字不再返回主页，而是弹出一个精致的小操控台（调色盘），允许用户：
+  - 单独调整/自定义网站所有的“品牌橙色（Primary Accent）”；
+  - 单独调整/自定义网站所有的“奶白色（Secondary Cream）”；
+  - 提供一键恢复默认按钮；
+  - 提供 5 个精心搭配、符合高级美学 of 预设主题按钮。
+- **UI 设计 (Glassmorphic Popover)**：
+  - 操控台采用半透明毛玻璃特效（`backdrop-filter: blur(16px)`），并附带微微的边框亮边（Inset Glow）和投影。
+  - 控制台设计了平滑的缩放和淡入淡出动效（`.active` 类过渡），支持点击外部空白处自动收起，非常优雅。
+- **主题预设（Curated Presets）**：
+  - **Default**：经典温暖橙色 & 奶白；
+  - **Cyberpunk**：迷幻霓虹粉 & 极光蓝；
+  - **Forest**：沉静森林绿 & 奶薄荷；
+  - **Ocean**：深邃海洋蓝 & 冰川浅蓝；
+  - **Royal**：高贵紫罗兰 & 熏衣草浅紫。
+
+### 2. 技术实现与全局响应
+- **CSS 变量化重构（Global Variable Refactoring）**：
+  - 编写 Python 脚本对 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 进行了全面重构，安全地将 45 处硬编码的 RGB `232, 124, 80` 转换为了 `rgba(var(--accent-rgb), ...)` 变量，以及将 4 处十六进制 `#E87C50` 转换为了 `var(--accent)`。
+  - 这保证了我们在 JavaScript 中只需修改 `:root` 的 `--accent` 与 `--accent-rgb`，全站所有 HTML 卡片、文字、发光特效、阴影和边框就会**在瞬间零延迟响应新的主题色**。
+- **自定义色彩适配规则（Smart Theme Mapping）**：
+  - 对“奶白色（Secondary Cream）”做了智能映射：
+    - 在深色模式下，该颜色作为文字与主要亮色（`--fg` / `--fg-rgb`）应用；
+    - 在浅色模式下，该颜色自动切换为全局大背景（`--bg`）应用。
+    这保证了色彩搭配无论在哪种主板式下都能保持极致的阅读对比度与美感。
+- **3D 帆布数据联动（WebGL Rope Sync）**：
+  - 修改了 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 的绳索绘制函数，不再使用写死的色值，而是直接在每一帧读取全局变量 `window.__accentRGB` 和 `window.__accentShadowRGB`。
+  - 在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 模块中，我们不仅通过 hexToRgb 实时计算并转换色值提供给 CSS 变量，还自动通过 $0.6$ 的明度乘子计算对应的暗部色，将其赋给 canvas，使得 3D 吊绳颜色变化瞬间同步，非常真实。
+- **主题切换监听（Theme Transition Hook）**：
+  - 修改了 [theme.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/theme.js)，当拉绳切换亮暗模式时分发 `themeChanged` 自定义事件。
+  - 调色板模块监听此事件，实现自动将自定义或预设颜色与亮/暗模式重新匹配并完美重绘。
+- **本地持久化（LocalStorage Persistence）**：
+  - 用户的自定义配色和预设偏好会被即时保存在浏览器存储中，页面刷新、关闭再打开也不会丢失！
+
+### 3. 部署与验证
+- 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，点击“YYJZ”文字后小操控台完美弹出，切换预设和选择自定义颜色时，全网页及 3D 吊绳瞬间响应变色，回弹和恢复极为灵敏。
