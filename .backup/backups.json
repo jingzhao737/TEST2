@@ -1,12 +1,5 @@
 [
   {
-    "step": 156,
-    "timestamp": "2026-06-17 00:40:54",
-    "description": "Auto-backup before rollback to Step 154",
-    "folder": "auto_156_Auto-backup_before_rollback_to_Step_154",
-    "is_auto": true
-  },
-  {
     "step": 157,
     "timestamp": "2026-06-17 00:41:22",
     "description": "Rollback to Step 154 Restore details card transitions and backdrop filters",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:30:10",
     "description": "Fix delay hover wakeup to prevent PC preview flash on exit",
     "folder": "step_175_Fix_delay_hover_wakeup_to_prevent_PC_preview_flash_on_exit",
+    "is_auto": false
+  },
+  {
+    "step": 176,
+    "timestamp": "2026-06-17 01:30:32",
+    "description": "docs update walkthrough with transition isolation fix",
+    "folder": "step_176_docs_update_walkthrough_with_transition_isolation_fix",
     "is_auto": false
   }
 ]

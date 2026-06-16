@@ -2522,3 +2522,25 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包正常。
 - 运行 `node check_console.js` 验证控制台日志无错误。
 - 通过 `py workflow.py deploy` 成功将最新版本（Commit `a5523bf`）部署至线上。
+
+---
+
+## 🛠️ Feature: 解决详情卡片退出时主页 Hover 预览图提前闪烁与穿帮问题 (PC Hover Transition Visual Isolation)
+
+### 1. 问题分析与修改
+- **问题反馈**：在 PC 端点击关闭或按 Esc 退出详情页时，退场下滑的 0.55s 期间，主页的作品 hover 预览小图片和 3D 偏转在卡片退到一半时就提前显现，发生严重的闪烁与视觉穿帮。
+- **原因分析**：
+  - 在加入退出后的事件自动唤醒机制时，`dispatchWakeupEvents()` 被放在了 `closeDetail()` 函数的第一帧。
+  - 这导致在卡片还在向下滑动退出的过程中，主页的 3D 碰撞检测和 Hover 事件就已经被强制唤醒。如果此时鼠标恰好在主页的作品区域内，就会提前触发并绘制主页的 hover 预览小卡片。
+- **解决方案与修复**：
+  - **延迟事件唤醒时机**：将 `closeDetail()` 开头的 `dispatchWakeupEvents()` 彻底移除，仅保留在退出动画彻底完成的 `onComplete` 回调中（详情卡片已设为 display: none / visibility: hidden）才执行唤醒。
+  - **引入转场隔离屏障**：在 [premium-interactions.js](file:///D:/webprojext/js/modules/premium-interactions.js) 的 `onListEnter` 和 `onCardEnter` 函数顶部增加转场状态过滤：
+    `if (window.__isRouteTransitioning || window.__isDetailClosing) return;`
+    在整个卡片打开（0.95s）与关闭（0.55s）的完整过渡转场内，彻底冻结并隐藏主页的悬浮预览和 3D 偏转反应。
+  - **效果**：退场过渡视觉极其干净自然，没有任何卡片重叠或提前显现的毛刺，转场结束后鼠标划过卡片依然正常灵敏工作。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 生产环境编译打包顺利通过。
+- 运行 `node check_console.js` 验证加载时无任何控制台报错。
+- 运行 Playwright 自动化交互脚本验证了打开、关闭以及交互全流程的逻辑与动画，无任何报错且状态切换正确。
+- 通过 `py workflow.py deploy` 成功发布并部署（Commit `e0a3048`）到线上环境。

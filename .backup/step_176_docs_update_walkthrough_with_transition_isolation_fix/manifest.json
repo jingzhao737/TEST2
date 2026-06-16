@@ -9,7 +9,7 @@
   },
   "ice.js": {
     "type": "code",
-    "hash": "551de7f0d8eee0c2d23563d4692395a79287892753acf0c50f886f424c74c4f9"
+    "hash": "036b459c7bbdfa6fe78d44e9504907ce37bedbe8b1baa95c0e0be37a485edfce"
   },
   "implementation_plan.md": {
     "type": "code",
@@ -33,11 +33,11 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "baf0f8f8d0475a3be9eebe7d64caebd08da7e9bdf9aff761329ea6f061639c4b"
+    "hash": "7451b20782f67a07cc8cce345cf8136f5540228d1ab8414a628671c6ca2e39ff"
   },
   "task.md": {
     "type": "code",
-    "hash": "37a0566556c94a33f57fe40257090a535e183e93c68a65ba3dba832e50d32ecc"
+    "hash": "331b1722da1760df0deb6b9d0792500cebfb4961444155a32b7330ad5aa28305"
   },
   "vite.config.js": {
     "type": "code",
@@ -45,7 +45,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "6d01645e291104324e1746a2976380347a0b0d991aa9ada35a783f9abd16ffc7"
+    "hash": "bfe7528fe89d734cd474b3c175e20ff391628b217f87f3d12c544cbaf66977c2"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -89,15 +89,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "91250bb9bfde28ccc1c6c4becf36041edb5e4887d4881cb87b953973d1036ccf"
+    "hash": "13a6a84230a0e7450bbda302ebdfeef6a9030380d95074ddfceca83f0af14717"
   },
-  "dist\\assets\\index-BV_pNbNv.css": {
+  "dist\\assets\\index-D822QZrx.css": {
     "type": "code",
-    "hash": "d3bb18807d1bcd3dca57905dbe803a0a010482ee0dbf914654b1879db8a717e8"
+    "hash": "3ba09c8d28085a0029c7ecbc3ec4c862982c9b65e361d269ee16666cf684ca3d"
   },
-  "dist\\assets\\index-Cg6D8DAY.js": {
+  "dist\\assets\\index-DgBRUr7N.js": {
     "type": "code",
-    "hash": "cef5c7d9cfdce2781fce6d8459e19503c724e8835709527bfff770d4db99a07c"
+    "hash": "5df17f33f3dcd24256e094deb804fde9458453568f5871b5fd9c24cb6794f1b4"
   },
   "images\\index.txt": {
     "type": "code",
@@ -149,7 +149,7 @@
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
-    "hash": "7a1147659e519800eae537a91b5b320cd9e0087272dc56e2e34b1df3366feb03"
+    "hash": "a88eb1fc21af9bb932da5c1406f7995ed8acda2f2019356d8820c128ceb3e4c9"
   },
   "js\\modules\\laser-lines.js": {
     "type": "code",
@@ -177,7 +177,7 @@
   },
   "js\\modules\\premium-interactions.js": {
     "type": "code",
-    "hash": "d981cf3b7c6357d03e5c9b297219574a74448855227279246538e77a28360d86"
+    "hash": "fe1918dbf287fc93a98601c1ce365fe1d7c0c6e000fed575f36ae97fa798cfc9"
   },
   "js\\modules\\scroll-reveal.js": {
     "type": "code",
@@ -193,7 +193,7 @@
   },
   "js\\modules\\stars.js": {
     "type": "code",
-    "hash": "5f45cac681b034c695fc4d9d8566b0a86e6a8fb53504dbec32f430b68fdca0e3"
+    "hash": "514d9f061d292aa70ed9aca6ec79ce1b4128266b0b0e91e0390eef4841b7becc"
   },
   "js\\modules\\theme.js": {
     "type": "code",
