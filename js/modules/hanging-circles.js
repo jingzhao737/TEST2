@@ -1098,12 +1098,12 @@ import * as THREE from 'three';
         let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25) * t.latchScale;
         
         // Dynamic Z depth lift to prevent clipping (穿模) and simulate physical height
-        let baseZ = i * 4;
+        let baseZ = i * 24; // Wide Z separation (24px) between resting layers to prevent any Z-clipping when tilted
         let targetZ = baseZ;
         if (i === draggedIdx) {
-          targetZ = baseZ + 45;
+          targetZ = 192 + i * 24; // Lift dragged disc above all others (hovered/resting)
         } else if (i === hoveredIdx) {
-          targetZ = baseZ + 15;
+          targetZ = 96 + i * 24;  // Lift hovered disc above all resting discs
         }
         t.currentZ = t.currentZ || baseZ;
         t.currentZ += (targetZ - t.currentZ) * 0.12;
@@ -1118,11 +1118,13 @@ import * as THREE from 'three';
         d.group.position.x = centerX + (t.x - centerX) * pFactor;
         d.group.position.y = centerY + ((ch - t.y) - centerY) * pFactor;
         d.group.position.z = t.currentZ;
-        d.group.scale.set(scale, scale, 1);
+        // Compensate group scale by pFactor to keep the projected screen-space size constant 
+        // regardless of Z depth, preventing perspective bloating while retaining 3D tilt depth.
+        d.group.scale.set(scale * pFactor, scale * pFactor, 1);
         
-        // 3D dynamic tilt based on swing velocity
-        let targetTiltX = -t.vy * 0.035;
-        let targetTiltY = t.vx * 0.035;
+        // 3D dynamic tilt based on swing velocity (capped at 0.3 rad to prevent clipping)
+        let targetTiltX = Math.max(-0.3, Math.min(0.3, -t.vy * 0.035));
+        let targetTiltY = Math.max(-0.3, Math.min(0.3, t.vx * 0.035));
         t.tiltX = t.tiltX || 0;
         t.tiltY = t.tiltY || 0;
         t.tiltX += (targetTiltX - t.tiltX) * 0.08;
@@ -1141,7 +1143,7 @@ import * as THREE from 'three';
         
         // Animate shadow position and opacity (depth simulation)
         // Keep shadow on the background plane (world Z approx -30) by subtracting t.currentZ
-        let lift = (t.currentZ - baseZ) / 45; // 0 to 1 lift ratio
+        let lift = (t.currentZ - baseZ) / 192; // 0 to 1 lift ratio relative to max dragged lift
         d.shadowMesh.position.x = (4 + eased * 4 + lift * 6) * scaleFactor;
         d.shadowMesh.position.y = (-6 - eased * 6 - lift * 10) * scaleFactor;
         d.shadowMesh.position.z = -30 - t.currentZ - eased * 12;
