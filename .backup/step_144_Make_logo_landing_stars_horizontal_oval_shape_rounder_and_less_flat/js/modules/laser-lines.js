@@ -125,27 +125,30 @@
   // Generate laser spark burst on click
   function createBurst(x, y, isOrange = false, customLife = null, customNumSparks = null) {
     const burstColor = isOrange ? '#E87C50' : '#ffffff'; // Monochromatic: all orange on interactive elements, all white on general background
+    const isIronSpark = (customLife !== null);
     
     // Burst Micro-Sparks (Small Cross-Stars)
     const numSparks = customNumSparks !== null ? customNumSparks : (4 + Math.floor(Math.random() * 4)); // 4-7 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
       // Faster, more energetic speed profile to simulate iron sparks flying
-      const speed = customLife !== null ? (4.0 + Math.random() * 8.0) : (2.5 + Math.random() * 6.5);
-      const lifeSpan = customLife !== null ? (customLife * (0.8 + Math.random() * 0.4)) : (500 + Math.random() * 300);
+      const speed = isIronSpark ? (5.0 + Math.random() * 7.0) : (2.5 + Math.random() * 6.5);
+      const lifeSpan = isIronSpark ? (customLife * (0.8 + Math.random() * 0.4)) : (500 + Math.random() * 300);
       sparks.push({
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
         // Initial upward burst bias (making sparks shoot up and fall down beautifully like striking metal)
-        vy: Math.sin(angle) * speed - (customLife !== null ? 2.5 : 0.0),
+        vy: Math.sin(angle) * speed - (isIronSpark ? 3.0 : 0.0),
         color: burstColor,
         type: 'star', // All particles are cross-stars
         size: 0.8 + Math.random() * 3.8, // Size variation: 0.8px to 4.6px
-        angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.08, // Slow spin for high-quality shimmering/twinkling effect
+        angle: isIronSpark ? (Math.random() * Math.PI * 2) : 0,
+        spin: isIronSpark ? ((Math.random() - 0.5) * 0.08) : 0, // Slow spin for high-quality shimmering/twinkling effect on iron sparks
         created: Date.now(),
-        life: lifeSpan
+        life: lifeSpan,
+        drag: isIronSpark ? 0.93 : 0.90, // Custom drag per type (iron spark has 0.93 for smoother slide and continue expansion)
+        gravity: isIronSpark ? 0.06 : -0.025 // Custom gravity per type (iron spark has 0.06 for gentle falling)
       });
     }
   }
@@ -167,7 +170,9 @@
         angle: 0,
         spin: 0,
         created: Date.now(),
-        life: 400 + Math.random() * 300 // 400ms - 700ms lifespan
+        life: 400 + Math.random() * 300, // 400ms - 700ms lifespan
+        drag: 0.90, // Original drag
+        gravity: -0.025 // Original upward float
       });
     }
   }
@@ -385,15 +390,25 @@
         continue;
       }
 
-      // Update position with air drag & gravity (mimicking iron sparks flying and falling)
+      // Update position with air drag & gravity based on particle properties
       s.x += s.vx;
       s.y += s.vy;
       if (s.type === 'center-flare') {
         // Center flare stays fixed at click coordinate
       } else {
-        s.vx *= 0.96; // Lower friction so they glide/fly outwards further
-        s.vy *= 0.96;
-        s.vy += 0.20; // Gravity: pull downward to mimic heavy iron sparks falling (positive Y is down)
+        const dragFactor = s.drag !== undefined ? s.drag : 0.90;
+        const gravityFactor = s.gravity !== undefined ? s.gravity : -0.025;
+        s.vx *= dragFactor;
+        s.vy *= dragFactor;
+        
+        // Add thermal convection / random wind drift for forge sparks (heavy iron sparks)
+        // to make them flutter and sway horizontally instead of falling straight down
+        if (s.gravity !== undefined && s.gravity > 0) {
+          s.vx += (Math.random() - 0.5) * 0.09; // Horizontal sway
+          s.vy += (Math.random() - 0.5) * 0.04; // Vertical flutter
+        }
+        
+        s.vy += gravityFactor;
       }
 
       const size = s.size * (1 - age);
@@ -432,7 +447,17 @@
         ctx.restore();
       } else if (s.type === 'star') {
         // Delicate Small Cross-Star (十字星)
-        s.angle += s.spin;
+        if (s.spin) {
+          let spinFactor;
+          if (age < 0.2) {
+            const t = age / 0.2;
+            spinFactor = 1.0 - t * 0.88; // Decays from 1.0 to 0.12 (extremely fast for the first 20%)
+          } else {
+            const t = (age - 0.2) / 0.8;
+            spinFactor = 0.12 - t * 0.10; // Decays from 0.12 to 0.02 (extremely slow for the remaining 80%)
+          }
+          s.angle += s.spin * spinFactor;
+        }
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
@@ -500,6 +525,31 @@
   window.__ripples = ripples;
   window.triggerLaserBurst = function(x, y, isOrange = false, customLife = null, customNumSparks = null) {
     createBurst(x, y, isOrange, customLife, customNumSparks);
+  };
+  window.triggerForgeBurst = function(x, y) {
+    // Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
+    const numSparks = 6 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < numSparks; i++) {
+      const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const speed = 0.9 + Math.random() * 1.6; // Increased speed range for a slightly larger spread
+      const lifeSpan = 1000 + Math.random() * 500; // Persist for 1.0s to 1.5s
+      const color = '#ffffff'; // Make stars purely white
+      sparks.push({
+        x: x,
+        y: y,
+        vx: Math.cos(angle) * speed * 1.15, // Scale horizontally by 1.15 for very soft horizontal oval expansion
+        vy: Math.sin(angle) * speed * 0.85, // Scale vertically by 0.85 for very soft horizontal oval expansion
+        color: color,
+        type: 'star',
+        size: 0.8 + Math.random() * 3.5,
+        angle: 0, // Aligned upright, same as mouse clicks
+        spin: 0, // No rotation, same as mouse clicks
+        created: Date.now(),
+        life: lifeSpan,
+        drag: 0.96, // Reduced deceleration to allow stars to keep moving outward as they disappear
+        gravity: 0.0 // No gravity (don't go down, don't go up, just like the Big Bang)
+      });
+    }
   };
 })();
 
