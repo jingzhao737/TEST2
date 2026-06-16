@@ -158,12 +158,11 @@ function openDetail(data, heroImg, pushState) {
   workDetail.classList.add('open');
   workDetail.style.display = 'flex';
   workDetail.style.visibility = 'visible';
-  if (window.__updateMagnetTargets) window.__updateMagnetTargets();
   const scrollWrapper = document.getElementById('workDetailScrollWrapper');
   if (scrollWrapper) {
     scrollWrapper.scrollTop = 0;
   }
-  document.body.style.overflow = 'hidden';
+  // Body overflow hidden removed to prevent scroll position reset and layout jumps
 
   // Measure targetRect BEFORE we slide the detailCard down (since it's currently y:0 as rendered)
   let targetRect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight * 0.6 };
@@ -275,9 +274,9 @@ function closeDetail(popState) {
     detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
   ]);
 
-  // Fade out backdrop smoothly
+  // Fade out backdrop smoothly (faster fade-out to reveal restoring background early)
   if (detailBg) {
-    gsap.to(detailBg, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
+    gsap.to(detailBg, { opacity: 0, duration: 0.4, ease: 'power2.out' });
   }
 
   // Fade out close button immediately to prevent lingering
@@ -310,10 +309,10 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         workDetail.classList.remove('open');
-        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         workDetail.style.display = 'none';
         workDetail.style.visibility = 'hidden';
-        document.body.style.overflow = '';
+        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
+        // Body overflow reset removed
 
         // Reset ALL inline styles for next open cycle
         gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
@@ -369,7 +368,7 @@ function closeDetail(popState) {
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-        window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+        // window.scrollTo removed to prevent layout jumps since scroll was never reset
 
         window.__isDetailClosing = false;
         isRouteTransitioning = false;

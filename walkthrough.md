@@ -2367,9 +2367,14 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **保持背景 WebGL 渲染持续活跃 (Keep Background WebGL Rendering Active)**：我们移除了 [stars.js](file:///D:/webprojext/js/modules/stars.js) 和 [ice.js](file:///D:/webprojext/ice.js) 的动画帧暂停逻辑。现在背景星空和 3D 结晶粒子动画在详情页打开及转场期间**持续保持活跃与渲染**。因为我们已经切换为纯黑色/纯色不透明背景，且彻底删除了 CPU/GPU 负荷极高的毛玻璃模糊（`backdrop-filter`），使浏览器可以在极低负荷下支撑背景的后台运转。这样在关闭详情页淡出实底黑色遮罩时，用户能自然看到持续处于平滑动效中的主页背景，彻底规避了“动画暂停随后重新启动播放”的任何画面跳变与定格感。
 - **加速实底遮罩淡出 (Fast Opaque Backdrop Fade-out)**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 中，将黑色实底遮罩的淡出时长由 `0.6s` 缩短为 `0.4s`（缓动改为 `power2.out`），使遮罩快速消隐，与本就在运转的运动背景及下滑卡片无缝衔接。
 
+- **彻底消除主页元素上下瞬移 (Eliminate Layout and Scroll Position Jumps)**：
+  - **原因分析**：原先打开详情页时对 `body` 施加了 `overflow = 'hidden'`，关闭时重置为 `''` 并用 `window.scrollTo` 恢复位置。因为在特定 CSS 结构下，改变 body 的 overflow 模式会导致浏览器重置整个视口高度和滚动高度为 `0`，从而使得后方的首页大标题（`.works-header`）等元素在打开和关闭详情瞬间产生剧烈的上下瞬移和闪烁。
+  - **重构方案**：我们完全删除了 `body.style.overflow` 样式的更改，不再干扰浏览器的默认溢出布局，同时彻底废除了关闭卡片时的 `window.scrollTo` 操作。
+  - **事件捕获阻断**：在 [styles.css](file:///D:/webprojext/styles.css) 中，将覆盖全屏的 `.work-detail-bg` 遮罩的 `pointer-events` 改为 `auto`。因为详情卡片父容器 `.work-detail` 在打开时已具备 `visibility: visible` 与 `pointer-events: auto` 且占满视口，任何在页面上的鼠标滚轮事件都会被详情遮罩或卡片本身捕获阻断，天然无法到达主页，从而在不修改 overflow 的前提下完美锁定了主页背景滚动，彻底消除了元素上下瞬移。同时，这也新添了用户可以通过**点击详情卡片外的任何黑色区域直接关闭详情**的 premium 交互！
+
 ### 3. 部署与验证 (Verification & Deployment)
 - 运行 `npx vite build` 生产打包完全成功。
-- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊，且使 WebGL 背景保持常开常驻后，转场的打开、关闭阶段再无任何掉帧与定格感，衔接丝滑自然！
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊，WebGL 背景常驻，且通过去除 overflow 彻底消除了任何大标题上下瞬移和闪烁，转场的入场与退场均达到了完美的满帧衔接！
 
 
 

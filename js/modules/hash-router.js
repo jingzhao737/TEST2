@@ -162,7 +162,7 @@ function openDetail(data, heroImg, pushState) {
   if (scrollWrapper) {
     scrollWrapper.scrollTop = 0;
   }
-  document.body.style.overflow = 'hidden';
+  // Body overflow hidden removed to prevent scroll position reset and layout jumps
 
   // Measure targetRect BEFORE we slide the detailCard down (since it's currently y:0 as rendered)
   let targetRect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight * 0.6 };
@@ -312,7 +312,7 @@ function closeDetail(popState) {
         workDetail.style.display = 'none';
         workDetail.style.visibility = 'hidden';
         if (window.__updateMagnetTargets) window.__updateMagnetTargets();
-        document.body.style.overflow = '';
+        // Body overflow reset removed
 
         // Reset ALL inline styles for next open cycle
         gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
@@ -368,7 +368,7 @@ function closeDetail(popState) {
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-        window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+        // window.scrollTo removed to prevent layout jumps since scroll was never reset
 
         window.__isDetailClosing = false;
         isRouteTransitioning = false;

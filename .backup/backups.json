@@ -1,12 +1,5 @@
 [
   {
-    "step": 141,
-    "timestamp": "2026-06-16 23:06:15",
-    "description": "Change logo landing stars expansion to a horizontal ellipse",
-    "folder": "step_141_Change_logo_landing_stars_expansion_to_a_horizontal_ellipse",
-    "is_auto": false
-  },
-  {
     "step": 142,
     "timestamp": "2026-06-16 23:10:23",
     "description": "Make logo landing stars horizontal oval shape less flat",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:49:55",
     "description": "Keep background WebGL rendering active continuously at all times for seamless transitions",
     "folder": "step_160_Keep_background_WebGL_rendering_active_continuously_at_all_times_for_seamless_transitions",
+    "is_auto": false
+  },
+  {
+    "step": 161,
+    "timestamp": "2026-06-17 00:56:18",
+    "description": "Fix vertical layout jumps by removing overflow changes and locking scroll using pointer-events",
+    "folder": "step_161_Fix_vertical_layout_jumps_by_removing_overflow_changes_and_locking_scroll_using_pointer-events",
     "is_auto": false
   }
 ]

@@ -458,6 +458,8 @@ const LensFlareShader = {
   function animate() {
     requestAnimationFrame(animate);
     if (!visible) return;
+
+    // Keep background rendering active continuously for seamless transition blending
     const now = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;
