@@ -1,12 +1,5 @@
 [
   {
-    "step": 116,
-    "timestamp": "2026-06-16 01:26:37",
-    "description": "Compensate for perspective projection shift to align 3D discs with 2D ropes",
-    "folder": "step_116_Compensate_for_perspective_projection_shift_to_align_3D_discs_with_2D_ropes",
-    "is_auto": false
-  },
-  {
     "step": 117,
     "timestamp": "2026-06-16 01:28:50",
     "description": "Upgrade rope rendering to 3D spring coiled cord with physical stretch and highlights",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 22:17:48",
     "description": "Make logo burst stars purely white and slightly increase range",
     "folder": "step_135_Make_logo_burst_stars_purely_white_and_slightly_increase_range",
+    "is_auto": false
+  },
+  {
+    "step": 136,
+    "timestamp": "2026-06-16 22:20:25",
+    "description": "Increase logo landing stars overall animation lifespan and fluid duration",
+    "folder": "step_136_Increase_logo_landing_stars_overall_animation_lifespan_and_fluid_duration",
     "is_auto": false
   }
 ]

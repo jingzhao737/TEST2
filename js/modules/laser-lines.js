@@ -527,7 +527,7 @@
     createBurst(x, y, isOrange, customLife, customNumSparks);
   };
   window.triggerForgeBurst = function(x, y) {
-    // 1. Pulsing Center Flare (Flash) - Slightly larger range
+    // 1. Pulsing Center Flare (Flash) - Slightly longer life
     sparks.push({
       x: x,
       y: y,
@@ -537,10 +537,10 @@
       type: 'center-flare',
       size: 18.0,
       created: Date.now(),
-      life: 500
+      life: 800
     });
 
-    // 2. Double expanding shockwave ripples - Slightly larger range
+    // 2. Double expanding shockwave ripples - Slightly longer life
     ripples.push({
       x: x,
       y: y,
@@ -548,7 +548,7 @@
       maxRadius: 25,
       color: '#E87C50',
       created: Date.now(),
-      life: 500
+      life: 800
     });
     ripples.push({
       x: x,
@@ -557,15 +557,15 @@
       maxRadius: 45,
       color: '#FF9F1C',
       created: Date.now(),
-      life: 600
+      life: 1000
     });
 
-    // 3. Dense sparks with forging physics - pure white stars with slightly larger speed range
+    // 3. Dense sparks with forging physics - pure white stars with longer lifespan
     const numSparks = 12 + Math.floor(Math.random() * 5);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
       const speed = 2.2 + Math.random() * 4.8; // Slightly increased speed range for a larger spread
-      const lifeSpan = 500 + Math.random() * 300; // Same lifespan as mouse clicks
+      const lifeSpan = 1200 + Math.random() * 600; // Increased lifespan (1.2s to 1.8s)
       const color = '#ffffff'; // Make stars purely white
       sparks.push({
         x: x,
