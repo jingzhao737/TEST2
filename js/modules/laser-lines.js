@@ -531,14 +531,14 @@
     const numSparks = 6 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 0.8 + Math.random() * 1.6; // Lower initial speed to compensate for higher drag
+      const speed = 0.7 + Math.random() * 1.2; // Slightly reduced base speed to accommodate horizontal scale multiplier
       const lifeSpan = 1000 + Math.random() * 500; // Persist for 1.0s to 1.5s
       const color = '#ffffff'; // Make stars purely white
       sparks.push({
         x: x,
         y: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed, // Pure radial velocity without upward bias
+        vx: Math.cos(angle) * speed * 1.6, // Scale horizontally by 1.6 for oval expansion
+        vy: Math.sin(angle) * speed * 0.5, // Scale vertically by 0.5 for oval expansion
         color: color,
         type: 'star',
         size: 0.8 + Math.random() * 3.5,

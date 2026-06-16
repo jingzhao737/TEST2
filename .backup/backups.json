@@ -1,12 +1,5 @@
 [
   {
-    "step": 121,
-    "timestamp": "2026-06-16 01:34:16",
-    "description": "Add self-illumination (emissive map) to record label to brighten cover images",
-    "folder": "step_121_Add_self-illumination_(emissive_map)_to_record_label_to_brighten_cover_images",
-    "is_auto": false
-  },
-  {
     "step": 122,
     "timestamp": "2026-06-16 21:31:34",
     "description": "Add post-flight logo star particle splash on return flight completion",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:04:42",
     "description": "Remove orange center-flare and shockwave ripples, leaving only pure white star particles",
     "folder": "step_140_Remove_orange_center-flare_and_shockwave_ripples,_leaving_only_pure_white_star_particles",
+    "is_auto": false
+  },
+  {
+    "step": 141,
+    "timestamp": "2026-06-16 23:06:15",
+    "description": "Change logo landing stars expansion to a horizontal ellipse",
+    "folder": "step_141_Change_logo_landing_stars_expansion_to_a_horizontal_ellipse",
     "is_auto": false
   }
 ]
