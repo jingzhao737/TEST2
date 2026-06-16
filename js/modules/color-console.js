@@ -44,7 +44,7 @@ import gsap from 'gsap';
       gsap.set(logo, {
         left: startRect.left,
         top: startRect.top,
-        opacity: 1
+        opacity: 0 // Start hidden for a smooth fade-in morph
       });
       logo.classList.add('console-active');
 
@@ -56,6 +56,9 @@ import gsap from 'gsap';
       const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
 
+      // Force browser reflow to apply the transition removal and initial position immediately
+      logo.offsetHeight;
+
       const tl = gsap.timeline({
         onComplete: () => {
           logo.style.removeProperty('transition');
@@ -66,6 +69,14 @@ import gsap from 'gsap';
           _animating = false;
         }
       });
+
+      // Smoothly fade out the solid logo in the navbar
+      if (staticLogo) {
+        gsap.to(staticLogo, { opacity: 0, duration: 0.4, ease: 'power2.out' });
+      }
+
+      // Smoothly fade in the outline logo at the start of flight
+      tl.to(logo, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0);
 
       // Unified parametric tween: interpolates left/top/x based on eased virtual progress
       tl.to(animState, {
@@ -103,14 +114,20 @@ import gsap from 'gsap';
       const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
 
-      // Ensure logo opacity is set to 1 before starting closing animation
+      // Ensure logo is visible at the start of closing animation
       gsap.set(logo, { opacity: 1 });
+
+      // Force browser reflow
+      logo.offsetHeight;
 
       const tl = gsap.timeline({
         onComplete: () => {
           // Clear GSAP inline styles while transitions are still disabled to prevent snapping transitions
           gsap.set(logo, { clearProps: 'all' });
           gsap.set(consoleEl, { clearProps: 'all' });
+          if (staticLogo) {
+            gsap.set(staticLogo, { clearProps: 'opacity' });
+          }
           
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
@@ -120,6 +137,14 @@ import gsap from 'gsap';
           _animating = false;
         }
       });
+
+      // Smoothly fade the solid logo back in as outline approaches the navbar
+      if (staticLogo) {
+        gsap.to(staticLogo, { opacity: 1, duration: 0.5, ease: 'power2.inOut', delay: duration - 0.5 });
+      }
+
+      // Smoothly fade out outline logo as it lands to morph back into solid logo
+      tl.to(logo, { opacity: 0, duration: 0.4, ease: 'power2.inOut' }, duration - 0.4);
 
       // Parametric return tween: keeps path geometric shape perfect
       tl.to(animState, {
@@ -134,8 +159,7 @@ import gsap from 'gsap';
           gsap.set(logo, {
             left: currentLeft,
             top: currentTop,
-            x: xOffset,
-            opacity: 1
+            x: xOffset
           });
         }
       }, 0);

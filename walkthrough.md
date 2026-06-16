@@ -1831,3 +1831,25 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 构建与部署
 - 成功完成 Vite 静态资源的重新构建和打包。
 - 执行 `python workflow.py deploy` 推送代码，让超细 0.4px 描边的精致外观线上即时生效。
+
+
+---
+
+## 🛠️ Step 612: 优化实心与描边徽标的衔接过渡，实现无缝溶解与防抖刷新 (Optimize solid-to-outline logo transition with cross-fade dissolve & forced style reflow)
+
+### 1. 痛点与原因分析
+- **痛点**：点击实心徽标时，描边徽标瞬间以 `opacity: 1` 强行叠现并起飞，存在明显的视觉突兀（闪烁、重叠感），并且在某些时候描边版无法极其丝滑地从实心版位置平滑滑出。
+- **原因**：
+  - **浏览器样式重排批处理**：浏览器在禁用 `#navLogo` 的 CSS `transition` 与对其执行 GSAP `set`（定位到实心版位置）时进行了批处理，这导致 CSS 过渡未能即时切断，产生了极短时间内的“拖线/抽搐”现象，未能准确从实心版中心起飞。
+  - **元素强行突现**：描边徽标突然无渐变地出现在实心徽标上方，破坏了物理动画的有机融合感。
+
+### 2. 重构与优化方案
+- **强制同步浏览器渲染流 (Forced Reflow)**：
+  - 在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 的展开与收起阶段，设置完 `transition: none` 后立即添加了 **`logo.offsetHeight`**，强制浏览器同步刷出最新的无过渡状态，保证后续的 `left` / `top` 定位瞬时到位、零偏差启动。
+- **实心/描边无缝溶解过渡 (Cross-Fade Dissolve)**：
+  - **展开时**：描边版起飞前将 `opacity` 设为 `0`，在飞行前 0.4 秒内平滑淡入至 `1`；同时实心版 `staticLogo` 在前 0.4 秒内淡出至 `0`。这就形成了一种“实心溶解分离为描边并飞走”的炫酷 3D 全息动效。
+  - **收起时**：在降落前的最后 0.4 秒，描边版平滑淡出至 `0`，实心版在最后 0.5 秒内平滑淡入至 `1`，并在动画完成时利用 GSAP `clearProps` 完美复位，实现无缝的“落叶归根”收回过渡。
+
+### 3. 构建与部署
+- 编译生成最新静态资源。
+- 运行 `python workflow.py deploy` 推送最新代码，实现无缝溶解的超高水准动效同步部署。
