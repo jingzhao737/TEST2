@@ -6,6 +6,27 @@ const workDetail = document.getElementById('workDetail');
 const pageTransition = document.getElementById('pageTransition');
 
 // ═══════════ HASH ROUTER ═══════════
+let currentMouseX = window.innerWidth / 2;
+let currentMouseY = window.innerHeight / 2;
+window.addEventListener('mousemove', (e) => {
+  if (e.clientX !== 0 || e.clientY !== 0) {
+    currentMouseX = e.clientX;
+    currentMouseY = e.clientY;
+  }
+}, { passive: true });
+
+function dispatchWakeupEvents() {
+  const workList = document.querySelector('.work-list');
+  if (workList) {
+    const wlRect = workList.getBoundingClientRect();
+    if (currentMouseX >= wlRect.left && currentMouseX <= wlRect.right && 
+        currentMouseY >= wlRect.top && currentMouseY <= wlRect.bottom) {
+      workList.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: currentMouseX, clientY: currentMouseY }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: currentMouseX, clientY: currentMouseY }));
+    }
+  }
+}
+
 const ROUTE_PREFIX = '#/work/';
 let detailOpenedFromHash = false;
 let savedScrollY = 0;
@@ -106,6 +127,7 @@ function getActivePreviewContainer() {
 }
 
 function resetDetailState() {
+  workDetail.style.pointerEvents = '';
   workDetail.classList.remove('open');
   workDetail.style.display = 'none';
   workDetail.style.visibility = 'hidden';
@@ -225,10 +247,10 @@ function openDetail(data, heroImg, pushState) {
   }
 
   // ── 2. Slide and fade out original works page elements immediately ──
-  gsap.to('#nav', { opacity: 0, duration: 0.45, ease: 'power3.inOut' });
-  gsap.to('.works-header', { opacity: 0, duration: 0.45, ease: 'power3.inOut' });
-  gsap.to('.work-card', { opacity: 0, stagger: 0.02, duration: 0.45, ease: 'power3.inOut' });
-  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.35, ease: 'power2.out' });
+  gsap.to('#nav', { opacity: 0, duration: 0.6, ease: 'power3.inOut' });
+  gsap.to('.works-header', { opacity: 0, duration: 0.6, ease: 'power3.inOut' });
+  gsap.to('.work-card', { opacity: 0, stagger: 0.02, duration: 0.6, ease: 'power3.inOut' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.45, ease: 'power2.out' });
   const btt = document.getElementById('backToTop');
   if (btt) btt.style.pointerEvents = 'none';
   const sb = document.getElementById('scrollBar');
@@ -270,7 +292,7 @@ function openDetail(data, heroImg, pushState) {
   
   // Backdrop fades in immediately in sync with card slide-up
   if (detailBg) {
-    gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' });
+    gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.65, ease: 'power2.out' });
   }
 
   gsap.set(detailBody, { opacity: 0, y: 30 });
@@ -280,15 +302,16 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
+    const startScaleX = isMobile ? 1.0 : 0.4;
     gsap.fromTo(detailCard, {
       y: '100%',
-      scaleX: 0.4,
+      scaleX: startScaleX,
       transformOrigin: '50% 100%',
       opacity: 1
     }, {
       y: 0,
       scaleX: 1,
-      duration: 0.75,
+      duration: 0.95,
       ease: 'expo.out',
       onComplete: () => {
         if (window.__updateMagnetTargets) window.__updateMagnetTargets();
@@ -311,16 +334,16 @@ function openDetail(data, heroImg, pushState) {
     gsap.to(detailHeroImg, {
       y: 0,
       scale: 1.0,
-      duration: 0.75,
+      duration: 0.95,
       ease: 'expo.out'
     });
   }
 
   // ── 7. Stagger text content animations ──
-  gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.2 });
-  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.25 });
-  gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.3 });
-  gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.28 });
+  gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
+  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.35 });
+  gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
+  gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }
 
 function closeDetail(popState) {
@@ -335,6 +358,7 @@ function closeDetail(popState) {
   isRouteTransitioning = true;
   window.__isDetailClosing = true;
   workDetail.classList.remove('open');
+  workDetail.style.pointerEvents = 'none';
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');
@@ -356,24 +380,24 @@ function closeDetail(popState) {
 
   // Fade out backdrop smoothly (faster fade-out to reveal restoring background early)
   if (detailBg) {
-    gsap.to(detailBg, { opacity: 0, duration: 0.3, ease: 'power2.out' });
+    gsap.to(detailBg, { opacity: 0, duration: 0.4, ease: 'power2.out' });
   }
 
   // Fade out close button immediately to prevent lingering
   if (detailClose) {
-    gsap.to(detailClose, { opacity: 0, duration: 0.15, ease: 'power2.out' });
+    gsap.to(detailClose, { opacity: 0, duration: 0.2, ease: 'power2.out' });
   }
 
   // Fade original preview container back in smoothly
   if (previewContainer) {
-    gsap.to(previewContainer, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+    gsap.to(previewContainer, { opacity: 1, duration: 0.45, ease: 'power2.out' });
   }
 
   // Restore works page elements immediately in sync with detail close
-  gsap.to('#nav', { opacity: 1, duration: 0.45, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.works-header', { opacity: 1, duration: 0.45, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.work-card', { opacity: 1, scale: 1, z: 0, stagger: 0.02, duration: 0.45, ease: 'power3.out', clearProps: 'all' });
-  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.45, ease: 'power2.out', clearProps: 'all' });
+  gsap.to('#nav', { opacity: 1, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.works-header', { opacity: 1, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.work-card', { opacity: 1, scale: 1, z: 0, stagger: 0.02, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.55, ease: 'power2.out', clearProps: 'all' });
   const bttRestore = document.getElementById('backToTop');
   if (bttRestore) bttRestore.style.pointerEvents = '';
   const sbRestore = document.getElementById('scrollBar');
@@ -381,14 +405,17 @@ function closeDetail(popState) {
 
   // Slide down and shrink the card panel horizontally
   if (detailCard) {
+    const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);
+    const endScaleX = isMobile ? 1.0 : 0.4;
     gsap.to(detailCard, {
       y: '100%',
-      scaleX: 0.4,
+      scaleX: endScaleX,
       transformOrigin: '50% 100%',
-      duration: 0.42,
+      duration: 0.55,
       ease: 'power3.inOut',
       onComplete: function() {
         resetDetailState();
+        dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
