@@ -144,6 +144,10 @@ import * as THREE from 'three';
   textTexture.wrapT = THREE.ClampToEdgeWrapping;
 
   let webglTextElements = [];
+  let workCardElements = [];
+  let cachedTextItems = [];
+  let cachedCardItems = [];
+
   function initWebGLTextElements() {
     const selectors = [
       '#work .section-tag',
@@ -167,16 +171,75 @@ import * as THREE from 'three';
       const els = document.querySelectorAll(sel);
       els.forEach(el => webglTextElements.push(el));
     });
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
   }
   initWebGLTextElements();
-  window.addEventListener('load', initWebGLTextElements);
+  window.addEventListener('load', () => {
+    initWebGLTextElements();
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
+  });
 
-  let workCardElements = [];
   function initWorkCardElements() {
     workCardElements = Array.from(document.querySelectorAll('.work-card'));
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
   }
   initWorkCardElements();
-  window.addEventListener('load', initWorkCardElements);
+  window.addEventListener('load', () => {
+    initWorkCardElements();
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
+  });
+
+  function cacheLayoutCoords() {
+    const scrollX = window.scrollX || window.pageXOffset || 0;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+
+    if (!webglTextElements || !workCardElements) return;
+
+    cachedTextItems = webglTextElements.map(el => {
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      const section = el.closest('section') || el.parentElement;
+      return {
+        el: el,
+        section: section,
+        pageTop: rect.top + scrollY,
+        pageLeft: rect.left + scrollX,
+        width: rect.width,
+        height: rect.height,
+        fontSize: style.fontSize,
+        fontWeight: style.fontWeight,
+        fontFamily: style.fontFamily,
+        lineHeight: style.lineHeight,
+        textAlign: style.textAlign,
+        paddingLeft: parseFloat(style.paddingLeft) || 0,
+        paddingRight: parseFloat(style.paddingRight) || 0,
+        color: style.color,
+        filter: style.filter || '',
+        isSectionTag: el.classList.contains('section-tag'),
+        isShowcaseTag: el.classList.contains('section-tag') && el.closest && !!el.closest('.showcase-text-item'),
+        isSectionHeading: el.classList.contains('section-heading'),
+        isDescOrTitle: el.classList.contains('showcase-desc') || el.classList.contains('showcase-title'),
+        rawHTML: el.innerHTML,
+        textContent: el.textContent || el.innerText || ''
+      };
+    });
+
+    cachedCardItems = workCardElements.map(el => {
+      const rect = el.getBoundingClientRect();
+      return {
+        el: el,
+        pageTop: rect.top + scrollY,
+        pageBottom: rect.bottom + scrollY,
+        pageLeft: rect.left + scrollX,
+        width: rect.width,
+        height: rect.height
+      };
+    });
+  }
+
+  // Fallback periodic recache to catch dynamic layout adjustments (e.g. lazy loads, panel transitions)
+  setInterval(cacheLayoutCoords, 1000);
+  window.__recacheStarsLayout = cacheLayoutCoords;
 
   // --- 2. Fluid Simulation Settings ---
   // Lower resolution for simulation grids is standard for fluid dynamics
@@ -625,11 +688,9 @@ import * as THREE from 'three';
 
   // 暴露给外部调用的 logo 降落星星爆裂特效
   window.triggerLogoStarSplash = function(x, y) {
-    // 星星（水花）的存活时间比鼠标点击的长（duration 设为 1.5s），范围稍微扩大（maxRadius 设为 0.13）
-    // 产生 3 重扩散圈，营造出多层绚丽爆开的视觉效果（延迟分别为 0.0s、0.2s、0.4s）
-    createSingleRipple(x, y, 0.0, 1.5, 0.13, false);
-    createSingleRipple(x, y, 0.2, 1.5, 0.13, false);
-    createSingleRipple(x, y, 0.4, 1.5, 0.13, false);
+    // 范围稍微调大至 0.13，以同步粒子特效范围的扩大
+    createSingleRipple(x, y, 0.0, 1.0, 0.13, false);
+    createSingleRipple(x, y, 0.15, 1.0, 0.13, false);
   };
 
   function step(dt) {
@@ -784,6 +845,8 @@ import * as THREE from 'three';
     textTexture.wrapS = THREE.ClampToEdgeWrapping;
     textTexture.wrapT = THREE.ClampToEdgeWrapping;
     matDisplay.uniforms.uTextTexture.value = textTexture;
+    
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
   }
   window.addEventListener('resize', resize);
   resize();
@@ -792,6 +855,7 @@ import * as THREE from 'three';
   function syncTheme() {
     const isLight = document.documentElement.classList.contains('light');
     matDisplay.uniforms.uIsLightMode.value = isLight ? 1.0 : 0.0;
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
   }
   syncTheme();
   const themeObserver = new MutationObserver(syncTheme);
@@ -910,91 +974,84 @@ import * as THREE from 'three';
     matDisplay.uniforms.uDividerYs.value = dividerYs;
     matDisplay.uniforms.uDividerCount.value = dividerCount;
 
-    // 1. Draw WebGL text elements onto offscreen canvas
-    if (webglTextElements.length > 0 || workCardElements.length > 0) {
+    // 1. Draw WebGL text elements onto offscreen canvas (highly optimized using layout cache)
+    if (cachedTextItems.length > 0 || cachedCardItems.length > 0) {
       try {
         textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
         textCtx.save();
         textCtx.scale(dpr, dpr);
 
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        const scrollX = window.scrollX || window.pageXOffset || 0;
+        const viewportH = window.innerHeight;
+        const isLight = document.documentElement.classList.contains('light');
+
         // Draw work card borders (skip on desktop to avoid flat wiggling lines behind 3D cards)
         if (window.innerWidth <= 1024) {
-          workCardElements.forEach((el, idx) => {
-            const rect = el.getBoundingClientRect();
-            if (rect.bottom >= -100 && rect.top <= window.innerHeight + 100) {
+          cachedCardItems.forEach((item, idx) => {
+            const rectTop = item.pageTop - scrollY;
+            const rectBottom = item.pageBottom - scrollY;
+            const rectLeft = item.pageLeft - scrollX;
+            if (rectBottom >= -100 && rectTop <= viewportH + 100) {
               textCtx.save();
-              const style = window.getComputedStyle(el);
-              const opacity = parseFloat(style.opacity);
-              textCtx.globalAlpha = opacity;
+              // Read inline styles for opacity (extremely fast, no reflow)
+              const elOpacity = item.el.style.opacity !== '' ? parseFloat(item.el.style.opacity) : 1.0;
+              textCtx.globalAlpha = elOpacity;
 
-              const isLight = document.documentElement.classList.contains('light');
               const color = isLight ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)';
               textCtx.fillStyle = color;
 
               // Draw top border line
-              textCtx.fillRect(rect.left, rect.top - 0.5, rect.width, 1);
+              textCtx.fillRect(rectLeft, rectTop - 0.5, item.width, 1);
 
               // Draw bottom border line for the last card
-              if (idx === workCardElements.length - 1) {
-                textCtx.fillRect(rect.left, rect.bottom - 0.5, rect.width, 1);
+              if (idx === cachedCardItems.length - 1) {
+                textCtx.fillRect(rectLeft, rectBottom - 0.5, item.width, 1);
               }
               textCtx.restore();
             }
           });
         }
 
-        webglTextElements.forEach(el => {
-          const style = window.getComputedStyle(el);
-          const opacity = parseFloat(style.opacity);
-          
-          // Traverse ancestors to check for hidden visibility/display and accumulate opacity
-          let computedOpacity = opacity;
-          let parent = el.parentElement;
-          let isParentVisible = true;
-          while (parent) {
-            const pStyle = window.getComputedStyle(parent);
-            if (pStyle.display === 'none' || pStyle.visibility === 'hidden') {
-              isParentVisible = false;
-              break;
-            }
-            const pOpacity = parseFloat(pStyle.opacity);
-            if (!isNaN(pOpacity)) {
-              computedOpacity *= pOpacity;
-            }
-            parent = parent.parentElement;
+        cachedTextItems.forEach(item => {
+          // Check if parent section is visible (using offsetParent check which is extremely fast)
+          if (item.el.offsetParent === null) {
+            return;
           }
-          
-          if (isParentVisible && computedOpacity > 0) {
-            const rect = el.getBoundingClientRect();
-            if (rect.bottom >= -100 && rect.top <= window.innerHeight + 100) {
+
+          const rectTop = item.pageTop - scrollY;
+          const rectBottom = rectTop + item.height;
+          if (rectBottom >= -100 && rectTop <= viewportH + 100) {
+            // Read inline styles for opacity (extremely fast, no reflow)
+            const secOpacity = item.section.style.opacity !== '' ? parseFloat(item.section.style.opacity) : 1.0;
+            const elOpacity = item.el.style.opacity !== '' ? parseFloat(item.el.style.opacity) : 1.0;
+            const computedOpacity = secOpacity * elOpacity;
+
+            if (computedOpacity > 0) {
               textCtx.save();
               textCtx.globalAlpha = computedOpacity;
 
-              const filter = style.filter || '';
+              const filter = item.el.style.filter || item.filter;
               const blurMatch = filter.match(/blur\(([\d.]+)px\)/);
               const blurVal = blurMatch ? parseFloat(blurMatch[1]) : 0;
               if (blurVal > 0) {
                 textCtx.filter = `blur(${blurVal}px)`;
               }
 
-              const paddingLeft = parseFloat(style.paddingLeft) || 0;
-              const paddingRight = parseFloat(style.paddingRight) || 0;
-              const maxWidth = rect.width - paddingLeft - paddingRight;
+              const maxWidth = item.width - item.paddingLeft - item.paddingRight;
 
-              // Pre-configure context font for accurate measurements
-              textCtx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+              // Pre-configure context font from cached style properties
+              textCtx.font = `${item.fontWeight} ${item.fontSize} ${item.fontFamily}`;
 
               let lines = [];
-              if (el.classList.contains('section-heading')) {
-                const rawHTML = el.innerHTML;
-                lines = rawHTML.split(/<br\s*\/?>/i).map(str => {
+              if (item.isSectionHeading) {
+                lines = item.rawHTML.split(/<br\s*\/?>/i).map(str => {
                   const tmp = document.createElement('div');
                   tmp.innerHTML = str;
                   return tmp.textContent || tmp.innerText || '';
                 });
-              } else if (el.classList.contains('showcase-desc') || el.classList.contains('showcase-title')) {
-                const text = el.textContent || el.innerText || '';
-                const words = text.split(' ');
+              } else if (item.isDescOrTitle) {
+                const words = item.textContent.split(' ');
                 let currentLine = '';
                 for (let n = 0; n < words.length; n++) {
                   const testLine = currentLine + (currentLine ? ' ' : '') + words[n];
@@ -1010,59 +1067,53 @@ import * as THREE from 'three';
                   lines.push(currentLine);
                 }
               } else {
-                lines = [el.textContent || el.innerText || ''];
+                lines = [item.textContent];
               }
 
-              const align = style.textAlign || 'left';
-              textCtx.textAlign = align;
+              textCtx.textAlign = item.textAlign;
               textCtx.textBaseline = 'middle';
 
-              let color = style.color;
-              const isLight = document.documentElement.classList.contains('light');
+              let color = item.color;
               if (isLight) {
-                if (el.classList.contains('section-tag')) {
-                  color = style.color || '#e87c50';
+                if (item.isSectionTag) {
+                  color = '#e87c50';
                 } else {
                   color = '#000000';
                 }
               } else {
-                if (el.classList.contains('section-tag')) {
-                  color = style.color || '#e87c50';
+                if (item.isSectionTag) {
+                  color = '#e87c50';
                 } else {
                   color = '#ffffff';
                 }
               }
               textCtx.fillStyle = color;
 
-              let isShowcaseTag = false;
               let tagLineW = 36;
-              let tagPadding = paddingLeft;
+              let tagPadding = item.paddingLeft;
 
-              if (el.classList.contains('section-tag')) {
-                if (el.closest && el.closest('.showcase-text-item')) {
-                  isShowcaseTag = true;
-                  tagLineW = 14;
-                  tagPadding = 26; // 14px line + 12px gap
-                }
+              if (item.isShowcaseTag) {
+                tagLineW = 14;
+                tagPadding = 26; // 14px line + 12px gap
               }
 
-              let drawX = rect.left;
-              if (align === 'right') {
-                drawX = rect.right - paddingRight;
-              } else if (align === 'center') {
-                drawX = rect.left + rect.width / 2 + (paddingLeft - paddingRight) / 2;
+              let drawX = item.pageLeft - scrollX;
+              if (item.textAlign === 'right') {
+                drawX = item.pageLeft + item.width - scrollX - item.paddingRight;
+              } else if (item.textAlign === 'center') {
+                drawX = item.pageLeft - scrollX + item.width / 2 + (item.paddingLeft - item.paddingRight) / 2;
               } else {
-                drawX = rect.left + (isShowcaseTag ? tagPadding : paddingLeft);
+                drawX = item.pageLeft - scrollX + (item.isShowcaseTag ? tagPadding : item.paddingLeft);
               }
 
-              if (el.classList.contains('section-tag')) {
+              if (item.isSectionTag) {
                 textCtx.fillStyle = color;
-                textCtx.fillRect(rect.left, rect.top + rect.height / 2 - 0.5, tagLineW, 1);
+                textCtx.fillRect(item.pageLeft - scrollX, rectTop + item.height / 2 - 0.5, tagLineW, 1);
               }
 
-              const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+              const lineHeight = parseFloat(item.lineHeight) || parseFloat(item.fontSize) * 1.2;
               const numLines = lines.length;
-              const centerY = rect.top + rect.height / 2;
+              const centerY = rectTop + item.height / 2;
               const startY = centerY - (numLines - 1) * lineHeight / 2;
 
               lines.forEach((lineText, idx) => {

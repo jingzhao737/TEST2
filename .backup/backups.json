@@ -1,12 +1,5 @@
 [
   {
-    "step": 129,
-    "timestamp": "2026-06-16 21:58:20",
-    "description": "Implement independent gaming-grade equipment forging success burst effect for logo flight landing",
-    "folder": "step_129_Implement_independent_gaming-grade_equipment_forging_success_burst_effect_for_logo_flight_landing",
-    "is_auto": false
-  },
-  {
     "step": 130,
     "timestamp": "2026-06-16 22:04:18",
     "description": "Add thermal convection drift to forge sparks to prevent straight-down falling",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:57:11",
     "description": "Optimize stars.js performance by caching layout coordinates and style variables, eliminating layout thrashing",
     "folder": "step_148_Optimize_stars.js_performance_by_caching_layout_coordinates_and_style_variables,_eliminating_layout_thrashing",
+    "is_auto": false
+  },
+  {
+    "step": 149,
+    "timestamp": "2026-06-17 00:02:37",
+    "description": "Fix TDZ reference error in stars.js to restore starry background",
+    "folder": "step_149_Fix_TDZ_reference_error_in_stars.js_to_restore_starry_background",
     "is_auto": false
   }
 ]

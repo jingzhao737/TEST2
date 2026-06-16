@@ -144,6 +144,10 @@ import * as THREE from 'three';
   textTexture.wrapT = THREE.ClampToEdgeWrapping;
 
   let webglTextElements = [];
+  let workCardElements = [];
+  let cachedTextItems = [];
+  let cachedCardItems = [];
+
   function initWebGLTextElements() {
     const selectors = [
       '#work .section-tag',
@@ -175,7 +179,6 @@ import * as THREE from 'three';
     if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
   });
 
-  let workCardElements = [];
   function initWorkCardElements() {
     workCardElements = Array.from(document.querySelectorAll('.work-card'));
     if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
@@ -185,9 +188,6 @@ import * as THREE from 'three';
     initWorkCardElements();
     if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
   });
-
-  let cachedTextItems = [];
-  let cachedCardItems = [];
 
   function cacheLayoutCoords() {
     const scrollX = window.scrollX || window.pageXOffset || 0;
