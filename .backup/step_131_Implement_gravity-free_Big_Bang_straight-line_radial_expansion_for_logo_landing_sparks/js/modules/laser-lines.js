@@ -123,26 +123,32 @@
   }
 
   // Generate laser spark burst on click
-  function createBurst(x, y, isOrange = false) {
+  function createBurst(x, y, isOrange = false, customLife = null, customNumSparks = null) {
     const burstColor = isOrange ? '#E87C50' : '#ffffff'; // Monochromatic: all orange on interactive elements, all white on general background
+    const isIronSpark = (customLife !== null);
     
     // Burst Micro-Sparks (Small Cross-Stars)
-    const numSparks = 4 + Math.floor(Math.random() * 4); // 4-7 sparks
+    const numSparks = customNumSparks !== null ? customNumSparks : (4 + Math.floor(Math.random() * 4)); // 4-7 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-      const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
+      // Faster, more energetic speed profile to simulate iron sparks flying
+      const speed = isIronSpark ? (5.0 + Math.random() * 7.0) : (2.5 + Math.random() * 6.5);
+      const lifeSpan = isIronSpark ? (customLife * (0.8 + Math.random() * 0.4)) : (500 + Math.random() * 300);
       sparks.push({
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
+        // Initial upward burst bias (making sparks shoot up and fall down beautifully like striking metal)
+        vy: Math.sin(angle) * speed - (isIronSpark ? 3.0 : 0.0),
         color: burstColor,
         type: 'star', // All particles are cross-stars
         size: 0.8 + Math.random() * 3.8, // Size variation: 0.8px to 4.6px
-        angle: 0,
-        spin: 0, // No rotation, keeping them perfectly upright +
+        angle: isIronSpark ? (Math.random() * Math.PI * 2) : 0,
+        spin: isIronSpark ? ((Math.random() - 0.5) * 0.08) : 0, // Slow spin for high-quality shimmering/twinkling effect on iron sparks
         created: Date.now(),
-        life: 500 + Math.random() * 300 // 500ms - 800ms lifespan
+        life: lifeSpan,
+        drag: isIronSpark ? 0.93 : 0.90, // Custom drag per type (iron spark has 0.93 for smoother slide and continue expansion)
+        gravity: isIronSpark ? 0.06 : -0.025 // Custom gravity per type (iron spark has 0.06 for gentle falling)
       });
     }
   }
@@ -164,7 +170,9 @@
         angle: 0,
         spin: 0,
         created: Date.now(),
-        life: 400 + Math.random() * 300 // 400ms - 700ms lifespan
+        life: 400 + Math.random() * 300, // 400ms - 700ms lifespan
+        drag: 0.90, // Original drag
+        gravity: -0.025 // Original upward float
       });
     }
   }
@@ -382,15 +390,25 @@
         continue;
       }
 
-      // Update position with air drag & slow upward energy float (no heavy gravity)
+      // Update position with air drag & gravity based on particle properties
       s.x += s.vx;
       s.y += s.vy;
       if (s.type === 'center-flare') {
         // Center flare stays fixed at click coordinate
       } else {
-        s.vx *= 0.90; // Higher friction for a snappier, more localized deceleration
-        s.vy *= 0.90;
-        s.vy -= 0.025; // Subtle upward float to mimic energy dissipating
+        const dragFactor = s.drag !== undefined ? s.drag : 0.90;
+        const gravityFactor = s.gravity !== undefined ? s.gravity : -0.025;
+        s.vx *= dragFactor;
+        s.vy *= dragFactor;
+        
+        // Add thermal convection / random wind drift for forge sparks (heavy iron sparks)
+        // to make them flutter and sway horizontally instead of falling straight down
+        if (s.gravity !== undefined && s.gravity > 0) {
+          s.vx += (Math.random() - 0.5) * 0.09; // Horizontal sway
+          s.vy += (Math.random() - 0.5) * 0.04; // Vertical flutter
+        }
+        
+        s.vy += gravityFactor;
       }
 
       const size = s.size * (1 - age);
@@ -495,4 +513,68 @@
   window.__segments = segments;
   window.__sparks = sparks;
   window.__ripples = ripples;
+  window.triggerLaserBurst = function(x, y, isOrange = false, customLife = null, customNumSparks = null) {
+    createBurst(x, y, isOrange, customLife, customNumSparks);
+  };
+  window.triggerForgeBurst = function(x, y) {
+    const colors = ['#ffffff', '#E87C50', '#FF9F1C', '#FFD700'];
+    
+    // 1. Pulsing Center Flare (Flash)
+    sparks.push({
+      x: x,
+      y: y,
+      vx: 0,
+      vy: 0,
+      color: '#E87C50',
+      type: 'center-flare',
+      size: 45.0,
+      created: Date.now(),
+      life: 600
+    });
+
+    // 2. Double expanding shockwave ripples
+    ripples.push({
+      x: x,
+      y: y,
+      radius: 0,
+      maxRadius: 80,
+      color: '#E87C50',
+      created: Date.now(),
+      life: 600
+    });
+    ripples.push({
+      x: x,
+      y: y,
+      radius: 0,
+      maxRadius: 120,
+      color: '#FF9F1C',
+      created: Date.now(),
+      life: 800
+    });
+
+    // 3. Dense sparks with forging physics
+    const numSparks = 20 + Math.floor(Math.random() * 8);
+    for (let i = 0; i < numSparks; i++) {
+      const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const speed = 4.0 + Math.random() * 8.0;
+      const lifeSpan = 1200 + Math.random() * 800;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      sparks.push({
+        x: x,
+        y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed, // Pure radial velocity without upward bias
+        color: color,
+        type: 'star',
+        size: 0.8 + Math.random() * 3.5,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.20, // Rapid spin for shimmering glints
+        created: Date.now(),
+        life: lifeSpan,
+        drag: 0.95, // Easing: slides out beautifully in a straight line
+        gravity: 0.0 // No gravity (don't go down, don't go up, just like the Big Bang)
+      });
+    }
+  };
 })();
+

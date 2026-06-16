@@ -563,7 +563,7 @@
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 2.5, // Upward initial eject bias
+        vy: Math.sin(angle) * speed, // Pure radial velocity without upward bias
         color: color,
         type: 'star',
         size: 0.8 + Math.random() * 3.5,
@@ -571,8 +571,8 @@
         spin: (Math.random() - 0.5) * 0.20, // Rapid spin for shimmering glints
         created: Date.now(),
         life: lifeSpan,
-        drag: 0.94, // Easing: slides out beautifully
-        gravity: 0.04 // Gently curves down like real sparks with lighter gravity to allow thermal drift sway
+        drag: 0.95, // Easing: slides out beautifully in a straight line
+        gravity: 0.0 // No gravity (don't go down, don't go up, just like the Big Bang)
       });
     }
   };
