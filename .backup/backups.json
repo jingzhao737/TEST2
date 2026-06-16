@@ -1,12 +1,5 @@
 [
   {
-    "step": 123,
-    "timestamp": "2026-06-16 21:33:59",
-    "description": "Add post-flight logo star particle burst to console transitions",
-    "folder": "step_123_Add_post-flight_logo_star_particle_burst_to_console_transitions",
-    "is_auto": false
-  },
-  {
     "step": 124,
     "timestamp": "2026-06-16 21:47:06",
     "description": "Tune logo landing star burst delay to 0.1s and implement iron sparks physics",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:10:23",
     "description": "Make logo landing stars horizontal oval shape less flat",
     "folder": "step_142_Make_logo_landing_stars_horizontal_oval_shape_less_flat",
+    "is_auto": false
+  },
+  {
+    "step": 143,
+    "timestamp": "2026-06-16 23:11:06",
+    "description": "Increase logo landing stars base speed to expand overall oval range",
+    "folder": "step_143_Increase_logo_landing_stars_base_speed_to_expand_overall_oval_range",
     "is_auto": false
   }
 ]
