@@ -2065,3 +2065,209 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **定位完全对齐**：经屏幕空间测量，0.2 秒后触发的水花中心与处于控制台头部的 `YYJZ` 徽标完全重合，且不随关闭或鼠标挪动发生偏移。
 - **性能与鲁棒性**：最大活动限制提升到 15 确保了无论用户狂点控制台还是鼠标高频点击，均不会发生爆裂粒子被截断消失的问题。
 
+---
+
+## 🛠️ Step 622: 徽标降落触发与鼠标点击完全相同的十字星尘粒子爆裂 (Trigger Same Cross-Star Particle Burst on Logo Landing Completing Console Flight)
+
+### 1. 痛点与需求分析 (Pain Point & Requirements)
+- **需求**：先前步骤在控制台开关 0.2s 延时后，仅触发了 `stars.js` 里的 GPU 流体波动，而用户表示需要触发“和鼠标点击后一样的星星动画”（即在 `laser-lines.js` 中通过 `createBurst` 触发的、具有强烈发光与十字星芒特效的 canvas 粒子效果）。
+- **优化点**：必须能支持把这些极具打击感和金属/科幻质感的二维星光扩散粒子，在不需要用户点击的情况下，精准降临到飞入和飞出后的 logo 物理落点处。
+
+### 2. 跨模块星尘粒子调用重构 (Cross-Module Particle Trigger Implementation)
+- **封装触发 API**：
+  - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 中，将原本仅由鼠标点击触发的粒子爆裂逻辑 `createBurst` 抽象并向外暴露为 `window.triggerLaserBurst(x, y, isOrange)`。
+  - 该 API 接受绝对像素坐标，在调用时会在该点直接生成由 `type: 'star'` 粒子构成的随机高能十字星芒群。
+- **跨模块调用联动**：
+  - 在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 的 console 打开/关闭 onComplete 后的 200ms `setTimeout` 块中：
+    1. 首先获取 logo 屏幕真实物理像素坐标 `rect = targetEl.getBoundingClientRect()`
+    2. 计算中心点像素值 `clientX = rect.left + rect.width / 2`，`clientY = rect.top + rect.height / 2`
+    3. 调用原本的 `window.triggerLogoStarSplash(x, y)` 触发流体涌动（0~1 归一化空间）。
+    4. 同步调用 `window.triggerLaserBurst(clientX, clientY, true)` 在像素空间引爆亮眼的品牌橙色十字星星粒子。
+
+### 3. 测试与验证 (Testing & Aesthetics Verification)
+- 运行 `npx vite build` 重新打出生产包，发布并通过本地和部署页面测试验证。
+- 当 Logo 飞入控制台或飞回导航栏 0.2 秒后，不仅有背景中轻微起伏的炫彩流体，还会像被鼠标重重敲击过一样，以落点为中心爆开 4~7 颗闪烁着强烈霓虹外发光（Glow）的品牌橙色十字小星星粒子，沿随机方向散开衰减，极具动感和科技质感，视觉交互极为 premium！
+
+---
+
+## 🛠️ Step 623: 徽标降落星星动效火星化与 0.1s 延迟调优 (Tune Logo Star Burst Delay to 0.1s & Implement Iron Spark Particle Physics)
+
+### 1. 痛点与需求分析 (Pain Point & Requirements)
+- **需求**：
+  1. 将降落后的星星触发时间缩短至 0.1 秒（原为 0.2s），使爆裂与降落的感官连接更紧凑，消除动作迟滞。
+  2. 延长星星粒子的生命周期，使其更持久。
+  3. 将星星粒子的动画节奏改造为类似“打铁时产生的火星子”——具有极快的初始爆发速度、受重力下坠的抛物线路径，以及在坠落中逐渐暗淡消散的动感。
+
+### 2. 打铁火星化物理方程重隔 (Iron Spark Physics Engine Refactoring)
+- **爆发源物理属性升级**：
+  - 修改 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 中的 `createBurst` 函数，使其在接收到自定义生命周期时，对粒子实施更狂暴的初速度公式（`speed = 4.0 + Math.random() * 8.0`，而默认鼠标点击仅为 2.5~9）。
+  - 为抛出的火星注入初始的向上抛射偏向力（`vy = vy - 2.5`），使喷涌的火花能向斜上方弹跳再垂落。
+  - 为所有的十字星芒粒子（`type: 'star'`）加入随机的角度初值（`Math.random() * Math.PI * 2`）与微小旋转角速度（`spin = (random - 0.5) * 0.08`），使它们在滑行飞过时伴随着高速细微的自旋，营造出极度逼真的闪烁（Twinkling）打击效果。
+- **重力与气流阻尼重构**：
+  - 重构 `sparks` 更新循环中的运动学方程：将原有的“向上微弱飘散气流（`s.vy -= 0.025`）”替换为“向下的重力加速度（`s.vy += 0.20`）”。
+  - 将空气阻尼摩擦系数由 `0.90` 降为 `0.96`，这显著减少了气流的阻滞，允许铁屑火花能划出更长的优美抛物线弹道，直至淡出。
+- **触发时间与生命跨度定制**：
+  - 在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 中将 `setTimeout` 的延时数值由 `200ms` 全面调整为 `100ms`。
+  - 在调用全局 `window.triggerLaserBurst` 时传入定制参数 `customLife = 1200`（原为 500~800ms 随机值，大幅拉长生命周期）以及 `customNumSparks = 12`（将单次爆破火星数量提至 12 颗以实现更密集的打击感）。
+
+### 3. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包。
+- 效果完美：在 Logo 飞抵两端 100ms（0.1s）后，瞬间产生 12 颗带有明显自旋亮光的品牌橙色十字星尘粒子向四周高速喷射起飞，随后像真实的炙热铁屑在空气中重力跌落一般，划出一道道优雅的向下坠落弧线并悠然淡出。时间节奏紧凑利落，物理效果质感拉满！
+
+---
+
+## 🛠️ Step 624: 恢复普通鼠标点击星星的原生飘散物理特性 (Restore Original Physics to Normal Mouse Click Sparks)
+
+### 1. 痛点与设计考虑 (Pain Point & Design Choices)
+- **痛点**：在 Step 623 中，我们在更新循环里对所有 `type: 'star'` 粒子一刀切地应用了重力下坠（`s.vy += 0.20`）和低阻力惯性（`s.vx *= 0.96`），导致普通的鼠标点击和线条拐角处的白色小星星粒子也出现了下坠现象。用户反馈表示希望**鼠标点击处的星星特效恢复原样，只在 Logo 降落时应用打铁般的火星子下坠特效**。
+- **重构方案**：使用面向对象的方式，将粒子的运动参数（`drag` 阻尼、`gravity` 重力加速度、初始旋转 `spin` 等）直接封装在粒子对象自身的属性中，在更新循环中动态获取，实现不同触发源粒子行为的彻底隔离与精准还原。
+
+### 2. 粒子属性参数化隔离 (Parameterizing Spark Properties)
+- **粒子初始化定制**：
+  - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 的 `createBurst` 函数中，根据是否为 Logo 降落铁水花粒子（`isIronSpark`）写入不同的物理属性：
+    - **Logo 降落粒子**：`drag = 0.96`，`gravity = 0.20`，包含随机初始角度 `angle` 与自旋转速 `spin = (random - 0.5) * 0.08`。
+    - **普通鼠标点击粒子**：`drag = 0.90`，`gravity = -0.025`（向上漂浮），不带旋转（`angle = 0`, `spin = 0`）。
+  - 在 `triggerCornerBurst` 生成线条拐角粒子时，同样显式附加 `drag = 0.90` 与 `gravity = -0.025` 属性。
+- **物理循环动态适配**：
+  - 重构更新循环中的累加逻辑，根据 `s.drag` 和 `s.gravity` 进行更新：
+    - `s.vx *= (s.drag !== undefined ? s.drag : 0.90)`
+    - `s.vy *= (s.drag !== undefined ? s.drag : 0.90)`
+    - `s.vy += (s.gravity !== undefined ? s.gravity : -0.025)`
+  - 这种设计干净地恢复了原生鼠标星星效果，又维持了全新的 Logo 降落铁星下坠动态。
+
+### 3. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包。
+- 效果达到完美状态：
+  1. 鼠标在屏幕各处点击、移动所产生的白色/橙色小星星，立刻恢复了先前最习惯的**无自转、高阻尼快速减速，且受到微弱上升气流影响缓缓向上微漂并消散**的原生交互效果。
+  2. Logo 降落时（0.1s 延时后）的 12 颗橙色大火花依然精准保持了**高初速斜向抛射、带自旋转动闪烁、且受重力划出弧线向下坠落**的金属打铁火花质感，满足了所有动效定制需求！
+
+---
+
+## 🛠️ Step 625: 优化 Logo 星火物理参数实现强力 Ease-Out 缓动动效 (Tune Logo Spark Physics for Stronger Ease-Out Easing Effect)
+
+### 1. 痛点与运动模型优化 (Pain Point & Kinetic Tuning)
+- **痛点**：先前在 Step 623/624 中使用的阻尼系数 `drag = 0.96` 虽能让火花飞得很远，但整体速度看起来过于匀速/线性，缺乏“瞬间爆开、迅速急停、随后在空中极慢飘落”的强烈缓动节奏感。
+- **重构方案**：
+  - **极速初速度 (High Initial Velocity)**：将 Logo 降落铁星初速度区间提升至 `speed = 5.0 + Math.random() * 7.0`，搭配向上偏射分量 `vy = vy - 3.0`，使粒子在瞬间具有极强爆发力射向斜上方。
+  - **速停缓阻 (High Deceleration)**：将阻尼系数调小为 `drag = 0.88`（较大的阻尼），使粒子在飞出前几帧内便因受到极大空气阻力而瞬间完成约 80% 的减速。
+  - **飘落微重力 (Gentle Gravity)**：将重力加速度降为 `gravity = 0.08`。由于前期的迅速减速，粒子在运动中后期（寿命的 80% 时间段）将以极慢的终端下落速度（约 0.6 像素/帧）在空中缓缓滑落坠亡。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包并运行部署。
+- 视觉效果极为惊艳：Logo 落地 0.1s 后，星火以极具冲击力的初速呈扇形激射爆开，在数帧之内瞬间“急刹车”缓停为慢动作，然后伴随着精致的星芒旋转，在夜空中极其温柔、轻缓地徐徐下落，收尾极慢，呈现出极其高档和灵动的物理 Ease-Out（快起慢停）视觉质感。
+
+---
+
+## 🛠️ Step 626: 延长星火寿命至 1.8 秒并调优空气阻力解决收尾静止与定格感 (Extend Spark Lifespan to 1.8s & Tune Air Drag to Prevent End-of-Life Freezing)
+
+### 1. 痛点与运动模型调优 (Pain Point & Kinetic Tuning)
+- **痛点**：在 Step 625 中，我们为 Logo 星火引入了 `drag = 0.88`（较大的空气阻尼）来快速减速。但由于阻尼过大且寿命仅有 1.2 秒左右，火花在飞出 0.5 秒后速度便几近归零（横向扩散几乎完全停止，纵向下落也被重力拽至极缓），导致在火花最后的 0.7 秒寿命中，粒子在屏幕上呈现出一种干瘪、几乎完全“定格”或“定点停滞”的卡顿静止感。
+- **重构方案**：
+  - **延长总时长 (Extend Lifespan)**：在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 中将 Logo 落地火星的 `customLife` 参数由 `1200` 提升至 **`1800`（1.8秒）**，使火花有充分的时间展现漫长而优雅的飘落姿态。
+  - **微降阻力以保持滑动扩散 (Reduce Drag to Keep Slid-Out)**：在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 中将 Logo 星火的阻尼系数由 `0.88` 优化回调至 **`0.93`**。这个精心调试的数值能够保证火花在爆发后既有明显的快速降速（快起慢落），又能在生命周期的中后期**源源不断地持续向外进行微弱滑行扩散**，从而彻底避免了速度瞬间归零造成的定格感。
+  - **同步微调重力 (Optimize Gravity)**：由于寿命加长且阻力变小，为防止粒子过快坠出视区，将重力加速度由 `0.08` 略微降为 **`0.06`**，实现长久而柔顺的抛物线微重力滑行下坠。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包并运行部署。
+- 最终效果极其丝滑：Logo 到位 0.1s 后爆射开来的 12 颗品牌橙色星星，在极速降速后并没有呆板地停下，而是**极其平稳且匀速地一边继续向外扩散、一边划出优雅的长长抛物线下坠，伴随着细微自转，在 1.8 秒的时间内持续流动、扩散并最终消逝在深邃的夜空中**。整个收尾动画连贯流畅，完全告别了任何静止或定格感，极具科幻高级感！
+
+---
+
+## 🛠️ Step 627: 将 Logo 落地星火完全整回与鼠标点击完全相同的星星粒子动效 (Revert Logo Landing Sparks to Match Mouse Clicks Exactly)
+
+### 1. 痛点与设计复盘 (Pain Point & Design Review)
+- **分析**：经过几轮对打铁火花下坠物理（重力与阻尼）的尝试，火花的轨迹和长生命周期在特定情境下显得比较繁复。应用户最终要求，决定**将 Logo 降落（0.1s 延时后）触发的粒子效果完全整回和鼠标点击完全一样的星星粒子动画**。
+- **重构方案**：
+  - 在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 中调用 `window.triggerLaserBurst` 时，不再传入任何自定义参数（如 `customLife` 和 `customNumSparks`），只保留 `isOrange = true`，即 `window.triggerLaserBurst(clientX, clientY, true)`。
+  - 由于 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 中的 `createBurst` 在缺省状态下默认生成的就是原生的、无重力、无自转、高阻尼向上微漂的白/橙星星粒子，如此即可实现将动效完美对齐至鼠标点击的相同质感，同时仍然保持 0.1s 的干练延迟。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包并运行部署。
+- 最终效果完全符合预期：在 Logo 开关动画结束 0.1s 后，落点会爆发一圈与鼠标点击一模一样的经典橙色十字小星星（数量 4~7 颗，寿命 500~800ms 随机），并在快速衰减后轻轻向上漂移消散。这与全局页面中所有鼠标点击所反馈的星星动画保持了 100% 的视觉一致性和逻辑闭环。
+
+---
+
+## 🛠️ Step 628: 设计独立的“装备锻造成功”爆破动效以极富冲击力与灵动收尾 (Design Independent Gaming-Grade "Forge Success" Spark Effect for Logo Flight Completion)
+
+### 1. 痛点与设计模型重构 (Pain Point & Game Aesthetics Design)
+- **分析**：虽然对齐到鼠标的普通星星保持了一致性，但用户认为降落的反馈力度还可以更具仪式感和高品质细节——即创造一个类似于游戏中“装备锻造成功”的华丽激燃爆破场面。这需要粒子系统具备多层混合渲染（中心强闪光、扩展激波环、多色随机高速火星坠落弹道）。
+- **重构方案**：
+  - **独立 API 封装**：在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 中新增并暴露 `window.triggerForgeBurst(x, y)` 接口。
+  - **多层级视觉叠加**：
+    1. **中心高亮脉冲光圈（Center Flare）**：触发一个 `type: 'center-flare'`，大小为 `45.0`，生命周期 `600ms` 的橙白色高亮径向渐变虚焦光环，模拟锻造成功瞬间的“闪光/闪烁”亮眼爆发核心。
+    2. **彩色扩张激波（Double HUD Ripples）**：利用 `ripples` 系统，在落点瞬时释放两重半径不同（80 和 120）、颜色为橙黄相间的 concentric (同心) HUD 线框波纹，强化爆破的冲击波层次。
+    3. **高能自旋铁星群（Forge Sparks）**：发射 20~28 颗高能星星。混合使用白、金、黄、橙四色。为粒子赋予极高的初速度（`4.0~12.0`）与斜向上抛射偏向力（`vy -= 2.5`）。
+    4. **大惯性缓动与微重力轨迹**：生命周期长达 `1.2s~2s` 随机。阻尼优化为 `0.94`（保持超长持续扩散运动防止定格），重力 `0.06` 促成流畅圆滑的弧线下坠。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包并部署。
+- 效果震撼夺目：Logo 到位 0.1s 后，落点处先是亮起一个刺眼而柔和的橙白色核心光斑并迅速淡出，紧接着两道同心波纹向外震荡开来，同时 20 多颗五彩斑斓（白、金、黄、橙）的十字星芒伴随着细微自转，宛如钢水溅射般呈伞形激射飞出，划出一道道优雅平滑的抛物线在空中悠悠坠落淡出。视觉冲击力极强，收尾连贯极慢，极具游戏般的 premium 精致仪式感！
+
+---
+
+## 🛠️ Step 629: 物理引擎重构之引入热空气对流（Brownian Motion）解决铁星下坠定格感 (Introduce Thermal Convection Drift & Brownian Motion to Forge Sparks)
+
+### 1. 物理痛点分析 (Analysis of rigid downward falling)
+- **痛点**：在 Step 628 的锻造特效中，当粒子向外扩散的水平初速度（`vx`）经过大阻尼（`0.94`）在后期衰退至 0 后，由于重力加速度（`gravity = 0.06`）是恒定累加的，导致所有的粒子在生命末期（大半个生命周期里）无一例外都变成了**直线下坠**（横向动量为 0，纵向下坠）。这种绝对笔直的垂落轨迹在视觉上显得十分死板、呆滞，如同“死去的杂质石子”一样下沉，破坏了原本极富冲击力和仪式感的动态。
+- **物理机制重构**：
+  - **热空气对流漂移 (Thermal Convection & Brownian Sway)**：
+    - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 的粒子位置更新函数中，针对 `gravity > 0` 的锻造星火粒子，在每帧里引入微小的布朗随机噪声。
+    - `s.vx += (Math.random() - 0.5) * 0.09`（提供小幅度的横向空气升阻力左右摆动）。
+    - `s.vy += (Math.random() - 0.5) * 0.04`（提供微小的纵向空气颤动）。
+    - 这模拟了燃烧的热铁星子在坠落时由于周围热空气 convection (对流) 产生的气流抖动与漂浮感。
+  - **微重力慢坠化 (Lighter Gravity)**：
+    - 将重力常数由 `0.06` 回调微调至 **`0.04`**，使得坠落速度上限（终端速度）降低，给横向的风力晃动留出更明显的展示时间。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包并部署验证。
+- 效果完美：在 Logo 落地触发锻造成功特效后，20 多颗多彩火星在爆发性向外扩散至极缓速度后，**不再笔直、僵硬地竖直下落，而是像在热空气中漂浮飞舞的黄金尘埃与热余烬一样，一边忽左忽右地轻微扭动、晃荡着身体，一边在轻柔的重力下极慢极美地徐徐飘落淡出**。这使得整个动效的收尾活灵活现，质感臻于完美！
+
+---
+
+## 🛠️ Step 630: 锻造火花大改造之纯直线无重力“宇宙大爆炸”（Big Bang）式径向扩散优化 (Optimize Forge Sparks into a Perfect Straight-Line Gravity-Free "Big Bang" Radial Expansion)
+
+### 1. 物理模型再次简化重构 (Gravity-Free Radial Expansion Physics Model)
+- **分析**：尽管在 Step 629 中引入了微风布朗运动，但由于重力的存在，粒子依然会在收尾时向下滑落。用户明确指出希望粒子**“朝着运动的方向消失，不要往下也不要往上，就跟宇宙大爆炸一样”**。
+- **大爆炸物理学模型设计**：
+  - **完全去除垂直重力和偏置**：
+    - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 的 `triggerForgeBurst` 中，将粒子的重力参数 `gravity` 彻底设为 **`0.0`**（去除下落与浮空）。
+    - 移除初始速度 `vy` 上的向上喷射偏置 `- 2.5`，使所有粒子以完美的正圆形向 360 度四周均匀炸开。
+  - **径向匀称直线滑行**：
+    - 将阻尼微调为 **`0.95`**，确保粒子拥有极强的水平滑行惯性。
+    - 由于重力为 0，粒子运动时 `vx` 和 `vy` 以完全相同的比例（每帧 `0.95`）被指数衰减。这保证了速度向量的方向（`vy/vx` 的比例）物理上绝对保持不变，每个火星粒子都将以完美的**直线轨迹**从中心向外飞出，直至淡出。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包并部署验证。
+- 视觉质感达到巅峰：在 Logo 落地后 0.1s 闪光和激波震荡的同时，20 余颗自旋的彩色十字星星粒子呈完美圆形朝着四面八方激射爆开。每一颗星星都严格沿着各自飞出的直线路径向外平滑滑行、匀称减速，并在最后极慢的滑行过程中优雅淡化隐没，完全没有任何向上或向下的弯曲，完美呈现出如宇宙大爆炸般的纯净、宏大与极致丝滑！
+
+---
+
+## 🛠️ Step 631: 大爆炸粒子动效精细化收拢与同步瞬时触发 (Refine Big Bang Particle Range, Count & Implement Synchronous Instant Triggering)
+
+### 1. 动效细节提炼与性能优化 (Refining Explosion Scale & Instant Triggering)
+- **分析**：用户体验反馈后，提出了更精确的审美调优：
+  1. **瞬时触发 (Instant Trigger)**：移除之前在 `color-console.js` 中设置的 `0.1s` 延迟。当 Logo 飞越时间线走完、定位交接完成的瞬间，直接同步且零延迟引爆闪光和星雨。
+  2. **收拢范围 (Smaller Scale)**：原本大爆炸散射出的星点飞行范围过大（初速度 4~12px，激波半径达 120px），会破坏控制台/Logo 本身的区域聚焦。需要收拢为局部的精致气场。
+  3. **精简数量 (Refined Count)**：粒子数目从 20+ 降至更利落的十余颗，保持画面的简洁干练。
+- **重构方案**：
+  - **同步时序重构**：
+    - 在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 中，直接从展开/收回的 `onComplete` 回调中**剥离 `setTimeout`**，直接同步调用坐标测量和 `triggerForgeBurst`。
+  - **粒子范围与参数压缩**：
+    - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 的 `triggerForgeBurst` 中，将火星初速度压缩至更可控的 `2.5 + Math.random() * 4.5`（初速度 2.5~7.0px）。
+    - 脉冲闪光大小调小为 `30.0`，两重激波环的最大半径从 80/120 相应微调压缩为 **`50` 像素** 和 **`80` 像素**。
+    - 将星星的生成数目精简至 **`12 ~ 17` 颗**（`12 + Math.floor(Math.random() * 5)`）。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包。
+- 效果绝佳：Logo 降落完成的瞬间（毫秒级同步），落点立刻爆发闪烁光核心与两道精致的同心气波。随即，十余颗橙金星尘粒子匀称地沿着直线轨道飞越，最大飞散半径极度克制收敛在 Logo 周边约 80px 范围内，然后极慢减速消隐。整场大爆炸爆发迅速，收尾紧凑，范围恰到好处，显得极其克制、高级且极具爆发打击感！
+
+
+
+
+
+
+
+
+
+
+

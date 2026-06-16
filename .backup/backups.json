@@ -1,12 +1,5 @@
 [
   {
-    "step": 122,
-    "timestamp": "2026-06-16 21:31:34",
-    "description": "Add post-flight logo star particle splash on return flight completion",
-    "folder": "step_122_Add_post-flight_logo_star_particle_splash_on_return_flight_completion",
-    "is_auto": false
-  },
-  {
     "step": 123,
     "timestamp": "2026-06-16 21:33:59",
     "description": "Add post-flight logo star particle burst to console transitions",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:06:15",
     "description": "Change logo landing stars expansion to a horizontal ellipse",
     "folder": "step_141_Change_logo_landing_stars_expansion_to_a_horizontal_ellipse",
+    "is_auto": false
+  },
+  {
+    "step": 142,
+    "timestamp": "2026-06-16 23:10:23",
+    "description": "Make logo landing stars horizontal oval shape less flat",
+    "folder": "step_142_Make_logo_landing_stars_horizontal_oval_shape_less_flat",
     "is_auto": false
   }
 ]

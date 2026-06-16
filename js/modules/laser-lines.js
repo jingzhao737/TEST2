@@ -537,8 +537,8 @@
       sparks.push({
         x: x,
         y: y,
-        vx: Math.cos(angle) * speed * 1.6, // Scale horizontally by 1.6 for oval expansion
-        vy: Math.sin(angle) * speed * 0.5, // Scale vertically by 0.5 for oval expansion
+        vx: Math.cos(angle) * speed * 1.3, // Scale horizontally by 1.3 for gentle horizontal oval expansion
+        vy: Math.sin(angle) * speed * 0.7, // Scale vertically by 0.7 for gentle horizontal oval expansion
         color: color,
         type: 'star',
         size: 0.8 + Math.random() * 3.5,
