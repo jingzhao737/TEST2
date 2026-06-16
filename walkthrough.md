@@ -2423,3 +2423,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 生产打包成功。
 - 运行 `node check_console.js` 验证运行时和打包阶段控制台无任何逻辑报错。
 - 通过 `py workflow.py deploy` 成功同步部署最新版本（Commit `1727f39`）到线上生产环境。
+
+---
+
+## 🛠️ Feature: 解决卡片退出过渡期间主页点击拦截 (Immediate Pointer-events Disabling on Close)
+
+### 1. 需求分析与修改
+- **问题反馈**：在按 Esc 或点击关闭退出详情页时，虽然背景遮罩在 0.3s 内就变成了完全透明，但在整个卡片向下滑动退出的 0.42s 内，隐形的详情页容器 `#workDetail` 依然覆盖在屏幕最上层。这导致在卡片退出的半秒钟内，用户的任何主页点击都会被这个隐形遮罩拦截，产生“退出后一段时间点不了”的延迟感。
+- **解决方案与优化**：
+  - **即刻释放点击穿透**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 入口第一帧，立即将容器的指针事件禁用：
+    `workDetail.style.pointerEvents = 'none';`
+    这使主页点击能够彻底无缝穿透下滑中的卡片并响应，用户完全不需要等待卡片全部划出屏幕，即可立刻点击别的元素。
+  - **重新打开时重置**：在 `resetDetailState()` 的初始化顶部，将该属性还原：
+    `workDetail.style.pointerEvents = '';`
+    确保下一次详情页拉起后，里面的图库和 3D 卡片组件正常可点。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证浏览器控制台无报错。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `6d6c978`）上线。

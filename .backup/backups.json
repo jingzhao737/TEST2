@@ -1,12 +1,5 @@
 [
   {
-    "step": 146,
-    "timestamp": "2026-06-16 23:25:13",
-    "description": "Add synthesized forge successful clang sound effect when logo lands",
-    "folder": "step_146_Add_synthesized_forge_successful_clang_sound_effect_when_logo_lands",
-    "is_auto": false
-  },
-  {
     "step": 147,
     "timestamp": "2026-06-16 23:32:53",
     "description": "Add deep bass sub-boom layer to forge successful clang sound",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:10:48",
     "description": "Disable workDetail pointer-events immediately on close transition to resolve home page click interception",
     "folder": "step_165_Disable_workDetail_pointer-events_immediately_on_close_transition_to_resolve_home_page_click_interception",
+    "is_auto": false
+  },
+  {
+    "step": 166,
+    "timestamp": "2026-06-17 01:11:13",
+    "description": "Update walkthrough.md with pointer-events fix details",
+    "folder": "step_166_Update_walkthrough.md_with_pointer-events_fix_details",
     "is_auto": false
   }
 ]
