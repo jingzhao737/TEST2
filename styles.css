@@ -437,24 +437,24 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   
   /* Outline projection style */
   color: transparent !important;
-  -webkit-text-stroke: 1.5px var(--fg);
+  -webkit-text-stroke: 0.8px var(--fg);
   opacity: 0;
   pointer-events: none;
 }
 
 /* In light mode, the header navbar elements are light/white */
 :root.light #navLogo {
-  -webkit-text-stroke: 1.5px #fafaf7;
+  -webkit-text-stroke: 0.8px #fafaf7;
 }
 
 /* Active outline on the customization console */
 #navLogo.console-active {
-  -webkit-text-stroke: 1.5px var(--fg) !important;
+  -webkit-text-stroke: 0.8px var(--fg) !important;
   pointer-events: auto !important;
 }
 
 :root.light #navLogo.console-active {
-  -webkit-text-stroke: 1.5px #1a1a1a !important;
+  -webkit-text-stroke: 0.8px #1a1a1a !important;
 }
 
 .nav.scrolled ~ #navLogo {
