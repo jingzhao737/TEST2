@@ -1635,4 +1635,16 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 ### 3. 部署与验证
 - 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
-- 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，唱片之间实现了完全物理、流畅的弹性碰撞效果，相互推挤时阻尼感和弹性极强，充满趣味与真实感。
+- 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，唱片之间实现了完全物理、流畅的弹性碰撞效果，相互推挤时阻尼感 and 弹性极强，充满趣味与真实感。
+
+---
+
+## 🛠️ Step 603: 设定碰撞版 Git 标签锚点 (Release Git Tag Anchor v3.5-stable)
+
+### 1. 目标与操作
+- 为了将当前新增的稳定物理碰撞系统作为一个稳定的里程碑节点进行归档，我们为当前代码库打上并推送了一个正式的 Git 标签（锚点）。
+- 标签名称：**`v3.5-stable`**。
+
+### 2. 部署与同步
+- 执行 `git tag -a v3.5-stable -m "Release v3.5-stable - 2D elastic collision physics between hanging records"` 本地创建标签。
+- 执行 `git push origin v3.5-stable` 推送锚点至 GitHub，完成版本发布与锚定。
