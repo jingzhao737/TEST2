@@ -87,6 +87,7 @@
   - `[x]` **遮罩改用纯色实底并移除毛玻璃滤镜 (Opaque Solid Backdrop & Zero Blur Overhead)**：在 [styles.css](file:///D:/webprojext/styles.css) 中，将 `.work-detail-bg` 的背景色由半透明黑 `rgba(0,0,0,0.65)` 替换为纯黑色 `#000`（浅色模式下替换为 `#f5f0e8`），并彻底删除 `backdrop-filter: blur(12px)`。当遮罩层完全不透明时，可激活浏览器的不透明度遮挡优化（Occlusion Culling/Overdraw Avoidance），彻底停止渲染底部的整个主页 DOM 树与 Canvas；同时彻底免除了耗费极高 GPU 算力的毛玻璃计算，彻底消除卡顿。
   - `[x]` **移除背景过渡 Transition 冲突 (Remove CSS transition on Backdrop)**：移除 `.work-detail-bg` 上的 CSS 混合过渡，完全将淡入淡出动画控制权移交给 GSAP，彻底避免双重插值冲突。
   - `[x]` **加速实底遮罩淡出 (Fast Backdrop Fade-out)**：在 `hash-router.js` 中将遮罩淡出时长由 `0.6s` 缩短至 `0.4s`（缓动改为 `power2.out`），使黑色遮罩能迅速清除，让已提前恢复动画的活动背景与下滑卡片衔接得行云流水。
+  - `[x]` **彻底消除主页元素上下瞬移 (Eliminate Layout and Scroll Position Jumps)**：移除了 `openDetail` 中的 `document.body.style.overflow = 'hidden'` 和 `closeDetail` 中的 `document.body.style.overflow = ''` 及 `window.scrollTo`。在 CSS 中将 `.work-detail-bg` 的 `pointer-events` 改为 `auto`，利用全屏 overlay 的事件捕获机制天然阻断主页鼠标滚轮滚动，无需改变 body 溢出模式。这彻底防止了设置 overflow 时浏览器重置滚动视口高度导致的首页大标题等元素上下瞬移，且同时激活了点击背景黑色区域关闭详情卡片的交互。
 
 
 

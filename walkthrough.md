@@ -2563,3 +2563,26 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证控制台日志无错误。
 - 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `899a1a8`）上线。
+
+---
+
+## 🛠️ Feature: 进一步优化导航栏内收与首页大标题整体下移 (Mobile Nav Inward & Hero Title Downward Calibration)
+
+### 1. 问题分析与修改
+- **问题反馈**：手机端/平板端导航栏内的元素（Logo、声波、按钮）可以再稍微往中间靠一点；同时首页的大标题区块（Hero Content）需要整体向下移动一点点。
+- **解决方案与适配**：
+  - **导航栏内卷调整 (Nav Padding Increase)**：
+    - **平板端 (<= 1024px)**：左右内边距由 `32px` 进一步提升至 `42px`。
+    - **手机端 (<= 768px)**：左右内边距由 `28px` 进一步提升至 `38px`。
+    - **小屏手机 (<= 480px)**：左右内边距由 `24px` 进一步提升至 `32px`。
+  - **大标题整体下移 (Hero Title Downward Shift)**：
+    - **桌面端 (Desktop)**：将 `.hero` 的底部内边距 `padding-bottom` 从 `110px` 缩减为 `85px`。由于大标题依靠 `align-items: flex-end` 底部定位，这会使其整体向视口下边缘贴近 `25px`。
+    - **平板端 (<= 1024px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `150px` 增加为 `180px`，向下推挤内容。
+    - **手机端 (<= 768px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `calc(56px + 8%)` 增加为 `calc(56px + 12%)`。
+    - **小屏手机 (<= 480px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `calc(48px + 8%)` 增加为 `calc(48px + 12%)`。
+  - **效果**：大标题板块整体下沉了约 `25px` 至 `30px`，与导航栏形成了极佳的纵向留白比例；导航栏两端元素亦进一步向内聚合，带来更加聚拢、视觉集中的品质感。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证加载无逻辑和语法错误。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `da22f12`）上线。

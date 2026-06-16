@@ -33,11 +33,11 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "a8a803ad31813d6333afed05688049795cc3d0f93375341e4d8cdf8a3dbea8dc"
+    "hash": "ed4cd5316ecaca004bc3f7ad5e7fc72b512e41b5183b8ec0272952341286b646"
   },
   "task.md": {
     "type": "code",
-    "hash": "f48779e123d09d7c89965cd6c682e8607690c184df3aac5d22765acb3fc7c08c"
+    "hash": "331b1722da1760df0deb6b9d0792500cebfb4961444155a32b7330ad5aa28305"
   },
   "vite.config.js": {
     "type": "code",
@@ -45,7 +45,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "e8a349266f6f74189b21db94e618fec52f223cced9e537de7e845139d11a992d"
+    "hash": "87826c50581e7ccf374f20832baa05bb42fbd5e8d8c1d3f34d7c6091c94380ad"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -89,15 +89,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "e457432d942808452515d479ff17c41849f968a495cd01c1ff925c28979c28bc"
+    "hash": "b5274c7887c1f5b0bcc3581cf69ba254dfca1518b5a6f68caaeeb96c1b8d394f"
   },
-  "dist\\assets\\index-CaNm9VxH.css": {
+  "dist\\assets\\index-CRlQ7z-1.js": {
     "type": "code",
-    "hash": "a449cceab757dec74a38fd68c9414e6dac3f64e96d30c7dfeea2b7b5cd25e295"
+    "hash": "5df17f33f3dcd24256e094deb804fde9458453568f5871b5fd9c24cb6794f1b4"
   },
-  "dist\\assets\\index-Cqo-6o5W.js": {
+  "dist\\assets\\index-DHP1laDQ.css": {
     "type": "code",
-    "hash": "875b18972bf173f9628e42cca241ff3e6651d96d36d6dca3f54b5847df814913"
+    "hash": "bbea2fae08e7678016989246cbec7406c8cc7f85e63cc3f957a4d50ca0327f98"
   },
   "images\\index.txt": {
     "type": "code",
@@ -149,7 +149,7 @@
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
-    "hash": "d85588d81bae29c92c23e72a612f1d1e222dbe866bc668fd73e39911ee42d27e"
+    "hash": "a88eb1fc21af9bb932da5c1406f7995ed8acda2f2019356d8820c128ceb3e4c9"
   },
   "js\\modules\\laser-lines.js": {
     "type": "code",
@@ -177,7 +177,7 @@
   },
   "js\\modules\\premium-interactions.js": {
     "type": "code",
-    "hash": "d981cf3b7c6357d03e5c9b297219574a74448855227279246538e77a28360d86"
+    "hash": "fe1918dbf287fc93a98601c1ce365fe1d7c0c6e000fed575f36ae97fa798cfc9"
   },
   "js\\modules\\scroll-reveal.js": {
     "type": "code",

@@ -1,12 +1,5 @@
 [
   {
-    "step": 160,
-    "timestamp": "2026-06-17 00:49:55",
-    "description": "Keep background WebGL rendering active continuously at all times for seamless transitions",
-    "folder": "step_160_Keep_background_WebGL_rendering_active_continuously_at_all_times_for_seamless_transitions",
-    "is_auto": false
-  },
-  {
     "step": 161,
     "timestamp": "2026-06-17 00:56:18",
     "description": "Fix vertical layout jumps by removing overflow changes and locking scroll using pointer-events",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:37:34",
     "description": "style further increase mobile nav padding and shift hero title block down",
     "folder": "step_179_style_further_increase_mobile_nav_padding_and_shift_hero_title_block_down",
+    "is_auto": false
+  },
+  {
+    "step": 180,
+    "timestamp": "2026-06-17 01:37:47",
+    "description": "docs update walkthrough with mobile nav and hero padding adjustment",
+    "folder": "step_180_docs_update_walkthrough_with_mobile_nav_and_hero_padding_adjustment",
     "is_auto": false
   }
 ]

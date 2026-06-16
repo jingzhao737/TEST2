@@ -2367,9 +2367,14 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **保持背景 WebGL 渲染持续活跃 (Keep Background WebGL Rendering Active)**：我们移除了 [stars.js](file:///D:/webprojext/js/modules/stars.js) 和 [ice.js](file:///D:/webprojext/ice.js) 的动画帧暂停逻辑。现在背景星空和 3D 结晶粒子动画在详情页打开及转场期间**持续保持活跃与渲染**。因为我们已经切换为纯黑色/纯色不透明背景，且彻底删除了 CPU/GPU 负荷极高的毛玻璃模糊（`backdrop-filter`），使浏览器可以在极低负荷下支撑背景的后台运转。这样在关闭详情页淡出实底黑色遮罩时，用户能自然看到持续处于平滑动效中的主页背景，彻底规避了“动画暂停随后重新启动播放”的任何画面跳变与定格感。
 - **加速实底遮罩淡出 (Fast Opaque Backdrop Fade-out)**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 中，将黑色实底遮罩的淡出时长由 `0.6s` 缩短为 `0.4s`（缓动改为 `power2.out`），使遮罩快速消隐，与本就在运转的运动背景及下滑卡片无缝衔接。
 
+- **彻底消除主页元素上下瞬移 (Eliminate Layout and Scroll Position Jumps)**：
+  - **原因分析**：原先打开详情页时对 `body` 施加了 `overflow = 'hidden'`，关闭时重置为 `''` 并用 `window.scrollTo` 恢复位置。因为在特定 CSS 结构下，改变 body 的 overflow 模式会导致浏览器重置整个视口高度和滚动高度为 `0`，从而使得后方的首页大标题（`.works-header`）等元素在打开和关闭详情瞬间产生剧烈的上下瞬移和闪烁。
+  - **重构方案**：我们完全删除了 `body.style.overflow` 样式的更改，不再干扰浏览器的默认溢出布局，同时彻底废除了关闭卡片时的 `window.scrollTo` 操作。
+  - **事件捕获阻断**：在 [styles.css](file:///D:/webprojext/styles.css) 中，将覆盖全屏的 `.work-detail-bg` 遮罩的 `pointer-events` 改为 `auto`。因为详情卡片父容器 `.work-detail` 在打开时已具备 `visibility: visible` 与 `pointer-events: auto` 且占满视口，任何在页面上的鼠标滚轮事件都会被详情遮罩或卡片本身捕获阻断，天然无法到达主页，从而在不修改 overflow 的前提下完美锁定了主页背景滚动，彻底消除了元素上下瞬移。同时，这也新添了用户可以通过**点击详情卡片外的任何黑色区域直接关闭详情**的 premium 交互！
+
 ### 3. 部署与验证 (Verification & Deployment)
 - 运行 `npx vite build` 生产打包完全成功。
-- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊，且使 WebGL 背景保持常开常驻后，转场的打开、关闭阶段再无任何掉帧与定格感，衔接丝滑自然！
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊，WebGL 背景常驻，且通过去除 overflow 彻底消除了任何大标题上下瞬移和闪烁，转场的入场与退场均达到了完美的满帧衔接！
 
 
 
@@ -2381,3 +2386,203 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 
 
+
+---
+
+## 🛠️ Feature: 解决 Works 详情转场中大标题与导航栏上下移位跳变 (Stationary Works Header Transition)
+
+### 1. 需求分析与修改
+- **问题反馈**：在点开或关闭详情页（`#workDetail`）的转场过程中，Works 页的大标题和导航栏等主页元素会发生上下瞬移，影响过渡平滑度。
+- **解决方案与优化**：
+  - **移除垂直位移动画**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `openDetail` 和 `closeDetail` 的 GSAP 动画中，彻底删除了对 `#nav`、`.works-header`、`.work-card` 设定的 `y` 轴位移参数（先前为 `y: -30`、`y: -40`、`y: 50` 和 `y: 0`）。
+  - **纯透明度渐变过渡 (Pure Opacity Transition)**：将这些页面基础元素的退场与入场恢复转场改为纯透明度（`opacity: 0` 和 `opacity: 1`）渐隐渐显。这保证了在转场淡入淡出阶段，所有主页元素都在原位绝对静止，从而消除了任何垂直方向的移位或瞬移。
+  - **保留卡片动效**：详情卡片本体（`#workDetailCard`）的从下至上滑入和滑出的滑屏缩放高级动效保持不变，维持出色的交互细节。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 进行生产包构建，确认打包正常。
+- 运行本地 `node check_console.js` 校验脚本，确认运行时和打包阶段控制台无任何 JS 报错。
+- 通过 `py workflow.py deploy` 成功将最新版本（Commit `c5a9929`）部署至远端页面进行验证。
+
+---
+
+## 🛠️ Feature: 缩短转场等待时间并支持关闭打断机制 (Transition Interruption & CD Reduction)
+
+### 1. 需求分析与修改
+- **问题反馈**：详情卡片（`#workDetail`）在连续打开/关闭时体验不够连贯。刚按下 Esc 退出，或在退出动画中，用户无法立即点击新卡片，必须等完整的动画播放结束，冷却时间（CD）长，手感较生硬。
+- **解决方案与优化**：
+  - **支持关闭过程打断 (Close Animation Interruption)**：在 `openDetail()` 头部加入打断逻辑。如果检测到当前详情页正处于关闭过程中（`window.__isDetailClosing === true`），立刻调用 `gsap.killTweensOf` 强制终止所有正在进行的关闭动效，同步执行 `resetDetailState()` 将 DOM 与 3D 状态拉回原位并重置 `isRouteTransitioning = false`，从而允许新卡片的点击事件直接触发并无缝开始展示。
+  - **重置逻辑解耦 (Decoupled Reset Logic)**：提取了重用度极高的 `resetDetailState()` 函数，将 `closeDetail` 中的所有 inline 样式及 3D 模型浮动状态等重置指令收纳其中，便于在退出完成和被迫打断时统一调用。
+  - **缩短并紧凑化转场时间 (Compact Duration)**：
+    - 打开卡片动画 (`openDetail`) 从 `1.2s` 缩短为 `0.75s`（保留 `expo.out` 高级阻尼缓动）。
+    - 关闭卡片动画 (`closeDetail`) 从 `0.65s` 缩短为 `0.42s`。
+    - 首页背景元素淡出时间由 `0.8s` 缩减为 `0.45s`，内部文本内容 staggered 展现延迟均缩短约 `0.2s`–`0.3s`。
+    - 遮罩淡出由 `0.4s` 缩短为 `0.3s`。
+  - **效果**：操作反馈极其干练清爽，连续操作无缝衔接。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 生产打包成功。
+- 运行 `node check_console.js` 验证运行时和打包阶段控制台无任何逻辑报错。
+- 通过 `py workflow.py deploy` 成功同步部署最新版本（Commit `1727f39`）到线上生产环境。
+
+---
+
+## 🛠️ Feature: 解决卡片退出过渡期间主页点击拦截 (Immediate Pointer-events Disabling on Close)
+
+### 1. 需求分析与修改
+- **问题反馈**：在按 Esc 或点击关闭退出详情页时，虽然背景遮罩在 0.3s 内就变成了完全透明，但在整个卡片向下滑动退出的 0.42s 内，隐形的详情页容器 `#workDetail` 依然覆盖在屏幕最上层。这导致在卡片退出的半秒钟内，用户的任何主页点击都会被这个隐形遮罩拦截，产生“退出后一段时间点不了”的延迟感。
+- **解决方案与优化**：
+  - **即刻释放点击穿透**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 入口第一帧，立即将容器的指针事件禁用：
+    `workDetail.style.pointerEvents = 'none';`
+    这使主页点击能够彻底无缝穿透下滑中的卡片并响应，用户完全不需要等待卡片全部划出屏幕，即可立刻点击别的元素。
+  - **重新打开时重置**：在 `resetDetailState()` 的初始化顶部，将该属性还原：
+    `workDetail.style.pointerEvents = '';`
+    确保下一次详情页拉起后，里面的图库和 3D 卡片组件正常可点。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证浏览器控制台无报错。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `6d6c978`）上线。
+
+---
+
+## 🛠️ Feature: 解决卡片退出后鼠标静止点击无响应 (3D Hit-Testing Wakeup via Custom Events)
+
+### 1. 需求分析与修改
+- **问题反馈**：详情页退出且遮罩去除后，如果用户鼠标保持静止，原地点击卡片依旧没有响应，感觉像有冷却 CD 延迟。
+- **原因分析**：
+  - 详情页打开时，鼠标离开主页触发 `onListLeave`，将 `isVisible` 设为 `false` 并清空悬停索引 `window.__hoveredCardIndex = -1`，同时 3D 投影检测进程进入休眠以节省 CPU。
+  - 关闭详情页后，由于用户的鼠标是静止的，浏览器不会为底下的作品列表自动重新分发 `mouseenter` 等 hover 相关的事件。
+  - 导致 3D 投影 hit-testing 始终处于休眠状态，`window.__hoveredCardIndex` 锁死在 `-1`。原地点击时，主页的 fallback 点击机制因为悬停索引为 `-1` 而彻底失效，形成了点击死区。
+- **解决方案与优化**：
+  - **坐标实时捕获**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 顶部注册全局鼠标监听器，实时更新鼠标最后的物理坐标。
+  - **主动状态唤醒 (Event Wakeup)**：编写 `dispatchWakeupEvents()` 辅助函数。检测当鼠标处于主页列表边界内时，手动向列表容器派发 `mouseenter` 与 `mousemove` 事件。
+  - **多重唤醒时机**：
+    - 在 `closeDetail()` 开始禁用 pointer-events 的瞬间，立即唤醒一次；
+    - 在关闭动画 `onComplete` 卡片彻底滑出隐藏 the 瞬间，再次唤醒。
+  - **效果**：强行打破浏览器对静止鼠标的事件重新分发滞后，瞬间唤醒 3D 投影碰撞检测，卡片退出后原地静止点击立刻 100% 灵敏响应。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包正常。
+- 运行 `node check_console.js` 验证无控制台报错。
+- 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `4a8fc76`）到线上生产环境。
+
+---
+
+## 🛠️ Feature: 详情卡片入场出场速度微调 (Transition Durations Softening)
+
+### 1. 需求分析与修改
+- **问题反馈**：详情页卡片的展开（0.75s）和收回（0.42s）速度有点过快，缺乏了一些舒缓和大气的氛围感。用户希望稍微放慢一点。
+- **解决方案与参数校准**：
+  - **入场动画时长调整**：将 `openDetail` 中的详情卡片 slide up 滑入时长从 `0.75s` 调整为 `0.95s`（保留 expo 阻尼弹性缓动），背景遮罩淡入时间从 `0.5s` 调整为 `0.65s`，文本 staggered 入场延迟整体放缓 `0.1s`。
+  - **出场动画时长调整**：将 `closeDetail` 中的详情卡片 slide down 滑落时长从 `0.42s` 调整为 `0.55s`，背景遮罩淡出时间从 `0.3s` 调整为 `0.4s`，首页元素恢复时长从 `0.45s` 调整为 `0.55s`。
+  - **效果**：过渡节奏明显更加平缓柔和，恢复了高雅、从容的视觉高级感，手感极佳。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证控制台日志无错误。
+- 通过 `py workflow.py deploy` 成功将最新版本（Commit `d71626f`）部署至线上。
+
+---
+
+## 🛠️ Feature: 作品详情卡片手机端布局与转场动效适配 (Works Details Mobile Calibration)
+
+### 1. 需求分析与修改
+- **排版拥挤与挤压问题**：
+  - 在手机端（宽度 `<= 768px`）点开详情时，由于详情卡片宽度很窄，GSAP 原本的 `scaleX: 0.4` 横向拉伸入场动画在小屏下会产生极不自然的文字重排和挤压感。
+  - 原本的 `.detail-body` 拥有 `64px` 的左右内边距，这在手机上使正文宽度被压缩到极致，排版非常狭长。
+  - 元数据展示栏（`.detail-meta`）因为设置了 `gap: 60px`，在手机上极易溢出；图库（`.detail-gallery`）强制两列排版，在小屏下图片显得非常逼仄局促。
+- **解决方案与适配调整**：
+  - **移出转场横向压缩**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的卡片滑入/滑出动画中加入移动端状态检查。如果为 `isMobile`，则将初始和结束的 `scaleX` 设为 `1.0`（取消横向压缩），仅进行纯粹的从下至上滑屏飞入，彻底消除了小屏内容被挤压的毛躁感。
+  - **精简文字间距**：在 [styles.css](file:///D:/webprojext/styles.css) 中对 `.detail-body` 增加移动端响应式覆写，左右内边距由 `64px` 缩减为 `20px`，释放了文字排版空间。
+  - **自适应元数据折行**：移动端将 `.detail-meta` 设为 `flex-wrap: wrap` 并将间距调小为 `20px 32px`，确保字段能够优雅换行不溢出。
+  - **单列平滑画廊**：移动端图库 `.detail-gallery` 设为 `grid-template-columns: 1fr`（单列大图排列），并微调了间距，为手机屏带来极佳的高清看图体验。
+  - **效果**：手机端的详情过渡与图文排版重获通透、开阔的现代呼吸感。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证无运行时控制台报错。
+- 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `445db79`）到线上生产环境。
+
+---
+
+## 🛠️ Hotfix: 修复退出函数 isMobile 未定义引用报错 (closeDetail ReferenceError Fix)
+
+### 1. 问题分析 with 修改
+- **问题反馈**：作品详情页点开后关不掉了，按 Esc 或点击 Close 均没有任何反应。
+- **原因分析**：
+  - 在上一轮将 `scaleX` 弹性过渡跟移动端状态解耦时，我们在 `closeDetail()` 的卡片滑出动效中使用到了 `isMobile` 变量。
+  - 但是我们在该函数内部**漏掉了 `isMobile` 变量的本地声明**（它只在 `openDetail()` 中被定义）。
+  - 这导致在尝试退出时，JavaScript 引擎在读取 `isMobile` 时直接抛出了致命的 `ReferenceError: isMobile is not defined` 错误，导致 GSAP 执行流在半途瞬间崩毁。由于动画未顺利完成，转场锁 `isRouteTransitioning` 无法被重置，页面因而完全卡死，无法关闭。
+- **解决方案与修复**：
+  - 在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 的卡片滑出运动分支上，重新补全了 `isMobile` 的计算定义：
+    `const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);`
+  - **效果**：报错彻底根除，卡片展开与关闭过渡百分之百恢复平滑响应。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包正常。
+- 运行 `node check_console.js` 验证控制台日志无错误。
+- 通过 `py workflow.py deploy` 成功将最新版本（Commit `a5523bf`）部署至线上。
+
+---
+
+## 🛠️ Feature: 解决详情卡片退出时主页 Hover 预览图提前闪烁与穿帮问题 (PC Hover Transition Visual Isolation)
+
+### 1. 问题分析与修改
+- **问题反馈**：在 PC 端点击关闭或按 Esc 退出详情页时，退场下滑的 0.55s 期间，主页的作品 hover 预览小图片和 3D 偏转在卡片退到一半时就提前显现，发生严重的闪烁与视觉穿帮。
+- **原因分析**：
+  - 在加入退出后的事件自动唤醒机制时，`dispatchWakeupEvents()` 被放在了 `closeDetail()` 函数的第一帧。
+  - 这导致在卡片还在向下滑动退出的过程中，主页的 3D 碰撞检测和 Hover 事件就已经被强制唤醒。如果此时鼠标恰好在主页的作品区域内，就会提前触发并绘制主页的 hover 预览小卡片。
+- **解决方案与修复**：
+  - **延迟事件唤醒时机**：将 `closeDetail()` 开头的 `dispatchWakeupEvents()` 彻底移除，仅保留在退出动画彻底完成的 `onComplete` 回调中（详情卡片已设为 display: none / visibility: hidden）才执行唤醒。
+  - **引入转场隔离屏障**：在 [premium-interactions.js](file:///D:/webprojext/js/modules/premium-interactions.js) 的 `onListEnter` 和 `onCardEnter` 函数顶部增加转场状态过滤：
+    `if (window.__isRouteTransitioning || window.__isDetailClosing) return;`
+    在整个卡片打开（0.95s）与关闭（0.55s）的完整过渡转场内，彻底冻结并隐藏主页的悬浮预览和 3D 偏转反应。
+  - **效果**：退场过渡视觉极其干净自然，没有任何卡片重叠或提前显现的毛刺，转场结束后鼠标划过卡片依然正常灵敏工作。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 生产环境编译打包顺利通过。
+- 运行 `node check_console.js` 验证加载时无任何控制台报错。
+- 运行 Playwright 自动化交互脚本验证了打开、关闭以及交互全流程的逻辑与动画，无任何报错且状态切换正确。
+- 通过 `py workflow.py deploy` 成功发布并部署（Commit `e0a3048`）到线上环境。
+
+---
+
+## 🛠️ Feature: 优化手机端导航栏边距 (Mobile Nav Padding Calibration)
+
+### 1. 问题分析与修改
+- **问题反馈**：手机端导航栏中的 Logo (YYJZ)、声波控制区（Waveform）以及右侧的菜单按钮都太贴近屏幕边缘，显得拥挤不透气。
+- **解决方案与适配**：
+  - 在不破坏导航栏与页面纵向蓝图网格（Blueprint Grid Lines）对齐规则的前提下，通过增加 `.nav` 的内边距（padding），使两端元素优雅地向中心收缩靠拢：
+    - **平板端 (<= 1024px)**：左右内边距由 `24px` 提升至 `32px`。
+    - **手机端 (<= 768px)**：左右内边距由 `16px` 提升至 `28px`。
+    - **小屏手机 (<= 480px)**：左右内边距由 `12px` 提升至 `24px`。
+  - **JS 自动适配**：由于主题拉线（Theme Pull Toggle）的水平中心坐标在 [theme.js](file:///D:/webprojext/js/modules/theme.js) 中是动态绑定并对齐 `#navMenuBtn` 的，因此增加内边距后拉线会自动、精准地重对齐到新位置，无需修改 JS 逻辑。
+  - **效果**：两端元素明显向中间内收，界面在小屏下展现出更加开阔、呼吸感更强的现代高端美感，完美符合高精度排版要求。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证控制台日志无错误。
+- 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `899a1a8`）上线。
+
+---
+
+## 🛠️ Feature: 进一步优化导航栏内收与首页大标题整体下移 (Mobile Nav Inward & Hero Title Downward Calibration)
+
+### 1. 问题分析与修改
+- **问题反馈**：手机端/平板端导航栏内的元素（Logo、声波、按钮）可以再稍微往中间靠一点；同时首页的大标题区块（Hero Content）需要整体向下移动一点点。
+- **解决方案与适配**：
+  - **导航栏内卷调整 (Nav Padding Increase)**：
+    - **平板端 (<= 1024px)**：左右内边距由 `32px` 进一步提升至 `42px`。
+    - **手机端 (<= 768px)**：左右内边距由 `28px` 进一步提升至 `38px`。
+    - **小屏手机 (<= 480px)**：左右内边距由 `24px` 进一步提升至 `32px`。
+  - **大标题整体下移 (Hero Title Downward Shift)**：
+    - **桌面端 (Desktop)**：将 `.hero` 的底部内边距 `padding-bottom` 从 `110px` 缩减为 `85px`。由于大标题依靠 `align-items: flex-end` 底部定位，这会使其整体向视口下边缘贴近 `25px`。
+    - **平板端 (<= 1024px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `150px` 增加为 `180px`，向下推挤内容。
+    - **手机端 (<= 768px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `calc(56px + 8%)` 增加为 `calc(56px + 12%)`。
+    - **小屏手机 (<= 480px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `calc(48px + 8%)` 增加为 `calc(48px + 12%)`。
+  - **效果**：大标题板块整体下沉了约 `25px` 至 `30px`，与导航栏形成了极佳的纵向留白比例；导航栏两端元素亦进一步向内聚合，带来更加聚拢、视觉集中的品质感。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证加载无逻辑和语法错误。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `da22f12`）上线。
