@@ -37,7 +37,13 @@ import gsap from 'gsap';
       const startRect = anchorEl.getBoundingClientRect();
       
       gsap.set(consoleEl, { y: 0, scale: 1 });
-      const toRect = placeholder.getBoundingClientRect();
+      const placeholderRect = placeholder.getBoundingClientRect();
+      const toRect = {
+        left: placeholderRect.left,
+        top: placeholderRect.top + 3.5, // add 3.5px downward offset to center it in header
+        width: placeholderRect.width,
+        height: placeholderRect.height
+      };
       gsap.set(consoleEl, { y: -12, scale: 0.97 }); // restore start state
 
       // 2. Setup initial animated outline logo state
@@ -633,9 +639,13 @@ import gsap from 'gsap';
       if (!fromLogo) return;
 
       const fromRect = fromLogo.getBoundingClientRect();
-      const toPlaceholder = document.getElementById('consoleTitlePlaceholder');
-      if (!toPlaceholder) return;
-      const toRect = toPlaceholder.getBoundingClientRect();
+      const placeholderRect = toPlaceholder.getBoundingClientRect();
+      const toRect = {
+        left: placeholderRect.left,
+        top: placeholderRect.top + 3.5, // match the same 3.5px downward offset
+        width: placeholderRect.width,
+        height: placeholderRect.height
+      };
 
       const existing = document.getElementById('trajectoryDebugGhost');
       if (existing) existing.remove();

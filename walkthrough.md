@@ -1853,3 +1853,23 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 构建与部署
 - 编译生成最新静态资源。
 - 运行 `python workflow.py deploy` 推送最新代码，实现无缝溶解的超高水准动效同步部署。
+
+
+---
+
+## 🛠️ Step 613: 微调徽标落点，下移 3.5px 实现控制台顶部垂直居中 (Micro-adjust logo landing coordinates downward by 3.5px for vertical centering in console header)
+
+### 1. 痛点与微调分析
+- **痛点**：用户反馈徽标在飞入调色控制台后，最终的停留位置在视觉上稍微偏上，显得不够居中。
+- **成因**：由于控制台顶部的标题占位容器（`consoleTitlePlaceholder`）的 `min-height` 是 `24px`，而徽标字体的实际高度约为 `20.8px`。在顶对齐测绘时，文字由于基线与行高的微弱差异会导致物理位置比周围元素（如关闭按钮）偏上。
+- **微调方案**：在展开飞行的终点计算中，为 `toRect.top` 主动施加 **`+3.5px`** 的向下位移量。
+
+### 2. 代码重构
+- **主飞渡动效**（[color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js)）：
+  - 修改了 `toggleConsole` 中 `toRect` 的定义，使其在保留 placeholder 原有宽高的同时，将 `top` 加上 `3.5px` 的像素偏移量。
+- **Test Path 预览系统**（[color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js)）：
+  - 同步修改了调试模块点击测试事件内的终点 `toRect` 计算，使其在生成幽灵克隆节点时也增加 `3.5px` 下移，保证预览效果与真实路径实现 100% 对齐。
+
+### 3. 构建与部署
+- 编译出最新 JS 打包文件。
+- 运行 `python workflow.py deploy` 推送上线，实机垂直居中效果即时生效。
