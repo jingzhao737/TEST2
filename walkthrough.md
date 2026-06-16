@@ -1378,16 +1378,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
   - **需求**：当唱片处于锁定播放状态且音乐正在播放时，让其以合适的转速顺时针（Clockwise）匀速旋转；当音乐暂停时，旋转应当停止。
 
 ### 2. 解决方案与修改
-- **追加匀速顺时针自转更新逻辑**：
+- **追加匀速顺时针自转更新逻辑与各向异性反射修复**：
   - 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 的 3D 网格更新循环。
   - 检查当前唱片是否被锁定播放（`i === latchedIdx`）并且网页音频状态为正在播放（`window.__audioPlaying === true`）。
-  - 若满足条件，则对 `t._spin` 进行递减累积。由于 Z 轴朝向屏幕外，根据右手法则，递减 Z 轴弧度值即为顺时针旋转。我们采用 `0.025` 弧度/帧（在 60fps 下约合每秒自转 86°，相当于非常温和优雅的转速）进行顺时针自转：
+  - 若满足条件，则对 `t._spin` 进行递减累积。我们采用 `0.025` 弧度/帧进行顺时针自转：
     ```javascript
     if (i === latchedIdx && window.__audioPlaying === true) {
       t._spin = (t._spin || 0) - 0.025; // 递减 Z 轴旋转角以实现顺时针自转
     }
     ```
-  - 将计算出的旋转角 `t._spin` 应用在盘体 Mesh 与盘贴 Mesh（`vinylMesh` 与 `labelMesh`）的 Z 轴旋转属性上。当音乐暂停时，该累加动作停止，盘片停留在当前角度，实现精准联动。
+  - **各向异性反射保护（仅旋转封面盘贴）**：
+    - 现象与原因：如果同时旋转 `vinylMesh` 和 `labelMesh`，会导致黑胶唱片表面的各向异性反射高光（Anisotropic Specular Highlight）随盘面一同旋转，使其在视觉上变平，看起来像一张带有静态高光的扁平 2D 贴图。在物理上，随着黑胶唱片旋转，其微小的同心圆凹槽方向在固定坐标点并没有发生改变，高光必须保持与光源相对静止。
+    - **解决**：保持黑胶唱片盘体 `vinylMesh` 在自转方向上静止，仅对盘贴 `labelMesh` 应用旋转角：
+      ```javascript
+      d.labelMesh.rotation.z = t._spin || 0;
+      ```
+    - 这实现了：一方面，中心有封面图的盘贴正常旋转，呈现出强烈的旋转动感；另一方面，周围黑色黑胶盘体的双锥形 3D 偏振高光依然完美地定在世界坐标中的光源方向，随着盘片左右摆动产生极致逼真的 3D 偏振流转效果，彻底解决扁平化问题。
 
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
