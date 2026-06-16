@@ -3355,8 +3355,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 .color-console-header .nav-logo {
-  font-size: 1.15rem !important;
+  font-size: 1.3rem !important;
   margin-top: 0 !important;
+  transform: none !important;
+  color: var(--fg) !important;
 }
 
 .nav-logo.no-transition {
