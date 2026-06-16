@@ -1,12 +1,5 @@
 [
   {
-    "step": 142,
-    "timestamp": "2026-06-16 23:10:23",
-    "description": "Make logo landing stars horizontal oval shape less flat",
-    "folder": "step_142_Make_logo_landing_stars_horizontal_oval_shape_less_flat",
-    "is_auto": false
-  },
-  {
     "step": 143,
     "timestamp": "2026-06-16 23:11:06",
     "description": "Increase logo landing stars base speed to expand overall oval range",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:56:18",
     "description": "Fix vertical layout jumps by removing overflow changes and locking scroll using pointer-events",
     "folder": "step_161_Fix_vertical_layout_jumps_by_removing_overflow_changes_and_locking_scroll_using_pointer-events",
+    "is_auto": false
+  },
+  {
+    "step": 162,
+    "timestamp": "2026-06-17 01:01:38",
+    "description": "Remove y translation from home page exit transitions to keep Works header stationary",
+    "folder": "step_162_Remove_y_translation_from_home_page_exit_transitions_to_keep_Works_header_stationary",
     "is_auto": false
   }
 ]

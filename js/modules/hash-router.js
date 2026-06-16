@@ -145,9 +145,9 @@ function openDetail(data, heroImg, pushState) {
   }
 
   // ── 2. Slide and fade out original works page elements immediately ──
-  gsap.to('#nav', { opacity: 0, y: -30, duration: 0.8, ease: 'power3.inOut' });
-  gsap.to('.works-header', { opacity: 0, y: -40, duration: 0.8, ease: 'power3.inOut' });
-  gsap.to('.work-card', { opacity: 0, y: 50, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('#nav', { opacity: 0, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.works-header', { opacity: 0, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.work-card', { opacity: 0, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
   const btt = document.getElementById('backToTop');
   if (btt) btt.style.pointerEvents = 'none';
@@ -290,9 +290,9 @@ function closeDetail(popState) {
   }
 
   // Restore works page elements immediately in sync with detail close
-  gsap.to('#nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.works-header', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.work-card', { opacity: 1, y: 0, scale: 1, z: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('#nav', { opacity: 1, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.works-header', { opacity: 1, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.work-card', { opacity: 1, scale: 1, z: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.6, ease: 'power2.out', clearProps: 'all' });
   const bttRestore = document.getElementById('backToTop');
   if (bttRestore) bttRestore.style.pointerEvents = '';

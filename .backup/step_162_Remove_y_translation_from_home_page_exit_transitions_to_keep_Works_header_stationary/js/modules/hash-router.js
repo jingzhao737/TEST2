@@ -145,9 +145,9 @@ function openDetail(data, heroImg, pushState) {
   }
 
   // ── 2. Slide and fade out original works page elements immediately ──
-  gsap.to('#nav', { opacity: 0, y: -30, duration: 0.8, ease: 'power3.inOut' });
-  gsap.to('.works-header', { opacity: 0, y: -40, duration: 0.8, ease: 'power3.inOut' });
-  gsap.to('.work-card', { opacity: 0, y: 50, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('#nav', { opacity: 0, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.works-header', { opacity: 0, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.work-card', { opacity: 0, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
   const btt = document.getElementById('backToTop');
   if (btt) btt.style.pointerEvents = 'none';
@@ -158,12 +158,11 @@ function openDetail(data, heroImg, pushState) {
   workDetail.classList.add('open');
   workDetail.style.display = 'flex';
   workDetail.style.visibility = 'visible';
-  if (window.__updateMagnetTargets) window.__updateMagnetTargets();
   const scrollWrapper = document.getElementById('workDetailScrollWrapper');
   if (scrollWrapper) {
     scrollWrapper.scrollTop = 0;
   }
-  document.body.style.overflow = 'hidden';
+  // Body overflow hidden removed to prevent scroll position reset and layout jumps
 
   // Measure targetRect BEFORE we slide the detailCard down (since it's currently y:0 as rendered)
   let targetRect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight * 0.6 };
@@ -275,9 +274,9 @@ function closeDetail(popState) {
     detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
   ]);
 
-  // Fade out backdrop smoothly
+  // Fade out backdrop smoothly (faster fade-out to reveal restoring background early)
   if (detailBg) {
-    gsap.to(detailBg, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
+    gsap.to(detailBg, { opacity: 0, duration: 0.4, ease: 'power2.out' });
   }
 
   // Fade out close button immediately to prevent lingering
@@ -291,9 +290,9 @@ function closeDetail(popState) {
   }
 
   // Restore works page elements immediately in sync with detail close
-  gsap.to('#nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.works-header', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.work-card', { opacity: 1, y: 0, scale: 1, z: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('#nav', { opacity: 1, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.works-header', { opacity: 1, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.work-card', { opacity: 1, scale: 1, z: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.6, ease: 'power2.out', clearProps: 'all' });
   const bttRestore = document.getElementById('backToTop');
   if (bttRestore) bttRestore.style.pointerEvents = '';
@@ -310,10 +309,10 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         workDetail.classList.remove('open');
-        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         workDetail.style.display = 'none';
         workDetail.style.visibility = 'hidden';
-        document.body.style.overflow = '';
+        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
+        // Body overflow reset removed
 
         // Reset ALL inline styles for next open cycle
         gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
@@ -369,7 +368,7 @@ function closeDetail(popState) {
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-        window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+        // window.scrollTo removed to prevent layout jumps since scroll was never reset
 
         window.__isDetailClosing = false;
         isRouteTransitioning = false;
