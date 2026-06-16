@@ -1918,3 +1918,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 构建与部署 (Build and Deploy)
 - 运行 `npx vite build` 重新打包项目静态资源。
 - 运行 `python workflow.py deploy` 推送部署，实机测试表明在 2.7s 动画结束后，徽标完美、坚固地锁死在终点坐标，无任何二次移动。
+
+
+---
+
+## 🛠️ Step 616: 解决开启动画结束时徽标微小下移跳动的问题 (Resolve logo shifting jump at the end of opening animation by keeping inline transform)
+
+### 1. 深度分析与排查 (In-depth Jitter Diagnostics)
+- **问题表现**：虽然在 Step 615 中我们调整了 `clearProps` 顺序并静态禁用了 CSS 过渡，但在部分高 DPI 屏幕或特定浏览器（如 Chrome）中，动画落点后依然会出现 1 到 2 像素的轻微“下跳”现象。
+- **根本原因**：
+  1. **悬停缩放状态继承**：当点击实心徽标时，鼠标处于悬停状态。GSAP 在捕获 `#navLogo` 的起飞状态时，会隐式读取其当前的 `scale(1.02)` 变化并将该缩放参数保存在 GSAP 补间动画的 transform 缓存中，导致飞行过程中一直带有 1.02 的缩放。
+  2. **清除 transform 引发亚像素重整**：当动画结束调用 `clearProps: 'x,transform'` 时，行内 style 中的 `transform: translate(0px,0px) scale(1.02)` 被彻底擦除，使元素回到无变换状态。在这个清除瞬态下，不仅缩放重置为了 1.0，而且元素从**3D 硬件加速层（Stacking Context）**卸载并返回到**常规文档排版流（BFC）**中。由于 `position: fixed` 的 `inline-flex` 文字容器在有无 transform 渲染层时基线 snapping 计算有细微误差，便产生了约 1px 的向下突跳。
+
+### 2. 无缝锁定解决方案 (Seamless Alignment Strategy)
+- 我们实施了更直接、更纯粹的零跳动方案：
+  - **缩放归一化动画**：在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 的展开 timeline 中，显式添加了对 `scale: 1` 的过渡补间。这确保了无论起飞时是否处于 Hover 状态（1.02），在飞行至控制台的过程中都会平滑均匀地缩放到 1.0 物理比例落定。
+  - **保留行内 Transform**：不再在开启动画的 `onComplete` 回调中执行 `clearProps: 'transform'`。由于 `transform: translate(0px, 0px) scale(1)` 维持在行内样式中，浏览器绝不会销毁其 3D 加速渲染上下文，从物理层面上彻底规避了“图层卸载导致的亚像素重整跳动”。
+  - **CSS 悬停恢复与特化**：为了在控制台打开状态下仍能给用户提供高端交互反馈，我们在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对 `#navLogo.console-active:hover` 配置了 `transform: scale(1.02) !important;` 规则，完美兼容了保留行内样式与 Hover 悬浮缩放的共存。
+
+### 3. 测试与部署 (Testing and Verification)
+- 运行 `npx vite build` 重新打包项目静态资源。
+- 运行 `python workflow.py deploy` 推送部署，通过 Playwright 多帧抓取检查，徽标在 2.7s 落点后的 Y 轴物理坐标自 2500ms 至 4000ms 始终恒定保持在 `111px`（Difference 稳定为 4px），再无任何抖动、缩放回跳或下移。
