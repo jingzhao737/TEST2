@@ -46,13 +46,24 @@ import gsap from 'gsap';
       // Add active class and measure target position under layout-active conditions
       consoleEl.classList.add('active');
       gsap.set(consoleEl, { y: 0, scale: 1 });
-      consoleEl.offsetHeight; // Force reflow to update child subpixel layout caches
-      const placeholderRect = placeholder.getBoundingClientRect();
+      
+      // Temporarily append logo to placeholder to get its exact final layout coordinates
+      placeholder.appendChild(logo);
+      logo.style.setProperty('transition', 'none', 'important');
+      logo.classList.add('console-active');
+      logo.offsetHeight; // Force reflow
+      
+      const targetRect = logo.getBoundingClientRect();
+      
+      // Detach and put it back to body for flight
+      document.body.appendChild(logo);
+      logo.offsetHeight; // Force reflow
+      
       const toRect = {
-        left: placeholderRect.left,
-        top: placeholderRect.top + 3.5, // add 3.5px downward offset to center it in header
-        width: placeholderRect.width,
-        height: placeholderRect.height
+        left: targetRect.left,
+        top: targetRect.top,
+        width: targetRect.width,
+        height: targetRect.height
       };
       
       // Setup consoleEl starting animation state inline (reversing the y:0 scale:1 set above)
@@ -80,10 +91,24 @@ import gsap from 'gsap';
  
       const tl = gsap.timeline({
         onComplete: () => {
-          // Do NOT clearProps here - leave all inline styles intact while console is open.
-          // Clearing consoleEl's inline transform triggers compositor re-compositing which
-          // causes the fixed-position logo to visually shift by a few pixels.
+          // DOM Handover: append logo to placeholder inside console header
+          placeholder.appendChild(logo);
+          // Clear GSAP inline styles to let CSS take over positioning
+          gsap.set(logo, { clearProps: 'all' });
+          
           _animating = false;
+
+          // Trigger logo landing star splash after 0.2 seconds
+          setTimeout(() => {
+            if (typeof window.triggerLogoStarSplash === 'function') {
+              const rect = logo.getBoundingClientRect();
+              const clientX = rect.left + rect.width / 2;
+              const clientY = rect.top + rect.height / 2;
+              const x = clientX / window.innerWidth;
+              const y = 1.0 - (clientY / window.innerHeight);
+              window.triggerLogoStarSplash(x, y);
+            }
+          }, 200);
         }
       });
  
@@ -132,6 +157,18 @@ import gsap from 'gsap';
       
       const startRect = logo.getBoundingClientRect();
       const toRect = anchorEl.getBoundingClientRect();
+      
+      // DOM Handover: move logo back to body for flight
+      document.body.appendChild(logo);
+      
+      // Re-apply starting position inline so it doesn't jump
+      gsap.set(logo, {
+        left: startRect.left,
+        top: startRect.top,
+        x: 0,
+        opacity: 1
+      });
+      logo.offsetHeight; // Force reflow
       
       logo.style.transform = ''; // Restore
       if (staticLogo) {
@@ -661,12 +698,12 @@ import gsap from 'gsap';
       if (!fromLogo) return;
 
       const fromRect = fromLogo.getBoundingClientRect();
-      const placeholderRect = toPlaceholder.getBoundingClientRect();
-      const toRect = {
-        left: placeholderRect.left,
-        top: placeholderRect.top + 3.5, // match the same 3.5px downward offset
-        width: placeholderRect.width,
-        height: placeholderRect.height
+      const activeLogo = document.getElementById('navLogo');
+      const toRect = activeLogo ? activeLogo.getBoundingClientRect() : {
+        left: fromRect.left,
+        top: fromRect.top,
+        width: fromRect.width,
+        height: fromRect.height
       };
 
       const existing = document.getElementById('trajectoryDebugGhost');

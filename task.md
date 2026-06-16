@@ -35,3 +35,8 @@
   - `[x]` 运行 Playwright 对点击详情、同步滑入转场以及关闭详情的过程进行逐帧抓取和截图测试验证。
   - `[x]` 提交并推送至 GitHub 并自动触发部署发布。
 
+- `[x]` **徽标降落星星粒子动效 (Post-Flight Logo Star Particle Animation)**
+  - `[x]` 增强 `stars.js` 中 `createSingleRipple` 函数，支持自定义生命周期（`duration`）、扩散半径（`maxRadius`）及跟随指针状态（`isCurrentPress`）。
+  - `[x]` 暴露全局方法 `window.triggerLogoStarSplash(x, y)`，触发比鼠标点击存活时间更久（1.5s）且由 3 重波纹叠加的星星涟漪特效。
+  - `[x]` 在 `color-console.js` 徽标打开飞行动画结束的 `onComplete` 回调中添加 0.2 秒延迟。
+  - `[x]` 获取降落后徽标在屏幕空间的中心坐标并转换为 WebGL 归一化坐标，调用全局方法触发该星星特效。

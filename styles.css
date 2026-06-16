@@ -3437,10 +3437,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 .color-console-header .nav-logo {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
   font-size: 1.3rem !important;
   margin-top: 0 !important;
   transform: none !important;
   color: var(--fg) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 #navLogo.no-transition {

@@ -2012,3 +2012,56 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 推送至 GitHub Pages 分支上线并验证：
   - 飞行动画落地衔接毫无任何抖动，Y 轴在 2500ms、2700ms、3200ms 及之后完美平稳地静止在 `111px`（对应 Placeholder `107px`），没有任何多余像素的移动。
   - 鼠标在徽标上悬停时，**完全去除了悬浮缩放效果**，完美达到预期！
+
+
+---
+
+## 🛠️ Step 620: 使用 DOM 布局交接（DOM Handover）解决控制台打开时徽标落点像素微移跳动的终极方案 (Implement DOM Handover to Resolve Post-Flight Logo Snapping & Jittering)
+
+### 1. 根本痛点与深层原因分析 (Analysis of Layout Jittering & Subpixel Snapping)
+- **现象**：当 YYJZ 动态描边徽标（`#navLogo`）沿曲线飞入控制台顶部的占位符（`#consoleTitlePlaceholder`）时，动画瞬间结束，随后发生几像素的微调跳跃。
+- **深层原因**：
+  1. **定位模式局限**：原先的动态徽标在控制台开启时虽然飞入目标位置，但在 DOM 结构上依然是挂载于 `<body>` 下的绝对定位/固定定位（`position: fixed`）独立元素，其落点完全基于动画开始前（`t = 0`）测得的过时静态坐标数据。
+  2. **图层状态变更冲突**：控制台渲染时包含了复杂的 GPU 图层 promotion（层级提升）与重绘生命周期，在其动画播放完毕后，由于图层重整（De-promotion），控制台头部占位符发生微弱的亚像素排版偏移。
+  3. **定位数据与真实容器脱节**：因为徽标与占位符在 DOM 中没有亲子层级关联，导致徽标无法跟随占位符的位置变化而自然流式对齐，当 GSAP 补间动画完成后，便引发了与新布局状态对齐的视觉像素跳跃。
+
+### 2. 物理与 DOM 排版层的终极交接解决方案 (The Bulletproof DOM Handover Strategy)
+为了彻底解决此问题，我们做出了最具规范性且完全符合原有 CSS 设计意图的重构——**“飞行时采用 body 绝对定位自由飞越，落地时自动收编进入容器跟随流式排版”**：
+- **打开动画完成（DOM Handover）**：
+  - 在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 的展开 timeline 的 `onComplete` 回调中，不再硬编码保留飞行 inline 样式，而是直接将 `logo` 元素追加为占位符容器的子元素：`placeholder.appendChild(logo)`。
+  - 同时调用 `gsap.set(logo, { clearProps: 'all' })` 彻底清除 GSAP 在其行内写入的 `left` / `top` / `transform` 定位缓存，让它完全退回自然排版状态。
+- **特化样式覆盖与流式排版**：
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对 `.color-console-header .nav-logo` 样式规则进行增强，增加了 **`position: relative !important;`**、**`opacity: 1 !important;`** 以及 **`pointer-events: auto !important;`**。
+  - 这保证了移入控制台后的徽标完全放弃原生的 `fixed` 绝对定位，而转为依靠 Flexbox 布局进行精准的居中对齐，从而无论如何缩放、滚动或触发浏览器重绘，徽标都与控制台融为一体，物理上不可能产生任何位移落差。
+- **关闭动画开始（DOM Restore）**：
+  - 当控制台开始关闭时，由于需要自由飞回导航栏，我们在 JS 中先测定其当前在控制台中的准确屏幕坐标 `startRect`。
+  - 随后调用 `document.body.appendChild(logo)` 将它瞬时提回 `body` 下，并以 `startRect` 进行 GSAP inline 属性还原设定，使其在完美的 `body` 绝对坐标系下无缝起飞返回。
+  - 在关闭动画结束的 `onComplete` 中，如常彻底清除 inline 样式完成彻底复位。
+
+### 3. 测试与验证 (Testing & Subpixel Metrics Verification)
+- 我们编写了自动化 Playwright 屏幕空间亚像素级轨迹位置跟踪测试脚本进行实机调试：
+  - **动态交接期数据监测**：
+    - 在 2700ms (动画结束点)，徽标成功完成了向占位符的 DOM 交接，`isChildOfPlaceholder` 状态变为 `true`，此时其绝对坐标为 `left: 85.796875`，`top: 130`。
+    - 在 4500ms (交接完成长驻留期)，徽标物理坐标同样稳定保持在 `left: 85.796875`，`top: 130`，**坐标数据完全重合（差值为 0 像素），视觉跳动彻底消除！**
+    - 在 7500ms (点击收起且关闭完成)，徽标成功回退至 body，`isChildOfPlaceholder` 为 `false`，回到导航栏初始对齐状态 `{ left: 60.796875, top: 41 }`，完成完美闭环。
+
+---
+
+## 🛠️ Step 621: 在 YYJZ 飞行动画结束后增加星星粒子爆裂特效 (Add Post-Flight Star Particle Splash Animation)
+
+### 1. 需求与实现思路 (Requirements & Implementation Concept)
+- **需求**：在 `YYJZ` 徽标飞行动画结束 0.2 秒后，在其终点位置（控制台头部占位符处）触发类似鼠标点击时产生的水流星星爆裂特效。并且这些星星的存活时间需要比普通鼠标点击的粒子更久一些。
+- **实现方案**：
+  1. **特效参数定制化**：在 [stars.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/stars.js) 中，重构单重水纹产生函数 `createSingleRipple`，新增可选的生命周期时长（`customDuration`）、最大扩散半径（`customMaxRadius`）以及是否跟随当前鼠标拖动（`isCurrentPress`）三个参数，并将同时活动水纹上限放宽至 15。
+  2. **多重星纹叠加 API**：在 `stars.js` 中暴露全局 API `window.triggerLogoStarSplash(x, y)`。该 API 触发 3 级渐进扩散水纹圈（分别延迟 0.0s、0.2s、0.4s 启动），单重生命周期设为 `1.5s`（远长于鼠标点击的 `0.6s`），最大扩散半径设为 `0.13`（宽于鼠标的 `0.11`），并且 `isCurrentPress` 设为 `false` 使其不随鼠标移动而偏离。
+  3. **延迟触发器接入**：在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 的展开 timeline `onComplete` 回调中，在完成 DOM Handover 并清除 GSAP inline 定位样式后，设置 `200ms` 的延迟计时器（`setTimeout`）。
+  4. **精确坐标定位**：在计时器到期后，利用 `logo.getBoundingClientRect()` 实时获取当前徽标的屏幕像素中心坐标 `(clientX, clientY)`，转换为归一化的 WebGL 坐标系数值：
+     - `x = clientX / window.innerWidth`
+     - `y = 1.0 - (clientY / window.innerHeight)`
+     - 调用全局方法 `window.triggerLogoStarSplash(x, y)`，在准确位置绽放出极为顺滑、深邃的水流粒子特效。
+
+### 2. 特效调优验证 (Aesthetics Tuning & Verification)
+- **淡入淡出更柔和**：流体粒子随 3 重扩散圈的渐进叠加显得非常高级，由于生命周期由 `0.6s` 增至 `1.5s`，粒子有充足的时间向外伸展形成舒缓的波折，最终缓慢消散于星空背景中。
+- **定位完全对齐**：经屏幕空间测量，0.2 秒后触发的水花中心与处于控制台头部的 `YYJZ` 徽标完全重合，且不随关闭或鼠标挪动发生偏移。
+- **性能与鲁棒性**：最大活动限制提升到 15 确保了无论用户狂点控制台还是鼠标高频点击，均不会发生爆裂粒子被截断消失的问题。
+
