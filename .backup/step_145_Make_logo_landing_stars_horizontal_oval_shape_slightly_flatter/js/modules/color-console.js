@@ -98,21 +98,19 @@ import gsap from 'gsap';
           
           _animating = false;
 
-          // Trigger logo landing star splash after 0.1 seconds
-          setTimeout(() => {
-            const rect = logo.getBoundingClientRect();
-            const clientX = rect.left + rect.width / 2;
-            const clientY = rect.top + rect.height / 2;
+          // Trigger logo landing star splash immediately upon landing
+          const rect = logo.getBoundingClientRect();
+          const clientX = rect.left + rect.width / 2;
+          const clientY = rect.top + rect.height / 2;
 
-            if (typeof window.triggerLogoStarSplash === 'function') {
-              const x = clientX / window.innerWidth;
-              const y = 1.0 - (clientY / window.innerHeight);
-              window.triggerLogoStarSplash(x, y);
-            }
-            if (typeof window.triggerLaserBurst === 'function') {
-              window.triggerLaserBurst(clientX, clientY, true, 1200, 12);
-            }
-          }, 100);
+          if (typeof window.triggerLogoStarSplash === 'function') {
+            const x = clientX / window.innerWidth;
+            const y = 1.0 - (clientY / window.innerHeight);
+            window.triggerLogoStarSplash(x, y);
+          }
+          if (typeof window.triggerForgeBurst === 'function') {
+            window.triggerForgeBurst(clientX, clientY);
+          }
         }
       });
  
@@ -205,22 +203,20 @@ import gsap from 'gsap';
           consoleEl.classList.remove('active');
           _animating = false;
 
-          // Trigger logo landing star splash on return flight after 0.1 seconds
-          setTimeout(() => {
-            const targetEl = staticLogo || logo;
-            const rect = targetEl.getBoundingClientRect();
-            const clientX = rect.left + rect.width / 2;
-            const clientY = rect.top + rect.height / 2;
+          // Trigger logo landing star splash on return flight immediately upon landing
+          const targetEl = staticLogo || logo;
+          const rect = targetEl.getBoundingClientRect();
+          const clientX = rect.left + rect.width / 2;
+          const clientY = rect.top + rect.height / 2;
 
-            if (typeof window.triggerLogoStarSplash === 'function') {
-              const x = clientX / window.innerWidth;
-              const y = 1.0 - (clientY / window.innerHeight);
-              window.triggerLogoStarSplash(x, y);
-            }
-            if (typeof window.triggerLaserBurst === 'function') {
-              window.triggerLaserBurst(clientX, clientY, true, 1200, 12);
-            }
-          }, 100);
+          if (typeof window.triggerLogoStarSplash === 'function') {
+            const x = clientX / window.innerWidth;
+            const y = 1.0 - (clientY / window.innerHeight);
+            window.triggerLogoStarSplash(x, y);
+          }
+          if (typeof window.triggerForgeBurst === 'function') {
+            window.triggerForgeBurst(clientX, clientY);
+          }
         }
       });
 

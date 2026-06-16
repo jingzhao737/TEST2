@@ -1,12 +1,5 @@
 [
   {
-    "step": 125,
-    "timestamp": "2026-06-16 21:50:54",
-    "description": "Restore original mouse click spark physics",
-    "folder": "step_125_Restore_original_mouse_click_spark_physics",
-    "is_auto": false
-  },
-  {
     "step": 126,
     "timestamp": "2026-06-16 21:52:53",
     "description": "Tune logo landing spark physics for stronger ease-out effect",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:12:30",
     "description": "Make logo landing stars horizontal oval shape rounder and less flat",
     "folder": "step_144_Make_logo_landing_stars_horizontal_oval_shape_rounder_and_less_flat",
+    "is_auto": false
+  },
+  {
+    "step": 145,
+    "timestamp": "2026-06-16 23:14:13",
+    "description": "Make logo landing stars horizontal oval shape slightly flatter",
+    "folder": "step_145_Make_logo_landing_stars_horizontal_oval_shape_slightly_flatter",
     "is_auto": false
   }
 ]
