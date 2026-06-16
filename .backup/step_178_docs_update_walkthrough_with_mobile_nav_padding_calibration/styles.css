@@ -1856,7 +1856,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   background: #000;
   z-index: -1;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
 }
 :root.light .work-detail-bg {
   background: #f5f0e8;
@@ -2244,6 +2244,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     width: 44px;
     height: 44px;
   }
+  .detail-body {
+    padding: 40px 20px 60px !important;
+  }
+  .detail-meta {
+    flex-wrap: wrap !important;
+    gap: 20px 32px !important;
+    padding: 20px 0 36px !important;
+    margin-bottom: 36px !important;
+  }
+  .detail-gallery {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin: 36px 0 !important;
+  }
 }
 
 .detail-body {
@@ -2441,7 +2455,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .crosshair-left { left: 20.5px; }
   .line-right { right: 20px; }
   .crosshair-right { right: 20.5px; }
-  .nav,.nav.scrolled{padding:0 24px;width:calc(100% - 40px)}
+  .nav,.nav.scrolled{padding:0 32px;width:calc(100% - 40px)}
   .nav-links{gap:32px}
   .hero{padding:150px 40px 80px; align-items: flex-start;}
   .hero-content{width: calc(100% - 8px); max-width: 100%; margin-left: 8px;}
@@ -2485,7 +2499,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .crosshair::before, .crosshair::after { opacity: 0.35; }
   .scroll-bar,.scroll-bar *,.scroll-dot-marker,.scroll-bubble,.scroll-thumb,.cursor-dot,.cursor-ring,.cursor-trail,.ambient-glow,.frames-canvas,.latch-clips,.latch-clip{display:none !important}
   .section::after,.works::after,.ice-section::after,.showcase::after,.motion-section::after{display:none}
-  .nav{padding:0 16px;width:calc(100% - 32px)} .nav.scrolled{padding:0 16px;background:var(--nav-bg-scrolled)}
+  .nav{padding:0 28px;width:calc(100% - 32px)} .nav.scrolled{padding:0 28px;background:var(--nav-bg-scrolled)}
   .nav-menu-btn{border-color:var(--border);border-color:rgba(255,255,255,.25)}
   .nav-menu-btn:hover{border-color:rgba(255,255,255,.6)}
   .menu-line{background:var(--fg)}
@@ -2686,7 +2700,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .nav-next-btn{width:24px;height:24px;margin-left:4px}
   .nav-next-icon{width:14px;height:14px}
   .nav-logo{font-size:1.2rem;color:var(--fg);margin-top:2px}
-  .nav{padding:0 12px;width:calc(100% - 24px)} .nav.scrolled{padding:0 12px;background:var(--nav-bg-scrolled)}
+  .nav{padding:0 24px;width:calc(100% - 24px)} .nav.scrolled{padding:0 24px;background:var(--nav-bg-scrolled)}
   .nav-menu-btn{border-color:var(--border);border-color:rgba(255,255,255,.25)}
   .nav-menu-btn:hover{border-color:rgba(255,255,255,.6)}
   .menu-line{background:var(--fg)}

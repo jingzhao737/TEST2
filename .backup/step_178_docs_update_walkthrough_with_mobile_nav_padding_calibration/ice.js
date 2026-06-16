@@ -459,10 +459,7 @@ const LensFlareShader = {
     requestAnimationFrame(animate);
     if (!visible) return;
 
-    // Pause WebGL rendering when details card is open or transitioning to free up GPU resources
-    if (window.__isRouteTransitioning || (document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open'))) {
-      return;
-    }
+    // Keep background rendering active continuously for seamless transition blending
     const now = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;

@@ -2544,3 +2544,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `node check_console.js` 验证加载时无任何控制台报错。
 - 运行 Playwright 自动化交互脚本验证了打开、关闭以及交互全流程的逻辑与动画，无任何报错且状态切换正确。
 - 通过 `py workflow.py deploy` 成功发布并部署（Commit `e0a3048`）到线上环境。
+
+---
+
+## 🛠️ Feature: 优化手机端导航栏边距 (Mobile Nav Padding Calibration)
+
+### 1. 问题分析与修改
+- **问题反馈**：手机端导航栏中的 Logo (YYJZ)、声波控制区（Waveform）以及右侧的菜单按钮都太贴近屏幕边缘，显得拥挤不透气。
+- **解决方案与适配**：
+  - 在不破坏导航栏与页面纵向蓝图网格（Blueprint Grid Lines）对齐规则的前提下，通过增加 `.nav` 的内边距（padding），使两端元素优雅地向中心收缩靠拢：
+    - **平板端 (<= 1024px)**：左右内边距由 `24px` 提升至 `32px`。
+    - **手机端 (<= 768px)**：左右内边距由 `16px` 提升至 `28px`。
+    - **小屏手机 (<= 480px)**：左右内边距由 `12px` 提升至 `24px`。
+  - **JS 自动适配**：由于主题拉线（Theme Pull Toggle）的水平中心坐标在 [theme.js](file:///D:/webprojext/js/modules/theme.js) 中是动态绑定并对齐 `#navMenuBtn` 的，因此增加内边距后拉线会自动、精准地重对齐到新位置，无需修改 JS 逻辑。
+  - **效果**：两端元素明显向中间内收，界面在小屏下展现出更加开阔、呼吸感更强的现代高端美感，完美符合高精度排版要求。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证控制台日志无错误。
+- 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `899a1a8`）上线。

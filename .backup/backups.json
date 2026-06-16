@@ -1,12 +1,5 @@
 [
   {
-    "step": 158,
-    "timestamp": "2026-06-17 00:43:23",
-    "description": "Optimize Works details backdrop by using solid background color to enable occlusion culling",
-    "folder": "step_158_Optimize_Works_details_backdrop_by_using_solid_background_color_to_enable_occlusion_culling",
-    "is_auto": false
-  },
-  {
     "step": 159,
     "timestamp": "2026-06-17 00:46:33",
     "description": "Optimize close transition by restoring background WebGL early and speeding up backdrop fade-out",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:34:49",
     "description": "style increase mobile nav padding to move logo and menu button inward",
     "folder": "step_177_style_increase_mobile_nav_padding_to_move_logo_and_menu_button_inward",
+    "is_auto": false
+  },
+  {
+    "step": 178,
+    "timestamp": "2026-06-17 01:35:00",
+    "description": "docs update walkthrough with mobile nav padding calibration",
+    "folder": "step_178_docs_update_walkthrough_with_mobile_nav_padding_calibration",
     "is_auto": false
   }
 ]
