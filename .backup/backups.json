@@ -1,12 +1,5 @@
 [
   {
-    "step": 161,
-    "timestamp": "2026-06-17 00:56:18",
-    "description": "Fix vertical layout jumps by removing overflow changes and locking scroll using pointer-events",
-    "folder": "step_161_Fix_vertical_layout_jumps_by_removing_overflow_changes_and_locking_scroll_using_pointer-events",
-    "is_auto": false
-  },
-  {
     "step": 162,
     "timestamp": "2026-06-17 01:01:38",
     "description": "Remove y translation from home page exit transitions to keep Works header stationary",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:37:47",
     "description": "docs update walkthrough with mobile nav and hero padding adjustment",
     "folder": "step_180_docs_update_walkthrough_with_mobile_nav_and_hero_padding_adjustment",
+    "is_auto": false
+  },
+  {
+    "step": 181,
+    "timestamp": "2026-06-17 01:40:06",
+    "description": "style keep nav and hero spacing adjustments on mobile only and revert desktop/tablet",
+    "folder": "step_181_style_keep_nav_and_hero_spacing_adjustments_on_mobile_only_and_revert_desktop_tablet",
     "is_auto": false
   }
 ]

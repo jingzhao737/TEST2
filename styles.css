@@ -598,7 +598,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .nav-menu-btn.open:hover{transform:rotate(135deg) scale(1.15) !important}
 
 /* 鈺愨晲鈺愨晲鈺愨晲锟?HERO 鈺愨晲鈺愨晲鈺愨晲锟?*/
-.hero{height:100vh;display:flex;align-items:flex-end;padding:0 64px 85px;position:relative;overflow:hidden;background:transparent;z-index:1;isolation:isolate}
+.hero{height:100vh;display:flex;align-items:flex-end;padding:0 64px 110px;position:relative;overflow:hidden;background:transparent;z-index:1;isolation:isolate}
 
 /* STARS */
 .stars-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
@@ -2455,9 +2455,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .crosshair-left { left: 20.5px; }
   .line-right { right: 20px; }
   .crosshair-right { right: 20.5px; }
-  .nav,.nav.scrolled{padding:0 42px;width:calc(100% - 40px)}
+  .nav,.nav.scrolled{padding:0 24px;width:calc(100% - 40px)}
   .nav-links{gap:32px}
-  .hero{padding:180px 40px 80px; align-items: flex-start;}
+  .hero{padding:150px 40px 80px; align-items: flex-start;}
   .hero-content{width: calc(100% - 8px); max-width: 100%; margin-left: 8px;}
   .hero-title{margin-left:0}
   .section{padding:140px 40px}
