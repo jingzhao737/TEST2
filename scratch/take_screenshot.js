@@ -58,6 +58,18 @@ const { chromium } = require('playwright');
 
   await page.screenshot({ path: 'scratch/homepage.png' });
   console.log('Screenshot saved to scratch/homepage.png');
+
+  try {
+    console.log('Clicking logo to open console for console-view screenshot...');
+    await page.click('#navLogo');
+    await page.waitForTimeout(1000); // Settle flip animation
+    await page.screenshot({ path: 'scratch/adjuster_visible.png' });
+    console.log('Console-view screenshot saved to scratch/adjuster_visible.png');
+  } catch (err) {
+    console.log('Error taking console-view screenshot:', err.message);
+  }
+
   await browser.close();
 })();
+
 

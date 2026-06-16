@@ -1,3 +1,8 @@
+import gsap from 'gsap';
+import { Flip } from 'gsap/Flip';
+
+gsap.registerPlugin(Flip);
+
 /* YYJZ COLOR PALETTE CONSOLE */
 (function initColorConsole() {
   const logo = document.getElementById('navLogo');
@@ -12,23 +17,55 @@
 
   if (!logo || !consoleEl) return;
 
+  function toggleConsole(active) {
+    const isOpening = active !== undefined ? active : !consoleEl.classList.contains('active');
+    const state = Flip.getState(logo);
+
+    if (isOpening) {
+      const placeholder = document.getElementById('consoleTitlePlaceholder');
+      if (placeholder) {
+        placeholder.appendChild(logo);
+      }
+      consoleEl.classList.add('active');
+    } else {
+      const navEl = document.getElementById('nav');
+      const navWaveContainer = document.getElementById('navWaveContainer');
+      if (navEl && navWaveContainer) {
+        navEl.insertBefore(logo, navWaveContainer);
+      }
+      consoleEl.classList.remove('active');
+    }
+
+    Flip.from(state, {
+      duration: 0.45,
+      ease: 'power2.out',
+      absolute: true,
+      onStart: () => {
+        logo.classList.add('no-transition');
+      },
+      onComplete: () => {
+        logo.classList.remove('no-transition');
+      }
+    });
+  }
+
   // Toggle console
   logo.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
-    consoleEl.classList.toggle('active');
+    toggleConsole();
   });
 
   closeBtn.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
-    consoleEl.classList.remove('active');
+    toggleConsole(false);
   });
 
   // Close when clicking outside
   document.addEventListener('click', function(e) {
     if (consoleEl.classList.contains('active') && !consoleEl.contains(e.target) && e.target !== logo) {
-      consoleEl.classList.remove('active');
+      toggleConsole(false);
     }
   });
 
