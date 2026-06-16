@@ -1395,7 +1395,42 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
       ```
     - 这实现了：一方面，中心有封面图的盘贴正常旋转，呈现出强烈的旋转动感；另一方面，周围黑色黑胶盘体的双锥形 3D 偏振高光依然完美地定在世界坐标中的光源方向，随着盘片左右摆动产生极致逼真的 3D 偏振流转效果，彻底解决扁平化问题。
 
+
+---
+
+## 🛠️ Feature: 3D 唱片吸附播放器时增加 Q 弹缩放物理动画 (Draggable 3D Records Latch Spring Animation)
+
+### 1. 需求分析
+- **吸附瞬间过渡单一**：
+  - 现象：当唱片被拖拽至播放槽并释放时，唱片只是平滑地滑动并锁定到原点。为了提升操作的物理回馈感和趣味性，需要添加一个更有弹性的锁定动画。
+  - **需求**：当唱片成功吸附到播放器时，希望让其进行一段“瞬间缩小、再平滑回弹放大至正常尺寸”的弹簧动效，给用户一种类似于“物理微动卡扣卡入”的爽快操纵反馈。
+
+### 2. 解决方案与修改
+- **引入弹簧物理驱动的缩放变量（Spring-based Scale Variable）**：
+  - 在 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 的 3D 唱片渲染流程中，为各个唱片粒子引入 `latchScale`（缩放比率）与 `latchScaleVelocity`（缩放变化速度）变量。
+- **渲染循环执行弹簧阻尼仿真（Spring Frame Loop）**：
+  - 在 `render()` 的 WebGL 网格绘制分支中，每帧计算使 `latchScale` 回归 `1.0` 正常大小的弹簧拉力，并施加给 `latchScale`：
+    ```javascript
+    if (t.latchScale === undefined) t.latchScale = 1.0;
+    if (t.latchScaleVelocity === undefined) t.latchScaleVelocity = 0;
+    let scaleForce = 1.0 - t.latchScale;
+    t.latchScaleVelocity += scaleForce * 0.12; // stiffness (劲度系数 0.12)
+    t.latchScaleVelocity *= 0.76;             // damping (阻尼/摩擦力 0.76)
+    t.latchScale += t.latchScaleVelocity;
+    ```
+    该弹性公式在吸附瞬间能驱动唱片产生一个由小变大、轻微过冲振荡（Overshoot，如胀大到 1.03 倍）然后稳定回 1.0 的高级微弹簧效果。
+  - 将该 `t.latchScale` 乘入 3D 组对象的缩放因子上：
+    ```javascript
+    let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25) * t.latchScale;
+    d.group.scale.set(scale, scale, 1);
+    ```
+    由于 3D 网格的投影和阴影层均是 `d.group` 的子对象，这自动实现了**盘面、唱片封面以及 3D 渐变投影在吸附瞬间的完美同步 Q 弹缩放**！
+- **精确拦截吸附事件并触发缩小状态**：
+  - **手动拖拽释放**：在 `window.addEventListener('mouseup', ...)` 事件中，当检测到唱片从“非吸附状态”滑入“吸附状态”的瞬间，将其 `latchScale` 初始化重置为 **`0.65`**（即瞬间缩小为正常大小 of 65%），触发回弹循环。
+  - **切歌/播放按键程序触发**：在全局 `window.__latchDisc` 挂载函数中，当程序强制切换唱片锁定状态的瞬间，同样对目标唱片初始化 `t.latchScale = 0.65`，使得通过导航栏切歌或声波切换音乐时也能呈现一致的 Q 弹反馈！
+
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
-- 执行 `python workflow.py deploy` 推送至 GitHub（Step 538），自动部署线上页面。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 539），自动部署线上页面。
+
 

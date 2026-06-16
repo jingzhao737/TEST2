@@ -358,7 +358,15 @@ import * as THREE from 'three';
           ejected._swayV = (Math.random() - 0.5) * 0.35;
         }
       }
+      let wasAlreadyLatched = (latchedIdx === idx);
       latchedIdx = idx;
+      if (!wasAlreadyLatched) {
+        let t = thumbs[idx];
+        if (t) {
+          t.latchScale = 0.65; // Trigger shrink-and-pop spring animation on programmatic latch
+          t.latchScaleVelocity = 0;
+        }
+      }
       document.querySelectorAll('.latch-clip').forEach(function(c, ci){
         c.classList.toggle('latched', ci === latchedIdx);
       });
@@ -1049,8 +1057,16 @@ import * as THREE from 'three';
           pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
         }
         
+        // Latch scale spring animation (shrink on snap, pop back to normal)
+        if (t.latchScale === undefined) t.latchScale = 1.0;
+        if (t.latchScaleVelocity === undefined) t.latchScaleVelocity = 0;
+        let scaleForce = 1.0 - t.latchScale;
+        t.latchScaleVelocity += scaleForce * 0.12; // stiffness constant
+        t.latchScaleVelocity *= 0.76;             // damping constant (friction)
+        t.latchScale += t.latchScaleVelocity;
+        
         let scaleFactor = t.dispW / d.baseSz;
-        let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25);
+        let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25) * t.latchScale;
         
         // Dynamic Z depth lift to prevent clipping (穿模) and simulate physical height
         let baseZ = i * 4;
@@ -1267,6 +1283,10 @@ import * as THREE from 'three';
         }
         let wasAlreadyLatched = (latchedIdx === draggedIdx);
         latchedIdx = draggedIdx;
+        if (!wasAlreadyLatched) {
+          t.latchScale = 0.65; // Trigger shrink-and-pop spring animation on manual snap
+          t.latchScaleVelocity = 0;
+        }
         
         document.querySelectorAll('.latch-clip').forEach(function(c, ci){
           c.classList.toggle('latched', ci === latchedIdx);
