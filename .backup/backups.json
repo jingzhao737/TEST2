@@ -1,12 +1,5 @@
 [
   {
-    "step": 106,
-    "timestamp": "2026-06-16 01:09:23",
-    "description": "Upgrade vinyl records to realistic 3D appearance and specular reflections",
-    "folder": "step_106_Upgrade_vinyl_records_to_realistic_3D_appearance_and_specular_reflections",
-    "is_auto": false
-  },
-  {
     "step": 107,
     "timestamp": "2026-06-16 01:11:09",
     "description": "Upgrade vinyl records 3D reflections hotfix",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 21:50:54",
     "description": "Restore original mouse click spark physics",
     "folder": "step_125_Restore_original_mouse_click_spark_physics",
+    "is_auto": false
+  },
+  {
+    "step": 126,
+    "timestamp": "2026-06-16 21:52:53",
+    "description": "Tune logo landing spark physics for stronger ease-out effect",
+    "folder": "step_126_Tune_logo_landing_spark_physics_for_stronger_ease-out_effect",
     "is_auto": false
   }
 ]
