@@ -1487,5 +1487,29 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
   - 在 `render` 物理引擎循环中：更新物理弹簧系数为 `stiffness = 0.006` 和 `damping = 0.92`。
 
 ### 3. 部署与验证
-- 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
+- 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建.
 - 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，吸附动画呈现出极其流畅、缓慢且带有高阻尼物理弹性的视觉质感，完全符合预期。
+
+---
+
+## 🛠️ Step 593: 设计并实现 3D 唱片吸附时“快-慢-极快”的定制非线性曲线缩放动效 (Implement Custom piecewise Easing for "Fast-Slow-Very Fast" Snap Scale Animation)
+
+### 1. 优化思路与数学建模
+- **需求**：缩放动画节奏修改为“快 - 慢 - 极快”的戏剧化冲击力反馈。
+- **物理弹簧局限性**：常规二阶线性物理阻尼弹簧无法在单次惯性振动中完美实现前段快速收缩、中段长时间滞留/平缓蓄力、后段突然“极快回弹”的精细三段式节奏。
+- **非线性时间轴数学模型**：
+  - 我们放弃了传统的弹簧模拟，改为采用精准的时间轴百分比分段函数进行数学拟合，设计出了一条连续且完全平滑的自定义缓动曲线：
+    - **第一阶段 — 快 (0% ~ 15% 耗时，约 87ms)**：唱片迅速响应吸附动作，从 `1.0` 缩减到 `0.65`（使用 Cubic Ease-Out 保证启动的瞬发爆发力与底部缓冲的融合）。
+    - **第二阶段 — 慢 (15% ~ 75% 耗时，约 350ms)**：唱片保持在收缩状态，仅以极其缓慢的速度从 `0.65` 逐渐线性回弹至 `0.78`，形成吸附后的强力“磁吸压迫与能量蓄积”感。
+    - **第三阶段 — 极快 (75% ~ 100% 耗时，约 146ms)**：一旦渡过临界点，唱片以极大的加速度弹回，且伴随一次极具张力的 Q 弹微幅过冲（使用 EaseOutBack 曲线在 `145ms` 内迅速拉升至 `1.028` 后极快静止收敛于 `1.0`）。
+  - **全周期连续性**：在衔接点 `t=0.15` (scale=`0.65`) 与 `t=0.75` (scale=`0.78`) 处均实现了完美的数学连续，避免了任何瞬间跳变。
+
+### 2. 代码重构
+- 弃用 `latchScaleVelocity` 等弹簧速度状态，引入 `latchScaleProgress` 累加器（在吸附时初始化为 `0.0`，在 `update` 循环中以每次 `+0.028` 累加）。
+- 重构 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js)：
+  - 在三处释放/退出吸附（`__unlatchAll`、HTML点击、拖拽退出）的回调中，彻底将缩放状态复位为 `latchScale = 1.0` 并清除 `latchScaleProgress`。
+  - 在渲染循环中，通过检测 `latchScaleProgress` 运行我们定制的分段数学公式。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，吸附缩放呈现出极其鲜明、强烈的“快 - 慢 - 极快”节奏感，Q 弹反馈非常优秀。
