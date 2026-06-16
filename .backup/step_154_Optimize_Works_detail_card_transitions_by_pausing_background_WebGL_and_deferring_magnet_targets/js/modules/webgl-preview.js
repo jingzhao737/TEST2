@@ -156,7 +156,6 @@ import gsap from 'gsap';
   renderer.compile(scene, camera);
 
   // States
-  let isVisible = false;
   let isHoverActive = false;
   let isMorphing = false;
   let animId = null;
@@ -186,7 +185,10 @@ import gsap from 'gsap';
 
   // ── Render loop ──
   function animate() {
-    if (!isVisible && !isMorphing && !isHoverActive) return;
+    if (!isMorphing && !isHoverActive) {
+      animId = null;
+      return;
+    }
     animId = requestAnimationFrame(animate);
 
     currentScrollVelocity += (scrollVelocity - currentScrollVelocity) * 0.1;
@@ -197,33 +199,17 @@ import gsap from 'gsap';
     material.uniforms.uMouseVelocity.value.x += (0 - material.uniforms.uMouseVelocity.value.x) * 0.12;
     material.uniforms.uMouseVelocity.value.y += (0 - material.uniforms.uMouseVelocity.value.y) * 0.12;
 
-    if (isMorphing || isHoverActive) {
-      // Update container aspect ratio every frame
-      material.uniforms.uContainerAspect.value = currentRect.width / currentRect.height;
+    // Update container aspect ratio every frame
+    material.uniforms.uContainerAspect.value = currentRect.width / currentRect.height;
 
-      const mapped = mapDOMToWebGL(currentRect);
-      mesh.scale.set(mapped.width, mapped.height, 1);
-      mesh.position.set(mapped.x, mapped.y, 0);
-      renderer.render(scene, camera);
-    }
+    const mapped = mapDOMToWebGL(currentRect);
+    mesh.scale.set(mapped.width, mapped.height, 1);
+    mesh.position.set(mapped.x, mapped.y, 0);
+    renderer.render(scene, camera);
   }
 
   canvas.style.display = 'block';
   canvas.style.pointerEvents = 'none';
-
-
-  // IntersectionObserver
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      isVisible = entry.isIntersecting;
-      if (isVisible) {
-        if (!animId) animate();
-      } else if (!isMorphing && !isHoverActive) {
-        if (animId) { cancelAnimationFrame(animId); animId = null; }
-      }
-    });
-  }, { threshold: 0.01 });
-  observer.observe(worksSection);
 
   // ── Hover API ──
   function showPreview(texturePath, rect) {

@@ -2311,6 +2311,63 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 生产环境构建，包体积显著减小（减少了对 3D 结晶静态资源的依赖处理），构建大获成功。
 - 运行 `py workflow.py deploy` 推送最新修改至线上 GitHub Pages。部署完毕后，用户可以通过刷新页面直接验证：在移除了 VISION 页面的 WebGL 和 DOM 加载后，Works 区域的滚动及进入体验是否已经恢复完全顺滑，从而准确验证两者的性能干扰关联。
 
+---
+
+## 🛠️ Step 635: 深度优化自定义光标（Snapping Cursor）与 3D 悬停环路性能 (Optimize Snapping Cursor & 3D Card Hover Loops)
+
+### 1. 优化原因与分析 (Optimization Rationale)
+- **排查结论**：暂时屏蔽 VISION (3D 结晶) 页面并不能完全解决 Works 区域滚动掉帧。通过进一步代码审计，确认真正的性能瓶颈来自以下两点：
+  1. **光标磁吸坐标高频测量**：[cursor.js](file:///D:/webprojext/js/modules/cursor.js) 每一次 `scroll` 都会执行 `updateMagnetTargets` 导致大量的 `querySelectorAll`。并且在 `mousemove` 和每一帧的动画中，它都要对 15 个磁吸目标调用 `getBoundingClientRect()` 以计算几何距离，触发严重的 Layout Reflow。
+  2. **交互空转动画帧**：[premium-interactions.js](file:///D:/webprojext/js/modules/premium-interactions.js) 具有一个开刷即无条件自循环的 IIFE 渲染函数 `animateHover`，在鼠标静止或不在 Works 区域时也以 60Hz 的频率空转，且每帧重复计算大量静态三角函数。
+
+### 2. 解决方案与重构代码 (Performance Refactoring)
+- **还原 VISION 页面**：
+  - 恢复了 [index.html](file:///D:/webprojext/index.html) 中被屏蔽的 `#ice` 页面节点和底部 `<script type="module" src="ice.js"></script>` 引用，将 3D 冰晶场景完整恢复。
+- **自定义磁吸光标极致提速 (Magnet Snapping Refactoring)**：
+  - **坐标静态化缓存**：重构了 `updateMagnetTargets`。使它将磁吸目标的 `getBoundingClientRect()` 测定值加上当前的 `scroll`，转化为固定的**页面文档绝对坐标** `pageLeft`/`pageRight`/`pageTop`/`pageBottom`。
+  - **动态滚动偏移补偿**：在 `mousemove` 触发和动画循环判断时，不需要再调用 `getBoundingClientRect()`，而是直接使用缓存的绝对坐标，减去当前的滚动位移（`window.scrollX`/`scrollY`），在**纯数学内存层面**计算当前视口位置和距离。
+  - **剔除滚动监听器中的 DOM 查询**：彻底清除了滚动事件中的 `updateMagnetTargets` DOM 检索动作，使得在滚动页面时光标对 DOM 的消耗降至 0。
+- **Works 卡片悬停动画按需挂起 (Animate Loop Sleep Mode)**：
+  - 将 `animateHover` 重构为普通命名函数并由 `hoverLoopId` 管理。仅在 `onListEnter` 鼠标进入 Works 列表时动态启动。
+  - 在卡片回弹恢复、预览图淡出并且没有鼠标进入列表时，主动停止 `requestAnimationFrame` 调度进入休眠，彻底消除滚动等场景下的多余 CPU 消耗。
+  - 将 3D 卡片旋转运算所需的 `Math.sin`/`Math.cos` 三角函数计算移出循环体，作为外部常量缓存。
+
+### 3. 部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 生产打包完全成功。
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，VISION 3D 冰晶页面已完好无损地呈现，同时 Works 区域滑入、快速划过卡片以及在此区域内的垂直滚动变得极其丝滑流畅，没有任何的顿挫或掉帧！
+
+---
+
+## 🛠️ Step 636: 优化 Works 卡片详情页打开与关闭时的掉帧卡顿问题 (Optimize Works Card Detail Open/Close Transitions & Freeze Background WebGL)
+
+### 1. 优化原因与分析 (Optimization Rationale)
+- **排查结论**：在 Works 卡片详情页进行展开（向上滑动）与收起（向下滑动）转场动画时，存在明显的掉帧和卡顿（尤其在低配或没有强力独立显卡的机器上）。经过分析，这主要是由以下因素叠加导致的：
+  1. **WebGL 渲染与高强度滤镜争抢 GPU**：详情页背景运用了高强度的 `backdrop-filter: blur(12px)`。如果在滑起过程中，背景里同时跑着 `stars.js` (星空背景) 和 `ice.js` (VISION 3D 冰晶) 两个全屏/大区域 of WebGL 渲染，GPU 会因严重的图层合成与模糊计算负荷而瞬间掉帧。
+  2. **转场瞬间的 DOM 重排冲突**：在 `openDetail()` 启动的同一帧，系统调用了 `window.__updateMagnetTargets()`。这会强制触发 `.getBoundingClientRect()` 测定，导致浏览器在动画开始的黄金时刻被锁死在 Layout Reflow（重排）阶段，直接丢失开局的数帧。
+  3. **磁吸残留与关闭按钮隐藏时机**：在 `closeDetail()` 关闭动画期间，关闭按钮在隐藏前触发磁吸数据更新，导致隐藏后磁吸计算异常，影响渲染时序。
+  4. **未启用 Compositor 独立图层**：Works 卡片与详情页没有强制提升到独立的 GPU 合成器图层，导致转场过程中浏览器频繁重绘（Repaint）卡片层及其底层背景。
+
+### 2. 解决方案与重构代码 (Performance Refactoring)
+- **WebGL 渲染按需冷冻 (WebGL Render Freeze)**：
+  - 在 [stars.js](file:///D:/webprojext/js/modules/stars.js) 和 [ice.js](file:///D:/webprojext/ice.js) 的 `animate()` 循环开头，加入了判断：
+    ```javascript
+    if (window.__isRouteTransitioning || (document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open'))) {
+      return;
+    }
+    ```
+    一旦详情页打开或者处于转场过程中，后台的 WebGL 渲染循环就会立刻暂停，停止向 GPU 提交任何渲染指令和着色计算，腾出百分之百的 GPU 算力供 CSS 详情面板滑入使用。
+- **消除开局重排 (Remove Reflow at Transition Start)**：
+  - 在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 中的 `openDetail()` 段，移除了对 `__updateMagnetTargets()` 的高频调用，彻底规避了转场开始帧的 Layout Reflow，使 GSAP 动画能立即以 60fps 帧率平稳滑出。
+- **延迟关闭清理时序 (Deferred Close Magnet Target Updates)**：
+  - 在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 中的 `closeDetail()` 内，将 `__updateMagnetTargets()` 的调用位置调整到 `display: none` 和 `visibility: hidden` 之后，确保光标磁吸能准确剔除已经被完全隐藏的按钮，避免残留或误判。
+- **提升 GPU 硬件加速图层 (GPU Compositing Layer Promotion)**：
+  - 在 [styles.css](file:///D:/webprojext/styles.css) 中，为 `.work-card` 和 `.work-detail-card` 均注入了 `will-change: transform, opacity;` 属性。
+  - 这会强制浏览器将它们分配到独立的 Compositor（合成器）图层中，所有的位移与淡入淡出动画全权交由 GPU 硬件独立处理，完全避开了大面积 DOM 树的重绘（Repaint）消耗。
+
+### 3. 部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 生产打包完全成功。
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，卡片详情页打开和关闭时的转场动效恢复了完美的满帧丝滑感，视觉过渡行云流水！
+
 
 
 

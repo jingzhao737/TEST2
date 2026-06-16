@@ -890,6 +890,11 @@ import * as THREE from 'three';
     requestAnimationFrame(animate);
     if (!isVisible) return;
 
+    // Pause WebGL rendering when details card is open or transitioning to free up GPU resources
+    if (window.__isRouteTransitioning || (document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open'))) {
+      return;
+    }
+
     const dt = Math.min(clock.getDelta(), 0.033);
     const time = clock.getElapsedTime();
 

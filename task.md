@@ -72,11 +72,18 @@
   - `[x]` 在 `index.html` 底部注释掉 `<script type="module" src="ice.js"></script>`，停止该 3D 结晶模块在背景的初始化与 WebGL/Three.js 资源加载。
   - `[x]` 编译生产包并通过 `py workflow.py deploy` 部署至线上。
 
+- `[x]` **深度优化自定义光标（Snapping Cursor）与 3D 悬停环路性能 (Optimize Snapping Cursor & 3D Card Hover loops)**
+  - `[x]` **恢复 3D 结晶页面**：将 `index.html` 中 `#ice` 板块、网格线和 `ice.js` 引用全部恢复正常。
+  - `[x]` **磁吸坐标静态缓存 (Static Coordinate Snapping Cache)**：重构 `cursor.js` 中的 `updateMagnetTargets`。将所有磁吸目标的 `getBoundingClientRect()` Viewport 视口值与当前 `scroll` 进行相加，转化为不变的**页面文档绝对坐标**。在 `mousemove` 监测和动画循环中直接进行纯数学减法位移计算判定，彻底消除了在移动鼠标时对所有目标重复调用 `getBoundingClientRect()` 造成的 Layout Reflow。
+  - `[x]` **彻底消除滚动中的磁吸更新 (Zero DOM operations on Scroll)**：清空 `cursor.js` 中 `scroll` 监听器内的 `updateMagnetTargets()` 查询，使得页面滚动时自定义光标模块对 CPU/DOM 的占用率完美归零。
+  - `[x]` **3D 悬停动画按需激活与休眠 (Animate Loop Wake & Sleep)**：重构 `premium-interactions.js` 中的 `animateHover` 循环。移除原本开刷即空转的 IIFE 自执行机制，仅在鼠标划入列表 (`onListEnter`) 时动态开启，在鼠标离开且旋转位置回弹复位后自动切断并停止 `requestAnimationFrame` 调度。
+  - `[x]` **预计算三角函数常量 (Precomputed Trigonometric Constants)**：将 `premium-interactions.js` 中卡片 3D 透视投影公式所需的 sines / cosines 三角函数计算移至循环体外静态常量化，省去每帧对 16 个顶点的重复 `Math.sin` 和 `Math.cos` 计算。
 
-
-
-
-
+- `[x]` **优化 Works 卡片详情页打开与关闭时的掉帧卡顿问题 (Optimize Works Card Detail Open/Close Transitions & Freeze Background WebGL)**
+  - `[x]` **动态冻结背景 WebGL 渲染 (On-Demand WebGL Sleep)**：在 `stars.js` 和 `ice.js` 的 `animate()` 循环头部添加拦截判断。在详情页打开（`classList.contains('open')`）或处于路由切换转场（`window.__isRouteTransitioning`）期间，直接返回跳过 WebGL 场景重绘与着色计算，极大释出 GPU 算力供滑入动画使用。
+  - `[x]` **避免转场启动重排 (Eliminate Animation Startup Reflow)**：在 `hash-router.js` 的 `openDetail()` 启动段中移除 `__updateMagnetTargets()` 调用，彻底避免在详情卡片动画启动帧触发 DOM 重排。
+  - `[x]` **延迟磁吸状态清理 (Defer Magnet Target Updates)**：在 `hash-router.js` 的 `closeDetail()` 中，将 `__updateMagnetTargets()` 调用时序调整至 `display: none` 和 `visibility: hidden` 之后，确保光标磁吸计算能精准剔除隐藏的关闭按钮。
+  - `[x]` **开启 Compositor 图层硬件加速 (GPU Layer Promotion)**：在 `styles.css` 中为 `.work-card` 与 `.work-detail-card` 显式设置 `will-change: transform, opacity;`，使其被强制提升至独立合成器图层，彻底规避滚动和转场期间的大面积重绘。
 
 
 

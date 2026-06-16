@@ -158,7 +158,6 @@ function openDetail(data, heroImg, pushState) {
   workDetail.classList.add('open');
   workDetail.style.display = 'flex';
   workDetail.style.visibility = 'visible';
-  if (window.__updateMagnetTargets) window.__updateMagnetTargets();
   const scrollWrapper = document.getElementById('workDetailScrollWrapper');
   if (scrollWrapper) {
     scrollWrapper.scrollTop = 0;
@@ -310,9 +309,9 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         workDetail.classList.remove('open');
-        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         workDetail.style.display = 'none';
         workDetail.style.visibility = 'hidden';
+        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         document.body.style.overflow = '';
 
         // Reset ALL inline styles for next open cycle

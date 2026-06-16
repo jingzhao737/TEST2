@@ -1,12 +1,5 @@
 [
   {
-    "step": 134,
-    "timestamp": "2026-06-16 22:15:04",
-    "description": "Add fast-to-slow rotation decay curve for forge burst stars",
-    "folder": "step_134_Add_fast-to-slow_rotation_decay_curve_for_forge_burst_stars",
-    "is_auto": false
-  },
-  {
     "step": 135,
     "timestamp": "2026-06-16 22:17:48",
     "description": "Make logo burst stars purely white and slightly increase range",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:18:33",
     "description": "Optimize cursor snapping and premium card hover loop, removing high-frequency getBoundingClientRect and trigonometric recalculations",
     "folder": "step_153_Optimize_cursor_snapping_and_premium_card_hover_loop,_removing_high-frequency_getBoundingClientRect_and_trigonometric_recalculations",
+    "is_auto": false
+  },
+  {
+    "step": 154,
+    "timestamp": "2026-06-17 00:23:56",
+    "description": "Optimize Works detail card transitions by pausing background WebGL and deferring magnet targets",
+    "folder": "step_154_Optimize_Works_detail_card_transitions_by_pausing_background_WebGL_and_deferring_magnet_targets",
     "is_auto": false
   }
 ]
