@@ -1,12 +1,5 @@
 [
   {
-    "step": 168,
-    "timestamp": "2026-06-17 01:17:49",
-    "description": "Update walkthrough.md with event wakeup fix details",
-    "folder": "step_168_Update_walkthrough.md_with_event_wakeup_fix_details",
-    "is_auto": false
-  },
-  {
     "step": 169,
     "timestamp": "2026-06-17 01:20:00",
     "description": "Slightly slow down details entrance and exit transitions for softer visual pacing",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:50:23",
     "description": "fix play card click sound on fallback 3D clicks and resolve mobile audio context suspension",
     "folder": "step_187_fix_play_card_click_sound_on_fallback_3D_clicks_and_resolve_mobile_audio_context_suspension",
+    "is_auto": false
+  },
+  {
+    "step": 188,
+    "timestamp": "2026-06-17 01:50:58",
+    "description": "docs update walkthrough with works card audio fix",
+    "folder": "step_188_docs_update_walkthrough_with_works_card_audio_fix",
     "is_auto": false
   }
 ]

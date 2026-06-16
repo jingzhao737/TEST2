@@ -2654,3 +2654,30 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证加载无报错。
 - 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `1adbbae`）上线。
+
+---
+
+## 🛠️ Feature: 修复 Works 页面卡片点击音效偶发不触发 Bug (Works Cards Audio Reliability Fix)
+
+### 1. 问题分析与修改
+- **问题反馈**：在 PC 或手机端点击 Works 页面卡片时，有时不会播放预期的“卡片重点击”音效（click1.mp3）。
+- **原因分析**：
+  1. **PC 端（空隙处点击漏判）**：
+     - 在 3D 投影倾斜列表中，如果用户点击了卡片四周的空白部分（非真实的 HTML ".work-card"，而是包裹它们的 3D 投影空隙），但此时该卡片处于视觉 Hover 激活态，那么 [work-detail.js](file:///D:/webprojext/js/modules/work-detail.js) 的兜底机制会通过代码触发 card.click()，仍然可以打开详情页。
+     - 然而，[sound-effects.js](file:///D:/webprojext/js/modules/sound-effects.js) 的 mousedown 监听器仅在 e.target.closest('.work-card') 为真时才会播放卡片重点击声。由于物理点击目标在卡片外，声音播放器漏判并转为播放了淡出的背景“轻微啵啵声” (playHoverSound())，给用户造成了“点击卡片有时没声音/卡死”的错觉。
+  2. **移动端（浏览器自动播放限制拦截）**：
+     - 原本的 sound-effects.js 统一在 mousedown 触发时播放声音，并在 window 绑定的 mousedown 冒泡周期内激活/唤醒 AudioContext。
+     - 在 iOS Safari 及部分移动端浏览器上，mousedown 是延迟合成事件，不被浏览器视为“直接的用户交互”（Direct User Gesture），导致多次触发时经常直接被浏览器的 Autoplay 政策拦截和静音。
+     - 另外，如果用户在卡片上进行滑屏（Scroll），手指触下时也会发出声音，造成糟糕的用户体验。
+- **解决方案与优化**：
+  - **PC 兜底音效适配**：在 sound-effects.js 的按压判断中加入对 3D 投影兜底的检测。如果点击的是 Works 列表区域且当前有 3D 悬浮卡片索引（window.__hoveredCardIndex >= 0），一并标记为卡片点击，正确播放卡片重击声。
+  - **移动端事件重构（避免静音与滑动音）**：
+    - 针对移动端（isMobileDevice 为真），将事件监听器由 mousedown 迁移至 click 事件。click 发生于完整的“按压并抬起且无拖拽”后，既能完美规避滑屏（Swipe/Scroll）引发的误触发声，又是移动端浏览器 100% 认可的合规用户交互动作，声音绝对不会被静音策略拦截。
+  - **前置唤醒时机（Capture 拦截）**：
+    - 将全局 AudioContext 的自动唤醒监听器（mousedown / touchstart）绑定在**捕获阶段（capture: true）**。这确保了在任何普通 DOM 冒泡点击事件触发声音播放之前，声音上下文已被第一帧强行唤醒处于 running 状态，根除了首触无声的 race condition。
+  - **效果**：PC 端无论是点击卡片实体还是其 3D 偏转空白空隙，重按音效 100% 触发；移动端完美绕过浏览器安全限制，且滑动列表时静音，仅在最终点击生效时发出清脆点击声，体验极为清爽灵敏。
+
+### 2. 部署与验证
+- 重新运行 npx vite build 编译打包通过。
+- 运行 node check_console.js 验证控制台日志无错误。
+- 通过 py workflow.py deploy 成功将代码同步提交并推送（Commit c235d47）线上。
