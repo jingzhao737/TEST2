@@ -1,12 +1,5 @@
 [
   {
-    "step": 133,
-    "timestamp": "2026-06-16 22:11:13",
-    "description": "Scale down logo landing stars and fluid ripple to match mouse click range",
-    "folder": "step_133_Scale_down_logo_landing_stars_and_fluid_ripple_to_match_mouse_click_range",
-    "is_auto": false
-  },
-  {
     "step": 134,
     "timestamp": "2026-06-16 22:15:04",
     "description": "Add fast-to-slow rotation decay curve for forge burst stars",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:14:54",
     "description": "Restore VISION section and ice.js script",
     "folder": "step_152_Restore_VISION_section_and_ice.js_script",
+    "is_auto": false
+  },
+  {
+    "step": 153,
+    "timestamp": "2026-06-17 00:18:33",
+    "description": "Optimize cursor snapping and premium card hover loop, removing high-frequency getBoundingClientRect and trigonometric recalculations",
+    "folder": "step_153_Optimize_cursor_snapping_and_premium_card_hover_loop,_removing_high-frequency_getBoundingClientRect_and_trigonometric_recalculations",
     "is_auto": false
   }
 ]
