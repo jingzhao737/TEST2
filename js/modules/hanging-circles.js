@@ -341,6 +341,8 @@ import * as THREE from 'three';
         tl.vx = (Math.random() - 0.5) * 6;
         tl.entering = false;
         tl._swayV = (Math.random() - 0.5) * 0.45;
+        tl.latchScale = 1.0;
+        tl.latchScaleProgress = undefined;
       }
       latchedIdx = -1;
       document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
@@ -363,8 +365,8 @@ import * as THREE from 'three';
       if (!wasAlreadyLatched) {
         let t = thumbs[idx];
         if (t) {
-          t.latchScale = 1.0;  // Start at normal scale to avoid sudden jumps
-          t.latchScaleVelocity = -0.055; // Slower, smooth negative velocity impulse to trigger physical shrink-and-pop
+          t.latchScale = 1.0;
+          t.latchScaleProgress = 0.0; // Trigger custom fast-slow-very-fast snap scale transition
         }
       }
       document.querySelectorAll('.latch-clip').forEach(function(c, ci){
@@ -686,10 +688,14 @@ import * as THREE from 'three';
       clip.onclick = function() {
         if (latchedIdx === ci) {
           let tl = thumbs[latchedIdx];
-          tl.vy = -8;
-          tl.vx = (Math.random() - 0.5) * 6;
-          tl.entering = false;
-          tl._swayV = (Math.random() - 0.5) * 0.45;
+          if (tl) {
+            tl.vy = -8;
+            tl.vx = (Math.random() - 0.5) * 6;
+            tl.entering = false;
+            tl._swayV = (Math.random() - 0.5) * 0.45;
+            tl.latchScale = 1.0;
+            tl.latchScaleProgress = undefined;
+          }
           latchedIdx = -1;
           document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
           if (window.__navWaveStop) window.__navWaveStop(ci);
@@ -1080,13 +1086,32 @@ import * as THREE from 'three';
           pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
         }
         
-        // Latch scale spring animation (shrink on snap, pop back to normal)
-        if (t.latchScale === undefined) t.latchScale = 1.0;
-        if (t.latchScaleVelocity === undefined) t.latchScaleVelocity = 0;
-        let scaleForce = 1.0 - t.latchScale;
-        t.latchScaleVelocity += scaleForce * 0.006; // stiffness constant (reduced to 0.006 for a slower, more elastic settling)
-        t.latchScaleVelocity *= 0.92;              // damping constant (friction) (increased to 0.92 for a smoother, premium slide)
-        t.latchScale += t.latchScaleVelocity;
+        // Custom snap-to-latch scale animation: Fast -> Slow -> Very Fast
+        if (t.latchScaleProgress !== undefined && t.latchScaleProgress < 1.0) {
+          t.latchScaleProgress += 0.028; // duration ~583ms at 60fps
+          if (t.latchScaleProgress > 1.0) t.latchScaleProgress = 1.0;
+          
+          let p = t.latchScaleProgress;
+          if (p < 0.15) {
+            // Fast shrink phase
+            let sub = p / 0.15;
+            t.latchScale = 1.0 - 0.35 * (1 - Math.pow(1 - sub, 3));
+          } else if (p < 0.75) {
+            // Slow recovery / hold phase
+            let sub = (p - 0.15) / 0.60;
+            t.latchScale = 0.65 + 0.13 * sub;
+          } else {
+            // Extremely fast pop phase (with a juicy overshoot and settle)
+            let sub = (p - 0.75) / 0.25;
+            let val = 0.78 + 0.22 * (1 - Math.pow(1 - sub, 3));
+            if (sub < 0.8) {
+              val += 0.06 * Math.sin(sub * Math.PI / 0.8);
+            }
+            t.latchScale = val;
+          }
+        } else {
+          t.latchScale = 1.0;
+        }
         
         let scaleFactor = t.dispW / d.baseSz;
         let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25) * t.latchScale;
@@ -1206,10 +1231,14 @@ import * as THREE from 'three';
         let maxY = latchCY + clipH;
         if (mx >= minX && mx <= maxX && my >= minY && my <= maxY) {
           let tl = thumbs[latchedIdx];
-          tl.vy = -8;
-          tl.vx = (Math.random() - 0.5) * 6;
-          tl.entering = false;
-          tl._swayV = (Math.random() - 0.5) * 0.45;
+          if (tl) {
+            tl.vy = -8;
+            tl.vx = (Math.random() - 0.5) * 6;
+            tl.entering = false;
+            tl._swayV = (Math.random() - 0.5) * 0.45;
+            tl.latchScale = 1.0;
+            tl.latchScaleProgress = undefined;
+          }
           let oldLatched = latchedIdx;
           latchedIdx = -1;
           document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
@@ -1265,10 +1294,14 @@ import * as THREE from 'three';
       // Short click: unlatch or open work detail
       if (latchedIdx === draggedIdx) {
         let tl = thumbs[latchedIdx];
-        tl.vy = -8;
-        tl.vx = (Math.random() - 0.5) * 6;
-        tl.entering = false;
-        tl._swayV = (Math.random() - 0.5) * 0.45;
+        if (tl) {
+          tl.vy = -8;
+          tl.vx = (Math.random() - 0.5) * 6;
+          tl.entering = false;
+          tl._swayV = (Math.random() - 0.5) * 0.45;
+          tl.latchScale = 1.0;
+          tl.latchScaleProgress = undefined;
+        }
         latchedIdx = -1;
         document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
         if (window.__navWaveStop) window.__navWaveStop(draggedIdx);
@@ -1307,8 +1340,8 @@ import * as THREE from 'three';
         let wasAlreadyLatched = (latchedIdx === draggedIdx);
         latchedIdx = draggedIdx;
         if (!wasAlreadyLatched) {
-          t.latchScale = 1.0;  // Start at normal scale to avoid sudden jumps
-          t.latchScaleVelocity = -0.055; // Slower, smooth negative velocity impulse to trigger physical shrink-and-pop
+          t.latchScale = 1.0;
+          t.latchScaleProgress = 0.0; // Trigger custom fast-slow-very-fast snap scale transition
         }
         
         document.querySelectorAll('.latch-clip').forEach(function(c, ci){
