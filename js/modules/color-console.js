@@ -1,7 +1,4 @@
 import gsap from 'gsap';
-import { Flip } from 'gsap/Flip';
-
-gsap.registerPlugin(Flip);
 
 /* YYJZ COLOR PALETTE CONSOLE */
 (function initColorConsole() {
@@ -17,81 +14,93 @@ gsap.registerPlugin(Flip);
 
   if (!logo || !consoleEl) return;
 
-  function toggleConsole(active) {
-    const isOpening = active !== undefined ? active : !consoleEl.classList.contains('active');
-    
-    // Disable CSS transitions instantly to avoid race condition/jitter
-    logo.style.transition = 'none';
-    consoleEl.style.transition = 'none';
+  let _animating = false;
 
-    // Capture initial state
-    const state = Flip.getState(logo);
+  function toggleConsole(active) {
+    if (_animating) return;
+    const isOpening = active !== undefined ? active : !consoleEl.classList.contains('active');
+
+    // Disable CSS transitions instantly to avoid race condition/jitter
+    logo.style.setProperty('transition', 'none', 'important');
+    logo.classList.add('no-transition');
+    consoleEl.style.transition = 'none';
 
     if (isOpening) {
       const placeholder = document.getElementById('consoleTitlePlaceholder');
-      if (placeholder) {
-        placeholder.appendChild(logo);
-      }
-      
-      // Force initial transform/opacity on console before active state
-      gsap.set(consoleEl, {
-        opacity: 0,
-        y: -15,
-        scale: 0.95
-      });
+      if (!placeholder) return;
+
+      // 1. Measure final placeholder rect
+      //    We must clear the GSAP y/scale transform first so getBoundingClientRect()
+      //    returns the TRUE final position of the placeholder, not the shifted one.
+      gsap.set(consoleEl, { y: 0, scale: 1 });
+      const toRect = placeholder.getBoundingClientRect();
+      gsap.set(consoleEl, { y: -12, scale: 0.97 }); // restore start state
+
       consoleEl.classList.add('active');
+      _animating = true;
 
       const tl = gsap.timeline({
         onComplete: () => {
-          logo.style.transition = '';
+          logo.style.removeProperty('transition');
+          logo.classList.remove('no-transition');
           consoleEl.style.transition = '';
+          _animating = false;
         }
       });
+
+      // Only animate left/top position to prevent logo from shrinking/scaling down
+      tl.to(logo, {
+        left: toRect.left,
+        top: toRect.top,
+        duration: 0.42,
+        ease: 'power3.out'
+      }, 0);
 
       tl.to(consoleEl, {
         opacity: 1,
         y: 0,
         scale: 1,
-        duration: 0.45,
+        duration: 0.42,
         ease: 'power3.out'
       }, 0);
 
-      tl.add(Flip.from(state, {
-        duration: 0.45,
-        ease: 'power3.out',
-        absolute: true
-      }), 0);
-
     } else {
-      // Move logo back to navbar first
-      const navEl = document.getElementById('nav');
-      const navWaveContainer = document.getElementById('navWaveContainer');
-      if (navEl && navWaveContainer) {
-        navEl.insertBefore(logo, navWaveContainer);
-      }
+      // --- CLOSING ---
+      const spacer = document.getElementById('navLogoSpacer');
+      if (!spacer) return;
+
+      const toRect = spacer.getBoundingClientRect();
+      _animating = true;
 
       const tl = gsap.timeline({
         onComplete: () => {
-          consoleEl.classList.remove('active');
+          // Clear GSAP inline styles while transitions are still disabled to prevent snapping transitions
+          gsap.set(logo, { clearProps: 'left,top,width,height' });
           gsap.set(consoleEl, { clearProps: 'all' });
-          logo.style.transition = '';
+          
+          logo.style.removeProperty('transition');
+          logo.classList.remove('no-transition');
           consoleEl.style.transition = '';
+          consoleEl.classList.remove('active');
+          _animating = false;
         }
       });
 
-      tl.to(consoleEl, {
-        opacity: 0,
-        y: -15,
-        scale: 0.95,
-        duration: 0.4,
-        ease: 'power3.in'
+      // Only animate left/top position
+      tl.to(logo, {
+        left: toRect.left,
+        top: toRect.top,
+        duration: 0.38,
+        ease: 'power3.inOut'
       }, 0);
 
-      tl.add(Flip.from(state, {
-        duration: 0.4,
-        ease: 'power3.inOut',
-        absolute: true
-      }), 0);
+      tl.to(consoleEl, {
+        opacity: 0,
+        y: -12,
+        scale: 0.97,
+        duration: 0.35,
+        ease: 'power3.in'
+      }, 0);
     }
   }
 

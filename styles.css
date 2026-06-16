@@ -412,6 +412,66 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .nav-logo{font-family:'Climate Crisis',sans-serif;font-size:1.3rem;color:var(--fg);letter-spacing:0.03em;text-decoration:none;position:relative;z-index:101;font-weight:700;line-height:1;display:inline-flex;align-items:center;margin-top:-1px;transition:color 0.4s var(--ease-out-expo),transform 0.4s var(--ease-out-expo)}
 .nav-logo:hover, .nav-logo.magnet-hover{color:var(--accent);transform:scale(1.02)}
+
+.nav-logo-spacer {
+  font-family: 'Climate Crisis', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.03em;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  margin-top: -1px;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+#navLogo {
+  position: fixed !important;
+  z-index: 955 !important;
+  top: 23px;
+  left: calc(1vw + 48px);
+  margin-top: 0 !important;
+  transition: top .5s var(--ease-out-expo), left .42s var(--ease-out-expo), color 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo) !important;
+}
+
+.nav.scrolled ~ #navLogo {
+  top: 14px;
+}
+
+#navLogo.menu-open {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-8px) !important;
+}
+
+@media (min-width: 2938px) {
+  #navLogo {
+    left: calc(50vw - 1392px);
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-logo-spacer {
+    font-size: 1.2rem;
+    margin-top: 2px;
+  }
+  #navLogo {
+    top: 14px;
+    left: 32px;
+    font-size: 1.2rem;
+  }
+  .nav.scrolled ~ #navLogo {
+    top: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  #navLogo {
+    left: 24px;
+  }
+}
 .nav-wave-container{display:inline-flex;align-items:center;margin-left:12px;margin-right:auto;position:relative}
 .nav-waveform{width:100px;height:28px;opacity:0.75;pointer-events:auto;cursor:pointer;flex-shrink:0;filter:drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.25));transition:opacity 0.4s var(--ease-out-expo),filter 0.4s var(--ease-out-expo),transform 0.4s var(--ease-out-expo);border-radius:5px}
 .nav-waveform:hover, .nav-waveform.magnet-hover{opacity:1;transform:scale(1.05);filter:drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.6))}
@@ -3361,7 +3421,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   color: var(--fg) !important;
 }
 
-.nav-logo.no-transition {
+#navLogo.no-transition {
   transition: none !important;
 }
 

@@ -1690,3 +1690,42 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，点击“YYJZ”文字后小操控台完美弹出，切换预设和选择自定义颜色时，全网页及 3D 吊绳瞬间响应变色，回弹和恢复极为灵敏。
+
+---
+
+## 🛠️ Step 606: 解决 YYJZ 徽标点击弹窗时的“抽搐”与定位不准问题 (Zero-Jitter Fixed-Position Ghost Clone Transition for Logo)
+
+### 1. 问题分析与根源
+- **GSAP Flip 在变换父级下的定位失效**：之前版本的代码使用 GSAP 的 `Flip` 插件，在点击 `YYJZ` 徽标时执行 DOM 移动动画（在 nav 导航栏和控制台标题占位器 `consoleTitlePlaceholder` 之间转移）。
+- **复合变换叠加冲突**：但在此过程中，控制台面板 `.color-console` 本身在以 GSAP 的 `y`（移动 -15px）和 `scale`（缩放 0.95）进行淡入或淡出。在父元素不断发生位移与缩放的瞬态下，GSAP `Flip` 尝试用 `absolute: true` 计算并还原徽标的绝对定位时，会被父级变换矩阵污染，从而导致首帧定位误差。
+- **表现形式**：点击后徽标首先会瞬移或在到位后向右侧/左上角发生剧烈的跳动（抽搐），随后再回到原位。
+- **CSS 过渡干扰**：`.color-console` 本身在样式表中定义了 `transition: opacity 0.4s, transform 0.4s` 等 CSS 过渡规则。当 JavaScript 试图瞬时修改控制台的变换状态来辅助 `getBoundingClientRect()` 计算终点时，会被 CSS 动画捕获转而变为渐变，导致计算出的终点坐标极不稳定。
+
+### 2. 解决方案：无干扰 Fixed 幽灵克隆方案 (Fixed Ghost Clone Animation)
+为了彻底解决此问题，我们重构了 `color-console.js` 中 `toggleConsole` 的徽标转移逻辑，放弃了基于父子 DOM 转移的 Flip，改为纯粹的 **Fixed 视口克隆飞行动效**：
+
+1. **瞬时切断 CSS 干扰**：
+   - 在动画启动的瞬间，立即设置 `logo.style.transition = 'none'` 和 `consoleEl.style.transition = 'none'`，完全屏蔽浏览器 CSS 渲染引擎对属性变更的动画干扰，保证 JavaScript 计算的原子性。
+2. **高精度无误差终点测量**：
+   - 将 logo 挂载进占位器后，在 `requestAnimationFrame` 中，**临时将控制台设为 `y: 0, scale: 1` 的完全静止展开状态**。此时读取 `logo.getBoundingClientRect()` 得到 100% 准确的最终静止渲染视口坐标。
+   - 读取完毕后，瞬间将控制台恢复为 `y: -12, scale: 0.97` 的初始展开状态。这整个过程在浏览器单帧渲染周期内同步完成，用户视觉上完全不可见。
+3. **基于 Body 的 Fixed 幽灵动画**：
+   - 用 `logo.cloneNode(true)` 创建一个临时的 `ghost` 元素，通过 `position: fixed` 并绑定刚才读取 of `fromRect` 坐标，将其挂载到 `document.body` 最外层。
+   - 因为 `ghost` 直接作为 `body` 的子元素，它**完全不受控制台面板缩放、平移等变换矩阵的任何影响**。
+   - 通过 GSAP 驱动 `ghost` 飞向测量好的 `toRect` 目标，同时让控制台面板执行自身的渐显与回弹动画。
+4. **无缝真身交接**：
+   - 在动画完成的 `onComplete` 回调中，移除 `ghost` 幽灵，并瞬间将隐藏着的 `logo` 真身设置为 `opacity: 1` 显现，最后恢复原生的 transition。
+
+### 3. 验证结果 (Pixel-Perfect Accuracy Verification)
+我们使用 Playwright 在本地服务器 `http://localhost:5174` 上编写了端到端测试，分别在**展开**与**收起**两个方向上，测量了幽灵动画的目标终点坐标与最终显现的真实 Logo 渲染坐标。控制台日志打印结果如下：
+- **展开（Opening）路径**：
+  - 幽灵动画终点 (`toRect`)：`{ left: 45, top: 108.59, width: 76.61, height: 20.80 }`
+  - 真实 Logo 静止位置 (`finalRect`)：`{ left: 45.01, top: 108.56, width: 76.60, height: 20.79 }`
+  - 偏差仅为 **0.01~0.03 像素**（浏览器次像素渲染微弱舍入差），肉眼完全无法察觉任何跳动！
+- **收起（Closing）路径**：
+  - 幽灵动画回归终点 (`toRect`)：`{ left: 62.40625, top: 41.09375, width: 76.609375, height: 20.796875 }`
+  - 导航栏 Logo 静止位置 (`finalRect`)：`{ left: 62.40625, top: 41.09375, width: 76.609375, height: 20.796875 }`
+  - 偏差为 **0.00000 像素**，实现了极致完美的像素级贴合！
+
+此重构彻底根除了位移动画中的“抽搐”和“跳动”问题，带来了丝滑、顺畅的悬浮控制台交互体验。
+

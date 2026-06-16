@@ -9,7 +9,7 @@ const { chromium } = require('playwright');
   page.on('pageerror', exception => console.log('PAGE ERROR:', exception));
 
   try {
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5174');
     console.log('Waiting for loader to be hidden...');
     await page.waitForSelector('#loader', { state: 'hidden', timeout: 15000 });
     console.log('Loader is hidden! Waiting another 4 seconds for physics to settle...');
@@ -60,13 +60,16 @@ const { chromium } = require('playwright');
   console.log('Screenshot saved to scratch/homepage.png');
 
   try {
-    console.log('Clicking logo to open console for console-view screenshot...');
+    console.log('Clicking logo to open console...');
     await page.click('#navLogo');
-    await page.waitForTimeout(1000); // Settle flip animation
-    await page.screenshot({ path: 'scratch/adjuster_visible.png' });
-    console.log('Console-view screenshot saved to scratch/adjuster_visible.png');
+    await page.waitForTimeout(1500); // Settle open animation
+
+    console.log('Clicking close button to close console...');
+    await page.click('#consoleCloseBtn');
+    await page.waitForTimeout(1500); // Settle close animation
+
   } catch (err) {
-    console.log('Error taking console-view screenshot:', err.message);
+    console.log('Error during interaction:', err.message);
   }
 
   await browser.close();
