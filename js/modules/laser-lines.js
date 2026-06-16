@@ -508,5 +508,65 @@
   window.triggerLaserBurst = function(x, y, isOrange = false, customLife = null, customNumSparks = null) {
     createBurst(x, y, isOrange, customLife, customNumSparks);
   };
+  window.triggerForgeBurst = function(x, y) {
+    const colors = ['#ffffff', '#E87C50', '#FF9F1C', '#FFD700'];
+    
+    // 1. Pulsing Center Flare (Flash)
+    sparks.push({
+      x: x,
+      y: y,
+      vx: 0,
+      vy: 0,
+      color: '#E87C50',
+      type: 'center-flare',
+      size: 45.0,
+      created: Date.now(),
+      life: 600
+    });
+
+    // 2. Double expanding shockwave ripples
+    ripples.push({
+      x: x,
+      y: y,
+      radius: 0,
+      maxRadius: 80,
+      color: '#E87C50',
+      created: Date.now(),
+      life: 600
+    });
+    ripples.push({
+      x: x,
+      y: y,
+      radius: 0,
+      maxRadius: 120,
+      color: '#FF9F1C',
+      created: Date.now(),
+      life: 800
+    });
+
+    // 3. Dense sparks with forging physics
+    const numSparks = 20 + Math.floor(Math.random() * 8);
+    for (let i = 0; i < numSparks; i++) {
+      const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const speed = 4.0 + Math.random() * 8.0;
+      const lifeSpan = 1200 + Math.random() * 800;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      sparks.push({
+        x: x,
+        y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2.5, // Upward initial eject bias
+        color: color,
+        type: 'star',
+        size: 0.8 + Math.random() * 3.5,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.20, // Rapid spin for shimmering glints
+        created: Date.now(),
+        life: lifeSpan,
+        drag: 0.94, // Easing: slides out beautifully
+        gravity: 0.06 // Gently curves down like real sparks
+      });
+    }
+  };
 })();
 
