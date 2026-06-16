@@ -158,7 +158,6 @@ function openDetail(data, heroImg, pushState) {
   workDetail.classList.add('open');
   workDetail.style.display = 'flex';
   workDetail.style.visibility = 'visible';
-  if (window.__updateMagnetTargets) window.__updateMagnetTargets();
   const scrollWrapper = document.getElementById('workDetailScrollWrapper');
   if (scrollWrapper) {
     scrollWrapper.scrollTop = 0;
@@ -275,9 +274,9 @@ function closeDetail(popState) {
     detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
   ]);
 
-  // Fade out backdrop smoothly
+  // Fade out backdrop smoothly (faster fade-out to reveal restoring background early)
   if (detailBg) {
-    gsap.to(detailBg, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
+    gsap.to(detailBg, { opacity: 0, duration: 0.4, ease: 'power2.out' });
   }
 
   // Fade out close button immediately to prevent lingering
@@ -310,9 +309,9 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         workDetail.classList.remove('open');
-        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         workDetail.style.display = 'none';
         workDetail.style.visibility = 'hidden';
+        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         document.body.style.overflow = '';
 
         // Reset ALL inline styles for next open cycle

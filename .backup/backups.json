@@ -1,12 +1,5 @@
 [
   {
-    "step": 140,
-    "timestamp": "2026-06-16 23:04:42",
-    "description": "Remove orange center-flare and shockwave ripples, leaving only pure white star particles",
-    "folder": "step_140_Remove_orange_center-flare_and_shockwave_ripples,_leaving_only_pure_white_star_particles",
-    "is_auto": false
-  },
-  {
     "step": 141,
     "timestamp": "2026-06-16 23:06:15",
     "description": "Change logo landing stars expansion to a horizontal ellipse",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:46:33",
     "description": "Optimize close transition by restoring background WebGL early and speeding up backdrop fade-out",
     "folder": "step_159_Optimize_close_transition_by_restoring_background_WebGL_early_and_speeding_up_backdrop_fade-out",
+    "is_auto": false
+  },
+  {
+    "step": 160,
+    "timestamp": "2026-06-17 00:49:55",
+    "description": "Keep background WebGL rendering active continuously at all times for seamless transitions",
+    "folder": "step_160_Keep_background_WebGL_rendering_active_continuously_at_all_times_for_seamless_transitions",
     "is_auto": false
   }
 ]
