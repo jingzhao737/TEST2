@@ -363,8 +363,8 @@ import * as THREE from 'three';
       if (!wasAlreadyLatched) {
         let t = thumbs[idx];
         if (t) {
-          t.latchScale = 0.65; // Trigger shrink-and-pop spring animation on programmatic latch
-          t.latchScaleVelocity = 0;
+          t.latchScale = 1.0;  // Start at normal scale to avoid sudden jumps
+          t.latchScaleVelocity = -0.055; // Slower, smooth negative velocity impulse to trigger physical shrink-and-pop
         }
       }
       document.querySelectorAll('.latch-clip').forEach(function(c, ci){
@@ -1084,8 +1084,8 @@ import * as THREE from 'three';
         if (t.latchScale === undefined) t.latchScale = 1.0;
         if (t.latchScaleVelocity === undefined) t.latchScaleVelocity = 0;
         let scaleForce = 1.0 - t.latchScale;
-        t.latchScaleVelocity += scaleForce * 0.12; // stiffness constant
-        t.latchScaleVelocity *= 0.76;             // damping constant (friction)
+        t.latchScaleVelocity += scaleForce * 0.006; // stiffness constant (reduced to 0.006 for a slower, more elastic settling)
+        t.latchScaleVelocity *= 0.92;              // damping constant (friction) (increased to 0.92 for a smoother, premium slide)
         t.latchScale += t.latchScaleVelocity;
         
         let scaleFactor = t.dispW / d.baseSz;
@@ -1307,8 +1307,8 @@ import * as THREE from 'three';
         let wasAlreadyLatched = (latchedIdx === draggedIdx);
         latchedIdx = draggedIdx;
         if (!wasAlreadyLatched) {
-          t.latchScale = 0.65; // Trigger shrink-and-pop spring animation on manual snap
-          t.latchScaleVelocity = 0;
+          t.latchScale = 1.0;  // Start at normal scale to avoid sudden jumps
+          t.latchScaleVelocity = -0.055; // Slower, smooth negative velocity impulse to trigger physical shrink-and-pop
         }
         
         document.querySelectorAll('.latch-clip').forEach(function(c, ci){
