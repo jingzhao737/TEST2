@@ -79,15 +79,15 @@
   - `[x]` **3D 悬停动画按需激活与休眠 (Animate Loop Wake & Sleep)**：重构 `premium-interactions.js` 中的 `animateHover` 循环。移除原本开刷即空转的 IIFE 自执行机制，仅在鼠标划入列表 (`onListEnter`) 时动态开启，在鼠标离开且旋转位置回弹复位后自动切断并停止 `requestAnimationFrame` 调度。
   - `[x]` **预计算三角函数常量 (Precomputed Trigonometric Constants)**：将 `premium-interactions.js` 中卡片 3D 透视投影公式所需的 sines / cosines 三角函数计算移至循环体外静态常量化，省去每帧对 16 个顶点的重复 `Math.sin` 和 `Math.cos` 计算。
 
-- `[x]` **优化 Works 卡片详情页打开与关闭时的掉帧卡顿问题 (Optimize Works Card Detail Open/Close Transitions & Freeze Background WebGL)**
-  - `[x]` **动态冻结背景 WebGL 渲染 (On-Demand WebGL Sleep)**：在 `stars.js` 和 `ice.js` 的 `animate()` 循环头部添加拦截判断。在详情页打开（`classList.contains('open')`）或处于路由切换转场（`window.__isRouteTransitioning`）期间，直接返回跳过 WebGL 场景重绘与着色计算，极大释出 GPU 算力供滑入动画使用。
+- `[x]` **优化 Works 卡片详情页打开与关闭时的掉帧卡顿问题 (Optimize Works Card Detail Open/Close Transitions & Keep Background Live)**
+  - `[x]` **保持背景 WebGL 渲染持续活跃 (Keep Background WebGL Rendering Active)**：移除 `stars.js` 和 `ice.js` 在 `animate()` 循环中关于 `workDetail` 开启状态及转场的暂停判断，使背景星空与 3D 结晶粒子动画循环在详情页开启及转场期间持续保持活跃与渲染。配合实底不透明背景和无毛玻璃的设计，完全规避了暂停/重启导致的定格与突兀跳变，实现了极致的视觉连续性。
   - `[x]` **避免转场启动重排 (Eliminate Animation Startup Reflow)**：在 `hash-router.js` 的 `openDetail()` 启动段中移除 `__updateMagnetTargets()` 调用，彻底避免在详情卡片动画启动帧触发 DOM 重排。
   - `[x]` **延迟磁吸状态清理 (Defer Magnet Target Updates)**：在 `hash-router.js` 的 `closeDetail()` 中，将 `__updateMagnetTargets()` 调用时序调整至 `display: none` 和 `visibility: hidden` 之后，确保光标磁吸计算能精准剔除隐藏的关闭按钮。
   - `[x]` **开启 Compositor 图层硬件加速 (GPU Layer Promotion)**：在 `styles.css` 中为 `.work-card` 与 `.work-detail-card` 显式设置 `will-change: transform, opacity;`，使其被强制提升至独立合成器图层，彻底规避滚动 and 转场期间的大面积重绘。
   - `[x]` **遮罩改用纯色实底并移除毛玻璃滤镜 (Opaque Solid Backdrop & Zero Blur Overhead)**：在 [styles.css](file:///D:/webprojext/styles.css) 中，将 `.work-detail-bg` 的背景色由半透明黑 `rgba(0,0,0,0.65)` 替换为纯黑色 `#000`（浅色模式下替换为 `#f5f0e8`），并彻底删除 `backdrop-filter: blur(12px)`。当遮罩层完全不透明时，可激活浏览器的不透明度遮挡优化（Occlusion Culling/Overdraw Avoidance），彻底停止渲染底部的整个主页 DOM 树与 Canvas；同时彻底免除了耗费极高 GPU 算力的毛玻璃计算，彻底消除卡顿。
   - `[x]` **移除背景过渡 Transition 冲突 (Remove CSS transition on Backdrop)**：移除 `.work-detail-bg` 上的 CSS 混合过渡，完全将淡入淡出动画控制权移交给 GSAP，彻底避免双重插值冲突。
-  - `[x]` **关闭详情时背景提前恢复 (Pre-emptive WebGL Background Recovery)**：优化 [stars.js](file:///D:/webprojext/js/modules/stars.js) 和 [ice.js](file:///D:/webprojext/ice.js) 的暂停渲染判断，增加 `window.__isDetailClosing` 判断免除。在卡片一开始下滑退场时即立刻恢复背景星空与 3D 结晶的动画循环，而不是等待 0.65s 动画全部结束后才激活，消除了背景静态定格突然跳转的突兀感。
   - `[x]` **加速实底遮罩淡出 (Fast Backdrop Fade-out)**：在 `hash-router.js` 中将遮罩淡出时长由 `0.6s` 缩短至 `0.4s`（缓动改为 `power2.out`），使黑色遮罩能迅速清除，让已提前恢复动画的活动背景与下滑卡片衔接得行云流水。
+  - `[x]` **彻底消除主页元素上下瞬移 (Eliminate Layout and Scroll Position Jumps)**：移除了 `openDetail` 中的 `document.body.style.overflow = 'hidden'` 和 `closeDetail` 中的 `document.body.style.overflow = ''` 及 `window.scrollTo`。在 CSS 中将 `.work-detail-bg` 的 `pointer-events` 改为 `auto`，利用全屏 overlay 的事件捕获机制天然阻断主页鼠标滚轮滚动，无需改变 body 溢出模式。这彻底防止了设置 overflow 时浏览器重置滚动视口高度导致的首页大标题等元素上下瞬移，且同时激活了点击背景黑色区域关闭详情卡片的交互。
 
 
 

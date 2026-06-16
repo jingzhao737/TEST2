@@ -1,12 +1,5 @@
 [
   {
-    "step": 159,
-    "timestamp": "2026-06-17 00:46:33",
-    "description": "Optimize close transition by restoring background WebGL early and speeding up backdrop fade-out",
-    "folder": "step_159_Optimize_close_transition_by_restoring_background_WebGL_early_and_speeding_up_backdrop_fade-out",
-    "is_auto": false
-  },
-  {
     "step": 160,
     "timestamp": "2026-06-17 00:49:55",
     "description": "Keep background WebGL rendering active continuously at all times for seamless transitions",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:35:00",
     "description": "docs update walkthrough with mobile nav padding calibration",
     "folder": "step_178_docs_update_walkthrough_with_mobile_nav_padding_calibration",
+    "is_auto": false
+  },
+  {
+    "step": 179,
+    "timestamp": "2026-06-17 01:37:34",
+    "description": "style further increase mobile nav padding and shift hero title block down",
+    "folder": "step_179_style_further_increase_mobile_nav_padding_and_shift_hero_title_block_down",
     "is_auto": false
   }
 ]

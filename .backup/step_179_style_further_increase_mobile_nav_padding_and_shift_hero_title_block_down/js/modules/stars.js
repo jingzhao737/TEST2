@@ -890,12 +890,7 @@ import * as THREE from 'three';
     requestAnimationFrame(animate);
     if (!isVisible) return;
 
-    // Pause WebGL rendering when details card is open (except when closing) or during open transition
-    const isDetailOpen = document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open');
-    const isClosing = window.__isDetailClosing;
-    if ((window.__isRouteTransitioning && !isClosing) || (isDetailOpen && !isClosing)) {
-      return;
-    }
+    // Keep background rendering active continuously for seamless transition blending
 
     const dt = Math.min(clock.getDelta(), 0.033);
     const time = clock.getElapsedTime();
