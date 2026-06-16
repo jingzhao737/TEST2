@@ -553,7 +553,10 @@ import * as THREE from 'three';
           let y = pos.getY(j);
           let dist = Math.sqrt(x * x + y * y);
           let angle = Math.atan2(y, x);
-          let u = (angle + Math.PI) / (Math.PI * 2);
+          // Align UV seam with the positive X axis (theta = 0 and 2*PI) where CylinderGeometry's natural duplicate vertices are located.
+          // This prevents texture wrapping interpolation bugs that cause a warped "inverted wedge" on the opposite side of the seam.
+          let theta = angle < 0 ? angle + Math.PI * 2 : angle;
+          let u = theta / (Math.PI * 2);
           let v = Math.max(0, Math.min(1, (dist - rInner) / (rOuter - rInner)));
           uv.setXY(j, u, v);
         }

@@ -1429,8 +1429,34 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
   - **手动拖拽释放**：在 `window.addEventListener('mouseup', ...)` 事件中，当检测到唱片从“非吸附状态”滑入“吸附状态”的瞬间，将其 `latchScale` 初始化重置为 **`0.65`**（即瞬间缩小为正常大小 of 65%），触发回弹循环。
   - **切歌/播放按键程序触发**：在全局 `window.__latchDisc` 挂载函数中，当程序强制切换唱片锁定状态的瞬间，同样对目标唱片初始化 `t.latchScale = 0.65`，使得通过导航栏切歌或声波切换音乐时也能呈现一致的 Q 弹反馈！
 
+
+---
+
+## 🛠️ Hotfix: 修复 3D 唱片左侧局部高光接缝“反色/固定不动”渲染 Bug (Fix Cylinder UV Polar Seam Mapping)
+
+### 1. 问题分析
+- **左侧高光呈现异常固定块（Static Inverted Seam Wedge）**：
+  - 现象：在唱片静止或自转时，其左侧（对应几何体 negative X 轴，即 $\pi$ 或 $-\pi$ 弧度位置）有一扇形区域（一格）的高光纹理始终固定不变色，甚至呈现类似反色/破面的撕裂感。
+  - **根本原因**：
+    - 3D 黑胶圆盘采用 `THREE.CylinderGeometry`，并在 JS 中被手动覆写 UV 为极坐标（Polar Coordinates）进行环形凹槽反射渲染。
+    - 在原本的极坐标计算中，`u` 坐标计算为 `(angle + Math.PI) / (2 * Math.PI)`。这会将 UV 贴图的拼接缝隙（Seam，即 `u` 值从 `1.0` 突变到 `0.0` 的跃变线）强行设定在 `angle = Math.PI` 对应的**左侧负 X 轴**上。
+    - 然而，`THREE.CylinderGeometry` 在生成几何体顶点时，其自然的拼接接缝和重合顶点（Duplicate Vertices，即同一个圆周物理位置上两个分离的顶点以防贴图跨面拉伸）是分布在 `theta = 0` 对应的**右侧正 X 轴**上。
+    - 这造成了“UV 坐标跃变线（左侧）”与“几何体顶点接缝线（右侧）”的**空间错位**。结果，在左侧负 X 轴处，三角形面片横跨了 $+\pi$ 与 $-\pi$，使得其顶点被赋予了接近 `1.0` 与接近 `0.0` 的 UV 值。在着色器插值时，该三角形会把**整张凹槽纹理反向拉伸挤压到这一个网格扇形内**，形成极为显眼的“反色固定块”接缝 Bug。
+
+### 2. 解决方案与修改
+- **重合接缝对齐（Seam Realignment）**：
+  - 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 中的极坐标转换循环：
+  - 将 `Math.atan2` 输出的 `[-PI, PI]` 弧度范围，通过判断转换为 `[0, 2*PI]` 范围：
+    ```javascript
+    let theta = angle < 0 ? angle + Math.PI * 2 : angle;
+    let u = theta / (Math.PI * 2);
+    ```
+    这能将 UV 拼接缝线（`u=0` 到 `u=1` 的突变线）精准地挪移到 `theta = 0` （正 X 轴，右侧）。
+  - **完美对齐**：此举使 UV 缝线与 CylinderGeometry 原生的重合顶点在空间中 **100% 对齐重合**。在左侧负 X 轴处，相邻顶点的 `u` 坐标（约 `0.5`）变得完全连续，插值极为平滑；而右侧正 X 轴处的跃变则被完美分流在两个重合顶点（一个 `u=0`，另一个 `u=1`）之间，不会发生任何跨面拉伸。彻底消除了反色块，盘面恢复完美无瑕。
+
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
-- 执行 `python workflow.py deploy` 推送至 GitHub（Step 539），自动部署线上页面。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 540），自动部署线上页面。
+
 
 
