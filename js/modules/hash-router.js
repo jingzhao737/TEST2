@@ -106,6 +106,7 @@ function getActivePreviewContainer() {
 }
 
 function resetDetailState() {
+  workDetail.style.pointerEvents = '';
   workDetail.classList.remove('open');
   workDetail.style.display = 'none';
   workDetail.style.visibility = 'hidden';
@@ -335,6 +336,7 @@ function closeDetail(popState) {
   isRouteTransitioning = true;
   window.__isDetailClosing = true;
   workDetail.classList.remove('open');
+  workDetail.style.pointerEvents = 'none';
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');

@@ -1,12 +1,5 @@
 [
   {
-    "step": 145,
-    "timestamp": "2026-06-16 23:14:13",
-    "description": "Make logo landing stars horizontal oval shape slightly flatter",
-    "folder": "step_145_Make_logo_landing_stars_horizontal_oval_shape_slightly_flatter",
-    "is_auto": false
-  },
-  {
     "step": 146,
     "timestamp": "2026-06-16 23:25:13",
     "description": "Add synthesized forge successful clang sound effect when logo lands",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:07:11",
     "description": "Update walkthrough.md with transition fluidity optimization details",
     "folder": "step_164_Update_walkthrough.md_with_transition_fluidity_optimization_details",
+    "is_auto": false
+  },
+  {
+    "step": 165,
+    "timestamp": "2026-06-17 01:10:48",
+    "description": "Disable workDetail pointer-events immediately on close transition to resolve home page click interception",
+    "folder": "step_165_Disable_workDetail_pointer-events_immediately_on_close_transition_to_resolve_home_page_click_interception",
     "is_auto": false
   }
 ]
