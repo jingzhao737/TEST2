@@ -430,14 +430,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 #navLogo {
   position: fixed !important;
   z-index: 955 !important;
-  top: 23px;
+  top: 41px;
   left: calc(1vw + 48px);
   margin-top: 0 !important;
   transition: top .5s var(--ease-out-expo), left .42s var(--ease-out-expo), color 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo) !important;
 }
 
 .nav.scrolled ~ #navLogo {
-  top: 14px;
+  top: 29px;
 }
 
 #navLogo.menu-open {
@@ -458,12 +458,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     margin-top: 2px;
   }
   #navLogo {
-    top: 14px;
+    top: 43px;
     left: 32px;
     font-size: 1.2rem;
   }
   .nav.scrolled ~ #navLogo {
-    top: 14px;
+    top: 31px;
   }
 }
 
