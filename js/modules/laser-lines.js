@@ -400,6 +400,14 @@
         const gravityFactor = s.gravity !== undefined ? s.gravity : -0.025;
         s.vx *= dragFactor;
         s.vy *= dragFactor;
+        
+        // Add thermal convection / random wind drift for forge sparks (heavy iron sparks)
+        // to make them flutter and sway horizontally instead of falling straight down
+        if (s.gravity !== undefined && s.gravity > 0) {
+          s.vx += (Math.random() - 0.5) * 0.09; // Horizontal sway
+          s.vy += (Math.random() - 0.5) * 0.04; // Vertical flutter
+        }
+        
         s.vy += gravityFactor;
       }
 
@@ -564,7 +572,7 @@
         created: Date.now(),
         life: lifeSpan,
         drag: 0.94, // Easing: slides out beautifully
-        gravity: 0.06 // Gently curves down like real sparks
+        gravity: 0.04 // Gently curves down like real sparks with lighter gravity to allow thermal drift sway
       });
     }
   };
