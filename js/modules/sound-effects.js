@@ -212,6 +212,22 @@
     noiseGain.connect(masterGain);
     noise.start(now);
 
+    // Deep Bass Sub-boom Layer
+    const bassOsc = ctx.createOscillator();
+    const bassGain = ctx.createGain();
+    bassOsc.type = 'triangle'; // triangle has richer low end than sine
+    // Pitch sweep: 90Hz -> 45Hz over 250ms
+    bassOsc.frequency.setValueAtTime(90, now);
+    bassOsc.frequency.exponentialRampToValueAtTime(45, now + 0.25);
+
+    bassGain.gain.setValueAtTime(0.35, now);
+    bassGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2); // Decay over 1.2s
+
+    bassOsc.connect(bassGain);
+    bassGain.connect(masterGain);
+    bassOsc.start(now);
+    bassOsc.stop(now + 1.3);
+
     // Inharmonic frequencies for metal ring (anvil modes)
     const frequencies = [220, 415, 620, 880, 1200, 1650, 2300];
     const decays = [1.5, 1.2, 0.9, 0.6, 0.4, 0.2, 0.1]; // higher frequencies decay faster

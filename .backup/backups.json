@@ -1,12 +1,5 @@
 [
   {
-    "step": 127,
-    "timestamp": "2026-06-16 21:54:47",
-    "description": "Extend logo landing spark lifespan to 1.8s and optimize slide drag",
-    "folder": "step_127_Extend_logo_landing_spark_lifespan_to_1.8s_and_optimize_slide_drag",
-    "is_auto": false
-  },
-  {
     "step": 128,
     "timestamp": "2026-06-16 21:55:40",
     "description": "Revert logo landing sparks to match mouse click style exactly",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:25:13",
     "description": "Add synthesized forge successful clang sound effect when logo lands",
     "folder": "step_146_Add_synthesized_forge_successful_clang_sound_effect_when_logo_lands",
+    "is_auto": false
+  },
+  {
+    "step": 147,
+    "timestamp": "2026-06-16 23:32:53",
+    "description": "Add deep bass sub-boom layer to forge successful clang sound",
+    "folder": "step_147_Add_deep_bass_sub-boom_layer_to_forge_successful_clang_sound",
     "is_auto": false
   }
 ]
