@@ -2065,3 +2065,27 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **定位完全对齐**：经屏幕空间测量，0.2 秒后触发的水花中心与处于控制台头部的 `YYJZ` 徽标完全重合，且不随关闭或鼠标挪动发生偏移。
 - **性能与鲁棒性**：最大活动限制提升到 15 确保了无论用户狂点控制台还是鼠标高频点击，均不会发生爆裂粒子被截断消失的问题。
 
+---
+
+## 🛠️ Step 622: 徽标降落触发与鼠标点击完全相同的十字星尘粒子爆裂 (Trigger Same Cross-Star Particle Burst on Logo Landing Completing Console Flight)
+
+### 1. 痛点与需求分析 (Pain Point & Requirements)
+- **需求**：先前步骤在控制台开关 0.2s 延时后，仅触发了 `stars.js` 里的 GPU 流体波动，而用户表示需要触发“和鼠标点击后一样的星星动画”（即在 `laser-lines.js` 中通过 `createBurst` 触发的、具有强烈发光与十字星芒特效的 canvas 粒子效果）。
+- **优化点**：必须能支持把这些极具打击感和金属/科幻质感的二维星光扩散粒子，在不需要用户点击的情况下，精准降临到飞入和飞出后的 logo 物理落点处。
+
+### 2. 跨模块星尘粒子调用重构 (Cross-Module Particle Trigger Implementation)
+- **封装触发 API**：
+  - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 中，将原本仅由鼠标点击触发的粒子爆裂逻辑 `createBurst` 抽象并向外暴露为 `window.triggerLaserBurst(x, y, isOrange)`。
+  - 该 API 接受绝对像素坐标，在调用时会在该点直接生成由 `type: 'star'` 粒子构成的随机高能十字星芒群。
+- **跨模块调用联动**：
+  - 在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 的 console 打开/关闭 onComplete 后的 200ms `setTimeout` 块中：
+    1. 首先获取 logo 屏幕真实物理像素坐标 `rect = targetEl.getBoundingClientRect()`
+    2. 计算中心点像素值 `clientX = rect.left + rect.width / 2`，`clientY = rect.top + rect.height / 2`
+    3. 调用原本的 `window.triggerLogoStarSplash(x, y)` 触发流体涌动（0~1 归一化空间）。
+    4. 同步调用 `window.triggerLaserBurst(clientX, clientY, true)` 在像素空间引爆亮眼的品牌橙色十字星星粒子。
+
+### 3. 测试与验证 (Testing & Aesthetics Verification)
+- 运行 `npx vite build` 重新打出生产包，发布并通过本地和部署页面测试验证。
+- 当 Logo 飞入控制台或飞回导航栏 0.2 秒后，不仅有背景中轻微起伏的炫彩流体，还会像被鼠标重重敲击过一样，以落点为中心爆开 4~7 颗闪烁着强烈霓虹外发光（Glow）的品牌橙色十字小星星粒子，沿随机方向散开衰减，极具动感和科技质感，视觉交互极为 premium！
+
+

@@ -495,4 +495,8 @@
   window.__segments = segments;
   window.__sparks = sparks;
   window.__ripples = ripples;
+  window.triggerLaserBurst = function(x, y, isOrange = false) {
+    createBurst(x, y, isOrange);
+  };
 })();
+
