@@ -1088,7 +1088,7 @@ import * as THREE from 'three';
         
         // Spin the child meshes
         if (i === latchedIdx && window.__audioPlaying === true) {
-          t._spin = (t._spin || 0) - 0.012; // Decrement (negative Z rotation) for clockwise spin (changed from 0.025 to 0.012 to rotate slower)
+          t._spin = (t._spin || 0) - 0.006; // Decrement (negative Z rotation) for clockwise spin (changed from 0.012 to 0.006 to rotate even slower)
         }
         // ONLY spin the label mesh to keep the anisotropic specular highlight on the vinyl disk physically correct and realistic!
         // The vinyl grooves are concentric circles and look identical when spun, but keeping the mesh static ensures the highlight stays fixed relative to the light source.

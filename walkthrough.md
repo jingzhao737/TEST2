@@ -1381,10 +1381,10 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **追加匀速顺时针自转更新逻辑与各向异性反射修复**：
   - 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 的 3D 网格更新循环。
   - 检查当前唱片是否被锁定播放（`i === latchedIdx`）并且网页音频状态为正在播放（`window.__audioPlaying === true`）。
-  - 若满足条件，则对 `t._spin` 进行递减累积。我们采用更为平缓优雅的 `0.012` 弧度/帧进行顺时针自转（降低自转速度）：
+  - 若满足条件，则对 `t._spin` 进行递减累积。我们采用极为缓慢低调的 `0.006` 弧度/帧进行顺时针自转（进一步降低自转速度）：
     ```javascript
     if (i === latchedIdx && window.__audioPlaying === true) {
-      t._spin = (t._spin || 0) - 0.012; // 递减 Z 轴旋转角以实现更慢的顺时针自转
+      t._spin = (t._spin || 0) - 0.006; // 递减 Z 轴旋转角以实现更慢的顺时针自转
     }
     ```
   - **各向异性反射保护（仅旋转封面盘贴）**：
