@@ -1,12 +1,5 @@
 [
   {
-    "step": 107,
-    "timestamp": "2026-06-16 01:11:09",
-    "description": "Upgrade vinyl records 3D reflections hotfix",
-    "folder": "step_107_Upgrade_vinyl_records_3D_reflections_hotfix",
-    "is_auto": false
-  },
-  {
     "step": 108,
     "timestamp": "2026-06-16 01:13:09",
     "description": "Auto-backup before rollback to Step 105",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 21:52:53",
     "description": "Tune logo landing spark physics for stronger ease-out effect",
     "folder": "step_126_Tune_logo_landing_spark_physics_for_stronger_ease-out_effect",
+    "is_auto": false
+  },
+  {
+    "step": 127,
+    "timestamp": "2026-06-16 21:54:47",
+    "description": "Extend logo landing spark lifespan to 1.8s and optimize slide drag",
+    "folder": "step_127_Extend_logo_landing_spark_lifespan_to_1.8s_and_optimize_slide_drag",
     "is_auto": false
   }
 ]

@@ -147,8 +147,8 @@
         spin: isIronSpark ? ((Math.random() - 0.5) * 0.08) : 0, // Slow spin for high-quality shimmering/twinkling effect on iron sparks
         created: Date.now(),
         life: lifeSpan,
-        drag: isIronSpark ? 0.88 : 0.90, // Custom drag per type (iron spark has 0.88 for fast deceleration ease-out)
-        gravity: isIronSpark ? 0.08 : -0.025 // Custom gravity per type (iron spark has 0.08 for gentle slow-motion falling at terminal velocity)
+        drag: isIronSpark ? 0.93 : 0.90, // Custom drag per type (iron spark has 0.93 for smoother slide and continue expansion)
+        gravity: isIronSpark ? 0.06 : -0.025 // Custom gravity per type (iron spark has 0.06 for gentle falling)
       });
     }
   }
