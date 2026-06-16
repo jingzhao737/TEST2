@@ -366,7 +366,7 @@ import * as THREE from 'three';
         let t = thumbs[idx];
         if (t) {
           t.latchScale = 1.0;
-          t.latchScaleVelocity = -0.16; // Trigger punchy smooth shrink-and-pop spring animation
+          t.latchScaleVelocity = -0.065; // Trigger slow, smooth shrink-and-pop spring animation
         }
       }
       document.querySelectorAll('.latch-clip').forEach(function(c, ci){
@@ -1090,8 +1090,8 @@ import * as THREE from 'three';
         if (t.latchScale === undefined) t.latchScale = 1.0;
         if (t.latchScaleVelocity === undefined) t.latchScaleVelocity = 0;
         let scaleForce = 1.0 - t.latchScale;
-        t.latchScaleVelocity += scaleForce * 0.08; // stiffness constant (tuned for punchy rebound)
-        t.latchScaleVelocity *= 0.77;              // damping constant (tuned for quick settling with a slight organic bounce)
+        t.latchScaleVelocity += scaleForce * 0.015; // stiffness constant (reduced to 0.015 for longer duration)
+        t.latchScaleVelocity *= 0.89;              // damping constant (increased to 0.89 for smooth, luxurious decay)
         t.latchScale += t.latchScaleVelocity;
         
         let scaleFactor = t.dispW / d.baseSz;
@@ -1322,7 +1322,7 @@ import * as THREE from 'three';
         latchedIdx = draggedIdx;
         if (!wasAlreadyLatched) {
           t.latchScale = 1.0;
-          t.latchScaleVelocity = -0.16; // Trigger punchy smooth shrink-and-pop spring animation
+          t.latchScaleVelocity = -0.065; // Trigger slow, smooth shrink-and-pop spring animation
         }
         
         document.querySelectorAll('.latch-clip').forEach(function(c, ci){
