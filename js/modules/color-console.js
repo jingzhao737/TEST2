@@ -44,7 +44,7 @@ import gsap from 'gsap';
       gsap.set(logo, {
         left: startRect.left,
         top: startRect.top,
-        opacity: 0
+        opacity: 1
       });
       logo.classList.add('console-active');
 
@@ -74,7 +74,6 @@ import gsap from 'gsap';
       tl.to(logo, {
         left: toRect.left,
         top: toRect.top,
-        opacity: 1,
         duration: 1.8,
         ease: 'back.inOut(2.2)'
       }, 0);
@@ -113,11 +112,10 @@ import gsap from 'gsap';
         }
       });
 
-      // Animate back to original position and fade-out
+      // Animate back to original position
       tl.to(logo, {
         left: toRect.left,
         top: toRect.top,
-        opacity: 0,
         duration: 1.8,
         ease: 'back.inOut(2.2)'
       }, 0);
