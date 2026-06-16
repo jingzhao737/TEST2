@@ -454,10 +454,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   transition: none !important;
 }
 
-#navLogo.console-active:hover {
-  transform: scale(1.02) !important;
-}
-
 :root.light #navLogo.console-active {
   -webkit-text-stroke: 0.4px #1a1a1a !important;
 }
