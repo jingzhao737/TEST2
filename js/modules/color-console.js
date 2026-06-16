@@ -52,7 +52,7 @@ import gsap from 'gsap';
       _animating = true;
 
       const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
-      const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.2;
+      const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.7;
       const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
 
@@ -99,7 +99,7 @@ import gsap from 'gsap';
       const toRect = anchorEl.getBoundingClientRect();
       _animating = true;
       const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
-      const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.2;
+      const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.7;
       const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
 

@@ -1792,3 +1792,21 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 打包与自动化部署
 - 编译通过，已自动生成最新 dist 包。
 - 运行 `python workflow.py deploy` 推送至主分支完成在线预览同步。
+
+
+---
+
+## 🛠️ Step 610: 将微调后的最优轨迹参数固化为默认属性 (Lock in optimized trajectory parameters as the defaults)
+
+### 1. 参数固化
+- **选定参数**：用户通过可视化调节器，测试并选定了最满意的手感参数：
+  - `duration = 2.7` 秒（比之前的 2.2 秒更显优美与平缓）
+  - `maxBulge = 36` 像素
+  - `ease = 'power4.inOut'`（无回弹的缓入-极速-缓出节奏）
+- **代码默认值更新**：
+  - 在 [index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中，将 Duration 调节滑块与展示标签的默认初始值从 `2.2` 修改为 `2.7`。
+  - 在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中，将展开与关闭动画时间轴配置的默认 duration 回退值从 `2.2` 调整为 `2.7`。
+
+### 2. 构建与部署
+- 编译通过，并生成了最新生产资源包。
+- 运行 `python workflow.py deploy` 推送至主分支，最新的默认参数和调节器已全面部署生效。
