@@ -1,12 +1,5 @@
 [
   {
-    "step": 150,
-    "timestamp": "2026-06-17 00:10:30",
-    "description": "Optimize Works section scroll and mouse hover entry performance, removing layout reflows and reducing GPU texture uploads",
-    "folder": "step_150_Optimize_Works_section_scroll_and_mouse_hover_entry_performance,_removing_layout_reflows_and_reducing_GPU_texture_uploads",
-    "is_auto": false
-  },
-  {
     "step": 151,
     "timestamp": "2026-06-17 00:13:46",
     "description": "Temporarily disable vision section and comment out ice.js for scroll performance testing",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:20:00",
     "description": "Slightly slow down details entrance and exit transitions for softer visual pacing",
     "folder": "step_169_Slightly_slow_down_details_entrance_and_exit_transitions_for_softer_visual_pacing",
+    "is_auto": false
+  },
+  {
+    "step": 170,
+    "timestamp": "2026-06-17 01:20:14",
+    "description": "Update walkthrough.md with transition durations softening details",
+    "folder": "step_170_Update_walkthrough.md_with_transition_durations_softening_details",
     "is_auto": false
   }
 ]

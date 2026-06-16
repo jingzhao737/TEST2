@@ -2465,3 +2465,19 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包正常。
 - 运行 `node check_console.js` 验证无控制台报错。
 - 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `4a8fc76`）到线上生产环境。
+
+---
+
+## 🛠️ Feature: 详情卡片入场出场速度微调 (Transition Durations Softening)
+
+### 1. 需求分析与修改
+- **问题反馈**：详情页卡片的展开（0.75s）和收回（0.42s）速度有点过快，缺乏了一些舒缓和大气的氛围感。用户希望稍微放慢一点。
+- **解决方案与参数校准**：
+  - **入场动画时长调整**：将 `openDetail` 中的详情卡片 slide up 滑入时长从 `0.75s` 调整为 `0.95s`（保留 expo 阻尼弹性缓动），背景遮罩淡入时间从 `0.5s` 调整为 `0.65s`，文本 staggered 入场延迟整体放缓 `0.1s`。
+  - **出场动画时长调整**：将 `closeDetail` 中的详情卡片 slide down 滑落时长从 `0.42s` 调整为 `0.55s`，背景遮罩淡出时间从 `0.3s` 调整为 `0.4s`，首页元素恢复时长从 `0.45s` 调整为 `0.55s`。
+  - **效果**：过渡节奏明显更加平缓柔和，恢复了高雅、从容的视觉高级感，手感极佳。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证控制台日志无错误。
+- 通过 `py workflow.py deploy` 成功将最新版本（Commit `d71626f`）部署至线上。
