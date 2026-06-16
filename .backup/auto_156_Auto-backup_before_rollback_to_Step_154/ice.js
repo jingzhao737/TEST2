@@ -458,6 +458,11 @@ const LensFlareShader = {
   function animate() {
     requestAnimationFrame(animate);
     if (!visible) return;
+
+    // Pause WebGL rendering when details card is open or transitioning to free up GPU resources
+    if (window.__isRouteTransitioning || (document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open'))) {
+      return;
+    }
     const now = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;

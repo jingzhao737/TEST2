@@ -145,10 +145,10 @@ function openDetail(data, heroImg, pushState) {
   }
 
   // ── 2. Slide and fade out original works page elements immediately ──
-  gsap.to('#nav', { opacity: 0, y: -15, duration: 0.5, ease: 'power2.inOut' });
-  gsap.to('.works-header', { opacity: 0, y: -20, duration: 0.5, ease: 'power2.inOut' });
-  gsap.to('.work-card', { opacity: 0, y: 20, stagger: 0.02, duration: 0.5, ease: 'power2.inOut' });
-  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.4, ease: 'power2.out' });
+  gsap.to('#nav', { opacity: 0, y: -30, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.works-header', { opacity: 0, y: -40, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to('.work-card', { opacity: 0, y: 50, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
   const btt = document.getElementById('backToTop');
   if (btt) btt.style.pointerEvents = 'none';
   const sb = document.getElementById('scrollBar');
@@ -174,7 +174,7 @@ function openDetail(data, heroImg, pushState) {
   if (hasWebGL) {
     gsap.set(detailHeroImg, { opacity: 0 }); // Hide DOM image during morph
   } else {
-    gsap.set(detailHeroImg, { opacity: 1, y: -40, scale: 1.1, filter: 'none' });
+    gsap.set(detailHeroImg, { opacity: 1, y: -80, scale: 1.15, filter: 'none' });
   }
   if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
   
@@ -190,36 +190,33 @@ function openDetail(data, heroImg, pushState) {
   
   // Backdrop fades in immediately in sync with card slide-up
   if (detailBg) {
-    detailBg.classList.remove('active-blur');
-    gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' });
+    gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power2.out' });
   }
 
-  gsap.set(detailBody, { opacity: 0, y: 20 });
+  gsap.set(detailBody, { opacity: 0, y: 30 });
   gsap.set(detailClose, { opacity: 1, y: 0 });
   gsap.set(detailHeroContent, { opacity: 1, y: 0 });
-  gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 20 });
+  gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
 
-  // ── 5. Slide up the card panel from the bottom with a subtle uniform scale ──
+  // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
     gsap.fromTo(detailCard, {
       y: '100%',
-      scale: 0.96,
+      scaleX: 0.4,
       transformOrigin: '50% 100%',
       opacity: 1
     }, {
       y: 0,
-      scale: 1,
-      duration: 0.95,
-      ease: 'power4.out',
+      scaleX: 1,
+      duration: 1.2,
+      ease: 'expo.out',
       onComplete: () => {
-        if (detailBg) detailBg.classList.add('active-blur');
         if (window.__updateMagnetTargets) window.__updateMagnetTargets();
         isRouteTransitioning = false;
         initGalleryLightbox();
       }
     });
   } else {
-    if (detailBg) detailBg.classList.add('active-blur');
     if (window.__updateMagnetTargets) window.__updateMagnetTargets();
     isRouteTransitioning = false;
   }
@@ -234,16 +231,16 @@ function openDetail(data, heroImg, pushState) {
     gsap.to(detailHeroImg, {
       y: 0,
       scale: 1.0,
-      duration: 0.95,
-      ease: 'power4.out'
+      duration: 1.2,
+      ease: 'expo.out'
     });
   }
 
   // ── 7. Stagger text content animations ──
-  gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.35 });
-  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.4 });
-  gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.45 });
-  gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.42 });
+  gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.4 });
+  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.5 });
+  gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.6 });
+  gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.55 });
 }
 
 function closeDetail(popState) {
@@ -277,10 +274,9 @@ function closeDetail(popState) {
     detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
   ]);
 
-  // Fade out backdrop smoothly (remove blur immediately)
+  // Fade out backdrop smoothly
   if (detailBg) {
-    detailBg.classList.remove('active-blur');
-    gsap.to(detailBg, { opacity: 0, duration: 0.5, ease: 'power2.out' });
+    gsap.to(detailBg, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
   }
 
   // Fade out close button immediately to prevent lingering
@@ -293,23 +289,23 @@ function closeDetail(popState) {
     gsap.to(previewContainer, { opacity: 1, duration: 0.5, ease: 'power2.out' });
   }
 
-  // Restore works page elements with a tiny delay to choreograph a smoother exit
-  gsap.to('#nav', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.1, clearProps: 'all' });
-  gsap.to('.works-header', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.1, clearProps: 'all' });
-  gsap.to('.work-card', { opacity: 1, y: 0, scale: 1, z: 0, stagger: 0.02, duration: 0.5, ease: 'power2.out', delay: 0.1, clearProps: 'all' });
-  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.5, ease: 'power2.out', delay: 0.1, clearProps: 'all' });
+  // Restore works page elements immediately in sync with detail close
+  gsap.to('#nav', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.works-header', { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.work-card', { opacity: 1, y: 0, scale: 1, z: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.6, ease: 'power2.out', clearProps: 'all' });
   const bttRestore = document.getElementById('backToTop');
   if (bttRestore) bttRestore.style.pointerEvents = '';
   const sbRestore = document.getElementById('scrollBar');
   if (sbRestore) sbRestore.style.pointerEvents = '';
 
-  // Slide down and shrink the card panel horizontally with a subtle uniform scale
+  // Slide down and shrink the card panel horizontally
   if (detailCard) {
     gsap.to(detailCard, {
       y: '100%',
-      scale: 0.96,
+      scaleX: 0.4,
       transformOrigin: '50% 100%',
-      duration: 0.55,
+      duration: 0.65,
       ease: 'power3.inOut',
       onComplete: function() {
         workDetail.classList.remove('open');
@@ -320,7 +316,7 @@ function closeDetail(popState) {
 
         // Reset ALL inline styles for next open cycle
         gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
-        if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1, scale: 1, transformOrigin: '50% 50%' });
+        if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1, scaleX: 1, transformOrigin: '50% 50%' });
         if (detailHeroImg) gsap.set(detailHeroImg, { y: 0, scale: 1, filter: 'none' });
 
         // Reset dim overlay

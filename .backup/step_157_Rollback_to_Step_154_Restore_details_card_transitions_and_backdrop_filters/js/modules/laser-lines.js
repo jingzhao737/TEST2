@@ -527,59 +527,31 @@
     createBurst(x, y, isOrange, customLife, customNumSparks);
   };
   window.triggerForgeBurst = function(x, y) {
-    // 1. Pulsing Center Flare (Flash) - Slightly longer life
-    sparks.push({
-      x: x,
-      y: y,
-      vx: 0,
-      vy: 0,
-      color: '#E87C50',
-      type: 'center-flare',
-      size: 18.0,
-      created: Date.now(),
-      life: 800
-    });
+    // Play the synthesized metal forge clang sound
+    if (typeof window.__playForgeClangSound === 'function') {
+      window.__playForgeClangSound();
+    }
 
-    // 2. Double expanding shockwave ripples - Slightly longer life
-    ripples.push({
-      x: x,
-      y: y,
-      radius: 0,
-      maxRadius: 25,
-      color: '#E87C50',
-      created: Date.now(),
-      life: 800
-    });
-    ripples.push({
-      x: x,
-      y: y,
-      radius: 0,
-      maxRadius: 45,
-      color: '#FF9F1C',
-      created: Date.now(),
-      life: 1000
-    });
-
-    // 3. Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
+    // Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
     const numSparks = 6 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 2.2 + Math.random() * 4.8; // Slightly increased speed range for a larger spread
-      const lifeSpan = 1200 + Math.random() * 600; // Increased lifespan (1.2s to 1.8s)
+      const speed = 0.9 + Math.random() * 1.6; // Increased speed range for a slightly larger spread
+      const lifeSpan = 1000 + Math.random() * 500; // Persist for 1.0s to 1.5s
       const color = '#ffffff'; // Make stars purely white
       sparks.push({
         x: x,
         y: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed, // Pure radial velocity without upward bias
+        vx: Math.cos(angle) * speed * 1.22, // Scale horizontally by 1.22 for a balanced horizontal oval expansion
+        vy: Math.sin(angle) * speed * 0.78, // Scale vertically by 0.78 for a balanced horizontal oval expansion
         color: color,
         type: 'star',
         size: 0.8 + Math.random() * 3.5,
-        angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.60, // Rapid initial spin, which will decelerate rapidly
+        angle: 0, // Aligned upright, same as mouse clicks
+        spin: 0, // No rotation, same as mouse clicks
         created: Date.now(),
         life: lifeSpan,
-        drag: 0.90, // Same drag as mouse click to decay speed at the exact same rate!
+        drag: 0.96, // Reduced deceleration to allow stars to keep moving outward as they disappear
         gravity: 0.0 // No gravity (don't go down, don't go up, just like the Big Bang)
       });
     }

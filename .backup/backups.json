@@ -1,19 +1,5 @@
 [
   {
-    "step": 136,
-    "timestamp": "2026-06-16 22:20:25",
-    "description": "Increase logo landing stars overall animation lifespan and fluid duration",
-    "folder": "step_136_Increase_logo_landing_stars_overall_animation_lifespan_and_fluid_duration",
-    "is_auto": false
-  },
-  {
-    "step": 137,
-    "timestamp": "2026-06-16 22:30:34",
-    "description": "Reduce logo landing star particle count to 6-8 for a more delicate effect",
-    "folder": "step_137_Reduce_logo_landing_star_particle_count_to_6-8_for_a_more_delicate_effect",
-    "is_auto": false
-  },
-  {
     "step": 138,
     "timestamp": "2026-06-16 22:58:44",
     "description": "Disable rotation for logo landing stars to match mouse clicks",
@@ -137,6 +123,20 @@
     "timestamp": "2026-06-17 00:37:33",
     "description": "Optimize Works detail card transitions with uniform scale, choreographed fade timelines and dynamic active-blur helpers",
     "folder": "step_155_Optimize_Works_detail_card_transitions_with_uniform_scale,_choreographed_fade_timelines_and_dynamic_active-blur_helpers",
+    "is_auto": false
+  },
+  {
+    "step": 156,
+    "timestamp": "2026-06-17 00:40:54",
+    "description": "Auto-backup before rollback to Step 154",
+    "folder": "auto_156_Auto-backup_before_rollback_to_Step_154",
+    "is_auto": true
+  },
+  {
+    "step": 157,
+    "timestamp": "2026-06-17 00:41:22",
+    "description": "Rollback to Step 154 Restore details card transitions and backdrop filters",
+    "folder": "step_157_Rollback_to_Step_154_Restore_details_card_transitions_and_backdrop_filters",
     "is_auto": false
   }
 ]

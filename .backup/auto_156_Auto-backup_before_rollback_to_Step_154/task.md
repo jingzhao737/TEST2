@@ -84,6 +84,9 @@
   - `[x]` **避免转场启动重排 (Eliminate Animation Startup Reflow)**：在 `hash-router.js` 的 `openDetail()` 启动段中移除 `__updateMagnetTargets()` 调用，彻底避免在详情卡片动画启动帧触发 DOM 重排。
   - `[x]` **延迟磁吸状态清理 (Defer Magnet Target Updates)**：在 `hash-router.js` 的 `closeDetail()` 中，将 `__updateMagnetTargets()` 调用时序调整至 `display: none` 和 `visibility: hidden` 之后，确保光标磁吸计算能精准剔除隐藏的关闭按钮。
   - `[x]` **开启 Compositor 图层硬件加速 (GPU Layer Promotion)**：在 `styles.css` 中为 `.work-card` 与 `.work-detail-card` 显式设置 `will-change: transform, opacity;`，使其被强制提升至独立合成器图层，彻底规避滚动和转场期间的大面积重绘。
+  - `[x]` **解耦 Backdrop-Filter 模糊计算与位移转场 (Decouple Blur Computation from Slide Transitions)**：移除 `.work-detail-bg` 上的 CSS transition，新增 `.active-blur` 类实现 `backdrop-filter: blur(8px)`，在滑入动画完成 (`onComplete`) 后再激活背景模糊滤镜，关闭转场一开始便瞬间清除该滤镜，使位移滑块阶段无需计算全屏像素模糊。
+  - `[x]` **移除非均匀变形 scaleX 动画 (Eliminate Non-Uniform Scale Squishing)**：用均匀的 `scale: 0.96` 缩放替代了开销巨大的 `scaleX: 0.4` 水平拉伸动效，大幅减少转场动画期间子文本和图片的重排重影栅格化成本，使转场完全变为主流的合成图层 y 轴物理平移。
+  - `[x]` **收紧转场动效时长与多线程时空编排 (Tighten Transition Durations & Choreographed Fade)**：入场时长收紧为 `0.95s` 并改用 `power4.out`，出场时长收紧为 `0.55s`。首页元素退场提前至 `0.5s` 内完成以释放 CPU，回场时延迟 `0.1s` 直至卡片滑落过半，避免元素间发生 GPU 绘制冲突。
 
 
 

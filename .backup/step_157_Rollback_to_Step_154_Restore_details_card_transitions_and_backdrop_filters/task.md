@@ -54,11 +54,36 @@
   - `[x]` 应用户最新优化需求，将锻造粒子动效进一步重构为无重力干扰的“宇宙大爆炸”式纯径向直线扩散：去除向上重力偏置和下落重力（`gravity: 0`），并设置高品质的滑动阻尼（`0.95`），确保所有粒子在 1.2s~2s 的生命周期中，完全保持初始抛射方向，以完美的直线向外匀称扩散、缓缓减速并优雅淡出，完全消除任何向下或向上的漂移感。
   - `[x]` 微调大爆炸粒子动效范围与触发时序：移除 0.1s 的 `setTimeout` 延迟，使爆破动效在 Logo 时间线结束的瞬间即时触发；同时将火花粒子初速度区间降为 `2.5~7.0`，双重激波环的最大半径压缩至 `50px` 和 `80px`，并将火星数量精简到 `12~17` 颗，使动效更紧凑精致。
 
+- `[x]` **修复 stars.js 中的 TDZ（暂存死区）初始化 ReferenceError 错误**
+  - `[x]` 解决 `stars.js` 在模块加载时，由于 `initWebGLTextElements` 在声明 `workCardElements` 变量之前就被调用而引发的 `ReferenceError: Cannot access 'workCardElements' before initialization` 运行时报错。
+  - `[x]` 将 `webglTextElements`, `workCardElements`, `cachedTextItems`, `cachedCardItems` 的 `let` 声明语句整体移动至 `initWebGLTextElements` 函数 the 定义及调用之前。
+  - `[x]` 本地构建与打包（`npx vite build`）校验编译完全通过。
+  - `[x]` 运行 `py workflow.py deploy` 命令，将最新修复自动提交并成功推送至 GitHub Pages 线上服务。
 
+- `[x]` **优化 Works 区域滚动与鼠标进入卡顿、掉帧问题 (Optimize Scroll & Hover Entry Performance in Works)**
+  - `[x]` **消除强制同步布局 (Remove Forced Reflows)**：从 `premium-interactions.js` 中的 `onListEnter()` 函数里移除 `updateFlatPageCoordinates()`。利用已在页面初始化、`load` 和 `resize` 时算好的页面坐标，彻底避免鼠标滑入卡片区域时频繁切换 3D 旋转所造成的严重页面重排和卡顿。
+  - `[x]` **优化 WebGL 文本静态渲染缓存 (Decouple Style Resolution from Geometry mapping)**：将 `stars.js` 的缓存机制重构为静态基础缓存 `cachedTextItemsBase`。使每次坐标更新（`cacheLayoutCoords`）只需获取 `getBoundingClientRect()` 测定位置，不再重复进行开销极高的 `getComputedStyle()` 样式解析以及 `innerHTML`/`textContent` DOM 节点读取。
+  - `[x]` **按需上传 WebGL 文本纹理 (Upload Textures on Demand)**：在 `stars.js` 渲染循环中加入滚动状态与文本改变检测。仅在滚动位置发生变化、页面缩放、或切换主题时才重新擦写文本 Canvas 并设置 `textTexture.needsUpdate = true` 上传至 GPU。当页面静止时，文本纹理的 CPU 测绘与 GPU 传输开销降为 0。
+  - `[x]` **滚动防抖与间隔调整 (Scroll-Aware Cache Throttle)**：将 `stars.js` 中的坐标定期校准间隔从 1 秒提升至 3 秒，并加入滚动监听器，在用户处于主动滚动期间自动跳过定时校准，避免在滚动时触发布局重算。
+  - `[x]` **WebGL 预览渲染循环按需唤醒 (Animate Loop Sleep Mode)**：移除 `webgl-preview.js` 内部的 `IntersectionObserver` 监测。将 animate 循环改为只在卡片悬停 (`isHoverActive`) 或详情页形变过渡 (`isMorphing`) 处于激活状态时运行，未悬停时自动进入休眠，从而彻底释放 Works 区域滚动时的空转渲染消耗。
 
+- `[x]` **临时关闭 VISION (Ice Crystal) 页面模块以排查掉帧问题 (Temporarily Disable VISION Page for Troubleshooting)**
+  - `[x]` 在 `index.html` 中为 `<section class="ice-section" id="ice">` 容器及其下方的横向分界线添加 `style="display: none !important;"`，在 DOM 渲染树上完全移除其渲染和布局。
+  - `[x]` 在 `index.html` 底部注释掉 `<script type="module" src="ice.js"></script>`，停止该 3D 结晶模块在背景的初始化与 WebGL/Three.js 资源加载。
+  - `[x]` 编译生产包并通过 `py workflow.py deploy` 部署至线上。
 
+- `[x]` **深度优化自定义光标（Snapping Cursor）与 3D 悬停环路性能 (Optimize Snapping Cursor & 3D Card Hover loops)**
+  - `[x]` **恢复 3D 结晶页面**：将 `index.html` 中 `#ice` 板块、网格线和 `ice.js` 引用全部恢复正常。
+  - `[x]` **磁吸坐标静态缓存 (Static Coordinate Snapping Cache)**：重构 `cursor.js` 中的 `updateMagnetTargets`。将所有磁吸目标的 `getBoundingClientRect()` Viewport 视口值与当前 `scroll` 进行相加，转化为不变的**页面文档绝对坐标**。在 `mousemove` 监测和动画循环中直接进行纯数学减法位移计算判定，彻底消除了在移动鼠标时对所有目标重复调用 `getBoundingClientRect()` 造成的 Layout Reflow。
+  - `[x]` **彻底消除滚动中的磁吸更新 (Zero DOM operations on Scroll)**：清空 `cursor.js` 中 `scroll` 监听器内的 `updateMagnetTargets()` 查询，使得页面滚动时自定义光标模块对 CPU/DOM 的占用率完美归零。
+  - `[x]` **3D 悬停动画按需激活与休眠 (Animate Loop Wake & Sleep)**：重构 `premium-interactions.js` 中的 `animateHover` 循环。移除原本开刷即空转的 IIFE 自执行机制，仅在鼠标划入列表 (`onListEnter`) 时动态开启，在鼠标离开且旋转位置回弹复位后自动切断并停止 `requestAnimationFrame` 调度。
+  - `[x]` **预计算三角函数常量 (Precomputed Trigonometric Constants)**：将 `premium-interactions.js` 中卡片 3D 透视投影公式所需的 sines / cosines 三角函数计算移至循环体外静态常量化，省去每帧对 16 个顶点的重复 `Math.sin` 和 `Math.cos` 计算。
 
-
+- `[x]` **优化 Works 卡片详情页打开与关闭时的掉帧卡顿问题 (Optimize Works Card Detail Open/Close Transitions & Freeze Background WebGL)**
+  - `[x]` **动态冻结背景 WebGL 渲染 (On-Demand WebGL Sleep)**：在 `stars.js` 和 `ice.js` 的 `animate()` 循环头部添加拦截判断。在详情页打开（`classList.contains('open')`）或处于路由切换转场（`window.__isRouteTransitioning`）期间，直接返回跳过 WebGL 场景重绘与着色计算，极大释出 GPU 算力供滑入动画使用。
+  - `[x]` **避免转场启动重排 (Eliminate Animation Startup Reflow)**：在 `hash-router.js` 的 `openDetail()` 启动段中移除 `__updateMagnetTargets()` 调用，彻底避免在详情卡片动画启动帧触发 DOM 重排。
+  - `[x]` **延迟磁吸状态清理 (Defer Magnet Target Updates)**：在 `hash-router.js` 的 `closeDetail()` 中，将 `__updateMagnetTargets()` 调用时序调整至 `display: none` 和 `visibility: hidden` 之后，确保光标磁吸计算能精准剔除隐藏的关闭按钮。
+  - `[x]` **开启 Compositor 图层硬件加速 (GPU Layer Promotion)**：在 `styles.css` 中为 `.work-card` 与 `.work-detail-card` 显式设置 `will-change: transform, opacity;`，使其被强制提升至独立合成器图层，彻底规避滚动和转场期间的大面积重绘。
 
 
 
