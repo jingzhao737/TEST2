@@ -342,7 +342,7 @@ import * as THREE from 'three';
         tl.entering = false;
         tl._swayV = (Math.random() - 0.5) * 0.45;
         tl.latchScale = 1.0;
-        tl.latchScaleProgress = undefined;
+        tl.latchScaleVelocity = 0;
       }
       latchedIdx = -1;
       document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
@@ -366,7 +366,7 @@ import * as THREE from 'three';
         let t = thumbs[idx];
         if (t) {
           t.latchScale = 1.0;
-          t.latchScaleProgress = 0.0; // Trigger custom fast-slow-very-fast snap scale transition
+          t.latchScaleVelocity = -0.16; // Trigger punchy smooth shrink-and-pop spring animation
         }
       }
       document.querySelectorAll('.latch-clip').forEach(function(c, ci){
@@ -694,7 +694,7 @@ import * as THREE from 'three';
             tl.entering = false;
             tl._swayV = (Math.random() - 0.5) * 0.45;
             tl.latchScale = 1.0;
-            tl.latchScaleProgress = undefined;
+            tl.latchScaleVelocity = 0;
           }
           latchedIdx = -1;
           document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
@@ -1086,32 +1086,13 @@ import * as THREE from 'three';
           pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
         }
         
-        // Custom snap-to-latch scale animation: Fast -> Slow -> Very Fast
-        if (t.latchScaleProgress !== undefined && t.latchScaleProgress < 1.0) {
-          t.latchScaleProgress += 0.028; // duration ~583ms at 60fps
-          if (t.latchScaleProgress > 1.0) t.latchScaleProgress = 1.0;
-          
-          let p = t.latchScaleProgress;
-          if (p < 0.15) {
-            // Fast shrink phase
-            let sub = p / 0.15;
-            t.latchScale = 1.0 - 0.35 * (1 - Math.pow(1 - sub, 3));
-          } else if (p < 0.75) {
-            // Slow recovery / hold phase
-            let sub = (p - 0.15) / 0.60;
-            t.latchScale = 0.65 + 0.13 * sub;
-          } else {
-            // Extremely fast pop phase (with a juicy overshoot and settle)
-            let sub = (p - 0.75) / 0.25;
-            let val = 0.78 + 0.22 * (1 - Math.pow(1 - sub, 3));
-            if (sub < 0.8) {
-              val += 0.06 * Math.sin(sub * Math.PI / 0.8);
-            }
-            t.latchScale = val;
-          }
-        } else {
-          t.latchScale = 1.0;
-        }
+        // Latch scale spring animation (shrink on snap, pop back to normal)
+        if (t.latchScale === undefined) t.latchScale = 1.0;
+        if (t.latchScaleVelocity === undefined) t.latchScaleVelocity = 0;
+        let scaleForce = 1.0 - t.latchScale;
+        t.latchScaleVelocity += scaleForce * 0.08; // stiffness constant (tuned for punchy rebound)
+        t.latchScaleVelocity *= 0.77;              // damping constant (tuned for quick settling with a slight organic bounce)
+        t.latchScale += t.latchScaleVelocity;
         
         let scaleFactor = t.dispW / d.baseSz;
         let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25) * t.latchScale;
@@ -1237,7 +1218,7 @@ import * as THREE from 'three';
             tl.entering = false;
             tl._swayV = (Math.random() - 0.5) * 0.45;
             tl.latchScale = 1.0;
-            tl.latchScaleProgress = undefined;
+            tl.latchScaleVelocity = 0;
           }
           let oldLatched = latchedIdx;
           latchedIdx = -1;
@@ -1300,7 +1281,7 @@ import * as THREE from 'three';
           tl.entering = false;
           tl._swayV = (Math.random() - 0.5) * 0.45;
           tl.latchScale = 1.0;
-          tl.latchScaleProgress = undefined;
+          tl.latchScaleVelocity = 0;
         }
         latchedIdx = -1;
         document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
@@ -1341,7 +1322,7 @@ import * as THREE from 'three';
         latchedIdx = draggedIdx;
         if (!wasAlreadyLatched) {
           t.latchScale = 1.0;
-          t.latchScaleProgress = 0.0; // Trigger custom fast-slow-very-fast snap scale transition
+          t.latchScaleVelocity = -0.16; // Trigger punchy smooth shrink-and-pop spring animation
         }
         
         document.querySelectorAll('.latch-clip').forEach(function(c, ci){
