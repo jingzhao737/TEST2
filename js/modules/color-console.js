@@ -3,6 +3,7 @@ import gsap from 'gsap';
 /* YYJZ COLOR PALETTE CONSOLE */
 (function initColorConsole() {
   const logo = document.getElementById('navLogo');
+  const staticLogo = document.getElementById('navLogoStatic');
   const consoleEl = document.getElementById('colorConsole');
   const closeBtn = document.getElementById('consoleCloseBtn');
   const resetBtn = document.getElementById('consoleResetBtn');
@@ -25,16 +26,27 @@ import gsap from 'gsap';
     logo.classList.add('no-transition');
     consoleEl.style.transition = 'none';
 
+    // Target element to match positioning
+    const anchorEl = staticLogo || logo;
+
     if (isOpening) {
       const placeholder = document.getElementById('consoleTitlePlaceholder');
       if (!placeholder) return;
 
-      // 1. Measure final placeholder rect
-      //    We must clear the GSAP y/scale transform first so getBoundingClientRect()
-      //    returns the TRUE final position of the placeholder, not the shifted one.
+      // 1. Measure positions
+      const startRect = anchorEl.getBoundingClientRect();
+      
       gsap.set(consoleEl, { y: 0, scale: 1 });
       const toRect = placeholder.getBoundingClientRect();
       gsap.set(consoleEl, { y: -12, scale: 0.97 }); // restore start state
+
+      // 2. Setup initial animated outline logo state
+      gsap.set(logo, {
+        left: startRect.left,
+        top: startRect.top,
+        opacity: 0
+      });
+      logo.classList.add('console-active');
 
       consoleEl.classList.add('active');
       _animating = true;
@@ -48,10 +60,11 @@ import gsap from 'gsap';
         }
       });
 
-      // Only animate left/top position to prevent logo from shrinking/scaling down
+      // Animate flat positioning and fade-in to the customization panel
       tl.to(logo, {
         left: toRect.left,
         top: toRect.top,
+        opacity: 1,
         duration: 0.42,
         ease: 'power3.out'
       }, 0);
@@ -66,30 +79,29 @@ import gsap from 'gsap';
 
     } else {
       // --- CLOSING ---
-      const spacer = document.getElementById('navLogoSpacer');
-      if (!spacer) return;
-
-      const toRect = spacer.getBoundingClientRect();
+      const toRect = anchorEl.getBoundingClientRect();
       _animating = true;
 
       const tl = gsap.timeline({
         onComplete: () => {
           // Clear GSAP inline styles while transitions are still disabled to prevent snapping transitions
-          gsap.set(logo, { clearProps: 'left,top,width,height' });
+          gsap.set(logo, { clearProps: 'all' });
           gsap.set(consoleEl, { clearProps: 'all' });
           
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
+          logo.classList.remove('console-active');
           consoleEl.style.transition = '';
           consoleEl.classList.remove('active');
           _animating = false;
         }
       });
 
-      // Only animate left/top position
+      // Animate back to original position and fade-out
       tl.to(logo, {
         left: toRect.left,
         top: toRect.top,
+        opacity: 0,
         duration: 0.38,
         ease: 'power3.inOut'
       }, 0);
@@ -105,6 +117,14 @@ import gsap from 'gsap';
   }
 
   // Toggle console
+  if (staticLogo) {
+    staticLogo.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleConsole();
+    });
+  }
+
   logo.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -119,7 +139,7 @@ import gsap from 'gsap';
 
   // Close when clicking outside
   document.addEventListener('click', function(e) {
-    if (consoleEl.classList.contains('active') && !consoleEl.contains(e.target) && e.target !== logo) {
+    if (consoleEl.classList.contains('active') && !consoleEl.contains(e.target) && e.target !== logo && e.target !== staticLogo) {
       toggleConsole(false);
     }
   });
