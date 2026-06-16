@@ -1,12 +1,5 @@
 [
   {
-    "step": 120,
-    "timestamp": "2026-06-16 01:32:12",
-    "description": "Soften vinyl record shadow size, gradient, and opacity",
-    "folder": "step_120_Soften_vinyl_record_shadow_size,_gradient,_and_opacity",
-    "is_auto": false
-  },
-  {
     "step": 121,
     "timestamp": "2026-06-16 01:34:16",
     "description": "Add self-illumination (emissive map) to record label to brighten cover images",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:03:44",
     "description": "Allow stars to keep expanding outward as they fade by increasing drag and decreasing initial speed",
     "folder": "step_139_Allow_stars_to_keep_expanding_outward_as_they_fade_by_increasing_drag_and_decreasing_initial_speed",
+    "is_auto": false
+  },
+  {
+    "step": 140,
+    "timestamp": "2026-06-16 23:04:42",
+    "description": "Remove orange center-flare and shockwave ripples, leaving only pure white star particles",
+    "folder": "step_140_Remove_orange_center-flare_and_shockwave_ripples,_leaving_only_pure_white_star_particles",
     "is_auto": false
   }
 ]

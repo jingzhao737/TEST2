@@ -527,40 +527,7 @@
     createBurst(x, y, isOrange, customLife, customNumSparks);
   };
   window.triggerForgeBurst = function(x, y) {
-    // 1. Pulsing Center Flare (Flash) - Slightly longer life
-    sparks.push({
-      x: x,
-      y: y,
-      vx: 0,
-      vy: 0,
-      color: '#E87C50',
-      type: 'center-flare',
-      size: 18.0,
-      created: Date.now(),
-      life: 800
-    });
-
-    // 2. Double expanding shockwave ripples - Slightly longer life
-    ripples.push({
-      x: x,
-      y: y,
-      radius: 0,
-      maxRadius: 25,
-      color: '#E87C50',
-      created: Date.now(),
-      life: 800
-    });
-    ripples.push({
-      x: x,
-      y: y,
-      radius: 0,
-      maxRadius: 45,
-      color: '#FF9F1C',
-      created: Date.now(),
-      life: 1000
-    });
-
-    // 3. Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
+    // Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
     const numSparks = 6 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
