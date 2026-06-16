@@ -43,8 +43,9 @@ import gsap from 'gsap';
       if (staticLogo) {
         staticLogo.style.transform = ''; // Restore
       }
-      
+      consoleEl.classList.add('active'); // Add active class before measuring to resolve stylesheet layout rules
       gsap.set(consoleEl, { y: 0, scale: 1 });
+      consoleEl.offsetHeight; // Force reflow to update child subpixel layout caches
       const placeholderRect = placeholder.getBoundingClientRect();
       const toRect = {
         left: placeholderRect.left,
@@ -52,8 +53,11 @@ import gsap from 'gsap';
         width: placeholderRect.width,
         height: placeholderRect.height
       };
-      gsap.set(consoleEl, { y: -12, scale: 0.97 }); // restore start state
-
+      
+      // Setup consoleEl starting animation state inline (reversing the y:0 scale:1 set above)
+      gsap.set(consoleEl, { y: -12, scale: 0.97, opacity: 0 }); 
+      consoleEl.offsetHeight; // Force reflow
+ 
       // 2. Setup initial animated outline logo state
       gsap.set(logo, {
         left: startRect.left,
@@ -61,27 +65,26 @@ import gsap from 'gsap';
         opacity: 0 // Start hidden for a smooth fade-in morph
       });
       logo.classList.add('console-active');
-
-      consoleEl.classList.add('active');
+      logo.offsetHeight; // Force reflow
+ 
       _animating = true;
-
+ 
       const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
       const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.7;
       const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
       const startScale = logo.matches(':hover') ? 1.02 : 1.0;
-
+ 
       // Force browser reflow to apply the transition removal and initial position immediately
       logo.offsetHeight;
-
+ 
       const tl = gsap.timeline({
         onComplete: () => {
-          // Clear only temporary x/transform/scale styles after landing BEFORE restoring transitions
-          // to prevent the browser from animating the clearProps transform reset (which causes subpixel layout shifting)
+          // Clear only temporary x/transform/scale styles after landing.
+          // We do NOT restore CSS transitions (i.e. keep inline 'transition: none') while the console is active.
+          // This completely prevents browser styling engines from running any race-condition transitions.
           gsap.set(logo, { clearProps: 'x,transform,scale' });
-          logo.style.removeProperty('transition');
-          logo.classList.remove('no-transition');
-          consoleEl.style.transition = '';
+          gsap.set(consoleEl, { clearProps: 'transform,scale,y,opacity' });
           _animating = false;
         }
       });
