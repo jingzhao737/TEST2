@@ -564,8 +564,8 @@
     const numSparks = 6 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 2.2 + Math.random() * 4.8; // Slightly increased speed range for a larger spread
-      const lifeSpan = 1200 + Math.random() * 600; // Increased lifespan (1.2s to 1.8s)
+      const speed = 0.8 + Math.random() * 1.6; // Lower initial speed to compensate for higher drag
+      const lifeSpan = 1000 + Math.random() * 500; // Persist for 1.0s to 1.5s
       const color = '#ffffff'; // Make stars purely white
       sparks.push({
         x: x,
@@ -579,7 +579,7 @@
         spin: 0, // No rotation, same as mouse clicks
         created: Date.now(),
         life: lifeSpan,
-        drag: 0.90, // Same drag as mouse click to decay speed at the exact same rate!
+        drag: 0.96, // Reduced deceleration to allow stars to keep moving outward as they disappear
         gravity: 0.0 // No gravity (don't go down, don't go up, just like the Big Bang)
       });
     }

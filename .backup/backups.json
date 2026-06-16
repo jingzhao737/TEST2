@@ -1,12 +1,5 @@
 [
   {
-    "step": 119,
-    "timestamp": "2026-06-16 01:30:50",
-    "description": "Soften rope highlight sheen to satin matte fabric texture",
-    "folder": "step_119_Soften_rope_highlight_sheen_to_satin_matte_fabric_texture",
-    "is_auto": false
-  },
-  {
     "step": 120,
     "timestamp": "2026-06-16 01:32:12",
     "description": "Soften vinyl record shadow size, gradient, and opacity",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 22:58:44",
     "description": "Disable rotation for logo landing stars to match mouse clicks",
     "folder": "step_138_Disable_rotation_for_logo_landing_stars_to_match_mouse_clicks",
+    "is_auto": false
+  },
+  {
+    "step": 139,
+    "timestamp": "2026-06-16 23:03:44",
+    "description": "Allow stars to keep expanding outward as they fade by increasing drag and decreasing initial speed",
+    "folder": "step_139_Allow_stars_to_keep_expanding_outward_as_they_fade_by_increasing_drag_and_decreasing_initial_speed",
     "is_auto": false
   }
 ]

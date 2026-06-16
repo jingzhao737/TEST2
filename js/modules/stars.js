@@ -625,9 +625,9 @@ import * as THREE from 'three';
 
   // 暴露给外部调用的 logo 降落星星爆裂特效
   window.triggerLogoStarSplash = function(x, y) {
-    // 增加总体时间长度（时长增至 1.2s），使背景液态抖动的星星与粒子特效同样持久
-    createSingleRipple(x, y, 0.0, 1.2, 0.12, false);
-    createSingleRipple(x, y, 0.15, 1.2, 0.12, false);
+    // 调整为 1.0s 匹配粒子特效的新时长，使其在整个消失的过程中持续扩散
+    createSingleRipple(x, y, 0.0, 1.0, 0.12, false);
+    createSingleRipple(x, y, 0.15, 1.0, 0.12, false);
   };
 
   function step(dt) {
