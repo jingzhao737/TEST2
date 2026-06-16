@@ -2366,7 +2366,7 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 ### 3. 部署与验证 (Verification & Deployment)
 - 运行 `npx vite build` 生产打包完全成功。
-- 运行 `py workflow.py deploy` 部署至线上。经实际测试，卡片详情页打开和关闭时的转场动效恢复了完美的满帧丝滑感，视觉过渡行云流水！
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊后，浏览器能够跳过背景元素的绘制，展开和收起转场没有任何掉帧，极其流畅！
 
 
 

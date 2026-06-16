@@ -3,9 +3,13 @@
     "type": "code",
     "hash": "cfdfe25e9878e08964f73580a31843053a632fce439a953b7924bfdac3f6ef12"
   },
+  "check_console.js": {
+    "type": "code",
+    "hash": "e268d58b1be7376686bc1db1ea62be1bd8b199a0eae6dec51c1068fb5225a6c7"
+  },
   "ice.js": {
     "type": "code",
-    "hash": "2e4a1b8cca97061cbd1bf5a5235588cda3dc872abe1fbf891d36526817f82b46"
+    "hash": "551de7f0d8eee0c2d23563d4692395a79287892753acf0c50f886f424c74c4f9"
   },
   "implementation_plan.md": {
     "type": "code",
@@ -29,11 +33,11 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "0611cf7b42f25a46f33ad56662abd38812acf1cee128b9207c03ab83306de345"
+    "hash": "a8a803ad31813d6333afed05688049795cc3d0f93375341e4d8cdf8a3dbea8dc"
   },
   "task.md": {
     "type": "code",
-    "hash": "604a5217d9d375ad0f0f52ec5f84f8795f2d6b23c16d3d357451ec9bd3444023"
+    "hash": "17040013f91fac1c802f124e4a1ee2735c0125e49101400081248169500b0cde"
   },
   "vite.config.js": {
     "type": "code",
@@ -41,7 +45,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "131394be84ab5d114ae30d2712b5111487ee9bc32659dd491f8128e11d7f2e5c"
+    "hash": "c24e0a3c0fed33c3093bbaeb80da3229db19d0467d3a9630791017e1eb8599e5"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -85,15 +89,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "062a9d8487dd575f23180a3def42fe0340c540aea4da5e5bf4a7349b4587abbd"
+    "hash": "138d664ea836ba4890a656ff6ea4d0fecd6209aaed8bcaa9057575e67a92a469"
   },
-  "dist\\assets\\index-CgCi6fg-.js": {
+  "dist\\assets\\index-CaNm9VxH.css": {
     "type": "code",
-    "hash": "6d88cb5a0450e7017f263bde3d4c4e248a3cb274e09b259eb8b86f9a7499a4e8"
+    "hash": "a449cceab757dec74a38fd68c9414e6dac3f64e96d30c7dfeea2b7b5cd25e295"
   },
-  "dist\\assets\\index-DMVjJK4x.css": {
+  "dist\\assets\\index-fCZEQH1I.js": {
     "type": "code",
-    "hash": "6605279b22709332dd2e1f86db0a29ee2f79eeda4e3e78820fa44bfed866ae97"
+    "hash": "8921bd1184fdcea43d9fd5735c2669a4c2950f7ef48cb6e3dc0b9755cb11a8d8"
   },
   "images\\index.txt": {
     "type": "code",
@@ -133,7 +137,7 @@
   },
   "js\\modules\\cursor.js": {
     "type": "code",
-    "hash": "182a0da70917393071fe17fd8aab69c60a542245f71aa4ead10a0cf5eab54ba0"
+    "hash": "f1816de4a8e5165dc2920ebb4cc63e2a1567efa739542a27644f1cbe92a2b18f"
   },
   "js\\modules\\data.js": {
     "type": "code",
@@ -145,11 +149,11 @@
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
-    "hash": "164b9dbb1e48e6000502639a9d281f8e00b48c690973415b0f9e3cf347901e45"
+    "hash": "0370ab5c6218752d05e17fdc50e5a4d8459ab0680246d5945a0ebeb71f55374c"
   },
   "js\\modules\\laser-lines.js": {
     "type": "code",
-    "hash": "ab83e78838fd7f7a135d764d4b250db6cb7ff49a8df71029be46c1ff4700d8c6"
+    "hash": "419686998c44c054888f1b4d77a5383332e1e86678a57935e24b43483de02595"
   },
   "js\\modules\\loader.js": {
     "type": "code",
@@ -173,7 +177,7 @@
   },
   "js\\modules\\premium-interactions.js": {
     "type": "code",
-    "hash": "00ebeab5eb1e6cd2add9265a3e5580ca60add3fa4e19a56c322dc58b157c06be"
+    "hash": "d981cf3b7c6357d03e5c9b297219574a74448855227279246538e77a28360d86"
   },
   "js\\modules\\scroll-reveal.js": {
     "type": "code",
@@ -185,11 +189,11 @@
   },
   "js\\modules\\sound-effects.js": {
     "type": "code",
-    "hash": "bbe25534695ba5d69036a4e1d8a8cb47b3568cf4e743f762ac88886013d38e28"
+    "hash": "4536bfb03202e992d55bffaecd82b879940a9d1a285d99301e6ad2951fdf6890"
   },
   "js\\modules\\stars.js": {
     "type": "code",
-    "hash": "de9a466fb0a93762c3456f4ac03c006e42dd2ca01bc1fc9d888374ff609db493"
+    "hash": "5f45cac681b034c695fc4d9d8566b0a86e6a8fb53504dbec32f430b68fdca0e3"
   },
   "js\\modules\\theme.js": {
     "type": "code",
@@ -197,7 +201,7 @@
   },
   "js\\modules\\webgl-preview.js": {
     "type": "code",
-    "hash": "0668370646f2c59de06b977bfb3b9a6e2a44b4573549f7d232d101389b86ec9e"
+    "hash": "07b8fa742745303c0d1589c24af54511dc45329e4726b7dc978fc2627d4904d4"
   },
   "js\\modules\\work-detail.js": {
     "type": "code",

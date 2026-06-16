@@ -1,12 +1,5 @@
 [
   {
-    "step": 138,
-    "timestamp": "2026-06-16 22:58:44",
-    "description": "Disable rotation for logo landing stars to match mouse clicks",
-    "folder": "step_138_Disable_rotation_for_logo_landing_stars_to_match_mouse_clicks",
-    "is_auto": false
-  },
-  {
     "step": 139,
     "timestamp": "2026-06-16 23:03:44",
     "description": "Allow stars to keep expanding outward as they fade by increasing drag and decreasing initial speed",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:41:22",
     "description": "Rollback to Step 154 Restore details card transitions and backdrop filters",
     "folder": "step_157_Rollback_to_Step_154_Restore_details_card_transitions_and_backdrop_filters",
+    "is_auto": false
+  },
+  {
+    "step": 158,
+    "timestamp": "2026-06-17 00:43:23",
+    "description": "Optimize Works details backdrop by using solid background color to enable occlusion culling",
+    "folder": "step_158_Optimize_Works_details_backdrop_by_using_solid_background_color_to_enable_occlusion_culling",
     "is_auto": false
   }
 ]
