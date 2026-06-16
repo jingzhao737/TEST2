@@ -519,7 +519,7 @@
   window.triggerForgeBurst = function(x, y) {
     const colors = ['#ffffff', '#E87C50', '#FF9F1C', '#FFD700'];
     
-    // 1. Pulsing Center Flare (Flash) - Made slightly smaller for tighter range
+    // 1. Pulsing Center Flare (Flash) - Scale down to match click range
     sparks.push({
       x: x,
       y: y,
@@ -527,37 +527,37 @@
       vy: 0,
       color: '#E87C50',
       type: 'center-flare',
-      size: 30.0,
+      size: 14.0,
       created: Date.now(),
-      life: 600
+      life: 500
     });
 
-    // 2. Double expanding shockwave ripples - Reduced radius for a cleaner local blast
+    // 2. Double expanding shockwave ripples - Scale down to match click range
     ripples.push({
       x: x,
       y: y,
       radius: 0,
-      maxRadius: 50,
+      maxRadius: 20,
       color: '#E87C50',
       created: Date.now(),
-      life: 600
+      life: 500
     });
     ripples.push({
       x: x,
       y: y,
       radius: 0,
-      maxRadius: 80,
+      maxRadius: 35,
       color: '#FF9F1C',
       created: Date.now(),
-      life: 800
+      life: 600
     });
 
-    // 3. Dense sparks with forging physics - Slightly reduced count (12-17 sparks) and speed (2.5-7.0) for a refined range
+    // 3. Dense sparks with forging physics - scaled down to match the visual extent of mouse clicks
     const numSparks = 12 + Math.floor(Math.random() * 5);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 2.5 + Math.random() * 4.5;
-      const lifeSpan = 1200 + Math.random() * 800;
+      const speed = 1.8 + Math.random() * 4.2; // Scaled down speed to match visual click range
+      const lifeSpan = 500 + Math.random() * 300; // Same lifespan as mouse clicks
       const color = colors[Math.floor(Math.random() * colors.length)];
       sparks.push({
         x: x,
@@ -571,7 +571,7 @@
         spin: (Math.random() - 0.5) * 0.20, // Rapid spin for shimmering glints
         created: Date.now(),
         life: lifeSpan,
-        drag: 0.95, // Easing: slides out beautifully in a straight line
+        drag: 0.90, // Same drag as mouse click to decay speed at the exact same rate!
         gravity: 0.0 // No gravity (don't go down, don't go up, just like the Big Bang)
       });
     }

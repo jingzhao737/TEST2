@@ -31,17 +31,167 @@ import * as THREE from 'three';
   let ringLoaded = [false, false, false, false];
   const textureLoader = new THREE.TextureLoader();
 
+  function drawArchText(ctx, text, centerX, centerY, radius, startAngle, isUpward) {
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    
+    const chars = text.split('');
+    const widths = chars.map(c => ctx.measureText(c).width);
+    const totalWidth = widths.reduce((a, b) => a + b, 0);
+    const totalAngle = totalWidth / radius;
+    
+    let currentAngle = startAngle - totalAngle / 2;
+    
+    for (let i = 0; i < chars.length; i++) {
+      const char = chars[i];
+      const charAngle = widths[i] / radius;
+      const midAngle = currentAngle + charAngle / 2;
+      
+      ctx.save();
+      ctx.rotate(midAngle);
+      
+      if (isUpward) {
+        ctx.translate(0, radius);
+        ctx.rotate(Math.PI);
+      } else {
+        ctx.translate(0, -radius);
+      }
+      
+      ctx.fillText(char, 0, 0);
+      ctx.restore();
+      
+      currentAngle += charAngle;
+    }
+    
+    ctx.restore();
+  }
+
+  function drawVinylLabel(image, card, knobColor) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Background (deep rich off-black paper)
+    const grad = ctx.createRadialGradient(256, 256, 35, 256, 256, 256);
+    grad.addColorStop(0, '#151518');
+    grad.addColorStop(0.8, '#0f0f11');
+    grad.addColorStop(1, '#0b0b0c');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Draw Cover Image in the center circle (using cover/clip)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(256, 256, 166, 0, Math.PI * 2);
+    ctx.clip();
+
+    const iw = image.naturalWidth || image.width;
+    const ih = image.naturalHeight || image.height;
+    const aspect = iw / ih;
+    let dw, dh, dx, dy;
+    if (aspect > 1) {
+      dh = 332;
+      dw = 332 * aspect;
+      dx = 256 - dw / 2;
+      dy = 256 - dh / 2;
+    } else {
+      dw = 332;
+      dh = 332 / aspect;
+      dx = 256 - dw / 2;
+      dy = 256 - dh / 2;
+    }
+    ctx.drawImage(image, dx, dy, dw, dh);
+    ctx.restore();
+
+    // 3. Draw dividing rings and accents
+    // Accent ring using the specific knob color
+    ctx.strokeStyle = knobColor;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(256, 256, 167.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Inner shadow ring overlay on cover image for depth
+    const shadowGrad = ctx.createRadialGradient(256, 256, 140, 256, 256, 168);
+    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+    ctx.fillStyle = shadowGrad;
+    ctx.beginPath();
+    ctx.arc(256, 256, 168, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Clean separation rings
+    ctx.strokeStyle = '#2b2b31';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(256, 256, 172, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(256, 256, 250, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Subtly drawn concentric groove lines on the outer label paper
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+    for (let r = 180; r < 245; r += 12) {
+      ctx.beginPath();
+      ctx.arc(256, 256, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Inner spindle border
+    ctx.strokeStyle = '#2c2c32';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(256, 256, 36, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 4. Extract card information and draw text
+    let title = card.querySelector('.work-name') ? card.querySelector('.work-name').textContent.trim() : 'TRACK';
+    let idxStr = card.querySelector('.work-idx') ? card.querySelector('.work-idx').textContent.trim() : 'NO. 0';
+    let year = card.querySelector('.work-year') ? card.querySelector('.work-year').textContent.trim() : '2026';
+    let tagsList = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.trim().toUpperCase());
+    let tagsStr = tagsList.join('  •  ') || 'STEREO RECORD';
+
+    let topText = `${title.toUpperCase()}  //  RELEASE ${year}`;
+    let bottomText = `${tagsStr}  •  ${idxStr}`;
+
+    // Text style
+    ctx.fillStyle = '#ecebeb';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    // Top text: Google Sans font for a sleek premium layout
+    ctx.font = "bold 13px 'Google Sans', sans-serif";
+    let spacedTopText = topText.split('').join(' ');
+    drawArchText(ctx, spacedTopText, 256, 256, 210, -Math.PI / 2, false);
+
+    // Bottom text: monospace clean font
+    ctx.fillStyle = '#8a8a93';
+    ctx.font = "9px monospace";
+    let spacedBottomText = bottomText.split('').join(' ');
+    drawArchText(ctx, spacedBottomText, 256, 256, 210, Math.PI / 2, true);
+
+    return canvas;
+  }
+
   (function preloadImages() {
     let cards = document.querySelectorAll('.work-card');
     cards.forEach(function(card, i) {
       if (i >= 4) return;
       (function(idx) {
         textureLoader.load(card.dataset.image, function(texture) {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          ringTextures[idx] = texture;
+          // Generate dynamic vinyl label canvas texture
+          const labelCanvas = drawVinylLabel(texture.image, card, knobColors[idx]);
+          const canvasTexture = new THREE.CanvasTexture(labelCanvas);
+          canvasTexture.colorSpace = THREE.SRGBColorSpace;
+          
+          ringTextures[idx] = canvasTexture;
           ringLoaded[idx] = true;
           if (discs[idx]) {
-            discs[idx].labelMesh.material.map = texture;
+            discs[idx].labelMesh.material.map = canvasTexture;
+            discs[idx].labelMesh.material.emissiveMap = canvasTexture;
             discs[idx].labelMesh.material.needsUpdate = true;
           }
         }, undefined, function() {
@@ -191,6 +341,8 @@ import * as THREE from 'three';
         tl.vx = (Math.random() - 0.5) * 6;
         tl.entering = false;
         tl._swayV = (Math.random() - 0.5) * 0.45;
+        tl.latchScale = 1.0;
+        tl.latchScaleVelocity = 0;
       }
       latchedIdx = -1;
       document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
@@ -208,7 +360,15 @@ import * as THREE from 'three';
           ejected._swayV = (Math.random() - 0.5) * 0.35;
         }
       }
+      let wasAlreadyLatched = (latchedIdx === idx);
       latchedIdx = idx;
+      if (!wasAlreadyLatched) {
+        let t = thumbs[idx];
+        if (t) {
+          t.latchScale = 1.0;
+          t.latchScaleVelocity = -0.065; // Trigger slow, smooth shrink-and-pop spring animation
+        }
+      }
       document.querySelectorAll('.latch-clip').forEach(function(c, ci){
         c.classList.toggle('latched', ci === latchedIdx);
       });
@@ -288,9 +448,10 @@ import * as THREE from 'three';
     shadowCanvas.width = 128;
     shadowCanvas.height = 128;
     const sCtx = shadowCanvas.getContext('2d');
-    let grad = sCtx.createRadialGradient(64, 64, 28, 64, 64, 64);
-    grad.addColorStop(0, 'rgba(0,0,0,1)');
-    grad.addColorStop(0.5, 'rgba(0,0,0,0.45)');
+    let grad = sCtx.createRadialGradient(64, 64, 12, 64, 64, 64);
+    grad.addColorStop(0, 'rgba(0,0,0,0.65)');
+    grad.addColorStop(0.3, 'rgba(0,0,0,0.35)');
+    grad.addColorStop(0.7, 'rgba(0,0,0,0.08)');
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     sCtx.fillStyle = grad;
     sCtx.fillRect(0, 0, 128, 128);
@@ -338,6 +499,7 @@ import * as THREE from 'three';
         thumbs.push({
           x: startX, y: startY, vx: 0, vy: 0,
           anchorX: a.x, anchorY: a.y,
+          stringLen: a.stringLen,
           restX: restX, restY: restY,
           dispW: cs, dispH: cs,
           color: knobColors[i],
@@ -353,6 +515,7 @@ import * as THREE from 'three';
         let b = anchors[j];
         thumbs[j].anchorX = b.x;
         thumbs[j].anchorY = b.y;
+        thumbs[j].stringLen = b.stringLen;
         thumbs[j].restX = b.x + b.restOffX;
         thumbs[j].restY = b.y + b.stringLen;
         thumbs[j].dispW = cs2;
@@ -367,11 +530,11 @@ import * as THREE from 'three';
         let discGroup = new THREE.Group();
         
         // 1. Create Shadow Mesh (Plane Geometry with Canvas Soft Shadow)
-        const shadowGeom = new THREE.PlaneGeometry(t.dispW * 2.4, t.dispW * 2.4);
+        const shadowGeom = new THREE.PlaneGeometry(t.dispW * 1.5, t.dispW * 1.5);
         const shadowMat = new THREE.MeshBasicMaterial({
           map: shadowTexture,
           transparent: true,
-          opacity: 0.4,
+          opacity: 0.22,
           depthWrite: false
         });
         const shadowMesh = new THREE.Mesh(shadowGeom, shadowMat);
@@ -382,19 +545,42 @@ import * as THREE from 'three';
         const vinylGeom = new THREE.CylinderGeometry(t.dispW / 2, t.dispW / 2, 1.6, 64, 1, false);
         vinylGeom.rotateX(Math.PI / 2);
         
-        // Convert Cap UVs to polar coordinates for circular anisotropic reflections
-        const pos = vinylGeom.attributes.position;
-        const uv = vinylGeom.attributes.uv;
-        let rOuter = t.dispW / 2;
-        let rInner = rOuter * 0.58;
-        for (let j = 0; j < pos.count; j++) {
-          let x = pos.getX(j);
-          let y = pos.getY(j);
-          let dist = Math.sqrt(x * x + y * y);
-          let angle = Math.atan2(y, x);
-          let u = (angle + Math.PI) / (Math.PI * 2);
-          let v = Math.max(0, Math.min(1, (dist - rInner) / (rOuter - rInner)));
-          uv.setXY(j, u, v);
+        // Convert Cap UVs to polar coordinates for circular anisotropic reflections.
+        // We use an index-based polar mapping to perfectly align the UV seam with the Cylinder's native duplicate vertices
+        // and resolve the shared center vertex problem. This completely eliminates the "fixed/inverted wedge" seam artifact!
+        let N = 64; // radialSegments
+        let uv = vinylGeom.attributes.uv;
+        
+        // Map Top Cap (Group 1): Outer vertices are indices 194 to 258, center vertices are 130 to 193
+        let topOuterStart = 3 * N + 2;
+        let topCenterStart = 2 * N + 2;
+        for (let k = 0; k <= N; k++) {
+          let outerIdx = topOuterStart + k;
+          let u = 1.0 - k / N;
+          let v = 1.0;
+          uv.setXY(outerIdx, u, v);
+        }
+        for (let k = 0; k < N; k++) {
+          let centerIdx = topCenterStart + k;
+          let u = 1.0 - (k + 0.5) / N;
+          let v = 0.0;
+          uv.setXY(centerIdx, u, v);
+        }
+        
+        // Map Bottom Cap (Group 2): Outer vertices are indices 323 to 387, center vertices are 259 to 322
+        let bottomOuterStart = 5 * N + 3;
+        let bottomCenterStart = 4 * N + 3;
+        for (let k = 0; k <= N; k++) {
+          let outerIdx = bottomOuterStart + k;
+          let u = k / N;
+          let v = 1.0;
+          uv.setXY(outerIdx, u, v);
+        }
+        for (let k = 0; k < N; k++) {
+          let centerIdx = bottomCenterStart + k;
+          let u = (k + 0.5) / N;
+          let v = 0.0;
+          uv.setXY(centerIdx, u, v);
         }
         uv.needsUpdate = true;
 
@@ -427,10 +613,14 @@ import * as THREE from 'three';
         }
         uvL.needsUpdate = true;
 
-        const labelMat = new THREE.MeshStandardMaterial({
+        const labelMat = new THREE.MeshPhysicalMaterial({
           map: ringTextures[i] || null,
-          roughness: 0.6,
-          metalness: 0.05,
+          emissiveMap: ringTextures[i] || null,
+          emissive: 0x777777,
+          roughness: 0.55,
+          metalness: 0.02,
+          clearcoat: 0.12,
+          clearcoatRoughness: 0.45,
           side: THREE.DoubleSide
         });
         const labelMesh = new THREE.Mesh(labelGeom, labelMat);
@@ -478,8 +668,11 @@ import * as THREE from 'three';
     canvasOffX = canvasRect.left - heroRect.left;
     canvasOffY = canvasRect.top - heroRect.top;
     let nav = document.querySelector('nav');
-    // Use stable position: nav bottom relative to hero, ignoring scroll
-    navBottomPx = nav ? (nav.offsetHeight + parseInt(getComputedStyle(nav).top || '0', 10)) : 80;
+    let navTop = nav ? parseInt(getComputedStyle(nav).top || '0', 10) : 24;
+    let navHeight = nav ? nav.offsetHeight : 56;
+    if (navHeight === 0) navHeight = 56;
+    navBottomPx = navHeight + navTop;
+    if (navBottomPx < 80) navBottomPx = 80;
     let clips = document.querySelectorAll('.latch-clip');
     // Size latch clips proportional to disc size
     let sampleDisc = thumbs[0];
@@ -498,10 +691,14 @@ import * as THREE from 'three';
       clip.onclick = function() {
         if (latchedIdx === ci) {
           let tl = thumbs[latchedIdx];
-          tl.vy = -8;
-          tl.vx = (Math.random() - 0.5) * 6;
-          tl.entering = false;
-          tl._swayV = (Math.random() - 0.5) * 0.45;
+          if (tl) {
+            tl.vy = -8;
+            tl.vx = (Math.random() - 0.5) * 6;
+            tl.entering = false;
+            tl._swayV = (Math.random() - 0.5) * 0.45;
+            tl.latchScale = 1.0;
+            tl.latchScaleVelocity = 0;
+          }
           latchedIdx = -1;
           document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
           if (window.__navWaveStop) window.__navWaveStop(ci);
@@ -531,6 +728,7 @@ import * as THREE from 'three';
       }
     }
 
+    // 1. Calculate preliminary physics forces and positions
     for (let i = 0; i < thumbs.length; i++) {
       let t = thumbs[i];
 
@@ -541,6 +739,11 @@ import * as THREE from 'three';
           t.y = -200;
           t.vx = 0; t.vy = 0;
           continue;
+        } else {
+          if (!window.__hasResizedAfterLoader) {
+            window.__hasResizedAfterLoader = true;
+            resize();
+          }
         }
         if (t.delayFrames > 0) {
           t.delayFrames--;
@@ -656,8 +859,11 @@ import * as THREE from 'three';
           if (t._lerp > 0.09) t._lerp = 0.055; 
           else t._lerp += (0.09 - t._lerp) * 0.1;
           
+          let lastX = t.x;
+          let lastY = t.y;
           t.x += dx * t._lerp;
           t.y += dy * t._lerp;
+          t.vy = (t.y - lastY) * 0.50;
           
           // Feed a tiny bit of the movement into sway for a soft tilt
           t.vx = dx * 0.05;
@@ -684,11 +890,15 @@ import * as THREE from 'three';
             if (t._lerp > 0.09) t._lerp = 0.055;
             else t._lerp += (0.09 - t._lerp) * 0.1;
           } else {
-            t._lerp += (0.52 - t._lerp) * 0.1; // Smoothly recover normal drag
+            t._lerp += (0.07 - t._lerp) * 0.1; // Smoothly recover normal drag (changed from 0.12 to 0.07 to add more delay/lag)
           }
           
+          let lastX = t.x;
+          let lastY = t.y;
           t.x += (rawTargetX - t.x) * t._lerp; 
           t.y += (rawTargetY - t.y) * t._lerp;
+          t.vx = (t.x - lastX) * 0.50;
+          t.vy = (t.y - lastY) * 0.50;
         }
 
         let targetSway = t.vx * 0.05;
@@ -701,40 +911,114 @@ import * as THREE from 'three';
         continue;
       }
 
-      // Rope constraint variables
-      let ax = t.anchorX, ay = t.anchorY;
-      let dx = t.x - ax;
-      let dy = t.y - ay;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-      let ropeLen = t.restY - t.anchorY + t.dispH * 0.5;
-
-      // Normal physics: gravity + rope constraint
+      // Normal physics: gravity + preliminary movement
       t.vy += gravity;
       t.vx *= damping;
       t.vy *= damping;
       t.x += t.vx;
       t.y += t.vy;
+    }
 
-      // Enforce rope length constraint
-      dx = t.x - ax;
-      dy = t.y - ay;
-      dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist > ropeLen && dist > 0.01) {
-        let nx = dx / dist, ny = dy / dist;
-        t.x = ax + nx * ropeLen;
-        t.y = ay + ny * ropeLen;
-        // Remove outward radial velocity (rope can't push, only pull)
-        let vradial = t.vx * nx + t.vy * ny;
-        if (vradial > 0) {
-          t.vx -= vradial * nx * 1.35;
-          t.vy -= vradial * ny * 1.35;
-          if (vradial > 2.5) {
-            t._swayV += (Math.random() - 0.5) * 0.08;
+    // 2. Multi-body physics solver iterations (resolves circle-circle collisions and rope length constraints)
+    for (let iter = 0; iter < 3; iter++) {
+      // A. Circle-circle collisions
+      for (let i = 0; i < thumbs.length; i++) {
+        let t1 = thumbs[i];
+        if (t1.entering) continue;
+        
+        for (let j = i + 1; j < thumbs.length; j++) {
+          let t2 = thumbs[j];
+          if (t2.entering) continue;
+          
+          let dx = t2.x - t1.x;
+          let dy = t2.y - t1.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Radius of each disc is half of its display width
+          let r1 = t1.dispW / 2;
+          let r2 = t2.dispW / 2;
+          let minDist = r1 + r2;
+          
+          if (dist < minDist && dist > 0.01) {
+            let overlap = minDist - dist;
+            let nx = dx / dist;
+            let ny = dy / dist;
+            
+            // Mass calculation: dragged and latched discs have infinite mass (cannot be pushed)
+            let isDragged1 = (i === draggedIdx);
+            let isDragged2 = (j === draggedIdx);
+            let isLatched1 = (i === latchedIdx);
+            let isLatched2 = (j === latchedIdx);
+            
+            let invM1 = (isDragged1 || isLatched1) ? 0 : 1;
+            let invM2 = (isDragged2 || isLatched2) ? 0 : 1;
+            
+            if (invM1 + invM2 > 0) {
+              // Positional correction: push them apart along normal
+              let ratio1 = invM1 / (invM1 + invM2);
+              let ratio2 = invM2 / (invM1 + invM2);
+              
+              t1.x -= nx * overlap * ratio1;
+              t1.y -= ny * overlap * ratio1;
+              t2.x += nx * overlap * ratio2;
+              t2.y += ny * overlap * ratio2;
+              
+              // Velocity reflection (elastic impulse response)
+              let rvx = t2.vx - t1.vx;
+              let rvy = t2.vy - t1.vy;
+              let velAlongNormal = rvx * nx + rvy * ny;
+              
+              if (velAlongNormal < 0) {
+                let restitution = 0.55; // springy vinyl bounce bounciness
+                let impulse = -(1 + restitution) * velAlongNormal / (invM1 + invM2);
+                
+                t1.vx -= nx * impulse * invM1;
+                t1.vy -= ny * impulse * invM1;
+                t2.vx += nx * impulse * invM2;
+                t2.vy += ny * impulse * invM2;
+                
+                // Add physical reaction sway to rope curve
+                if (invM1 > 0) t1._swayV += (Math.random() - 0.5) * 0.06;
+                if (invM2 > 0) t2._swayV += (Math.random() - 0.5) * 0.06;
+              }
+            }
           }
         }
       }
+      
+      // B. Enforce rope length constraints for all non-dragged discs
+      for (let i = 0; i < thumbs.length; i++) {
+        let t = thumbs[i];
+        if (i === draggedIdx || t.entering) continue;
+        
+        let ax = t.anchorX, ay = t.anchorY;
+        let dx = t.x - ax;
+        let dy = t.y - ay;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        let ropeLen = t.restY - t.anchorY + t.dispH * 0.5;
+        
+        if (dist > ropeLen && dist > 0.01) {
+          let nx = dx / dist, ny = dy / dist;
+          t.x = ax + nx * ropeLen;
+          t.y = ay + ny * ropeLen;
+          
+          let vradial = t.vx * nx + t.vy * ny;
+          if (vradial > 0) {
+            t.vx -= vradial * nx * 1.35;
+            t.vy -= vradial * ny * 1.35;
+            if (vradial > 2.5) {
+              t._swayV += (Math.random() - 0.5) * 0.08;
+            }
+          }
+        }
+      }
+    }
 
-      // Sway for rope curve with springy oscillation
+    // 3. Finalize sway physics for rope curve drawing
+    for (let i = 0; i < thumbs.length; i++) {
+      let t = thumbs[i];
+      if (t.entering) continue;
+      
       if (t._sway === undefined) t._sway = 0;
       if (t._swayV === undefined) t._swayV = 0;
       let windSway = 0;
@@ -755,43 +1039,82 @@ import * as THREE from 'three';
     }
   }
 
-  function drawString(ax, ay, bx, by, sway) {
+  function drawString(ax, ay, bx, by, sway, restLen) {
     let dx = bx - ax, dy = by - ay;
     let len = Math.sqrt(dx * dx + dy * dy);
     if (len < 2) return;
-    let segments = Math.floor(len * 2);
-    if (segments < 40) segments = 40;
-    let coils = Math.floor(len / 24);
-    if (coils < 2) coils = 2;
-    let amp = 12;
 
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
     let perpX = -dy / len;
     let perpY = dx / len;
-    let subSegs = Math.floor(segments / 6);
-    if (subSegs < 8) subSegs = 8;
-    for (let g = 0; g < subSegs; g++) {
-      let t0 = g / subSegs;
-      let t1 = (g + 1) / subSegs;
-      let alpha = 0.28 * (t0 + t1) / 2;
-      let sc0 = sway * Math.sin(t0 * Math.PI) * len * 0.35;
-      let sc1 = sway * Math.sin(t1 * Math.PI) * len * 0.35;
+
+    // Constant number of coils based on rest length (spring stretches physically!)
+    let coils = Math.max(6, Math.floor(restLen / 20)); 
+    let maxAngle = coils * Math.PI * 2;
+
+    // Physical spring stretch dynamics
+    let stretch = len / restLen;
+    let amp = 10.5 * Math.max(0.35, Math.min(1.8, 1 / Math.sqrt(stretch)));
+    let baseLineWidth = 3.6 * Math.max(0.6, Math.min(1.4, 1 / Math.sqrt(stretch)));
+
+    // We divide the spring into half-loops of angle PI
+    // Odd indices are back loops, Even indices are front loops
+    let totalHalfLoops = Math.ceil(maxAngle / Math.PI);
+
+    // Drop Shadow configuration
+    ctx.save();
+
+    // Helper to draw a single half-loop path
+    function pathHalfLoop(ctx, i) {
+      let thetaS = Math.max(0, i * Math.PI - Math.PI / 2);
+      let thetaE = Math.min(maxAngle, i * Math.PI + Math.PI / 2);
+      if (thetaS >= thetaE) return;
+
       ctx.beginPath();
-      let x0 = ax + dx * t0 + perpX * (Math.sin(t0 * coils * Math.PI * 2) * amp + sc0);
-      let y0 = ay + dy * t0 + perpY * (Math.sin(t0 * coils * Math.PI * 2) * amp + sc0);
-      ctx.moveTo(x0, y0);
-      let steps = Math.floor((t1 - t0) * segments);
-      if (steps < 4) steps = 4;
-      for (let s = 1; s <= steps; s++) {
-        let tt = t0 + (s / steps) * (t1 - t0);
-        let sc = sway * Math.sin(tt * Math.PI) * len * 0.35;
-        let x = ax + dx * tt + perpX * (Math.sin(tt * coils * Math.PI * 2) * amp + sc);
-        let y = ay + dy * tt + perpY * (Math.sin(tt * coils * Math.PI * 2) * amp + sc);
-        ctx.lineTo(x, y);
+      let steps = 12;
+      for (let s = 0; s <= steps; s++) {
+        let theta = thetaS + (thetaE - thetaS) * (s / steps);
+        let t = theta / maxAngle;
+        let Px = ax + dx * t;
+        let Py = ay + dy * t;
+        let swayOffset = sway * Math.sin(t * Math.PI) * len * 0.3;
+        let offsetP = Math.sin(theta) * amp + swayOffset;
+        let x = Px + offsetP * perpX;
+        let y = Py + offsetP * perpY;
+        if (s === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(232,124,80,' + (0.6 + alpha * 1.4) + ')';
-      ctx.lineWidth = 3.5;
+    }
+
+    // 1. Draw all Back loops first (no shadow)
+    ctx.shadowColor = 'transparent';
+    for (let i = 1; i < totalHalfLoops; i += 2) {
+      pathHalfLoop(ctx, i);
+      let shadowColor = window.__accentShadowRGB || '145, 65, 35';
+      ctx.strokeStyle = 'rgba(' + shadowColor + ', 0.8)';
+      ctx.lineWidth = baseLineWidth * 0.72;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 2. Draw all Front loops on top (with shadow & double-stroke highlight)
+    for (let i = 0; i < totalHalfLoops; i += 2) {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.28)'; // Softer shadow
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetX = 2.5;
+      ctx.shadowOffsetY = 3.5;
+
+      pathHalfLoop(ctx, i);
+      let mainColor = window.__accentRGB || '232, 124, 80';
+      ctx.strokeStyle = 'rgba(' + mainColor + ', 0.95)';
+      ctx.lineWidth = baseLineWidth;
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw a soft satin/matte highlight (instead of bright metallic white)
+      pathHalfLoop(ctx, i);
+      ctx.strokeStyle = 'rgba(255, 225, 200, 0.38)'; // Transparent warm peach highlight for soft satin sheen
+      ctx.lineWidth = baseLineWidth * 0.25;
       ctx.stroke();
     }
   }
@@ -812,7 +1135,8 @@ import * as THREE from 'three';
       let ex = t.x - rdx * (hideBot / rDist);
       let ey = t.y - rdy * (hideBot / rDist);
       let sway = t._sway || 0;
-      drawString(sx, sy, ex, ey, sway);
+      let restVisLen = t.stringLen - hideTop - hideBot;
+      drawString(sx, sy, ex, ey, sway, restVisLen);
     }
   }
 
@@ -847,17 +1171,45 @@ import * as THREE from 'three';
           pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
         }
         
+        // Latch scale spring animation (shrink on snap, pop back to normal)
+        if (t.latchScale === undefined) t.latchScale = 1.0;
+        if (t.latchScaleVelocity === undefined) t.latchScaleVelocity = 0;
+        let scaleForce = 1.0 - t.latchScale;
+        t.latchScaleVelocity += scaleForce * 0.015; // stiffness constant (reduced to 0.015 for longer duration)
+        t.latchScaleVelocity *= 0.89;              // damping constant (increased to 0.89 for smooth, luxurious decay)
+        t.latchScale += t.latchScaleVelocity;
+        
         let scaleFactor = t.dispW / d.baseSz;
-        let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25);
+        let scale = scaleFactor * (1 + eased * scaleBoost + pulse * 0.25) * t.latchScale;
         
-        // Place in pixel coordinates (invert Y axis for WebGL)
-        d.group.position.x = t.x;
-        d.group.position.y = ch - t.y;
-        d.group.scale.set(scale, scale, 1);
+        // Dynamic Z depth lift to prevent clipping (穿模) and simulate physical height
+        let baseZ = i * 24; // Wide Z separation (24px) between resting layers to prevent any Z-clipping when tilted
+        let targetZ = baseZ;
+        if (i === draggedIdx) {
+          targetZ = 192 + i * 24; // Lift dragged disc above all others (hovered/resting)
+        } else if (i === hoveredIdx) {
+          targetZ = 96 + i * 24;  // Lift hovered disc above all resting discs
+        }
+        t.currentZ = t.currentZ || baseZ;
+        t.currentZ += (targetZ - t.currentZ) * 0.12;
+
+        // Place in pixel coordinates, correcting for perspective projection shift 
+        // so that the projected 3D disc center aligns perfectly with (t.x, ch - t.y) in 2D space.
+        const cameraDepth = 500;
+        let pFactor = (cameraDepth - t.currentZ) / cameraDepth;
+        let centerX = cw / 2;
+        let centerY = ch / 2;
         
-        // 3D dynamic tilt based on swing velocity
-        let targetTiltX = -t.vy * 0.035;
-        let targetTiltY = t.vx * 0.035;
+        d.group.position.x = centerX + (t.x - centerX) * pFactor;
+        d.group.position.y = centerY + ((ch - t.y) - centerY) * pFactor;
+        d.group.position.z = t.currentZ;
+        // Compensate group scale by pFactor to keep the projected screen-space size constant 
+        // regardless of Z depth, preventing perspective bloating while retaining 3D tilt depth.
+        d.group.scale.set(scale * pFactor, scale * pFactor, 1);
+        
+        // 3D dynamic tilt based on swing velocity (capped at 0.3 rad to prevent clipping)
+        let targetTiltX = Math.max(-0.3, Math.min(0.3, -t.vy * 0.035));
+        let targetTiltY = Math.max(-0.3, Math.min(0.3, t.vx * 0.035));
         t.tiltX = t.tiltX || 0;
         t.tiltY = t.tiltY || 0;
         t.tiltX += (targetTiltX - t.tiltX) * 0.08;
@@ -867,15 +1219,21 @@ import * as THREE from 'three';
         d.group.rotation.y = t.tiltY;
         
         // Spin the child meshes
-        d.vinylMesh.rotation.z = t._spin || 0;
+        if (i === latchedIdx && window.__audioPlaying === true) {
+          t._spin = (t._spin || 0) - 0.006; // Decrement (negative Z rotation) for clockwise spin (changed from 0.012 to 0.006 to rotate even slower)
+        }
+        // ONLY spin the label mesh to keep the anisotropic specular highlight on the vinyl disk physically correct and realistic!
+        // The vinyl grooves are concentric circles and look identical when spun, but keeping the mesh static ensures the highlight stays fixed relative to the light source.
         d.labelMesh.rotation.z = t._spin || 0;
         
         // Animate shadow position and opacity (depth simulation)
-        d.shadowMesh.position.x = (5 + eased * 6) * scaleFactor;
-        d.shadowMesh.position.y = (-10 - eased * 12) * scaleFactor;
-        d.shadowMesh.position.z = -30 - eased * 15;
-        d.shadowMesh.scale.set(1 + eased * 0.05, 1 + eased * 0.05, 1);
-        d.shadowMesh.material.opacity = 0.45 - eased * 0.08 - (pulse * 0.05);
+        // Keep shadow on the background plane (world Z approx -30) by subtracting t.currentZ
+        let lift = (t.currentZ - baseZ) / 192; // 0 to 1 lift ratio relative to max dragged lift
+        d.shadowMesh.position.x = (4 + eased * 4 + lift * 6) * scaleFactor;
+        d.shadowMesh.position.y = (-6 - eased * 6 - lift * 10) * scaleFactor;
+        d.shadowMesh.position.z = -30 - t.currentZ - eased * 12;
+        d.shadowMesh.scale.set(1 + eased * 0.04 + lift * 0.12, 1 + eased * 0.04 + lift * 0.12, 1);
+        d.shadowMesh.material.opacity = Math.max(0.02, 0.22 - eased * 0.04 - lift * 0.1 - (pulse * 0.03));
       }
     }
     
@@ -925,6 +1283,7 @@ import * as THREE from 'three';
       prevMouseX = mx;
       prevMouseY = my;
       t.vx = 0; t.vy = 0;
+      t._lerp = 0.03; // Reset lerp to 0.03 for a smooth drag start delay!
       canvas.style.cursor = 'grabbing';
       e.preventDefault();
     } else {
@@ -940,10 +1299,14 @@ import * as THREE from 'three';
         let maxY = latchCY + clipH;
         if (mx >= minX && mx <= maxX && my >= minY && my <= maxY) {
           let tl = thumbs[latchedIdx];
-          tl.vy = -8;
-          tl.vx = (Math.random() - 0.5) * 6;
-          tl.entering = false;
-          tl._swayV = (Math.random() - 0.5) * 0.45;
+          if (tl) {
+            tl.vy = -8;
+            tl.vx = (Math.random() - 0.5) * 6;
+            tl.entering = false;
+            tl._swayV = (Math.random() - 0.5) * 0.45;
+            tl.latchScale = 1.0;
+            tl.latchScaleVelocity = 0;
+          }
           let oldLatched = latchedIdx;
           latchedIdx = -1;
           document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
@@ -999,10 +1362,14 @@ import * as THREE from 'three';
       // Short click: unlatch or open work detail
       if (latchedIdx === draggedIdx) {
         let tl = thumbs[latchedIdx];
-        tl.vy = -8;
-        tl.vx = (Math.random() - 0.5) * 6;
-        tl.entering = false;
-        tl._swayV = (Math.random() - 0.5) * 0.45;
+        if (tl) {
+          tl.vy = -8;
+          tl.vx = (Math.random() - 0.5) * 6;
+          tl.entering = false;
+          tl._swayV = (Math.random() - 0.5) * 0.45;
+          tl.latchScale = 1.0;
+          tl.latchScaleVelocity = 0;
+        }
         latchedIdx = -1;
         document.querySelectorAll('.latch-clip').forEach(function(c){ c.classList.remove('latched'); });
         if (window.__navWaveStop) window.__navWaveStop(draggedIdx);
@@ -1040,6 +1407,10 @@ import * as THREE from 'three';
         }
         let wasAlreadyLatched = (latchedIdx === draggedIdx);
         latchedIdx = draggedIdx;
+        if (!wasAlreadyLatched) {
+          t.latchScale = 1.0;
+          t.latchScaleVelocity = -0.065; // Trigger slow, smooth shrink-and-pop spring animation
+        }
         
         document.querySelectorAll('.latch-clip').forEach(function(c, ci){
           c.classList.toggle('latched', ci === latchedIdx);
@@ -1060,5 +1431,7 @@ import * as THREE from 'three';
   resize();
   requestAnimationFrame(render);
   window.addEventListener('resize', function() { resize(); });
+  window.addEventListener('load', function() { resize(); });
 
+  window.__thumbs = thumbs;
 })();

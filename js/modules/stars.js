@@ -625,11 +625,9 @@ import * as THREE from 'three';
 
   // 暴露给外部调用的 logo 降落星星爆裂特效
   window.triggerLogoStarSplash = function(x, y) {
-    // 星星（水花）的存活时间比鼠标点击的长（duration 设为 1.5s），范围稍微扩大（maxRadius 设为 0.13）
-    // 产生 3 重扩散圈，营造出多层绚丽爆开的视觉效果（延迟分别为 0.0s、0.2s、0.4s）
-    createSingleRipple(x, y, 0.0, 1.5, 0.13, false);
-    createSingleRipple(x, y, 0.2, 1.5, 0.13, false);
-    createSingleRipple(x, y, 0.4, 1.5, 0.13, false);
+    // 缩小区和时长，使其与普通的鼠标点击水花/星星扩散范围完全一致
+    createSingleRipple(x, y, 0.0, 0.6, 0.11, false);
+    createSingleRipple(x, y, 0.15, 0.6, 0.11, false);
   };
 
   function step(dt) {
