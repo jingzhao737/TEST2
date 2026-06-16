@@ -2442,3 +2442,26 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证浏览器控制台无报错。
 - 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `6d6c978`）上线。
+
+---
+
+## 🛠️ Feature: 解决卡片退出后鼠标静止点击无响应 (3D Hit-Testing Wakeup via Custom Events)
+
+### 1. 需求分析与修改
+- **问题反馈**：详情页退出且遮罩去除后，如果用户鼠标保持静止，原地点击卡片依旧没有响应，感觉像有冷却 CD 延迟。
+- **原因分析**：
+  - 详情页打开时，鼠标离开主页触发 `onListLeave`，将 `isVisible` 设为 `false` 并清空悬停索引 `window.__hoveredCardIndex = -1`，同时 3D 投影检测进程进入休眠以节省 CPU。
+  - 关闭详情页后，由于用户的鼠标是静止的，浏览器不会为底下的作品列表自动重新分发 `mouseenter` 等 hover 相关的事件。
+  - 导致 3D 投影 hit-testing 始终处于休眠状态，`window.__hoveredCardIndex` 锁死在 `-1`。原地点击时，主页的 fallback 点击机制因为悬停索引为 `-1` 而彻底失效，形成了点击死区。
+- **解决方案与优化**：
+  - **坐标实时捕获**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 顶部注册全局鼠标监听器，实时更新鼠标最后的物理坐标。
+  - **主动状态唤醒 (Event Wakeup)**：编写 `dispatchWakeupEvents()` 辅助函数。检测当鼠标处于主页列表边界内时，手动向列表容器派发 `mouseenter` 与 `mousemove` 事件。
+  - **多重唤醒时机**：
+    - 在 `closeDetail()` 开始禁用 pointer-events 的瞬间，立即唤醒一次；
+    - 在关闭动画 `onComplete` 卡片彻底滑出隐藏 the 瞬间，再次唤醒。
+  - **效果**：强行打破浏览器对静止鼠标的事件重新分发滞后，瞬间唤醒 3D 投影碰撞检测，卡片退出后原地静止点击立刻 100% 灵敏响应。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包正常。
+- 运行 `node check_console.js` 验证无控制台报错。
+- 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `4a8fc76`）到线上生产环境。

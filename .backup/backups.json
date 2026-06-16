@@ -1,12 +1,5 @@
 [
   {
-    "step": 148,
-    "timestamp": "2026-06-16 23:57:11",
-    "description": "Optimize stars.js performance by caching layout coordinates and style variables, eliminating layout thrashing",
-    "folder": "step_148_Optimize_stars.js_performance_by_caching_layout_coordinates_and_style_variables,_eliminating_layout_thrashing",
-    "is_auto": false
-  },
-  {
     "step": 149,
     "timestamp": "2026-06-17 00:02:37",
     "description": "Fix TDZ reference error in stars.js to restore starry background",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:17:35",
     "description": "Wake up 3D hit testing automatically via dispatchWakeupEvents on close detail transitions",
     "folder": "step_167_Wake_up_3D_hit_testing_automatically_via_dispatchWakeupEvents_on_close_detail_transitions",
+    "is_auto": false
+  },
+  {
+    "step": 168,
+    "timestamp": "2026-06-17 01:17:49",
+    "description": "Update walkthrough.md with event wakeup fix details",
+    "folder": "step_168_Update_walkthrough.md_with_event_wakeup_fix_details",
     "is_auto": false
   }
 ]
