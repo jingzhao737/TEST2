@@ -51,29 +51,39 @@ import gsap from 'gsap';
       consoleEl.classList.add('active');
       _animating = true;
 
+      const maxBulge = window.innerWidth > 768 ? 160 : 60;
+
       const tl = gsap.timeline({
+        onUpdate: function() {
+          const p = tl.progress();
+          const xOffset = Math.sin(p * Math.PI) * maxBulge;
+          gsap.set(logo, { x: xOffset });
+        },
         onComplete: () => {
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
           consoleEl.style.transition = '';
+          // Clear only temporary x/transform styles after landing
+          gsap.set(logo, { clearProps: 'x,transform' });
           _animating = false;
         }
       });
 
       // Animate flat positioning and fade-in to the customization panel
+      // Using 1.8s duration and back.inOut ease for rocket-artillery rhythm
       tl.to(logo, {
         left: toRect.left,
         top: toRect.top,
         opacity: 1,
-        duration: 0.42,
-        ease: 'power3.out'
+        duration: 1.8,
+        ease: 'back.inOut(2.2)'
       }, 0);
 
       tl.to(consoleEl, {
         opacity: 1,
         y: 0,
         scale: 1,
-        duration: 0.42,
+        duration: 0.6,
         ease: 'power3.out'
       }, 0);
 
@@ -81,8 +91,14 @@ import gsap from 'gsap';
       // --- CLOSING ---
       const toRect = anchorEl.getBoundingClientRect();
       _animating = true;
+      const maxBulge = window.innerWidth > 768 ? 160 : 60;
 
       const tl = gsap.timeline({
+        onUpdate: function() {
+          const p = tl.progress();
+          const xOffset = Math.sin(p * Math.PI) * maxBulge;
+          gsap.set(logo, { x: xOffset });
+        },
         onComplete: () => {
           // Clear GSAP inline styles while transitions are still disabled to prevent snapping transitions
           gsap.set(logo, { clearProps: 'all' });
@@ -102,15 +118,15 @@ import gsap from 'gsap';
         left: toRect.left,
         top: toRect.top,
         opacity: 0,
-        duration: 0.38,
-        ease: 'power3.inOut'
+        duration: 1.8,
+        ease: 'back.inOut(2.2)'
       }, 0);
 
       tl.to(consoleEl, {
         opacity: 0,
         y: -12,
         scale: 0.97,
-        duration: 0.35,
+        duration: 0.5,
         ease: 'power3.in'
       }, 0);
     }
