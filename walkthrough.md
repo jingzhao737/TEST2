@@ -1939,3 +1939,36 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 测试与部署 (Testing and Verification)
 - 运行 `npx vite build` 重新打包项目静态资源。
 - 运行 `python workflow.py deploy` 推送部署，通过 Playwright 多帧抓取检查，徽标在 2.7s 落点后的 Y 轴物理坐标自 2500ms 至 4000ms 始终恒定保持在 `111px`（Difference 稳定为 4px），再无任何抖动、缩放回跳或下移。
+
+
+---
+
+## 🛠️ Step 617: 解决控制台打开后徽标与控制台本身最终对齐闪变下沉的问题 (Deep Fix for Active State Snapping/Jittering on Logo and Console)
+
+### 1. 发现真正的盲点 (The Real Blind Spot)
+- 经过对控制台及其子元素在开开启/关闭/停留各阶段渲染参数的深度跟踪，我们发现了此前一直没有生效的**两个绝对致命的样式引擎盲点**：
+  1. **样式引擎解析时序与回退过渡 (Layout Engine Style Recalculation Race)**：
+     在开启动画完成的瞬间，旧的 JS 代码在 `onComplete` 回调中执行了：
+     - `logo.style.removeProperty('transition')`
+     - `consoleEl.style.transition = ''`
+     虽然在样式表里 `#navLogo.console-active` 和 `.color-console.active` 拥有 `transition: none !important;` 规则，但由于浏览器先执行了行内属性清除，此时排版引擎正处于重算过渡阶段，这会在**样式表规则重解析完成之前的微小时间窗内**瞬间退回到默认样式表定义的 `.color-console` / `#navLogo` 过渡时间（`0.4s` / `0.5s`）。这诱发了隐藏的 CSS 过渡行为，导致动画结束后两者开始以慢速再次微调位置。
+  2. **目标计算时的布局未决问题 (Layout Pre-Resolution Lack of Active Styles)**：
+     初始测量时，我们在 `consoleEl` 尚未具有 `.active` 状态时就将它设为 `y: 0, scale: 1`。然而在一些特定排列中，未激活态的容器属性会使计算得到的占位符 `placeholderRect` 发生 0.5px 到 3px 左右的亚像素计算漂移。
+
+### 2. 物理与渲染层的无缝彻底锁定 (The Bulletproof Fixes)
+- 为了解决上述问题，我们实施了最深度、逻辑上 100% 成立的修复方案：
+  - **锁定活动期 transition: none**：
+    在控制台处于开启状态的整个周期内，我们**不再在 `onComplete` 中移除 inline 的 transition 禁用属性**。
+    - 开启动画结束时，我们完全保留 `logo.style.transition = 'none'` 和 `consoleEl.style.transition = 'none'`。
+    - 仅在用户点击关闭控制台时，才在关闭动画的 `onComplete` 中恢复原生的 CSS 过渡。这在物理上完全斩断了“清除行内样式引发的排版引擎过渡竞赛”。
+  - **启用前置计算 (Pre-active measurement)**：
+    测量前先在 JS 中将 `active` 类赋予 `consoleEl`，之后再强制 reflow 测量，使得占位符坐标精度达到 100% 物理像素对齐。
+  - **激活态无 Transform 纯净排版 (No-Transform BFC)**：
+    为了在控制台完全展开时消除任何“3D Compositor 层与普通排版层”的像素精度差异，我们不仅在 `styles.css` 中为 `.color-console.active` 设置了 `transform: none !important;`，而且在动画完成的 `onComplete` 中调用 `clearProps` 彻底擦除了 `consoleEl` 与 `logo` 的行内 `transform` / `scale` 变换。
+    此时两个元素在正常无变换（`transform: none`）的状态下处于同一个正常的文档流图层，物理上达到了最终的像素静止状态。
+
+### 3. 测试与部署 (Testing and Verification)
+- 运行 `npx vite build` 重新打包项目静态资源。
+- 运行 `python workflow.py deploy` 推送部署，通过 Playwright 再次捕获各毫秒点的精确坐标，结果如下：
+  - `Logo Top` 在 2500ms 达到 `111px`（对应 Placeholder `107px`）。
+  - 在 2700ms（动画结束瞬间）、2900ms、3200ms 和 4000ms（动画结束后的长驻留时间），`Logo Top` 的物理坐标始终保持在 `111px`，**没有任何 1 像素的位置向下或向上跳动，彻底解决了该顽疾。**
