@@ -49,7 +49,7 @@ import gsap from 'gsap';
       const placeholderRect = placeholder.getBoundingClientRect();
       const toRect = {
         left: placeholderRect.left,
-        top: placeholderRect.top + 20.0, // TEMPORARY LARGE OFFSET (+20px) FOR TESTING SNAPPING BEHAVIOR
+        top: placeholderRect.top + 3.5, // add 3.5px downward offset to center it in header
         width: placeholderRect.width,
         height: placeholderRect.height
       };
@@ -73,31 +73,30 @@ import gsap from 'gsap';
       const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.7;
       const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
-      const startScale = logo.matches(':hover') ? 1.02 : 1.0;
  
       // Force browser reflow to apply the transition removal and initial position immediately
       logo.offsetHeight;
  
       const tl = gsap.timeline({
         onComplete: () => {
-          // Clear only temporary x/transform/scale styles after landing.
+          // Clear only temporary x/transform styles after landing.
           // We do NOT restore CSS transitions (i.e. keep inline 'transition: none') while the console is active.
           // This completely prevents browser styling engines from running any race-condition transitions.
-          gsap.set(logo, { clearProps: 'x,transform,scale' });
+          gsap.set(logo, { clearProps: 'x,transform' });
           gsap.set(consoleEl, { clearProps: 'transform,scale,y,opacity' });
           _animating = false;
         }
       });
-
+ 
       // Smoothly fade out the solid logo in the navbar
       if (staticLogo) {
         gsap.to(staticLogo, { opacity: 0, duration: 0.4, ease: 'power2.out' });
       }
-
+ 
       // Smoothly fade in the outline logo at the start of flight
       tl.to(logo, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0);
-
-      // Unified parametric tween: interpolates left/top/x/scale based on eased virtual progress
+ 
+      // Unified parametric tween: interpolates left/top/x based on eased virtual progress
       tl.to(animState, {
         progress: 1,
         duration: duration,
@@ -107,12 +106,10 @@ import gsap from 'gsap';
           const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s);
           const currentTop = gsap.utils.interpolate(startRect.top, toRect.top, s);
           const xOffset = Math.sin(s * Math.PI) * maxBulge;
-          const currentScale = gsap.utils.interpolate(startScale, 1.0, s);
           gsap.set(logo, {
             left: currentLeft,
             top: currentTop,
-            x: xOffset,
-            scale: currentScale
+            x: xOffset
           });
         }
       }, 0);
