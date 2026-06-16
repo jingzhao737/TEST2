@@ -1,12 +1,5 @@
 [
   {
-    "step": 149,
-    "timestamp": "2026-06-17 00:02:37",
-    "description": "Fix TDZ reference error in stars.js to restore starry background",
-    "folder": "step_149_Fix_TDZ_reference_error_in_stars.js_to_restore_starry_background",
-    "is_auto": false
-  },
-  {
     "step": 150,
     "timestamp": "2026-06-17 00:10:30",
     "description": "Optimize Works section scroll and mouse hover entry performance, removing layout reflows and reducing GPU texture uploads",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:17:49",
     "description": "Update walkthrough.md with event wakeup fix details",
     "folder": "step_168_Update_walkthrough.md_with_event_wakeup_fix_details",
+    "is_auto": false
+  },
+  {
+    "step": 169,
+    "timestamp": "2026-06-17 01:20:00",
+    "description": "Slightly slow down details entrance and exit transitions for softer visual pacing",
+    "folder": "step_169_Slightly_slow_down_details_entrance_and_exit_transitions_for_softer_visual_pacing",
     "is_auto": false
   }
 ]
