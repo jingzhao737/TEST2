@@ -1873,3 +1873,26 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 构建与部署
 - 编译出最新 JS 打包文件。
 - 运行 `python workflow.py deploy` 推送上线，实机垂直居中效果即时生效。
+
+
+---
+
+## 🛠️ Step 614: 消除点击收起动画起始的 1-2px 位移抖动，锁定绝对纯净测量 (Eliminate 1-2px jitter at closing start by clearing hover scale transform during position measurement)
+
+### 1. 抖动痛点分析与排查
+- **现象**：当点击展开状态下的描边徽标（以触发控制台收起动画）时，动画启动的瞬间，徽标会往左下方发生 1 到 2 像素的突变位移（抖动），随后才正常飞回。
+- **成因**：
+  - 在 CSS 中定义了 `.nav-logo:hover { transform: scale(1.02); }` 以提供细腻的微交互反馈。
+  - 在控制台打开期间，用户鼠标悬停于描边徽标之上点击，此时徽标正处于 `scale(1.02)` 放大状态。
+  - 启动收回动画的瞬间，JavaScript 执行了 `logo.getBoundingClientRect()` 测定起点坐标。因为 `getBoundingClientRect` 测出的是**渲染盒的绝对视口坐标**，所以在 `scale(1.02)` 状态下测量到的 `left` 和 `top` 包含了 2% 的尺寸形变偏量（宽度由 100% 扩为 102%，导致左边界向左移动了约 1~2 像素）。
+  - 然而动画一旦开始，随着鼠标失焦、pointer-events 变动及 GSAP 设定新的 transform 位移，该 `scale(1.02)` 被重置为了 `scale(1.0)`。这使得起飞点与实际渲染位置产生了 1~2px 的测量落差，引发了“第一帧突变”的抖动。
+
+### 2. 精准无抖测量方案 (Zero-Scale Measurement Lock)
+- 为了获得绝对纯净、不受 hover 缩放干扰的 `1.0` 比例测量：
+  - **展开测量时**：在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中，测算起飞位置前，临时通过行内样式将 `staticLogo.style.transform = 'none'`，强制执行 `offsetHeight` 重绘刷新，在无缩放状态下精准测定 `startRect` 后，再立即恢复行内样式。
+  - **收回测量时**：同步将描边徽标 `logo.style.transform = 'none'` 并刷新，在绝对 1:1 的真实几何尺寸下读取起飞点 `startRect`（同时也对 navbar 处的 `staticLogo` 终点进行了相同的无缩放测定锁），测定完成后立即擦除行内 transform，并交给 GSAP 执行完美的抛物线动画。
+- 这一机制确保了测量数据与后续动画帧的位置数据完全同轴，彻底根除了点击瞬间的位移抖动。
+
+### 3. 构建与部署
+- Vite 打包完成，所有流程无报错。
+- 运行 `python workflow.py deploy` 推送上线，实机测试完全杜绝了收起瞬间的位移抽搐。

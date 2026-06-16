@@ -34,7 +34,15 @@ import gsap from 'gsap';
       if (!placeholder) return;
 
       // 1. Measure positions
+      // Temporarily clear staticLogo transform to get an unscaled (scale 1.0) rect
+      if (staticLogo) {
+        staticLogo.style.transform = 'none';
+        staticLogo.offsetHeight; // Force reflow
+      }
       const startRect = anchorEl.getBoundingClientRect();
+      if (staticLogo) {
+        staticLogo.style.transform = ''; // Restore
+      }
       
       gsap.set(consoleEl, { y: 0, scale: 1 });
       const placeholderRect = placeholder.getBoundingClientRect();
@@ -112,8 +120,20 @@ import gsap from 'gsap';
 
     } else {
       // --- CLOSING ---
+      // Temporarily clear transforms to get unscaled (scale 1.0) rects
+      logo.style.transform = 'none';
+      if (staticLogo) {
+        staticLogo.style.transform = 'none';
+      }
+      logo.offsetHeight; // Force reflow
+      
       const startRect = logo.getBoundingClientRect();
       const toRect = anchorEl.getBoundingClientRect();
+      
+      logo.style.transform = ''; // Restore
+      if (staticLogo) {
+        staticLogo.style.transform = ''; // Restore
+      }
       _animating = true;
       const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
       const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.7;
