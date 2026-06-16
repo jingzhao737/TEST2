@@ -625,9 +625,9 @@ import * as THREE from 'three';
 
   // 暴露给外部调用的 logo 降落星星爆裂特效
   window.triggerLogoStarSplash = function(x, y) {
-    // 缩小区和时长，使其与普通的鼠标点击水花/星星扩散范围完全一致
-    createSingleRipple(x, y, 0.0, 0.6, 0.11, false);
-    createSingleRipple(x, y, 0.15, 0.6, 0.11, false);
+    // 范围稍微调大一些（maxRadius 从 0.11 增至 0.12，时长从 0.6s 增至 0.7s）
+    createSingleRipple(x, y, 0.0, 0.7, 0.12, false);
+    createSingleRipple(x, y, 0.15, 0.7, 0.12, false);
   };
 
   function step(dt) {

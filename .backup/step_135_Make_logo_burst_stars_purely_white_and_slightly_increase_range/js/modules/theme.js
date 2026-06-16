@@ -138,6 +138,7 @@
     document.documentElement.classList.toggle('light');
     const isLightMode = document.documentElement.classList.contains('light');
     localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+    window.dispatchEvent(new CustomEvent('themeChanged', { detail: { isLight: isLightMode } }));
   }
 
   // ── Drag Overlay ──

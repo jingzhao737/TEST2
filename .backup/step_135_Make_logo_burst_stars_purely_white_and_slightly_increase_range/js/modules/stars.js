@@ -605,9 +605,9 @@ import * as THREE from 'three';
     createSingleRipple(x, y, 0.15);
   }
 
-  function createSingleRipple(x, y, delay) {
-    // 限制最大活跃波纹数，防止狂点导致多帧渲染卡顿
-    if (activeRipples.length >= 6) {
+  function createSingleRipple(x, y, delay, customDuration, customMaxRadius, isCurrentPress) {
+    // 限制最大活跃波纹数，特殊 logo 爆裂波纹较多，上限放宽到 15
+    if (activeRipples.length >= 15) {
       activeRipples.shift();
     }
     
@@ -616,12 +616,19 @@ import * as THREE from 'three';
       y,
       delay,      // 延迟触发的时间（秒）
       age: 0,     // 已存活时间
-      duration: 0.6,   // 生命周期进一步缩短至 0.6s，使起伏和消散更加快速利落
-      maxRadius: 0.11, // 最大范围限制在 0.11 (原先 0.16 的 70% 左右)
+      duration: customDuration !== undefined ? customDuration : 0.6,   // 生命周期，默认 0.6s
+      maxRadius: customMaxRadius !== undefined ? customMaxRadius : 0.11, // 最大范围，默认 0.11
       color: new THREE.Color(pointer.color.r, pointer.color.g, pointer.color.b),
-      isCurrentPress: true // 标记属于当前按下的波纹，用于精准追随和锁死
+      isCurrentPress: isCurrentPress !== undefined ? isCurrentPress : true // 标记属于当前按下的波纹，用于精准追随和锁死
     });
   }
+
+  // 暴露给外部调用的 logo 降落星星爆裂特效
+  window.triggerLogoStarSplash = function(x, y) {
+    // 范围稍微调大一些（maxRadius 从 0.11 增至 0.12，时长从 0.6s 增至 0.7s）
+    createSingleRipple(x, y, 0.0, 0.7, 0.12, false);
+    createSingleRipple(x, y, 0.15, 0.7, 0.12, false);
+  };
 
   function step(dt) {
     // 1. Advect Velocity

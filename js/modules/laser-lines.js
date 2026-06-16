@@ -527,9 +527,7 @@
     createBurst(x, y, isOrange, customLife, customNumSparks);
   };
   window.triggerForgeBurst = function(x, y) {
-    const colors = ['#ffffff', '#E87C50', '#FF9F1C', '#FFD700'];
-    
-    // 1. Pulsing Center Flare (Flash) - Scale down to match click range
+    // 1. Pulsing Center Flare (Flash) - Slightly larger range
     sparks.push({
       x: x,
       y: y,
@@ -537,17 +535,17 @@
       vy: 0,
       color: '#E87C50',
       type: 'center-flare',
-      size: 14.0,
+      size: 18.0,
       created: Date.now(),
       life: 500
     });
 
-    // 2. Double expanding shockwave ripples - Scale down to match click range
+    // 2. Double expanding shockwave ripples - Slightly larger range
     ripples.push({
       x: x,
       y: y,
       radius: 0,
-      maxRadius: 20,
+      maxRadius: 25,
       color: '#E87C50',
       created: Date.now(),
       life: 500
@@ -556,19 +554,19 @@
       x: x,
       y: y,
       radius: 0,
-      maxRadius: 35,
+      maxRadius: 45,
       color: '#FF9F1C',
       created: Date.now(),
       life: 600
     });
 
-    // 3. Dense sparks with forging physics - scaled down to match the visual extent of mouse clicks
+    // 3. Dense sparks with forging physics - pure white stars with slightly larger speed range
     const numSparks = 12 + Math.floor(Math.random() * 5);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 1.8 + Math.random() * 4.2; // Scaled down speed to match visual click range
+      const speed = 2.2 + Math.random() * 4.8; // Slightly increased speed range for a larger spread
       const lifeSpan = 500 + Math.random() * 300; // Same lifespan as mouse clicks
-      const color = colors[Math.floor(Math.random() * colors.length)];
+      const color = '#ffffff'; // Make stars purely white
       sparks.push({
         x: x,
         y: y,

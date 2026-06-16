@@ -1,12 +1,5 @@
 [
   {
-    "step": 115,
-    "timestamp": "2026-06-16 01:25:01",
-    "description": "Fix vinyl record mesh overlapping and Z-clipping",
-    "folder": "step_115_Fix_vinyl_record_mesh_overlapping_and_Z-clipping",
-    "is_auto": false
-  },
-  {
     "step": 116,
     "timestamp": "2026-06-16 01:26:37",
     "description": "Compensate for perspective projection shift to align 3D discs with 2D ropes",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 22:15:04",
     "description": "Add fast-to-slow rotation decay curve for forge burst stars",
     "folder": "step_134_Add_fast-to-slow_rotation_decay_curve_for_forge_burst_stars",
+    "is_auto": false
+  },
+  {
+    "step": 135,
+    "timestamp": "2026-06-16 22:17:48",
+    "description": "Make logo burst stars purely white and slightly increase range",
+    "folder": "step_135_Make_logo_burst_stars_purely_white_and_slightly_increase_range",
     "is_auto": false
   }
 ]
