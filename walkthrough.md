@@ -1610,3 +1610,29 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与同步
 - 执行 `git tag -a v3.4-stable -m "Release v3.4-stable - Smooth slow snap-scale spring animation and 3D Z-clipping overlap fix"` 本地创建标签。
 - 执行 `git push origin v3.4-stable` 推送锚点至 GitHub，完成版本发布与锚定。
+
+---
+
+## 🛠️ Step 602: 实现 2D 唱片之间的弹性碰撞物理引擎 (Implement 2D Elastic Circle-Circle Collision Physics)
+
+### 1. 物理模型与交互设计
+- **需求**：给悬挂的唱片之间增加物理碰撞，当拖拽或风摆导致它们相互接触时，能够真实地碰撞、弹开。
+- **碰撞算法（Impulse Resolution）**：
+  - 在 `update` 函数中，我们重构了原有的单体物理循环，将其拆分为**初步积分、多体约束求解、绳子摆动最终化**三个阶段，实现了一个小型的物理碰撞引擎：
+    - **位置修正（Positional Correction）**：检测任意两张唱片（圆形，半径为 $R = \text{dispW} / 2$）之间的中心距离 $d$。当 $d < r_1 + r_2$ 时判定为重叠。沿碰撞法线将它们推开 $\text{overlap}$ 距离以消除重合。
+    - **动量分配（Inverse Mass weighting）**：
+      - 设定被拖拽（Dragged）和已吸附（Latched）的唱片具有“无限大质量”（即不可被其他唱片推开）。
+      - 普通自由摆动的唱片具有均等质量。
+      - 位置修正和速度分配时，权重按逆质量比例（`invM`）进行分配。因此，用户可以用正在拖拽的唱片去“踢”或者“推”其他唱片，而拖拽中的唱片不受反向推力影响，交互反馈极佳。
+    - **弹性碰撞反应（Elastic Impulse Response）**：
+      - 依据碰撞法线投影计算相对速度。如果它们处于迎面碰撞状态（相对速度小于 0），则根据弹性反射系数 $\text{restitution} = 0.55$（模拟唱片硬胶材质的清脆回弹）对它们施加反向的速度冲量。
+      - 同时，给碰撞双方的绳子摆动角速度（`_swayV`）施加随机扰动，使碰撞瞬间能自然传导至上方悬挂的螺旋弹簧绳上，产生逼真的绳子抖动反馈！
+- **多约束迭代求解（Iterative Solver）**：
+  - 将“碰撞解除”与“绳长约束约束”放进一个迭代执行 3 次的解算器（Solver Loop）中。这确保了在极端的快速挤压碰撞下，盘片绝对不会发生重叠、下沉或穿透，物理状态极为稳定。
+
+### 2. 代码重构
+- 重写了 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 的 `update` 物理更新主循环，完成多体碰撞算法与解算器的嵌入。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，唱片之间实现了完全物理、流畅的弹性碰撞效果，相互推挤时阻尼感和弹性极强，充满趣味与真实感。
