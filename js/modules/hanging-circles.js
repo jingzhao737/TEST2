@@ -1087,6 +1087,9 @@ import * as THREE from 'three';
         d.group.rotation.y = t.tiltY;
         
         // Spin the child meshes
+        if (i === latchedIdx && window.__audioPlaying === true) {
+          t._spin = (t._spin || 0) - 0.025; // Decrement (negative Z rotation) for clockwise spin
+        }
         d.vinylMesh.rotation.z = t._spin || 0;
         d.labelMesh.rotation.z = t._spin || 0;
         

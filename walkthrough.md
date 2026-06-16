@@ -1367,6 +1367,29 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
     ```
   - 这保证了唱片倾斜姿态、拖拽滞后轨迹和松手时的惯性抛投速度与其实际三维运动状态 **100% 契合与自适应**，视觉表现极其优雅、丝滑且物理正确。
 
+
+---
+
+## 🛠️ Feature: 3D 唱片在播放音乐时支持顺时针匀速旋转 (Draggable 3D Records Playback Rotation)
+
+### 1. 需求分析
+- **静止盘片缺乏播放指示**：
+  - 现象：当唱片被拉拽到播放器位置（拉栓锁定，并触发背景音乐播放）时，虽然有音乐播放且声波线条开始跳动，但 3D 唱片模型本体保持静止，没有传统黑胶唱机运转时的旋转动态，不够写实和灵动。
+  - **需求**：当唱片处于锁定播放状态且音乐正在播放时，让其以合适的转速顺时针（Clockwise）匀速旋转；当音乐暂停时，旋转应当停止。
+
+### 2. 解决方案与修改
+- **追加匀速顺时针自转更新逻辑**：
+  - 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 的 3D 网格更新循环。
+  - 检查当前唱片是否被锁定播放（`i === latchedIdx`）并且网页音频状态为正在播放（`window.__audioPlaying === true`）。
+  - 若满足条件，则对 `t._spin` 进行递减累积。由于 Z 轴朝向屏幕外，根据右手法则，递减 Z 轴弧度值即为顺时针旋转。我们采用 `0.025` 弧度/帧（在 60fps 下约合每秒自转 86°，相当于非常温和优雅的转速）进行顺时针自转：
+    ```javascript
+    if (i === latchedIdx && window.__audioPlaying === true) {
+      t._spin = (t._spin || 0) - 0.025; // 递减 Z 轴旋转角以实现顺时针自转
+    }
+    ```
+  - 将计算出的旋转角 `t._spin` 应用在盘体 Mesh 与盘贴 Mesh（`vinylMesh` 与 `labelMesh`）的 Z 轴旋转属性上。当音乐暂停时，该累加动作停止，盘片停留在当前角度，实现精准联动。
+
 ### 3. 部署与验证
 - 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
-- 执行 `python workflow.py deploy` 推送至 GitHub（Step 537），自动部署线上页面。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 538），自动部署线上页面。
+
