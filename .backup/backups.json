@@ -1,12 +1,5 @@
 [
   {
-    "step": 153,
-    "timestamp": "2026-06-17 00:18:33",
-    "description": "Optimize cursor snapping and premium card hover loop, removing high-frequency getBoundingClientRect and trigonometric recalculations",
-    "folder": "step_153_Optimize_cursor_snapping_and_premium_card_hover_loop,_removing_high-frequency_getBoundingClientRect_and_trigonometric_recalculations",
-    "is_auto": false
-  },
-  {
     "step": 154,
     "timestamp": "2026-06-17 00:23:56",
     "description": "Optimize Works detail card transitions by pausing background WebGL and deferring magnet targets",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:22:56",
     "description": "Update walkthrough.md with mobile responsive tuning details",
     "folder": "step_172_Update_walkthrough.md_with_mobile_responsive_tuning_details",
+    "is_auto": false
+  },
+  {
+    "step": 173,
+    "timestamp": "2026-06-17 01:24:43",
+    "description": "Fix isMobile reference error in closeDetail transition function",
+    "folder": "step_173_Fix_isMobile_reference_error_in_closeDetail_transition_function",
     "is_auto": false
   }
 ]

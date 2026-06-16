@@ -406,6 +406,7 @@ function closeDetail(popState) {
 
   // Slide down and shrink the card panel horizontally
   if (detailCard) {
+    const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);
     const endScaleX = isMobile ? 1.0 : 0.4;
     gsap.to(detailCard, {
       y: '100%',

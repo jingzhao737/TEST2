@@ -9,7 +9,7 @@
   },
   "ice.js": {
     "type": "code",
-    "hash": "2e4a1b8cca97061cbd1bf5a5235588cda3dc872abe1fbf891d36526817f82b46"
+    "hash": "036b459c7bbdfa6fe78d44e9504907ce37bedbe8b1baa95c0e0be37a485edfce"
   },
   "implementation_plan.md": {
     "type": "code",
@@ -33,11 +33,11 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "0611cf7b42f25a46f33ad56662abd38812acf1cee128b9207c03ab83306de345"
+    "hash": "7451b20782f67a07cc8cce345cf8136f5540228d1ab8414a628671c6ca2e39ff"
   },
   "task.md": {
     "type": "code",
-    "hash": "3efe24f959be37c281b791e51330bcb7fa5971200f6449a6969343b2b831482a"
+    "hash": "331b1722da1760df0deb6b9d0792500cebfb4961444155a32b7330ad5aa28305"
   },
   "vite.config.js": {
     "type": "code",
@@ -45,7 +45,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "02e0592acbeb9b4001bd4762990b63911fcd7a2d21aeda30fe7b60450c38211f"
+    "hash": "b11fa265ebd97556c6640ab442bf9323e659091ceb38e8ac6e83acf46285cff9"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -89,15 +89,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "b416d66dcf1fbe6465b94fdf0b806c971d547adb96bf5bc14218e17fbdab22f9"
+    "hash": "da632c1480f711b87676e0c56a7d0a3bf06b337659c67641a3bb7d93fb43972b"
   },
-  "dist\\assets\\index-DMVjJK4x.css": {
+  "dist\\assets\\index-C8z9nrqw.js": {
     "type": "code",
-    "hash": "6605279b22709332dd2e1f86db0a29ee2f79eeda4e3e78820fa44bfed866ae97"
+    "hash": "d2e891c279d6c8542ab4761fac8d5a82670b1b44cc41104b430218be203ae66b"
   },
-  "dist\\assets\\index-YqM7mjUB.js": {
+  "dist\\assets\\index-D822QZrx.css": {
     "type": "code",
-    "hash": "9e9ecb66f2482e400e106148fba13f06d23aba1e54af6489bd01150627d18d4a"
+    "hash": "3ba09c8d28085a0029c7ecbc3ec4c862982c9b65e361d269ee16666cf684ca3d"
   },
   "images\\index.txt": {
     "type": "code",
@@ -149,7 +149,7 @@
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
-    "hash": "164b9dbb1e48e6000502639a9d281f8e00b48c690973415b0f9e3cf347901e45"
+    "hash": "76cfd1804e2fa9e4e474937989ea3ff2c5335bc8858414ebe6c291bb5f301f60"
   },
   "js\\modules\\laser-lines.js": {
     "type": "code",
@@ -193,7 +193,7 @@
   },
   "js\\modules\\stars.js": {
     "type": "code",
-    "hash": "d78ffaa4730158928abbcb027739be939af6be0835045908ac3e3bde85f746ec"
+    "hash": "514d9f061d292aa70ed9aca6ec79ce1b4128266b0b0e91e0390eef4841b7becc"
   },
   "js\\modules\\theme.js": {
     "type": "code",
