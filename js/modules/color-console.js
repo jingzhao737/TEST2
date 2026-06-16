@@ -80,8 +80,9 @@ import gsap from 'gsap';
  
       const tl = gsap.timeline({
         onComplete: () => {
-          // Keep top/left and transition: none active while console is open to prevent layout snapping
-          gsap.set(consoleEl, { clearProps: 'transform,scale,y,opacity' });
+          // Do NOT clearProps here - leave all inline styles intact while console is open.
+          // Clearing consoleEl's inline transform triggers compositor re-compositing which
+          // causes the fixed-position logo to visually shift by a few pixels.
           _animating = false;
         }
       });
