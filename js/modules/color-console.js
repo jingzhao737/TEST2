@@ -68,8 +68,8 @@ import gsap from 'gsap';
       // Unified parametric tween: interpolates left/top/x based on eased virtual progress
       tl.to(animState, {
         progress: 1,
-        duration: 1.8,
-        ease: 'back.inOut(2.2)',
+        duration: 2.2,
+        ease: 'power4.inOut',
         onUpdate: function() {
           const s = animState.progress;
           const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s);
@@ -120,8 +120,8 @@ import gsap from 'gsap';
       // Parametric return tween: keeps path geometric shape perfect
       tl.to(animState, {
         progress: 1,
-        duration: 1.8,
-        ease: 'back.inOut(2.2)',
+        duration: 2.2,
+        ease: 'power4.inOut',
         onUpdate: function() {
           const s = animState.progress;
           const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s); // startRect is anchorEl rect (navbar)

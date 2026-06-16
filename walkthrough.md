@@ -1729,3 +1729,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 此重构彻底根除了位移动画中的“抽搐”和“跳动”问题，带来了丝滑、顺畅的悬浮控制台交互体验。
 
+
+
+---
+
+## 🛠️ Step 607: 移除 YYJZ 徽标动画的首尾回弹效果并调整总时长为 2.2 秒 (Remove Logo Transition Rebound and Adjust Duration to 2.2s)
+
+### 1. 需求分析与物理曲线调整
+- **回弹消除**：用户反馈不希望在动画的开头和结尾出现回弹效果（即原先 `back.inOut(2.2)` 带来的负向起步和冲出回缩）。
+- **动效时长拉长**：为了呈现更舒缓而高级的质感，要求将原本 1.8 秒的发射/收起总时长变更为 2.2 秒。
+- **平滑弧线与节奏**：保留原本使用参数化差值建立的完美反 C 型平滑半圆弧线路径（保证 xOffset 与 left/top 的进度完全同步，不发生形变跳跃），在保持火箭发射式的高速起飞节奏的同时，选用无回弹、高平滑的 GSAP `power4.inOut` 缓动。
+
+### 2. 代码重构与定位
+- 修改了 `js/modules/color-console.js` 中关于调色盘展开（Opening）与收起（Closing）的两处 GSAP 时间轴配置：
+  - 将 `duration` 从 `1.8` 统一上调至 `2.2`。
+  - 将 `ease` 从 `'back.inOut(2.2)'` 修改为 `'power4.inOut'`。
+- 这样使整个 YYJZ Outline Logo 在触发调色盘时能够以 2.2 秒的优美弧线在最少偏差的物理参数下以缓入-急速-缓出的方式平滑飞渡，没有了任何开头和结尾的回弹动作。
+
+### 3. 构建与打包验证
+- 运行 `npx vite build` 重新验证，代码全部打包成功且无报错。
