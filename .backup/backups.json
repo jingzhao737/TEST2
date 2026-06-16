@@ -1,12 +1,5 @@
 [
   {
-    "step": 152,
-    "timestamp": "2026-06-17 00:14:54",
-    "description": "Restore VISION section and ice.js script",
-    "folder": "step_152_Restore_VISION_section_and_ice.js_script",
-    "is_auto": false
-  },
-  {
     "step": 153,
     "timestamp": "2026-06-17 00:18:33",
     "description": "Optimize cursor snapping and premium card hover loop, removing high-frequency getBoundingClientRect and trigonometric recalculations",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:22:41",
     "description": "Optimize works details mobile layout and disable scale transitions on mobile viewports",
     "folder": "step_171_Optimize_works_details_mobile_layout_and_disable_scale_transitions_on_mobile_viewports",
+    "is_auto": false
+  },
+  {
+    "step": 172,
+    "timestamp": "2026-06-17 01:22:56",
+    "description": "Update walkthrough.md with mobile responsive tuning details",
+    "folder": "step_172_Update_walkthrough.md_with_mobile_responsive_tuning_details",
     "is_auto": false
   }
 ]

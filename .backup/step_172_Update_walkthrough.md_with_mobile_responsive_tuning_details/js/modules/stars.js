@@ -890,6 +890,8 @@ import * as THREE from 'three';
     requestAnimationFrame(animate);
     if (!isVisible) return;
 
+    // Keep background rendering active continuously for seamless transition blending
+
     const dt = Math.min(clock.getDelta(), 0.033);
     const time = clock.getElapsedTime();
 

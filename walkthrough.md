@@ -2481,3 +2481,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证控制台日志无错误。
 - 通过 `py workflow.py deploy` 成功将最新版本（Commit `d71626f`）部署至线上。
+
+---
+
+## 🛠️ Feature: 作品详情卡片手机端布局与转场动效适配 (Works Details Mobile Calibration)
+
+### 1. 需求分析与修改
+- **排版拥挤与挤压问题**：
+  - 在手机端（宽度 `<= 768px`）点开详情时，由于详情卡片宽度很窄，GSAP 原本的 `scaleX: 0.4` 横向拉伸入场动画在小屏下会产生极不自然的文字重排和挤压感。
+  - 原本的 `.detail-body` 拥有 `64px` 的左右内边距，这在手机上使正文宽度被压缩到极致，排版非常狭长。
+  - 元数据展示栏（`.detail-meta`）因为设置了 `gap: 60px`，在手机上极易溢出；图库（`.detail-gallery`）强制两列排版，在小屏下图片显得非常逼仄局促。
+- **解决方案与适配调整**：
+  - **移出转场横向压缩**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的卡片滑入/滑出动画中加入移动端状态检查。如果为 `isMobile`，则将初始和结束的 `scaleX` 设为 `1.0`（取消横向压缩），仅进行纯粹的从下至上滑屏飞入，彻底消除了小屏内容被挤压的毛躁感。
+  - **精简文字间距**：在 [styles.css](file:///D:/webprojext/styles.css) 中对 `.detail-body` 增加移动端响应式覆写，左右内边距由 `64px` 缩减为 `20px`，释放了文字排版空间。
+  - **自适应元数据折行**：移动端将 `.detail-meta` 设为 `flex-wrap: wrap` 并将间距调小为 `20px 32px`，确保字段能够优雅换行不溢出。
+  - **单列平滑画廊**：移动端图库 `.detail-gallery` 设为 `grid-template-columns: 1fr`（单列大图排列），并微调了间距，为手机屏带来极佳的高清看图体验。
+  - **效果**：手机端的详情过渡与图文排版重获通透、开阔的现代呼吸感。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证无运行时控制台报错。
+- 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `445db79`）到线上生产环境。
