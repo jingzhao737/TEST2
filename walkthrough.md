@@ -2635,3 +2635,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证浏览器控制台无报错。
 - 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `586ec53`）上线。
+
+---
+
+## 🛠️ Feature: 手机端 Logo 与声波控件非对称向右平移 (Mobile Nav Left Elements Asymmetric Right Shift)
+
+### 1. 问题分析与修改
+- **问题反馈**：手机端左侧的 Logo (YYJZ) 和声波控件（Waveform）还是有些太靠左边边缘，需要再往右边移过来一点。
+- **解决方案与适配**：
+  - **非对称内边距调整 (Asymmetric Padding)**：
+    由于右侧的菜单按钮（Menu Button）的内收量目前已经非常适宜（右内边距 `38px` / `32px`），如果直接增大整体 padding，会使得右侧菜单按钮和拉绳也跟着过于靠内。
+    因此，我们将 `.nav` 的 padding 改为**非对称内边距**，即保持右侧 padding 相同，但大幅增加左侧 padding，将左边的 Logo 和声波区独立向右侧（中心方向）推进：
+    - **手机端 (<= 768px)**：padding 从 `0 38px` 调整为 `0 38px 0 58px`（左侧多推入 `20px`）。
+    - **小屏手机 (<= 480px)**：padding 从 `0 32px` 调整为 `0 32px 0 48px`（左侧多推入 `16px`）。
+  - **效果**：右侧的菜单按钮和黑白天拉绳仍保持原本舒适的位置；左侧的 Logo 与声波动画横向移动至距离左边框 `58px` / `48px` 处，整条导航的视觉比例变得更加均衡、高端且极具呼吸感。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证加载无报错。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `1adbbae`）上线。

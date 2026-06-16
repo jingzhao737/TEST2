@@ -1,12 +1,5 @@
 [
   {
-    "step": 166,
-    "timestamp": "2026-06-17 01:11:13",
-    "description": "Update walkthrough.md with pointer-events fix details",
-    "folder": "step_166_Update_walkthrough.md_with_pointer-events_fix_details",
-    "is_auto": false
-  },
-  {
     "step": 167,
     "timestamp": "2026-06-17 01:17:35",
     "description": "Wake up 3D hit testing automatically via dispatchWakeupEvents on close detail transitions",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:45:21",
     "description": "style shift mobile nav logo and soundwaves further right",
     "folder": "step_185_style_shift_mobile_nav_logo_and_soundwaves_further_right",
+    "is_auto": false
+  },
+  {
+    "step": 186,
+    "timestamp": "2026-06-17 01:45:35",
+    "description": "docs update walkthrough with mobile nav shift details",
+    "folder": "step_186_docs_update_walkthrough_with_mobile_nav_shift_details",
     "is_auto": false
   }
 ]
