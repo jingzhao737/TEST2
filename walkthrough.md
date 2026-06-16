@@ -1336,3 +1336,37 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证
 - 重新运行 npx vite build 生产打包成功。
 - 使用 git push 推送至远程仓库部署上线。
+
+---
+
+## 🛠️ Hotfix: 首页 3D 悬挂唱片拖拽物理增加平滑延迟 (Draggable 3D Records Inertia Delay)
+
+### 1. 需求分析
+- **唱片拖动跟随生硬**：
+  - 现象：首页右上角的 3D 悬挂唱片在被鼠标拖拽时，其位置过于生硬且即时地贴合鼠标（原 LERP 因子为 `0.52`），缺乏惯性、阻尼感与实体盘片的重量感。
+  - **需求**：为唱片的拖拽跟随效果增加一些平滑延迟（Inertia Delay），让唱片在被拖拽时优雅地滞后于鼠标移动，并在停止或移动时展现平滑的物理滑移。
+
+### 2. 解决方案与修改
+- **大幅降低拖拽跟随的 LERP 响应因子**：
+  - 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 中的正常拖拽物理循环，将 `t._lerp` 的恢复目标值由 `0.52` 大幅降至 **`0.12`**：
+    ```javascript
+    t._lerp += (0.12 - t._lerp) * 0.1; // 平滑恢复正常拖拽（由 0.52 改为 0.12 以增加延迟/滞后）
+    ```
+- **拖拽启动平滑缓入 (Smooth Drag Start)**：
+  - 在 `mousedown` 事件监听器中，当用户刚按下鼠标准备拖拽时，将 `t._lerp` 初始化重置为更低的 **`0.05`**。这为唱片在开始拖动的一瞬间提供了一个高级的、缓慢加速的起步手感。
+- **基于盘体实际位移重构倾斜与抛投物理**：
+  - 原先，唱片的 3D 倾斜（tilt）以及鼠标松开瞬间的抛投速度 `vx` / `vy` 是直接读取自 `mousemove` 事件中的鼠标即时速度。在引入拖动延迟后，这会导致盘体位移缓慢但倾斜状态依然随鼠标剧烈变化的“穿模脱节感”。
+  - **改进**：我们将拖拽状态下的 `t.vx` 与 `t.vy` 改为**基于唱片网格在相邻两帧之间的实际位移差**来计算：
+    ```javascript
+    let lastX = t.x;
+    let lastY = t.y;
+    t.x += (rawTargetX - t.x) * t._lerp;
+    t.y += (rawTargetY - t.y) * t._lerp;
+    t.vx = (t.x - lastX) * 0.50; // 基于唱片实际位移计算水平速度
+    t.vy = (t.y - lastY) * 0.50; // 基于唱片实际位移计算垂直速度
+    ```
+  - 这保证了唱片倾斜姿态、拖拽滞后轨迹和松手时的惯性抛投速度与其实际三维运动状态 **100% 契合与自适应**，视觉表现极其优雅、丝滑且物理正确。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c "npx vite build"` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub（Step 537），自动部署线上页面。

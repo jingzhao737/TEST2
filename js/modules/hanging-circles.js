@@ -813,8 +813,11 @@ import * as THREE from 'three';
           if (t._lerp > 0.09) t._lerp = 0.055; 
           else t._lerp += (0.09 - t._lerp) * 0.1;
           
+          let lastX = t.x;
+          let lastY = t.y;
           t.x += dx * t._lerp;
           t.y += dy * t._lerp;
+          t.vy = (t.y - lastY) * 0.50;
           
           // Feed a tiny bit of the movement into sway for a soft tilt
           t.vx = dx * 0.05;
@@ -841,11 +844,15 @@ import * as THREE from 'three';
             if (t._lerp > 0.09) t._lerp = 0.055;
             else t._lerp += (0.09 - t._lerp) * 0.1;
           } else {
-            t._lerp += (0.52 - t._lerp) * 0.1; // Smoothly recover normal drag
+            t._lerp += (0.12 - t._lerp) * 0.1; // Smoothly recover normal drag (changed from 0.52 to 0.12 to add delay/lag)
           }
           
+          let lastX = t.x;
+          let lastY = t.y;
           t.x += (rawTargetX - t.x) * t._lerp; 
           t.y += (rawTargetY - t.y) * t._lerp;
+          t.vx = (t.x - lastX) * 0.50;
+          t.vy = (t.y - lastY) * 0.50;
         }
 
         let targetSway = t.vx * 0.05;
@@ -1140,6 +1147,7 @@ import * as THREE from 'three';
       prevMouseX = mx;
       prevMouseY = my;
       t.vx = 0; t.vy = 0;
+      t._lerp = 0.05; // Reset lerp to 0.05 for a smooth drag start delay!
       canvas.style.cursor = 'grabbing';
       e.preventDefault();
     } else {
