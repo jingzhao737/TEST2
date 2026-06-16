@@ -1992,3 +1992,23 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 测试与部署 (Build and Deploy)
 - 重新运行 Vite 构建并执行部署脚本将更新同步至线上环境。
 - Playwright 数据监测表明：在整个 4000ms 开启调试周期中，Logo 在 landing 瞬间（2700ms）及后续所有驻留时间，在 Y 轴上始终牢牢咬死在完美的 `111px`（对应占位符 `107px`），飞行结束时没有丝毫的瞬间移位或下沉跳跃，过渡极其顺滑！
+
+
+---
+
+## 🛠️ Step 619: 彻底重构 Logo 飞行过渡逻辑 (Clean Rewrite of Logo Flight Transition System)
+
+### 1. 重构方案与设计思路 (Rewrite Strategy)
+为了彻底解决之前的遗留历史 Bug 积木式修补带来的排版不稳定性，我们遵循用户的要求，**将整个 Logo 的起飞、降落和状态切换过渡机制进行了重写**，实施了最精简、最健壮的设计：
+- **不重算，不清除行内定位 (Zero-Cleanup on Landing)**：
+  - 动画在开启动画的 `onComplete` 阶段，不再调用 `clearProps: 'x,transform'`，也不再移除行内 `transition: none`。
+  - Logo 在控制台打开状态下，**100% 保持在 GSAP 设置的 `left: targetLeft; top: targetTop; transform: translate(0px, 0px)` 状态上**。这从数学原理上消除了所有可能因为清除行内样式、切换 CSS Stacking Context 带来的任何抖动可能。
+  - 只有在关闭控制台、Logo 飞回导航栏的 `onComplete` 阶段，我们才调用一次 `clearProps: 'all'`，彻底释放所有行内属性，让它归位到原生的 CSS 导航栏样式中。
+- **全局静止缩放 (Static scale 1.0)**：
+  - 完全去除了 `color-console.js` 中所有对 `:hover` 缩放的逻辑计算、变量捕获以及 GSAP 中的缩放插值，确保在整个周期中缩放大小完全保持在 1.0 的清爽状态。
+
+### 2. 测试与部署 (Testing & Verification)
+- 重新运行 Vite 项目构建。
+- 推送至 GitHub Pages 分支上线并验证：
+  - 飞行动画落地衔接毫无任何抖动，Y 轴在 2500ms、2700ms、3200ms 及之后完美平稳地静止在 `111px`（对应 Placeholder `107px`），没有任何多余像素的移动。
+  - 鼠标在徽标上悬停时，**完全去除了悬浮缩放效果**，完美达到预期！
