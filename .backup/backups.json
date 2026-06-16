@@ -1,12 +1,5 @@
 [
   {
-    "step": 165,
-    "timestamp": "2026-06-17 01:10:48",
-    "description": "Disable workDetail pointer-events immediately on close transition to resolve home page click interception",
-    "folder": "step_165_Disable_workDetail_pointer-events_immediately_on_close_transition_to_resolve_home_page_click_interception",
-    "is_auto": false
-  },
-  {
     "step": 166,
     "timestamp": "2026-06-17 01:11:13",
     "description": "Update walkthrough.md with pointer-events fix details",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:43:20",
     "description": "docs update walkthrough with theme observer fix",
     "folder": "step_184_docs_update_walkthrough_with_theme_observer_fix",
+    "is_auto": false
+  },
+  {
+    "step": 185,
+    "timestamp": "2026-06-17 01:45:21",
+    "description": "style shift mobile nav logo and soundwaves further right",
+    "folder": "step_185_style_shift_mobile_nav_logo_and_soundwaves_further_right",
     "is_auto": false
   }
 ]
