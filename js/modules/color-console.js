@@ -21,7 +21,7 @@ import gsap from 'gsap';
     if (_animating) return;
     const isOpening = active !== undefined ? active : !consoleEl.classList.contains('active');
 
-    // Disable CSS transitions instantly to avoid race condition/jitter
+    // 1. Disable CSS transitions instantly to avoid race condition/jitter
     logo.style.setProperty('transition', 'none', 'important');
     logo.classList.add('no-transition');
     consoleEl.style.transition = 'none';
@@ -33,8 +33,7 @@ import gsap from 'gsap';
       const placeholder = document.getElementById('consoleTitlePlaceholder');
       if (!placeholder) return;
 
-      // 1. Measure positions
-      // Temporarily clear staticLogo transform to get an unscaled (scale 1.0) rect
+      // Measure starting position in navbar
       if (staticLogo) {
         staticLogo.style.transform = 'none';
         staticLogo.offsetHeight; // Force reflow
@@ -43,7 +42,9 @@ import gsap from 'gsap';
       if (staticLogo) {
         staticLogo.style.transform = ''; // Restore
       }
-      consoleEl.classList.add('active'); // Add active class before measuring to resolve stylesheet layout rules
+      
+      // Add active class and measure target position under layout-active conditions
+      consoleEl.classList.add('active');
       gsap.set(consoleEl, { y: 0, scale: 1 });
       consoleEl.offsetHeight; // Force reflow to update child subpixel layout caches
       const placeholderRect = placeholder.getBoundingClientRect();
@@ -58,11 +59,11 @@ import gsap from 'gsap';
       gsap.set(consoleEl, { y: -12, scale: 0.97, opacity: 0 }); 
       consoleEl.offsetHeight; // Force reflow
  
-      // 2. Setup initial animated outline logo state
+      // Setup initial animated outline logo state
       gsap.set(logo, {
         left: startRect.left,
         top: startRect.top,
-        opacity: 0 // Start hidden for a smooth fade-in morph
+        opacity: 0
       });
       logo.classList.add('console-active');
       logo.offsetHeight; // Force reflow
@@ -79,10 +80,7 @@ import gsap from 'gsap';
  
       const tl = gsap.timeline({
         onComplete: () => {
-          // Clear only temporary x/transform styles after landing.
-          // We do NOT restore CSS transitions (i.e. keep inline 'transition: none') while the console is active.
-          // This completely prevents browser styling engines from running any race-condition transitions.
-          gsap.set(logo, { clearProps: 'x,transform' });
+          // Keep top/left and transition: none active while console is open to prevent layout snapping
           gsap.set(consoleEl, { clearProps: 'transform,scale,y,opacity' });
           _animating = false;
         }
@@ -124,7 +122,7 @@ import gsap from 'gsap';
 
     } else {
       // --- CLOSING ---
-      // Temporarily clear transforms to get unscaled (scale 1.0) rects
+      // Temporarily clear transforms to get unscaled rects
       logo.style.transform = 'none';
       if (staticLogo) {
         staticLogo.style.transform = 'none';
@@ -138,6 +136,7 @@ import gsap from 'gsap';
       if (staticLogo) {
         staticLogo.style.transform = ''; // Restore
       }
+      
       _animating = true;
       const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
       const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.7;
@@ -146,9 +145,7 @@ import gsap from 'gsap';
 
       // Ensure logo is visible at the start of closing animation
       gsap.set(logo, { opacity: 1 });
-
-      // Force browser reflow
-      logo.offsetHeight;
+      logo.offsetHeight; // Force reflow
 
       const tl = gsap.timeline({
         onComplete: () => {
