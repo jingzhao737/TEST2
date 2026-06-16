@@ -171,6 +171,71 @@
     initEvents();
   }
 
+  // Synthesize a metallic forge clang sound (anvil strike with ring out)
+  function playForgeClangSound() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const now = ctx.currentTime;
+    
+    // An anvil strike sound can be modeled with:
+    // 1. A short high-frequency noise transient (the hammer impact)
+    // 2. Multiple sine/triangle wave harmonics that decay at different rates
+    
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0.0, now);
+    masterGain.gain.linearRampToValueAtTime(0.4, now + 0.005); // sharp attack
+    masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.8); // 1.8 seconds decay
+    masterGain.connect(window.__masterGainNode || ctx.destination);
+
+    // Hammer impact noise transient (high-passed noise)
+    const bufferSize = ctx.sampleRate * 0.02; // 20ms burst
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    
+    const noiseFilter = ctx.createBiquadFilter();
+    noiseFilter.type = 'highpass';
+    noiseFilter.frequency.setValueAtTime(1200, now);
+    
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.3, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+    
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(masterGain);
+    noise.start(now);
+
+    // Inharmonic frequencies for metal ring (anvil modes)
+    const frequencies = [220, 415, 620, 880, 1200, 1650, 2300];
+    const decays = [1.5, 1.2, 0.9, 0.6, 0.4, 0.2, 0.1]; // higher frequencies decay faster
+    const gains = [0.12, 0.10, 0.08, 0.06, 0.04, 0.02, 0.01];
+
+    frequencies.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const oscGain = ctx.createGain();
+
+      // Triangle for fundamental for warmer body, sine for pure harmonics
+      osc.type = idx === 0 ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      oscGain.gain.setValueAtTime(gains[idx], now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + decays[idx]);
+
+      osc.connect(oscGain);
+      oscGain.connect(masterGain);
+
+      osc.start(now);
+      osc.stop(now + decays[idx] + 0.1);
+    });
+  }
+
   // Auto-resume global AudioContext on user interactions to prevent browser autoplay suspensions
   function resumeGlobalContext() {
     const ctx = window.__audioCtx;
@@ -184,4 +249,5 @@
 
   window.__playHoverSound = playHoverSound;
   window.__playClickSound = playClickSound;
+  window.__playForgeClangSound = playForgeClangSound;
 })();

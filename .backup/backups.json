@@ -1,12 +1,5 @@
 [
   {
-    "step": 126,
-    "timestamp": "2026-06-16 21:52:53",
-    "description": "Tune logo landing spark physics for stronger ease-out effect",
-    "folder": "step_126_Tune_logo_landing_spark_physics_for_stronger_ease-out_effect",
-    "is_auto": false
-  },
-  {
     "step": 127,
     "timestamp": "2026-06-16 21:54:47",
     "description": "Extend logo landing spark lifespan to 1.8s and optimize slide drag",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 23:14:13",
     "description": "Make logo landing stars horizontal oval shape slightly flatter",
     "folder": "step_145_Make_logo_landing_stars_horizontal_oval_shape_slightly_flatter",
+    "is_auto": false
+  },
+  {
+    "step": 146,
+    "timestamp": "2026-06-16 23:25:13",
+    "description": "Add synthesized forge successful clang sound effect when logo lands",
+    "folder": "step_146_Add_synthesized_forge_successful_clang_sound_effect_when_logo_lands",
     "is_auto": false
   }
 ]
