@@ -1565,3 +1565,36 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，唱片吸附缩放不仅保留了清晰的“收缩-缓冲-回弹”节奏，而且其总耗时变得极其舒缓、平稳，视觉品质十分高雅。
+
+---
+
+## 🛠️ Step 599: 解决 3D 唱片重叠与穿模 Bug (Fix 3D Mesh Clipping and Overlap via Layered Z-spacing and Perspective Scale Compensation)
+
+### 1. 穿模成因剖析
+- **物理倾斜导致的 Z 轴交叠**：
+  - 在之前的代码中，层与层之间的 Z 轴基础间隔非常小（`baseZ = i * 4`，即相邻碟片只相差 4px）。
+  - 当唱片受到风力、拖拽或惯性摆动时，程序会计算一个 3D 倾斜角度（Tilt）。由于唱片半径较大（最大约为 78px），即使倾斜仅 `0.2` 弧度，其边缘 of Z 轴位移就会达到 `78 * sin(0.2) = 15.4px`，这远远超过了 4px 的层级间隔，从而导致相邻唱片在物理交错时发生交叉穿模（Z-Clipping / Interpenetration）。
+- **简单加大层间隔导致的视角失真（Bloating）**：
+  - 如果简单粗暴地将基础层间隔加大（例如 `i * 24`），虽然能避免穿模，但由于透视投影相机（Perspective Camera，Z 轴深度 500）的“近大远小”原理，被拉近到相机前方的唱片（例如 Z=220 处）会在屏幕上显得异常巨大，破坏了 2D 排版的对齐尺寸。
+
+### 2. 解决方案与重构
+- **多层动态 Z 轴间距划分（Safe Layer Spacing）**：
+  - 将相邻唱片的基础层间距加宽到 `24px`，确保它们在普通摆动下拥有绝对安全的隔离带。
+  - **基于层级优先级的动态全局提升（Layer State-based Lift）**：
+    - Resting（静止层）：Z 坐标为 `i * 24`（0, 24, 48, 72）。
+    - Hovered（悬停层）：Z 坐标提升为 `96 + i * 24`（保证被悬停的碟片浮在所有静止碟片之上，且层间依然有 24px 隔离）。
+    - Dragged（拖拽层）：Z 坐标提升为 `192 + i * 24`（保证正在被拖拽的碟片浮在最上方，且层间依然有 24px 隔离）。
+- **透视缩放补偿（Perspective Scale Compensation）**：
+  - 在 `d.group.scale` 计算中乘入透视比例系数 `pFactor = (cameraDepth - Z) / cameraDepth`：
+    `d.group.scale.set(scale * pFactor, scale * pFactor, 1);`
+  - 这使得盘片在 3D 透视下，无论拉近到什么 Z 深度，其投影在 2D 屏幕上的视觉尺寸都与 2D 排版参数（`t.dispW`）百分之百一致，既消除了透视膨胀，又完整保留了精美的 3D 透视倾斜反光和厚度！
+- **倾斜限幅（Tilt Clamping）**：
+  - 将最大倾斜限制在 `0.3` 弧度（约 17 度）：
+    `let targetTiltX = Math.max(-0.3, Math.min(0.3, -t.vy * 0.035));`
+  - 这确保了即使拖拽移动极快，碟片边缘在 Z 轴上的位移也不会超过 `23px`（小于 24px 的安全隔离间距），在物理上绝对杜绝了任何穿模的可能性。
+- **阴影提升比率归一化**：
+  - 将 `lift` 归一化公式更新为 `(t.currentZ - baseZ) / 192`，以适配全新拓宽的 Z 轴行程范围。
+
+### 3. 部署与验证
+- 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
+- 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，唱片在重叠和快速摆动时层级分明、遮挡完美，完全消除了任何穿模重叠现象。
