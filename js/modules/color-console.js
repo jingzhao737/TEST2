@@ -75,9 +75,9 @@ import gsap from 'gsap';
 
       const tl = gsap.timeline({
         onComplete: () => {
-          // Clear only temporary x/transform styles after landing BEFORE restoring transitions
-          // to prevent the browser from animating the clearProps transform reset (which causes subpixel layout shifting)
-          gsap.set(logo, { clearProps: 'x,transform' });
+          // We do NOT clear transform/x here to keep the logo perfectly stable at its landed position
+          // and prevent any compositor layer / subpixel baseline snapping jumps.
+          // All inline styles will be fully cleared when the console is closed.
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
           consoleEl.style.transition = '';
@@ -92,6 +92,9 @@ import gsap from 'gsap';
 
       // Smoothly fade in the outline logo at the start of flight
       tl.to(logo, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0);
+
+      // Explicitly animate scale to 1 over the flight to transition smoothly from hover state
+      tl.to(logo, { scale: 1, duration: duration, ease: ease }, 0);
 
       // Unified parametric tween: interpolates left/top/x based on eased virtual progress
       tl.to(animState, {
