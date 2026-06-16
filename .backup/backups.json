@@ -1,12 +1,5 @@
 [
   {
-    "step": 130,
-    "timestamp": "2026-06-16 22:04:18",
-    "description": "Add thermal convection drift to forge sparks to prevent straight-down falling",
-    "folder": "step_130_Add_thermal_convection_drift_to_forge_sparks_to_prevent_straight-down_falling",
-    "is_auto": false
-  },
-  {
     "step": 131,
     "timestamp": "2026-06-16 22:06:10",
     "description": "Implement gravity-free Big Bang straight-line radial expansion for logo landing sparks",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:02:37",
     "description": "Fix TDZ reference error in stars.js to restore starry background",
     "folder": "step_149_Fix_TDZ_reference_error_in_stars.js_to_restore_starry_background",
+    "is_auto": false
+  },
+  {
+    "step": 150,
+    "timestamp": "2026-06-17 00:10:30",
+    "description": "Optimize Works section scroll and mouse hover entry performance, removing layout reflows and reducing GPU texture uploads",
+    "folder": "step_150_Optimize_Works_section_scroll_and_mouse_hover_entry_performance,_removing_layout_reflows_and_reducing_GPU_texture_uploads",
     "is_auto": false
   }
 ]

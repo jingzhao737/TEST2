@@ -54,6 +54,12 @@
   - `[x]` 应用户最新优化需求，将锻造粒子动效进一步重构为无重力干扰的“宇宙大爆炸”式纯径向直线扩散：去除向上重力偏置和下落重力（`gravity: 0`），并设置高品质的滑动阻尼（`0.95`），确保所有粒子在 1.2s~2s 的生命周期中，完全保持初始抛射方向，以完美的直线向外匀称扩散、缓缓减速并优雅淡出，完全消除任何向下或向上的漂移感。
   - `[x]` 微调大爆炸粒子动效范围与触发时序：移除 0.1s 的 `setTimeout` 延迟，使爆破动效在 Logo 时间线结束的瞬间即时触发；同时将火花粒子初速度区间降为 `2.5~7.0`，双重激波环的最大半径压缩至 `50px` 和 `80px`，并将火星数量精简到 `12~17` 颗，使动效更紧凑精致。
 
+- `[x]` **修复 stars.js 中的 TDZ（暂存死区）初始化 ReferenceError 错误**
+  - `[x]` 解决 `stars.js` 在模块加载时，由于 `initWebGLTextElements` 在声明 `workCardElements` 变量之前就被调用而引发的 `ReferenceError: Cannot access 'workCardElements' before initialization` 运行时报错。
+  - `[x]` 将 `webglTextElements`, `workCardElements`, `cachedTextItems`, `cachedCardItems` 的 `let` 声明语句整体移动至 `initWebGLTextElements` 函数的定义及调用之前。
+  - `[x]` 本地构建与打包（`npx vite build`）校验编译完全通过。
+  - `[x]` 运行 `py workflow.py deploy` 命令，将最新修复自动提交并成功推送至 GitHub Pages 线上服务。
+
 
 
 

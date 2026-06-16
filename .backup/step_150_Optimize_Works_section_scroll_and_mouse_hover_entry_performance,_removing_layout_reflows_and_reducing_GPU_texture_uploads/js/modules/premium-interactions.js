@@ -206,7 +206,6 @@ if (!isMobileDevice) {
     function onListEnter(e) {
       isVisible = true;
       firstMove = true;
-      updateFlatPageCoordinates(); // Refresh coordinates when entering the list
 
       if (e) {
         rawMouseX = e.clientX;

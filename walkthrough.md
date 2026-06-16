@@ -2261,6 +2261,21 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 编译生产包。
 - 效果绝佳：Logo 降落完成的瞬间（毫秒级同步），落点立刻爆发闪烁光核心与两道精致的同心气波。随即，十余颗橙金星尘粒子匀称地沿着直线轨道飞越，最大飞散半径极度克制收敛在 Logo 周边约 80px 范围内，然后极慢减速消隐。整场大爆炸爆发迅速，收尾紧凑，范围恰到好处，显得极其克制、高级且极具爆发打击感！
 
+---
+
+## 🛠️ Step 632: 修复 stars.js 中的 TDZ（暂存死区）运行时报错以恢复星空背景 (Fix Temporal Dead Zone ReferenceError in stars.js to Restore Starry Background)
+
+### 1. 问题分析 (Problem Diagnosis)
+- **现象**：优化 `stars.js` 布局参数性能（缓存 DOM 坐标避免每帧 Layout Thrashing）后，网页星空背景和流体不可见。
+- **根源**：在 [stars.js](file:///D:/webprojext/js/modules/stars.js) 中，模块加载时同步执行了 `initWebGLTextElements()` 并深层调用了 `cacheLayoutCoords()`。在此调用发生时，`workCardElements` 变量尚未被初始化（因为它是在后面的第 178 行通过 `let` 声明的），触发了 `ReferenceError: Cannot access 'workCardElements' before initialization` 运行时报错，导致 WebGL 初始化中断。
+
+### 2. 解决方案与代码重构 (Resolution)
+- **重构**：将 `webglTextElements`、`workCardElements`、`cachedTextItems` 和 `cachedCardItems` 的 `let` 声明整体剪切移动到最上方（`initWebGLTextElements` 之前），彻底打通初始化依赖，避免 TDZ 问题。
+
+### 3. 构建、部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 完美编译通过。
+- 运行 `py workflow.py deploy` 完成线上部署备份。测试页面成功重现璀璨的星空背景与流畅的水波纹，所有性能卡顿同步消除，表现极佳！
+
 
 
 

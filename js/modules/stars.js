@@ -147,6 +147,10 @@ import * as THREE from 'three';
   let workCardElements = [];
   let cachedTextItems = [];
   let cachedCardItems = [];
+  let cachedTextItemsBase = [];
+  let lastScrollY = -1;
+  let lastScrollX = -1;
+  let needsTextCanvasUpdate = true;
 
   function initWebGLTextElements() {
     const selectors = [
@@ -171,41 +175,14 @@ import * as THREE from 'three';
       const els = document.querySelectorAll(sel);
       els.forEach(el => webglTextElements.push(el));
     });
-    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
-  }
-  initWebGLTextElements();
-  window.addEventListener('load', () => {
-    initWebGLTextElements();
-    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
-  });
 
-  function initWorkCardElements() {
-    workCardElements = Array.from(document.querySelectorAll('.work-card'));
-    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
-  }
-  initWorkCardElements();
-  window.addEventListener('load', () => {
-    initWorkCardElements();
-    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
-  });
-
-  function cacheLayoutCoords() {
-    const scrollX = window.scrollX || window.pageXOffset || 0;
-    const scrollY = window.scrollY || window.pageYOffset || 0;
-
-    if (!webglTextElements || !workCardElements) return;
-
-    cachedTextItems = webglTextElements.map(el => {
-      const rect = el.getBoundingClientRect();
+    // Cache static styles and text contents once
+    cachedTextItemsBase = webglTextElements.map(el => {
       const style = window.getComputedStyle(el);
       const section = el.closest('section') || el.parentElement;
       return {
         el: el,
         section: section,
-        pageTop: rect.top + scrollY,
-        pageLeft: rect.left + scrollX,
-        width: rect.width,
-        height: rect.height,
         fontSize: style.fontSize,
         fontWeight: style.fontWeight,
         fontFamily: style.fontFamily,
@@ -224,6 +201,40 @@ import * as THREE from 'three';
       };
     });
 
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
+  }
+  initWebGLTextElements();
+  window.addEventListener('load', () => {
+    initWebGLTextElements();
+  });
+
+  function initWorkCardElements() {
+    workCardElements = Array.from(document.querySelectorAll('.work-card'));
+    if (typeof cacheLayoutCoords === 'function') cacheLayoutCoords();
+  }
+  initWorkCardElements();
+  window.addEventListener('load', () => {
+    initWorkCardElements();
+  });
+
+  function cacheLayoutCoords() {
+    const scrollX = window.scrollX || window.pageXOffset || 0;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+
+    if (!webglTextElements || !workCardElements) return;
+
+    // Fast mapping using the pre-cached static base
+    cachedTextItems = cachedTextItemsBase.map(item => {
+      const rect = item.el.getBoundingClientRect();
+      return {
+        ...item,
+        pageTop: rect.top + scrollY,
+        pageLeft: rect.left + scrollX,
+        width: rect.width,
+        height: rect.height
+      };
+    });
+
     cachedCardItems = workCardElements.map(el => {
       const rect = el.getBoundingClientRect();
       return {
@@ -235,10 +246,22 @@ import * as THREE from 'three';
         height: rect.height
       };
     });
+
+    needsTextCanvasUpdate = true;
   }
 
+  // Scroll awareness for the periodic recache
+  let lastScrollTime = 0;
+  window.addEventListener('scroll', () => {
+    lastScrollTime = Date.now();
+  }, { passive: true });
+
   // Fallback periodic recache to catch dynamic layout adjustments (e.g. lazy loads, panel transitions)
-  setInterval(cacheLayoutCoords, 1000);
+  // Run less frequently and completely skip if the user is actively scrolling to prevent frame drops
+  setInterval(() => {
+    if (Date.now() - lastScrollTime < 500) return;
+    cacheLayoutCoords();
+  }, 3000);
   window.__recacheStarsLayout = cacheLayoutCoords;
 
   // --- 2. Fluid Simulation Settings ---
@@ -975,14 +998,20 @@ import * as THREE from 'three';
     matDisplay.uniforms.uDividerCount.value = dividerCount;
 
     // 1. Draw WebGL text elements onto offscreen canvas (highly optimized using layout cache)
-    if (cachedTextItems.length > 0 || cachedCardItems.length > 0) {
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const scrollX = window.scrollX || window.pageXOffset || 0;
+    if (scrollY !== lastScrollY || scrollX !== lastScrollX) {
+      needsTextCanvasUpdate = true;
+      lastScrollY = scrollY;
+      lastScrollX = scrollX;
+    }
+
+    if (needsTextCanvasUpdate && (cachedTextItems.length > 0 || cachedCardItems.length > 0)) {
       try {
         textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
         textCtx.save();
         textCtx.scale(dpr, dpr);
 
-        const scrollY = window.scrollY || window.pageYOffset || 0;
-        const scrollX = window.scrollX || window.pageXOffset || 0;
         const viewportH = window.innerHeight;
         const isLight = document.documentElement.classList.contains('light');
 
@@ -1128,6 +1157,7 @@ import * as THREE from 'three';
 
         textCtx.restore();
         textTexture.needsUpdate = true;
+        needsTextCanvasUpdate = false;
       } catch (err) {
         console.error('Error drawing WebGL text elements: ', err);
       }
