@@ -1,12 +1,5 @@
 [
   {
-    "step": 114,
-    "timestamp": "2026-06-16 01:22:23",
-    "description": "Optimize vinyl record label graphics and typography",
-    "folder": "step_114_Optimize_vinyl_record_label_graphics_and_typography",
-    "is_auto": false
-  },
-  {
     "step": 115,
     "timestamp": "2026-06-16 01:25:01",
     "description": "Fix vinyl record mesh overlapping and Z-clipping",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 22:11:13",
     "description": "Scale down logo landing stars and fluid ripple to match mouse click range",
     "folder": "step_133_Scale_down_logo_landing_stars_and_fluid_ripple_to_match_mouse_click_range",
+    "is_auto": false
+  },
+  {
+    "step": 134,
+    "timestamp": "2026-06-16 22:15:04",
+    "description": "Add fast-to-slow rotation decay curve for forge burst stars",
+    "folder": "step_134_Add_fast-to-slow_rotation_decay_curve_for_forge_burst_stars",
     "is_auto": false
   }
 ]

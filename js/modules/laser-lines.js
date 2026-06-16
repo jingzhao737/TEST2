@@ -447,7 +447,17 @@
         ctx.restore();
       } else if (s.type === 'star') {
         // Delicate Small Cross-Star (十字星)
-        s.angle += s.spin;
+        if (s.spin) {
+          let spinFactor;
+          if (age < 0.2) {
+            const t = age / 0.2;
+            spinFactor = 1.0 - t * 0.88; // Decays from 1.0 to 0.12 (extremely fast for the first 20%)
+          } else {
+            const t = (age - 0.2) / 0.8;
+            spinFactor = 0.12 - t * 0.10; // Decays from 0.12 to 0.02 (extremely slow for the remaining 80%)
+          }
+          s.angle += s.spin * spinFactor;
+        }
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
@@ -568,7 +578,7 @@
         type: 'star',
         size: 0.8 + Math.random() * 3.5,
         angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.20, // Rapid spin for shimmering glints
+        spin: (Math.random() - 0.5) * 0.60, // Rapid initial spin, which will decelerate rapidly
         created: Date.now(),
         life: lifeSpan,
         drag: 0.90, // Same drag as mouse click to decay speed at the exact same rate!
