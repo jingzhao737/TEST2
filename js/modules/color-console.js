@@ -51,7 +51,9 @@ import gsap from 'gsap';
       consoleEl.classList.add('active');
       _animating = true;
 
-      const maxBulge = window.innerWidth > 768 ? 36 : 28;
+      const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
+      const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.2;
+      const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
 
       const tl = gsap.timeline({
@@ -68,8 +70,8 @@ import gsap from 'gsap';
       // Unified parametric tween: interpolates left/top/x based on eased virtual progress
       tl.to(animState, {
         progress: 1,
-        duration: 2.2,
-        ease: 'power4.inOut',
+        duration: duration,
+        ease: ease,
         onUpdate: function() {
           const s = animState.progress;
           const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s);
@@ -96,7 +98,9 @@ import gsap from 'gsap';
       const startRect = logo.getBoundingClientRect();
       const toRect = anchorEl.getBoundingClientRect();
       _animating = true;
-      const maxBulge = window.innerWidth > 768 ? 36 : 28;
+      const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
+      const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.2;
+      const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
 
       // Ensure logo opacity is set to 1 before starting closing animation
@@ -120,8 +124,8 @@ import gsap from 'gsap';
       // Parametric return tween: keeps path geometric shape perfect
       tl.to(animState, {
         progress: 1,
-        duration: 2.2,
-        ease: 'power4.inOut',
+        duration: duration,
+        ease: ease,
         onUpdate: function() {
           const s = animState.progress;
           const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s); // startRect is anchorEl rect (navbar)
@@ -376,6 +380,321 @@ import gsap from 'gsap';
       }
     }
   });
+
+  // --- TRAJECTORY DEBUGGER IMPLEMENTATION ---
+  const toggleDebugBtn = document.getElementById('toggleDebugBtn');
+  const debugArrow = document.getElementById('debugArrow');
+  const debugCollapseContent = document.getElementById('debugCollapseContent');
+  const debugDuration = document.getElementById('debugDuration');
+  const debugBulge = document.getElementById('debugBulge');
+  const debugEase = document.getElementById('debugEase');
+  const valDuration = document.getElementById('valDuration');
+  const valBulge = document.getElementById('valBulge');
+  const debugTestBtn = document.getElementById('debugTestBtn');
+  const debugCopyBtn = document.getElementById('debugCopyBtn');
+  const debugPathCanvas = document.getElementById('debugPathCanvas');
+
+  if (debugDuration && debugBulge && debugEase) {
+    // Initialize global configuration variables
+    window.__logoDuration = parseFloat(debugDuration.value);
+    window.__logoBulge = parseInt(debugBulge.value);
+    window.__logoEase = debugEase.value;
+  }
+
+  // Toggle debug panel visibility
+  if (toggleDebugBtn && debugCollapseContent && debugArrow) {
+    let debugCollapsed = false;
+    toggleDebugBtn.addEventListener('click', () => {
+      debugCollapsed = !debugCollapsed;
+      debugCollapseContent.style.display = debugCollapsed ? 'none' : 'block';
+      debugArrow.style.transform = debugCollapsed ? 'rotate(0deg)' : 'rotate(90deg)';
+    });
+  }
+
+  // Evaluate Easing values mathematically
+  function getEasedS(s) {
+    const easeName = debugEase ? debugEase.value : 'power4.inOut';
+    if (easeName === 'none') return s;
+    if (easeName.startsWith('back.inOut')) {
+      const match = easeName.match(/\(([^)]+)\)/);
+      const overshoot = match ? parseFloat(match[1]) : 1.70158;
+      const c1 = overshoot;
+      const c2 = c1 * 1.525;
+      if (s < 0.5) {
+        return (Math.pow(2 * s, 2) * ((c2 + 1) * 2 * s - c2)) / 2;
+      } else {
+        return (Math.pow(2 * s - 2, 2) * ((c2 + 1) * (2 * s - 2) + c2) + 2) / 2;
+      }
+    }
+    if (easeName === 'power4.inOut') {
+      return s < 0.5 ? 8 * s * s * s * s : 1 - Math.pow(-2 * s + 2, 4) / 2;
+    }
+    if (easeName === 'power3.inOut') {
+      return s < 0.5 ? 4 * s * s * s : 1 - Math.pow(-2 * s + 2, 3) / 2;
+    }
+    if (easeName === 'power2.inOut') {
+      return s < 0.5 ? 2 * s * s : 1 - Math.pow(-2 * s + 2, 2) / 2;
+    }
+    if (easeName === 'expo.inOut') {
+      return s === 0 ? 0 : s === 1 ? 1 : s < 0.5 ? Math.pow(2, 20 * s - 10) / 2 : (2 - Math.pow(2, -20 * s + 10)) / 2;
+    }
+    if (easeName === 'sine.inOut') {
+      return -(Math.cos(Math.PI * s) - 1) / 2;
+    }
+    if (easeName === 'circ.inOut') {
+      return s < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * s, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * s + 2, 2)) + 1) / 2;
+    }
+    return s;
+  }
+
+  // Draw background grid, straight path and trajectory arc on canvas
+  function drawDebugCurve() {
+    if (!debugPathCanvas) return;
+    const ctx = debugPathCanvas.getContext('2d');
+    const w = debugPathCanvas.width;
+    const h = debugPathCanvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const padX = 40;
+    const padY = 20;
+
+    const startX = padX;
+    const startY = padY;
+    const endX = w - padX;
+    const endY = h - padY;
+
+    const bulge = debugBulge ? parseInt(debugBulge.value) : 36;
+
+    // Draw grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += 20) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (let y = 0; y < h; y += 20) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+
+    // Draw straight line path (dashed)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw start/end nodes
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.beginPath(); ctx.arc(startX, startY, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(endX, endY, 4, 0, Math.PI * 2); ctx.fill();
+
+    // Draw trajectory path
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e87c50';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const s = getEasedS(t);
+      const x = startX + s * (endX - startX) + Math.sin(s * Math.PI) * (bulge * 0.8);
+      const y = startY + s * (endY - startY);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Draw node labels
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '8px monospace';
+    ctx.fillText('NAVBAR', startX - 25, startY + 12);
+    ctx.fillText('CONSOLE', endX - 10, endY - 8);
+  }
+
+  // Live updates
+  function updateDebugConfig() {
+    if (!debugDuration || !debugBulge || !debugEase) return;
+    const dur = parseFloat(debugDuration.value);
+    const bulge = parseInt(debugBulge.value);
+    const ease = debugEase.value;
+
+    valDuration.textContent = dur.toFixed(1);
+    valBulge.textContent = bulge;
+
+    window.__logoDuration = dur;
+    window.__logoBulge = bulge;
+    window.__logoEase = ease;
+  }
+
+  if (debugDuration && debugBulge && debugEase) {
+    debugDuration.addEventListener('input', updateDebugConfig);
+    debugBulge.addEventListener('input', updateDebugConfig);
+    debugEase.addEventListener('change', updateDebugConfig);
+  }
+
+  // Animation Loop for the preview dot on the canvas
+  let canvasAnimId = null;
+  let canvasProgress = 0;
+  let lastTime = performance.now();
+
+  function animateCanvasDot() {
+    if (!debugPathCanvas) return;
+    drawDebugCurve();
+
+    const ctx = debugPathCanvas.getContext('2d');
+    const w = debugPathCanvas.width;
+    const h = debugPathCanvas.height;
+
+    const padX = 40;
+    const padY = 20;
+
+    const startX = padX;
+    const startY = padY;
+    const endX = w - padX;
+    const endY = h - padY;
+
+    const dur = debugDuration ? parseFloat(debugDuration.value) : 2.2;
+    const bulge = debugBulge ? parseInt(debugBulge.value) : 36;
+
+    const now = performance.now();
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+
+    canvasProgress += dt / dur;
+    if (canvasProgress > 1) {
+      canvasProgress = 0;
+    }
+
+    const s = getEasedS(canvasProgress);
+    const dotX = startX + s * (endX - startX) + Math.sin(s * Math.PI) * (bulge * 0.8);
+    const dotY = startY + s * (endY - startY);
+
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e87c50';
+
+    // Draw glowing dot
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = accentColor;
+    ctx.fillStyle = accentColor;
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    canvasAnimId = requestAnimationFrame(animateCanvasDot);
+  }
+
+  // MutationObserver to trigger canvas animation loop
+  const observer = new MutationObserver(() => {
+    if (consoleEl.classList.contains('active')) {
+      canvasProgress = 0;
+      lastTime = performance.now();
+      if (canvasAnimId) cancelAnimationFrame(canvasAnimId);
+      canvasAnimId = requestAnimationFrame(animateCanvasDot);
+    } else {
+      if (canvasAnimId) {
+        cancelAnimationFrame(canvasAnimId);
+        canvasAnimId = null;
+      }
+    }
+  });
+  observer.observe(consoleEl, { attributes: true, attributeFilter: ['class'] });
+
+  // Test Path (screen flight preview)
+  if (debugTestBtn) {
+    debugTestBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const fromLogo = staticLogo || logo;
+      if (!fromLogo) return;
+
+      const fromRect = fromLogo.getBoundingClientRect();
+      const toPlaceholder = document.getElementById('consoleTitlePlaceholder');
+      if (!toPlaceholder) return;
+      const toRect = toPlaceholder.getBoundingClientRect();
+
+      const existing = document.getElementById('trajectoryDebugGhost');
+      if (existing) existing.remove();
+
+      const ghost = document.createElement('div');
+      ghost.id = 'trajectoryDebugGhost';
+      ghost.className = 'nav-logo';
+      ghost.style.position = 'fixed';
+      ghost.style.zIndex = '99999';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.fontFamily = "'Climate Crisis', sans-serif";
+      ghost.style.fontSize = '1.3rem';
+      ghost.style.fontWeight = '700';
+      ghost.style.color = 'transparent';
+      ghost.style.webkitTextStroke = '0.8px var(--fg)';
+      ghost.style.left = '0px';
+      ghost.style.top = '0px';
+      ghost.textContent = 'YYJZ';
+
+      gsap.set(ghost, {
+        x: fromRect.left,
+        y: fromRect.top,
+        opacity: 0.8
+      });
+      document.body.appendChild(ghost);
+
+      const dur = window.__logoDuration;
+      const bulge = window.__logoBulge;
+      const ease = window.__logoEase;
+      const animState = { progress: 0 };
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          gsap.to(ghost, {
+            opacity: 0,
+            scale: 0.8,
+            duration: 0.3,
+            onComplete: () => ghost.remove()
+          });
+        }
+      });
+
+      tl.to(animState, {
+        progress: 1,
+        duration: dur,
+        ease: ease,
+        onUpdate: () => {
+          const s = animState.progress;
+          const currentLeft = gsap.utils.interpolate(fromRect.left, toRect.left, s);
+          const currentTop = gsap.utils.interpolate(fromRect.top, toRect.top, s);
+          const xOffset = Math.sin(s * Math.PI) * bulge;
+          gsap.set(ghost, {
+            x: currentLeft,
+            y: currentTop,
+            xPercent: 0,
+            yPercent: 0,
+            transform: `translate(${xOffset}px, 0px)`
+          });
+        }
+      }, 0);
+    });
+  }
+
+  // Copy Config
+  if (debugCopyBtn) {
+    debugCopyBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const configStr = `{ duration: ${window.__logoDuration.toFixed(1)}, maxBulge: ${window.__logoBulge}, ease: '${window.__logoEase}' }`;
+      navigator.clipboard.writeText(configStr).then(() => {
+        const originalText = debugCopyBtn.textContent;
+        debugCopyBtn.textContent = 'Copied!';
+        debugCopyBtn.style.background = 'rgba(0, 200, 100, 0.2)';
+        setTimeout(() => {
+          debugCopyBtn.textContent = originalText;
+          debugCopyBtn.style.background = '';
+        }, 1500);
+      }).catch(err => {
+        alert('Failed to copy config: ' + err);
+      });
+    });
+  }
 
   // Initialize
   initLoad();

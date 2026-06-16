@@ -1763,3 +1763,32 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 打包与自动化部署
 - 执行本地编译与打包测试均正常。
 - 运行 `python workflow.py deploy` 推送最新优化成果至线上分支，保持远程发布同步。
+
+
+---
+
+## 🛠️ Step 609: 设计并实现 1:1 可视化运动轨迹调节面板 (Design and Implement Live 1:1 Trajectory Debugger Panel with Real-time Canvas & Ghost Preview)
+
+### 1. 痛点与需求分析
+- **痛点**：动画的运动轨迹与速度曲线只在代码中微调非常盲目，用户难以直观感受不同的 `duration`、`maxBulge` 和 `ease` 参数组合所带来的细微视觉差异。
+- **需求**：
+  1. 在控制台内提供直观的滑动条与下拉菜单，允许用户实时调节动画参数。
+  2. 内置一个微型 Canvas 视窗，利用数学方程还原并绘制出当前所调参数的飞渡曲线。
+  3. Canvas 曲线中有一个代表徽标的小球，以当前选择的 GSAP Easing 节奏不断沿着弧线滑行，直观呈现起伏和加减速节奏。
+  4. 提供“Test Path”按钮，点击后可在页面上生成 1:1 的克隆徽标按照调好的参数进行实际飞行预览。
+  5. 提供“Copy Config”按钮，一键复制当前配置的 JSON 字符串。
+
+### 2. 代码重构与技术栈实现
+- **HTML 结构**（[index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html)）：
+  - 在 `.color-console` 底部新增 `.trajectory-debug-section` 折叠面板，并内置了 Range Sliders (Duration: 0.5~4s, Bulge: -100~150px)、Easing Select Menu、功能按钮和 Canvas 视窗。
+- **CSS 视觉样式**（[styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css)）：
+  - 添加了现代极简的 Range Slider 滑动条与滑块样式（支持 hover 缩放及发光效果），并为 Select 菜单添加了半透明毛玻璃适配，保持全站的极奢设计系统。
+- **JavaScript 控制逻辑**（[color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js)）：
+  - 动态计算和数学转换：使用二次方、三次方、四次方、指数（Expo）、圆弧（Circ）等方程精确逼近 GSAP 的常见 Easing 曲线，用于在 Canvas 上以 `requestAnimationFrame` 驱动小球在曲线上的物理滑行。
+  - 动态参数解耦：让主程序在打开/关闭控制台时读取 `window.__logoDuration`、`window.__logoBulge` 和 `window.__logoEase`；如果用户在调节器上做出了改变，这些配置将实时生效于下一次主控制台的真身弹出和关闭。
+  - 页面 1:1 飞行预览：点击 Test Path 时获取当前徽标与控制台标题占位器的视口 `BoundingClientRect`，在最外层挂载幽灵节点，应用当前调试参数完整还原一次 1:1 飞行动画。
+  - 剪贴板复制：完美复制 `{ duration: X, maxBulge: Y, ease: 'Z' }` 文本，并伴有“Copied!”成功的视觉反馈。
+
+### 3. 打包与自动化部署
+- 编译通过，已自动生成最新 dist 包。
+- 运行 `python workflow.py deploy` 推送至主分支完成在线预览同步。

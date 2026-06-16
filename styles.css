@@ -3622,4 +3622,38 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   background: rgba(var(--accent-rgb), 0.03);
 }
 
+/* Range slider styles for trajectory debugger */
+.trajectory-debug-section input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+}
 
+.trajectory-debug-section input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5);
+  transition: transform 0.15s var(--ease-out-expo);
+}
+
+.trajectory-debug-section input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+}
+
+:root.light .trajectory-debug-section input[type="range"] {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+:root.light .trajectory-debug-section select {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: #1a1a1a !important;
+}
