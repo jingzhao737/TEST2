@@ -626,7 +626,7 @@ import gsap from 'gsap';
       ghost.style.fontSize = '1.3rem';
       ghost.style.fontWeight = '700';
       ghost.style.color = 'transparent';
-      ghost.style.webkitTextStroke = '0.8px var(--fg)';
+      ghost.style.webkitTextStroke = '0.4px var(--fg)';
       ghost.style.left = '0px';
       ghost.style.top = '0px';
       ghost.textContent = 'YYJZ';

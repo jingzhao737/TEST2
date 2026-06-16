@@ -1810,3 +1810,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 构建与部署
 - 编译通过，并生成了最新生产资源包。
 - 运行 `python workflow.py deploy` 推送至主分支，最新的默认参数和调节器已全面部署生效。
+
+
+---
+
+## 🛠️ Step 611: 将 YYJZ 徽标的描边宽度从 0.8px 缩减至更纤细的 0.4px (Reduce Logo Text-Stroke Width to Ultra-Thin 0.4px for Premium Look)
+
+### 1. 描边技术局限与视觉调优
+- **渲染原理**：在 Web 渲染引擎中，`-webkit-text-stroke` 是沿着文本外廓进行居中描边（半内半外），并不存在单独设置纯内描边/纯外描边的原生 CSS 属性。
+- **细化调整**：
+  - 为了满足用户关于“希望描边变成极细的高级线条”的要求，我们将原先粗细为 `0.8px` 的文字描边，调优至支持次像素渲染的超细 **`0.4px`**。
+  - 这让原本看起来较重的描边瞬间减薄，在视觉上看起来极似一条细如发丝、优雅锐利的内侧细线。
+
+### 2. 代码统一更新
+- **样式定义**（[styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css)）：
+  - 修改了 `#navLogo` 的 4 处 `-webkit-text-stroke` 属性，将其从 `0.8px` 全部缩减至 `0.4px`（包括暗色版、亮色版及控制台激活后的各类状态）。
+- **动效幽灵克隆体**（[color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js)）：
+  - 对应修改了 `debugTestBtn` 点击测试和日常飞渡时动态创建的 `ghost` 飞行动画节点的 `webkitTextStroke` 样式值，保持其在飞行过程中的线宽完全一致。
+
+### 3. 构建与部署
+- 成功完成 Vite 静态资源的重新构建和打包。
+- 执行 `python workflow.py deploy` 推送代码，让超细 0.4px 描边的精致外观线上即时生效。
