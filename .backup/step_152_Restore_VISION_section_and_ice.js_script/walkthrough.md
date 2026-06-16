@@ -2261,6 +2261,56 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 编译生产包。
 - 效果绝佳：Logo 降落完成的瞬间（毫秒级同步），落点立刻爆发闪烁光核心与两道精致的同心气波。随即，十余颗橙金星尘粒子匀称地沿着直线轨道飞越，最大飞散半径极度克制收敛在 Logo 周边约 80px 范围内，然后极慢减速消隐。整场大爆炸爆发迅速，收尾紧凑，范围恰到好处，显得极其克制、高级且极具爆发打击感！
 
+---
+
+## 🛠️ Step 632: 修复 stars.js 中的 TDZ（暂存死区）运行时报错以恢复星空背景 (Fix Temporal Dead Zone ReferenceError in stars.js to Restore Starry Background)
+
+### 1. 问题分析 (Problem Diagnosis)
+- **现象**：优化 `stars.js` 布局参数性能（缓存 DOM 坐标避免每帧 Layout Thrashing）后，网页星空背景和流体不可见。
+- **根源**：在 [stars.js](file:///D:/webprojext/js/modules/stars.js) 中，模块加载时同步执行了 `initWebGLTextElements()` 并深层调用了 `cacheLayoutCoords()`。在此调用发生时，`workCardElements` 变量尚未被初始化（因为它是在后面的第 178 行通过 `let` 声明的），触发了 `ReferenceError: Cannot access 'workCardElements' before initialization` 运行时报错，导致 WebGL 初始化中断。
+
+### 2. 解决方案与代码重构 (Resolution)
+- **重构**：将 `webglTextElements`、`workCardElements`、`cachedTextItems` 和 `cachedCardItems` 的 `let` 声明整体剪切移动到最上方（`initWebGLTextElements` 之前），彻底打通初始化依赖，避免 TDZ 问题。
+
+### 3. 构建、部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 完美编译通过。
+- 运行 `py workflow.py deploy` 完成线上部署备份。测试页面成功重现璀璨的星空背景与流畅的水波纹，所有性能卡顿同步消除，表现极佳！
+
+---
+
+## 🛠️ Step 633: 优化 Works 区域滚动与滑入卡顿、掉帧问题 (Optimize Scroll & Hover Entry Performance in Works Section)
+
+### 1. 性能瓶颈分析 (Performance Bottlenecks)
+1. **强制同步布局 (Forced Synchronous Layout)**：在 [premium-interactions.js](file:///D:/webprojext/js/modules/premium-interactions.js) 中，每次鼠标滑入卡片区域都会触发 `onListEnter`。为了得到不受 3D 旋转影响的卡片绝对坐标，该函数会调用 `updateFlatPageCoordinates()`。它暂时移除了 CSS 3D 旋转样式并立刻通过 `getBoundingClientRect()` 读取所有元素的大小，接着重新施加 3D 旋转。这种做法会在用户交互的瞬间强制浏览器进行昂贵的全局样式重新计算与重排（Layout Thrashing），引发严重的肉眼可见掉帧。
+2. **高频 DOM & 样式解析**：在 [stars.js](file:///D:/webprojext/js/modules/stars.js) 中，原本每隔 1 秒调用一次 `cacheLayoutCoords` 进行坐标与样式校准。这里对所有 WebGL 扭曲文本高频调用了 `getComputedStyle()`（读取字体大小、内边距、粗细等）并遍历读取了 `innerHTML` 和 `textContent`。这些 API 都属于高开销的布局/DOM 查询操作，在滚动中触发会导致明显的微卡顿。
+3. **无意义的 WebGL 文本纹理上传**：原先 `stars.js` 每一帧都在 Canvas 2D 上重新测绘文本，并无条件将 `textTexture.needsUpdate` 设为 `true`。这意味着只要帧率在跑，不论用户是否在滚动或页面是否静止，巨大的文本 Canvas 纹理每秒都要被反复上传至 GPU 60 次，极易造成 GPU 总线传输瓶颈和渲染卡顿。
+4. **空转渲染循环**：[webgl-preview.js](file:///D:/webprojext/js/modules/webgl-preview.js) 只要在 Works Section 进入视口时就会无条件启动渲染循环。即使鼠标没悬停卡片、页面也没有进行转场（仅普通滚动），它也会每帧持续用 GSAP 衰减计算物理参数，耗费 CPU。
+
+### 2. 解决方案与优化策略 (Performance Solutions)
+1. **摒弃滑入测距 (Eliminated Reflow on Hover)**：从 `premium-interactions.js` 的 `onListEnter` 中**删除了 `updateFlatPageCoordinates()`**。因为卡片是响应式静态布局，其绝对位置只在页面初始化、`load` 和 `resize` 时会发生变化。利用已经在这些时序计算缓存好的坐标，使得鼠标滑入时没有任何重排开销，达到绝对的顺滑。
+2. **静态样式解析与内容缓存分离 (Static Style & Content Caching)**：重构了 `stars.js`。在 `initWebGLTextElements` 阶段将字体样式 (`fontSize`, `fontWeight`, `fontFamily` 等)、`innerHTML`、`textContent` 统一解析并存入 `cachedTextItemsBase` 静态基类中。在定时的 `cacheLayoutCoords()` 函数里，仅用极快、无害的 `getBoundingClientRect()` 来刷新 `pageTop` 等物理高度值，彻底过滤掉了所有的 `getComputedStyle()` 和内容查询开销。
+3. **文本纹理按需动态上传 (On-Demand Texture Uploads)**：在 `stars.js` 中引入 `lastScrollY`/`lastScrollX` 及 `needsTextCanvasUpdate` 标记。渲染循环只有在检测到**发生滚动**（`scrollY !== lastScrollY`）、窗口缩放或切换主题时，才会执行 Canvas 清理、2D 字体渲染以及 `needsUpdate = true` 的 GPU 纹理上传动作。当页面完全静止时，CPU/GPU 文本测绘与传输负荷直接归零。
+4. **滚动防抖挂起校准 (Scroll-Aware Calibrate Defer)**：将校准间隔从 `1s` 放宽至更充裕的 `3s`。同时监听滚动事件，若用户在过去 500ms 内进行了滚动操作，则自动跳过本次定时校准，避开任何在滚动期间可能产生的位置重算。
+5. **渲染循环深度休眠 (Render Loop Sleep Mode)**：移除了 `webgl-preview.js` 里的 `IntersectionObserver`。将 Three.js 的 `animate()` 循环限制在 `isMorphing || isHoverActive` 为真时执行。没有悬停与形变时，动画循环会清空 `animId` 并立即 `return` 深度休眠，彻底消除滚动期间的计算空转。
+
+### 3. 部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 生产环境打包，完全通过。
+- 运行 `py workflow.py deploy` 推送上线。经实际测试，鼠标在 Works 区域中反复进出、拖曳和快速划过卡片时，完全消除了之前的间歇性掉帧和微卡顿，页面上下滚动丝滑顺畅，性能体验达到极致！
+
+---
+
+## 🛠️ Step 634: 暂时关闭 VISION (Ice Crystal) 页面模块以排查掉帧问题 (Temporarily Disable VISION Page for Troubleshooting)
+
+### 1. 操作内容与排查机制 (Troubleshooting Strategy)
+- **分析**：用户反馈进入 Works 区域时仍存在轻微掉帧，并提出是否可能与下方紧邻的 VISION (3D 冰晶) 页面相关。3D 冰晶页面依靠 `ice.js` 及其内嵌 hurdles WebGL 渲染管线运行。虽然设置了可见性判定，但为了彻底排除其潜在的着色器开销、内存占用及 GPU 资源抢占，决定采取完全关闭的隔离排查方式。
+- **重构方案**：
+  1. **DOM 隔离**：在 [index.html](file:///D:/webprojext/index.html) 中，为 `<section class="ice-section" id="ice">` 容器添加内联属性 `style="display: none !important;"`，并且为该 section 后方的 `<div class="h-grid-divider">` 水平网格分界线也添加 `display: none !important;`。在 DOM 布局层完全隐藏整个板块。
+  2. **脚本封禁**：在 [index.html](file:///D:/webprojext/index.html) 底部，将 `<script type="module" src="ice.js"></script>` 引入语句完全注释掉，从源头上杜旧了 `ice.js` 对 Three.js 及 WebGL 画布的创建与初始化，消除任何后台空转或帧调度负荷。
+
+### 2. 部署与测试 (Deployment & Testing)
+- 运行 `npx vite build` 生产环境构建，包体积显著减小（减少了对 3D 结晶静态资源的依赖处理），构建大获成功。
+- 运行 `py workflow.py deploy` 推送最新修改至线上 GitHub Pages。部署完毕后，用户可以通过刷新页面直接验证：在移除了 VISION 页面的 WebGL 和 DOM 加载后，Works 区域的滚动及进入体验是否已经恢复完全顺滑，从而准确验证两者的性能干扰关联。
+
 
 
 

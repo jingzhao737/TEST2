@@ -1,12 +1,5 @@
 [
   {
-    "step": 132,
-    "timestamp": "2026-06-16 22:07:52",
-    "description": "Implement immediate zero-delay trigger, smaller range, and reduced count for logo Big Bang sparks",
-    "folder": "step_132_Implement_immediate_zero-delay_trigger,_smaller_range,_and_reduced_count_for_logo_Big_Bang_sparks",
-    "is_auto": false
-  },
-  {
     "step": 133,
     "timestamp": "2026-06-16 22:11:13",
     "description": "Scale down logo landing stars and fluid ripple to match mouse click range",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:13:46",
     "description": "Temporarily disable vision section and comment out ice.js for scroll performance testing",
     "folder": "step_151_Temporarily_disable_vision_section_and_comment_out_ice.js_for_scroll_performance_testing",
+    "is_auto": false
+  },
+  {
+    "step": 152,
+    "timestamp": "2026-06-17 00:14:54",
+    "description": "Restore VISION section and ice.js script",
+    "folder": "step_152_Restore_VISION_section_and_ice.js_script",
     "is_auto": false
   }
 ]

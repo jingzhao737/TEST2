@@ -54,6 +54,24 @@
   - `[x]` 应用户最新优化需求，将锻造粒子动效进一步重构为无重力干扰的“宇宙大爆炸”式纯径向直线扩散：去除向上重力偏置和下落重力（`gravity: 0`），并设置高品质的滑动阻尼（`0.95`），确保所有粒子在 1.2s~2s 的生命周期中，完全保持初始抛射方向，以完美的直线向外匀称扩散、缓缓减速并优雅淡出，完全消除任何向下或向上的漂移感。
   - `[x]` 微调大爆炸粒子动效范围与触发时序：移除 0.1s 的 `setTimeout` 延迟，使爆破动效在 Logo 时间线结束的瞬间即时触发；同时将火花粒子初速度区间降为 `2.5~7.0`，双重激波环的最大半径压缩至 `50px` 和 `80px`，并将火星数量精简到 `12~17` 颗，使动效更紧凑精致。
 
+- `[x]` **修复 stars.js 中的 TDZ（暂存死区）初始化 ReferenceError 错误**
+  - `[x]` 解决 `stars.js` 在模块加载时，由于 `initWebGLTextElements` 在声明 `workCardElements` 变量之前就被调用而引发的 `ReferenceError: Cannot access 'workCardElements' before initialization` 运行时报错。
+  - `[x]` 将 `webglTextElements`, `workCardElements`, `cachedTextItems`, `cachedCardItems` 的 `let` 声明语句整体移动至 `initWebGLTextElements` 函数 the 定义及调用之前。
+  - `[x]` 本地构建与打包（`npx vite build`）校验编译完全通过。
+  - `[x]` 运行 `py workflow.py deploy` 命令，将最新修复自动提交并成功推送至 GitHub Pages 线上服务。
+
+- `[x]` **优化 Works 区域滚动与鼠标进入卡顿、掉帧问题 (Optimize Scroll & Hover Entry Performance in Works)**
+  - `[x]` **消除强制同步布局 (Remove Forced Reflows)**：从 `premium-interactions.js` 中的 `onListEnter()` 函数里移除 `updateFlatPageCoordinates()`。利用已在页面初始化、`load` 和 `resize` 时算好的页面坐标，彻底避免鼠标滑入卡片区域时频繁切换 3D 旋转所造成的严重页面重排和卡顿。
+  - `[x]` **优化 WebGL 文本静态渲染缓存 (Decouple Style Resolution from Geometry mapping)**：将 `stars.js` 的缓存机制重构为静态基础缓存 `cachedTextItemsBase`。使每次坐标更新（`cacheLayoutCoords`）只需获取 `getBoundingClientRect()` 测定位置，不再重复进行开销极高的 `getComputedStyle()` 样式解析以及 `innerHTML`/`textContent` DOM 节点读取。
+  - `[x]` **按需上传 WebGL 文本纹理 (Upload Textures on Demand)**：在 `stars.js` 渲染循环中加入滚动状态与文本改变检测。仅在滚动位置发生变化、页面缩放、或切换主题时才重新擦写文本 Canvas 并设置 `textTexture.needsUpdate = true` 上传至 GPU。当页面静止时，文本纹理的 CPU 测绘与 GPU 传输开销降为 0。
+  - `[x]` **滚动防抖与间隔调整 (Scroll-Aware Cache Throttle)**：将 `stars.js` 中的坐标定期校准间隔从 1 秒提升至 3 秒，并加入滚动监听器，在用户处于主动滚动期间自动跳过定时校准，避免在滚动时触发布局重算。
+  - `[x]` **WebGL 预览渲染循环按需唤醒 (Animate Loop Sleep Mode)**：移除 `webgl-preview.js` 内部的 `IntersectionObserver` 监测。将 animate 循环改为只在卡片悬停 (`isHoverActive`) 或详情页形变过渡 (`isMorphing`) 处于激活状态时运行，未悬停时自动进入休眠，从而彻底释放 Works 区域滚动时的空转渲染消耗。
+
+- `[x]` **临时关闭 VISION (Ice Crystal) 页面模块以排查掉帧问题 (Temporarily Disable VISION Page for Troubleshooting)**
+  - `[x]` 在 `index.html` 中为 `<section class="ice-section" id="ice">` 容器及其下方的横向分界线添加 `style="display: none !important;"`，在 DOM 渲染树上完全移除其渲染和布局。
+  - `[x]` 在 `index.html` 底部注释掉 `<script type="module" src="ice.js"></script>`，停止该 3D 结晶模块在背景的初始化与 WebGL/Three.js 资源加载。
+  - `[x]` 编译生产包并通过 `py workflow.py deploy` 部署至线上。
+
 
 
 

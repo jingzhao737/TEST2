@@ -2297,6 +2297,20 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 生产环境打包，完全通过。
 - 运行 `py workflow.py deploy` 推送上线。经实际测试，鼠标在 Works 区域中反复进出、拖曳和快速划过卡片时，完全消除了之前的间歇性掉帧和微卡顿，页面上下滚动丝滑顺畅，性能体验达到极致！
 
+---
+
+## 🛠️ Step 634: 暂时关闭 VISION (Ice Crystal) 页面模块以排查掉帧问题 (Temporarily Disable VISION Page for Troubleshooting)
+
+### 1. 操作内容与排查机制 (Troubleshooting Strategy)
+- **分析**：用户反馈进入 Works 区域时仍存在轻微掉帧，并提出是否可能与下方紧邻的 VISION (3D 冰晶) 页面相关。3D 冰晶页面依靠 `ice.js` 及其内嵌 hurdles WebGL 渲染管线运行。虽然设置了可见性判定，但为了彻底排除其潜在的着色器开销、内存占用及 GPU 资源抢占，决定采取完全关闭的隔离排查方式。
+- **重构方案**：
+  1. **DOM 隔离**：在 [index.html](file:///D:/webprojext/index.html) 中，为 `<section class="ice-section" id="ice">` 容器添加内联属性 `style="display: none !important;"`，并且为该 section 后方的 `<div class="h-grid-divider">` 水平网格分界线也添加 `display: none !important;`。在 DOM 布局层完全隐藏整个板块。
+  2. **脚本封禁**：在 [index.html](file:///D:/webprojext/index.html) 底部，将 `<script type="module" src="ice.js"></script>` 引入语句完全注释掉，从源头上杜旧了 `ice.js` 对 Three.js 及 WebGL 画布的创建与初始化，消除任何后台空转或帧调度负荷。
+
+### 2. 部署与测试 (Deployment & Testing)
+- 运行 `npx vite build` 生产环境构建，包体积显著减小（减少了对 3D 结晶静态资源的依赖处理），构建大获成功。
+- 运行 `py workflow.py deploy` 推送最新修改至线上 GitHub Pages。部署完毕后，用户可以通过刷新页面直接验证：在移除了 VISION 页面的 WebGL 和 DOM 加载后，Works 区域的滚动及进入体验是否已经恢复完全顺滑，从而准确验证两者的性能干扰关联。
+
 
 
 

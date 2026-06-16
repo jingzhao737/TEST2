@@ -447,7 +447,17 @@
         ctx.restore();
       } else if (s.type === 'star') {
         // Delicate Small Cross-Star (十字星)
-        s.angle += s.spin;
+        if (s.spin) {
+          let spinFactor;
+          if (age < 0.2) {
+            const t = age / 0.2;
+            spinFactor = 1.0 - t * 0.88; // Decays from 1.0 to 0.12 (extremely fast for the first 20%)
+          } else {
+            const t = (age - 0.2) / 0.8;
+            spinFactor = 0.12 - t * 0.10; // Decays from 0.12 to 0.02 (extremely slow for the remaining 80%)
+          }
+          s.angle += s.spin * spinFactor;
+        }
         ctx.save();
         ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
@@ -517,61 +527,31 @@
     createBurst(x, y, isOrange, customLife, customNumSparks);
   };
   window.triggerForgeBurst = function(x, y) {
-    const colors = ['#ffffff', '#E87C50', '#FF9F1C', '#FFD700'];
-    
-    // 1. Pulsing Center Flare (Flash) - Made slightly smaller for tighter range
-    sparks.push({
-      x: x,
-      y: y,
-      vx: 0,
-      vy: 0,
-      color: '#E87C50',
-      type: 'center-flare',
-      size: 30.0,
-      created: Date.now(),
-      life: 600
-    });
+    // Play the synthesized metal forge clang sound
+    if (typeof window.__playForgeClangSound === 'function') {
+      window.__playForgeClangSound();
+    }
 
-    // 2. Double expanding shockwave ripples - Reduced radius for a cleaner local blast
-    ripples.push({
-      x: x,
-      y: y,
-      radius: 0,
-      maxRadius: 50,
-      color: '#E87C50',
-      created: Date.now(),
-      life: 600
-    });
-    ripples.push({
-      x: x,
-      y: y,
-      radius: 0,
-      maxRadius: 80,
-      color: '#FF9F1C',
-      created: Date.now(),
-      life: 800
-    });
-
-    // 3. Dense sparks with forging physics - Slightly reduced count (12-17 sparks) and speed (2.5-7.0) for a refined range
-    const numSparks = 12 + Math.floor(Math.random() * 5);
+    // Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
+    const numSparks = 6 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 2.5 + Math.random() * 4.5;
-      const lifeSpan = 1200 + Math.random() * 800;
-      const color = colors[Math.floor(Math.random() * colors.length)];
+      const speed = 0.9 + Math.random() * 1.6; // Increased speed range for a slightly larger spread
+      const lifeSpan = 1000 + Math.random() * 500; // Persist for 1.0s to 1.5s
+      const color = '#ffffff'; // Make stars purely white
       sparks.push({
         x: x,
         y: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed, // Pure radial velocity without upward bias
+        vx: Math.cos(angle) * speed * 1.22, // Scale horizontally by 1.22 for a balanced horizontal oval expansion
+        vy: Math.sin(angle) * speed * 0.78, // Scale vertically by 0.78 for a balanced horizontal oval expansion
         color: color,
         type: 'star',
         size: 0.8 + Math.random() * 3.5,
-        angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.20, // Rapid spin for shimmering glints
+        angle: 0, // Aligned upright, same as mouse clicks
+        spin: 0, // No rotation, same as mouse clicks
         created: Date.now(),
         life: lifeSpan,
-        drag: 0.95, // Easing: slides out beautifully in a straight line
+        drag: 0.96, // Reduced deceleration to allow stars to keep moving outward as they disappear
         gravity: 0.0 // No gravity (don't go down, don't go up, just like the Big Bang)
       });
     }

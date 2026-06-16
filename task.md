@@ -67,6 +67,11 @@
   - `[x]` **滚动防抖与间隔调整 (Scroll-Aware Cache Throttle)**：将 `stars.js` 中的坐标定期校准间隔从 1 秒提升至 3 秒，并加入滚动监听器，在用户处于主动滚动期间自动跳过定时校准，避免在滚动时触发布局重算。
   - `[x]` **WebGL 预览渲染循环按需唤醒 (Animate Loop Sleep Mode)**：移除 `webgl-preview.js` 内部的 `IntersectionObserver` 监测。将 animate 循环改为只在卡片悬停 (`isHoverActive`) 或详情页形变过渡 (`isMorphing`) 处于激活状态时运行，未悬停时自动进入休眠，从而彻底释放 Works 区域滚动时的空转渲染消耗。
 
+- `[x]` **临时关闭 VISION (Ice Crystal) 页面模块以排查掉帧问题 (Temporarily Disable VISION Page for Troubleshooting)**
+  - `[x]` 在 `index.html` 中为 `<section class="ice-section" id="ice">` 容器及其下方的横向分界线添加 `style="display: none !important;"`，在 DOM 渲染树上完全移除其渲染和布局。
+  - `[x]` 在 `index.html` 底部注释掉 `<script type="module" src="ice.js"></script>`，停止该 3D 结晶模块在背景的初始化与 WebGL/Three.js 资源加载。
+  - `[x]` 编译生产包并通过 `py workflow.py deploy` 部署至线上。
+
 
 
 
