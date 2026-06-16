@@ -1348,12 +1348,12 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 ### 2. 解决方案与修改
 - **大幅降低拖拽跟随的 LERP 响应因子**：
-  - 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 中的正常拖拽物理循环，将 `t._lerp` 的恢复目标值由 `0.52` 大幅降至 **`0.12`**：
+  - 修改 [hanging-circles.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/hanging-circles.js) 中的正常拖拽物理循环，将 `t._lerp` 的恢复目标值由 `0.52` 大幅降至 **`0.07`**：
     ```javascript
-    t._lerp += (0.12 - t._lerp) * 0.1; // 平滑恢复正常拖拽（由 0.52 改为 0.12 以增加延迟/滞后）
+    t._lerp += (0.07 - t._lerp) * 0.1; // 平滑恢复正常拖拽（由 0.52 改为 0.07 以增加更多延迟/滞后）
     ```
 - **拖拽启动平滑缓入 (Smooth Drag Start)**：
-  - 在 `mousedown` 事件监听器中，当用户刚按下鼠标准备拖拽时，将 `t._lerp` 初始化重置为更低的 **`0.05`**。这为唱片在开始拖动的一瞬间提供了一个高级的、缓慢加速的起步手感。
+  - 在 `mousedown` 事件监听器中，当用户刚按下鼠标准备拖拽时，将 `t._lerp` 初始化重置为更低的 **`0.03`**。这为唱片在开始拖动的一瞬间提供了一个高级的、缓慢加速的起步手感。
 - **基于盘体实际位移重构倾斜与抛投物理**：
   - 原先，唱片的 3D 倾斜（tilt）以及鼠标松开瞬间的抛投速度 `vx` / `vy` 是直接读取自 `mousemove` 事件中的鼠标即时速度。在引入拖动延迟后，这会导致盘体位移缓慢但倾斜状态依然随鼠标剧烈变化的“穿模脱节感”。
   - **改进**：我们将拖拽状态下的 `t.vx` 与 `t.vy` 改为**基于唱片网格在相邻两帧之间的实际位移差**来计算：

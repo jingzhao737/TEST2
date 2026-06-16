@@ -844,7 +844,7 @@ import * as THREE from 'three';
             if (t._lerp > 0.09) t._lerp = 0.055;
             else t._lerp += (0.09 - t._lerp) * 0.1;
           } else {
-            t._lerp += (0.12 - t._lerp) * 0.1; // Smoothly recover normal drag (changed from 0.52 to 0.12 to add delay/lag)
+            t._lerp += (0.07 - t._lerp) * 0.1; // Smoothly recover normal drag (changed from 0.12 to 0.07 to add more delay/lag)
           }
           
           let lastX = t.x;
@@ -1147,7 +1147,7 @@ import * as THREE from 'three';
       prevMouseX = mx;
       prevMouseY = my;
       t.vx = 0; t.vy = 0;
-      t._lerp = 0.05; // Reset lerp to 0.05 for a smooth drag start delay!
+      t._lerp = 0.03; // Reset lerp to 0.03 for a smooth drag start delay!
       canvas.style.cursor = 'grabbing';
       e.preventDefault();
     } else {
