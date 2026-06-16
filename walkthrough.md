@@ -1748,3 +1748,18 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 ### 3. 构建与打包验证
 - 运行 `npx vite build` 重新验证，代码全部打包成功且无报错。
+
+
+---
+
+## 🛠️ Step 608: 优化 YYJZ 徽标的 C 型弧度尺寸，使其呈现完美且顺滑的近半圆轨迹 (Optimize C-curve Dimensions for perfect semicircular trajectory)
+
+### 1. 轨迹曲率优化
+- **背景计算**：由于徽标展开与关闭的纵向距离 $\Delta y$ 约为 $67.5\text{px}$，原先设置的横向最大外鼓量 `maxBulge = 80px` 导致轨迹宽高比为扁平状态，显得首尾转折非常陡峭。
+- **参数调优**：
+  - 在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中，将桌面端的横向最大外鼓量 `maxBulge` 调整为 **`36px`**（非常接近纵向跨度一半的理论半圆半径 $33.75\text{px}$），从而让运动轨迹成为完美的 1:1 近半圆形，折返顺滑度达到极致。
+  - 将移动端的横向最大外鼓量调整为 **`28px`**，使不同屏幕宽度下的视觉弧度皆能达到协调与极致对称。
+
+### 2. 打包与自动化部署
+- 执行本地编译与打包测试均正常。
+- 运行 `python workflow.py deploy` 推送最新优化成果至线上分支，保持远程发布同步。

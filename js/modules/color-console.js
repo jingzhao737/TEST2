@@ -51,7 +51,7 @@ import gsap from 'gsap';
       consoleEl.classList.add('active');
       _animating = true;
 
-      const maxBulge = window.innerWidth > 768 ? 80 : 30;
+      const maxBulge = window.innerWidth > 768 ? 36 : 28;
       const animState = { progress: 0 };
 
       const tl = gsap.timeline({
@@ -96,7 +96,7 @@ import gsap from 'gsap';
       const startRect = logo.getBoundingClientRect();
       const toRect = anchorEl.getBoundingClientRect();
       _animating = true;
-      const maxBulge = window.innerWidth > 768 ? 80 : 30;
+      const maxBulge = window.innerWidth > 768 ? 36 : 28;
       const animState = { progress: 0 };
 
       // Ensure logo opacity is set to 1 before starting closing animation
