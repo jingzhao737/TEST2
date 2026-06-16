@@ -2171,6 +2171,21 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 编译生产包并运行部署。
 - 最终效果极其丝滑：Logo 到位 0.1s 后爆射开来的 12 颗品牌橙色星星，在极速降速后并没有呆板地停下，而是**极其平稳且匀速地一边继续向外扩散、一边划出优雅的长长抛物线下坠，伴随着细微自转，在 1.8 秒的时间内持续流动、扩散并最终消逝在深邃的夜空中**。整个收尾动画连贯流畅，完全告别了任何静止或定格感，极具科幻高级感！
 
+---
+
+## 🛠️ Step 627: 将 Logo 落地星火完全整回与鼠标点击完全相同的星星粒子动效 (Revert Logo Landing Sparks to Match Mouse Clicks Exactly)
+
+### 1. 痛点与设计复盘 (Pain Point & Design Review)
+- **分析**：经过几轮对打铁火花下坠物理（重力与阻尼）的尝试，火花的轨迹和长生命周期在特定情境下显得比较繁复。应用户最终要求，决定**将 Logo 降落（0.1s 延时后）触发的粒子效果完全整回和鼠标点击完全一样的星星粒子动画**。
+- **重构方案**：
+  - 在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 中调用 `window.triggerLaserBurst` 时，不再传入任何自定义参数（如 `customLife` 和 `customNumSparks`），只保留 `isOrange = true`，即 `window.triggerLaserBurst(clientX, clientY, true)`。
+  - 由于 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 中的 `createBurst` 在缺省状态下默认生成的就是原生的、无重力、无自转、高阻尼向上微漂的白/橙星星粒子，如此即可实现将动效完美对齐至鼠标点击的相同质感，同时仍然保持 0.1s 的干练延迟。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包并运行部署。
+- 最终效果完全符合预期：在 Logo 开关动画结束 0.1s 后，落点会爆发一圈与鼠标点击一模一样的经典橙色十字小星星（数量 4~7 颗，寿命 500~800ms 随机），并在快速衰减后轻轻向上漂移消散。这与全局页面中所有鼠标点击所反馈的星星动画保持了 100% 的视觉一致性和逻辑闭环。
+
+
 
 
 

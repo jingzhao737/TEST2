@@ -1,12 +1,5 @@
 [
   {
-    "step": 108,
-    "timestamp": "2026-06-16 01:13:09",
-    "description": "Auto-backup before rollback to Step 105",
-    "folder": "auto_108_Auto-backup_before_rollback_to_Step_105",
-    "is_auto": true
-  },
-  {
     "step": 109,
     "timestamp": "2026-06-16 01:13:22",
     "description": "Restore original vinyl record rendering style",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 21:54:47",
     "description": "Extend logo landing spark lifespan to 1.8s and optimize slide drag",
     "folder": "step_127_Extend_logo_landing_spark_lifespan_to_1.8s_and_optimize_slide_drag",
+    "is_auto": false
+  },
+  {
+    "step": 128,
+    "timestamp": "2026-06-16 21:55:40",
+    "description": "Revert logo landing sparks to match mouse click style exactly",
+    "folder": "step_128_Revert_logo_landing_sparks_to_match_mouse_click_style_exactly",
     "is_auto": false
   }
 ]
