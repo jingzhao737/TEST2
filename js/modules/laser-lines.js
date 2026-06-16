@@ -560,8 +560,8 @@
       life: 1000
     });
 
-    // 3. Dense sparks with forging physics - pure white stars with longer lifespan
-    const numSparks = 12 + Math.floor(Math.random() * 5);
+    // 3. Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
+    const numSparks = 6 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
       const speed = 2.2 + Math.random() * 4.8; // Slightly increased speed range for a larger spread
