@@ -16,7 +16,7 @@
 @font-face{font-family:'Google Sans';src:url('Font/Google_Sans/GoogleSans-SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
 @font-face{font-family:'Google Sans';src:url('Font/Google_Sans/GoogleSans-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
 </style>
-<link rel="stylesheet" href="styles.css?v=28">
+<link rel="stylesheet" href="styles.css?v=34">
 <script type="importmap">
 {
   "imports": {
@@ -168,64 +168,6 @@
     <li class="nav-menu-li"> <button class="nav-menu-btn" id="navMenuBtn" aria-label="Menu"> <span class="menu-line"></span> <span class="menu-line"></span> </button> </li>
   </ul>
 </nav>
-
-<!-- Color customization console -->
-<div class="color-console" id="colorConsole">
-  <div class="color-console-header">
-    <span class="console-title">YYJZ PALETTE</span>
-    <button class="console-close-btn" id="consoleCloseBtn" aria-label="Close console">&times;</button>
-  </div>
-  <div class="color-console-content">
-    <div class="console-section">
-      <span class="section-label">PRESETS</span>
-      <div class="preset-row">
-        <button class="preset-btn active" data-preset="default" title="Orange & Cream">
-          <span class="preset-dot" style="background:#e87c50;"></span>
-          <span class="preset-dot" style="background:#faf2e3;"></span>
-        </button>
-        <button class="preset-btn" data-preset="cyberpunk" title="Neon Cyber">
-          <span class="preset-dot" style="background:#ff007f;"></span>
-          <span class="preset-dot" style="background:#00f3ff;"></span>
-        </button>
-        <button class="preset-btn" data-preset="forest" title="Forest Mint">
-          <span class="preset-dot" style="background:#2d6a4f;"></span>
-          <span class="preset-dot" style="background:#d8f3dc;"></span>
-        </button>
-        <button class="preset-btn" data-preset="ocean" title="Deep Ocean">
-          <span class="preset-dot" style="background:#0077b6;"></span>
-          <span class="preset-dot" style="background:#e0f2fe;"></span>
-        </button>
-        <button class="preset-btn" data-preset="royal" title="Royal Amethyst">
-          <span class="preset-dot" style="background:#7b2cbf;"></span>
-          <span class="preset-dot" style="background:#f3e5f5;"></span>
-        </button>
-      </div>
-    </div>
-    
-    <div class="console-section">
-      <span class="section-label">CUSTOM PICKER</span>
-      <div class="custom-row">
-        <div class="custom-item">
-          <span class="custom-label">Primary Tone</span>
-          <div class="color-input-wrapper">
-            <input type="color" id="primaryPicker" value="#e87c50">
-            <span class="color-preview-badge" id="primaryBadge" style="background:#e87c50;"></span>
-          </div>
-        </div>
-        <div class="custom-item">
-          <span class="custom-label">Cream Accent</span>
-          <div class="color-input-wrapper">
-            <input type="color" id="secondaryPicker" value="#faf2e3">
-            <span class="color-preview-badge" id="secondaryBadge" style="background:#faf2e3;"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <button class="console-reset-btn" id="consoleResetBtn">Restore Default</button>
-  </div>
-</div>
-
 <!-- Theme toggle anchor — lives OUTSIDE <nav> to avoid clip-path cutoff -->
 <div id="navThemeAnchor" style="position:fixed;z-index:202;">
   <div class="theme-pull-string" id="themePullString"></div>
@@ -663,6 +605,63 @@
   <div class="lightbox-nav lightbox-nav-next" aria-label="Next"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg></div>
   <img class="lightbox-img" src="" alt="" loading="lazy" decoding="async">
   <div class="lightbox-counter"></div>
+</div>
+
+<!-- Color customization console (placed at the bottom of the body to prevent layout shift of hero elements) -->
+<div class="color-console" id="colorConsole">
+  <div class="color-console-header">
+    <span class="console-title">YYJZ PALETTE</span>
+    <button class="console-close-btn" id="consoleCloseBtn" aria-label="Close console">&times;</button>
+  </div>
+  <div class="color-console-content">
+    <div class="console-section">
+      <span class="section-label">PRESETS</span>
+      <div class="preset-row">
+        <button class="preset-btn active" data-preset="default" title="Orange & Cream">
+          <span class="preset-dot" style="background:#e87c50;"></span>
+          <span class="preset-dot" style="background:#faf2e3;"></span>
+        </button>
+        <button class="preset-btn" data-preset="cyberpunk" title="Neon Cyber">
+          <span class="preset-dot" style="background:#ff007f;"></span>
+          <span class="preset-dot" style="background:#00f3ff;"></span>
+        </button>
+        <button class="preset-btn" data-preset="forest" title="Forest Mint">
+          <span class="preset-dot" style="background:#2d6a4f;"></span>
+          <span class="preset-dot" style="background:#d8f3dc;"></span>
+        </button>
+        <button class="preset-btn" data-preset="ocean" title="Deep Ocean">
+          <span class="preset-dot" style="background:#0077b6;"></span>
+          <span class="preset-dot" style="background:#e0f2fe;"></span>
+        </button>
+        <button class="preset-btn" data-preset="royal" title="Royal Amethyst">
+          <span class="preset-dot" style="background:#7b2cbf;"></span>
+          <span class="preset-dot" style="background:#f3e5f5;"></span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="console-section">
+      <span class="section-label">CUSTOM PICKER</span>
+      <div class="custom-row">
+        <div class="custom-item">
+          <span class="custom-label">Primary Tone</span>
+          <div class="color-input-wrapper">
+            <input type="color" id="primaryPicker" value="#e87c50">
+            <span class="color-preview-badge" id="primaryBadge" style="background:#e87c50;"></span>
+          </div>
+        </div>
+        <div class="custom-item">
+          <span class="custom-label">Cream Accent</span>
+          <div class="color-input-wrapper">
+            <input type="color" id="secondaryPicker" value="#faf2e3">
+            <span class="color-preview-badge" id="secondaryBadge" style="background:#faf2e3;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="console-reset-btn" id="consoleResetBtn">Restore Default</button>
+  </div>
 </div>
 <script>
 // ServiceWorker disabled during development
