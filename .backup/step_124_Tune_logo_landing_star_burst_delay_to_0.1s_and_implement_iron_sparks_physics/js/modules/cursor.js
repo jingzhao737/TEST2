@@ -146,7 +146,7 @@
     magnetTargets = [];
     const elements = document.querySelectorAll(magnetSelector);
     elements.forEach(el => {
-      if (!isElementVisible(el)) {
+      if (!isElementVisible(el) || el.closest('.color-console') || el.id === 'navLogo' || el.id === 'navLogoStatic' || el.classList.contains('nav-logo')) {
         return;
       }
       magnetTargets.push(el);
@@ -184,7 +184,7 @@
         if (!window.__isDetailClosing) {
           const hoveredInteractive = target.closest(hoverSelector);
           
-          if (hoveredInteractive) {
+          if (hoveredInteractive && !hoveredInteractive.closest('.color-console') && hoveredInteractive.id !== 'navLogo' && hoveredInteractive.id !== 'navLogoStatic' && !hoveredInteractive.classList.contains('nav-logo')) {
             const isMagnet = hoveredInteractive.matches(magnetSelector);
             if (isMagnet && isElementVisible(hoveredInteractive)) {
               closestTarget = hoveredInteractive;

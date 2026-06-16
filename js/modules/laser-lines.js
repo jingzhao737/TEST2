@@ -123,26 +123,29 @@
   }
 
   // Generate laser spark burst on click
-  function createBurst(x, y, isOrange = false) {
+  function createBurst(x, y, isOrange = false, customLife = null, customNumSparks = null) {
     const burstColor = isOrange ? '#E87C50' : '#ffffff'; // Monochromatic: all orange on interactive elements, all white on general background
     
     // Burst Micro-Sparks (Small Cross-Stars)
-    const numSparks = 4 + Math.floor(Math.random() * 4); // 4-7 sparks
+    const numSparks = customNumSparks !== null ? customNumSparks : (4 + Math.floor(Math.random() * 4)); // 4-7 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-      const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
+      // Faster, more energetic speed profile to simulate iron sparks flying
+      const speed = customLife !== null ? (4.0 + Math.random() * 8.0) : (2.5 + Math.random() * 6.5);
+      const lifeSpan = customLife !== null ? (customLife * (0.8 + Math.random() * 0.4)) : (500 + Math.random() * 300);
       sparks.push({
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
+        // Initial upward burst bias (making sparks shoot up and fall down beautifully like striking metal)
+        vy: Math.sin(angle) * speed - (customLife !== null ? 2.5 : 0.0),
         color: burstColor,
         type: 'star', // All particles are cross-stars
         size: 0.8 + Math.random() * 3.8, // Size variation: 0.8px to 4.6px
-        angle: 0,
-        spin: 0, // No rotation, keeping them perfectly upright +
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.08, // Slow spin for high-quality shimmering/twinkling effect
         created: Date.now(),
-        life: 500 + Math.random() * 300 // 500ms - 800ms lifespan
+        life: lifeSpan
       });
     }
   }
@@ -382,15 +385,15 @@
         continue;
       }
 
-      // Update position with air drag & slow upward energy float (no heavy gravity)
+      // Update position with air drag & gravity (mimicking iron sparks flying and falling)
       s.x += s.vx;
       s.y += s.vy;
       if (s.type === 'center-flare') {
         // Center flare stays fixed at click coordinate
       } else {
-        s.vx *= 0.90; // Higher friction for a snappier, more localized deceleration
-        s.vy *= 0.90;
-        s.vy -= 0.025; // Subtle upward float to mimic energy dissipating
+        s.vx *= 0.96; // Lower friction so they glide/fly outwards further
+        s.vy *= 0.96;
+        s.vy += 0.20; // Gravity: pull downward to mimic heavy iron sparks falling (positive Y is down)
       }
 
       const size = s.size * (1 - age);
@@ -495,8 +498,8 @@
   window.__segments = segments;
   window.__sparks = sparks;
   window.__ripples = ripples;
-  window.triggerLaserBurst = function(x, y, isOrange = false) {
-    createBurst(x, y, isOrange);
+  window.triggerLaserBurst = function(x, y, isOrange = false, customLife = null, customNumSparks = null) {
+    createBurst(x, y, isOrange, customLife, customNumSparks);
   };
 })();
 
