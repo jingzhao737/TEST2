@@ -19,6 +19,12 @@ gsap.registerPlugin(Flip);
 
   function toggleConsole(active) {
     const isOpening = active !== undefined ? active : !consoleEl.classList.contains('active');
+    
+    // Disable CSS transitions instantly to avoid race condition/jitter
+    logo.style.transition = 'none';
+    consoleEl.style.transition = 'none';
+
+    // Capture initial state
     const state = Flip.getState(logo);
 
     if (isOpening) {
@@ -26,27 +32,67 @@ gsap.registerPlugin(Flip);
       if (placeholder) {
         placeholder.appendChild(logo);
       }
+      
+      // Force initial transform/opacity on console before active state
+      gsap.set(consoleEl, {
+        opacity: 0,
+        y: -15,
+        scale: 0.95
+      });
       consoleEl.classList.add('active');
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          logo.style.transition = '';
+          consoleEl.style.transition = '';
+        }
+      });
+
+      tl.to(consoleEl, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.45,
+        ease: 'power3.out'
+      }, 0);
+
+      tl.add(Flip.from(state, {
+        duration: 0.45,
+        ease: 'power3.out',
+        absolute: true
+      }), 0);
+
     } else {
+      // Move logo back to navbar first
       const navEl = document.getElementById('nav');
       const navWaveContainer = document.getElementById('navWaveContainer');
       if (navEl && navWaveContainer) {
         navEl.insertBefore(logo, navWaveContainer);
       }
-      consoleEl.classList.remove('active');
-    }
 
-    Flip.from(state, {
-      duration: 0.45,
-      ease: 'power2.out',
-      absolute: true,
-      onStart: () => {
-        logo.classList.add('no-transition');
-      },
-      onComplete: () => {
-        logo.classList.remove('no-transition');
-      }
-    });
+      const tl = gsap.timeline({
+        onComplete: () => {
+          consoleEl.classList.remove('active');
+          gsap.set(consoleEl, { clearProps: 'all' });
+          logo.style.transition = '';
+          consoleEl.style.transition = '';
+        }
+      });
+
+      tl.to(consoleEl, {
+        opacity: 0,
+        y: -15,
+        scale: 0.95,
+        duration: 0.4,
+        ease: 'power3.in'
+      }, 0);
+
+      tl.add(Flip.from(state, {
+        duration: 0.4,
+        ease: 'power3.inOut',
+        absolute: true
+      }), 0);
+    }
   }
 
   // Toggle console
