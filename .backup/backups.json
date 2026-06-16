@@ -1,12 +1,5 @@
 [
   {
-    "step": 143,
-    "timestamp": "2026-06-16 23:11:06",
-    "description": "Increase logo landing stars base speed to expand overall oval range",
-    "folder": "step_143_Increase_logo_landing_stars_base_speed_to_expand_overall_oval_range",
-    "is_auto": false
-  },
-  {
     "step": 144,
     "timestamp": "2026-06-16 23:12:30",
     "description": "Make logo landing stars horizontal oval shape rounder and less flat",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:01:38",
     "description": "Remove y translation from home page exit transitions to keep Works header stationary",
     "folder": "step_162_Remove_y_translation_from_home_page_exit_transitions_to_keep_Works_header_stationary",
+    "is_auto": false
+  },
+  {
+    "step": 163,
+    "timestamp": "2026-06-17 01:05:41",
+    "description": "Compact transition durations and implement close interruption to resolve continuous click lag",
+    "folder": "step_163_Compact_transition_durations_and_implement_close_interruption_to_resolve_continuous_click_lag",
     "is_auto": false
   }
 ]
