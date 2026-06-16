@@ -575,8 +575,8 @@
         color: color,
         type: 'star',
         size: 0.8 + Math.random() * 3.5,
-        angle: Math.random() * Math.PI * 2,
-        spin: (Math.random() - 0.5) * 0.60, // Rapid initial spin, which will decelerate rapidly
+        angle: 0, // Aligned upright, same as mouse clicks
+        spin: 0, // No rotation, same as mouse clicks
         created: Date.now(),
         life: lifeSpan,
         drag: 0.90, // Same drag as mouse click to decay speed at the exact same rate!

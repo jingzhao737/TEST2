@@ -1,12 +1,5 @@
 [
   {
-    "step": 118,
-    "timestamp": "2026-06-16 01:29:39",
-    "description": "Fix missing stringLen property on thumbs objects causing disappearing ropes",
-    "folder": "step_118_Fix_missing_stringLen_property_on_thumbs_objects_causing_disappearing_ropes",
-    "is_auto": false
-  },
-  {
     "step": 119,
     "timestamp": "2026-06-16 01:30:50",
     "description": "Soften rope highlight sheen to satin matte fabric texture",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 22:30:34",
     "description": "Reduce logo landing star particle count to 6-8 for a more delicate effect",
     "folder": "step_137_Reduce_logo_landing_star_particle_count_to_6-8_for_a_more_delicate_effect",
+    "is_auto": false
+  },
+  {
+    "step": 138,
+    "timestamp": "2026-06-16 22:58:44",
+    "description": "Disable rotation for logo landing stars to match mouse clicks",
+    "folder": "step_138_Disable_rotation_for_logo_landing_stars_to_match_mouse_clicks",
     "is_auto": false
   }
 ]
