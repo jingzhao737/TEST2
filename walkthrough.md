@@ -1972,3 +1972,23 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `python workflow.py deploy` 推送部署，通过 Playwright 再次捕获各毫秒点的精确坐标，结果如下：
   - `Logo Top` 在 2500ms 达到 `111px`（对应 Placeholder `107px`）。
   - 在 2700ms（动画结束瞬间）、2900ms、3200ms 和 4000ms（动画结束后的长驻留时间），`Logo Top` 的物理坐标始终保持在 `111px`，**没有任何 1 像素的位置向下或向上跳动，彻底解决了该顽疾。**
+
+
+---
+
+## 🛠️ Step 618: 恢复 +3.5 像素精确对齐并完全移除徽标的鼠标悬停缩放效果 (Restore +3.5px Alignment and Remove Hover Scale Effect)
+
+### 1. 验证“大偏移测试”结论 (Validation of the Test Offset)
+- 经过大偏移（`+ 20px`）联调测试，确认在动画飞行结束后，Logo 的位置确实是**完全固定且不再有任何跳转行为**。
+- 这证明我们上一阶段实施的“**活动期锁定 transition: none**”、“**前置激活再测量**”和“**激活态无变换对齐**”底层机制已经彻底修好了浏览器时序竞赛的下跳 Bug！
+
+### 2. 最终调整项 (Final Adjustments)
+1. **对齐偏移归位**：
+   在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中将终点 `toRect.top` 恢复为最完美的对齐偏移量 `placeholderRect.top + 3.5`。
+2. **彻底去掉鼠标悬浮缩放效果**：
+   - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中，完全删除了 `.nav-logo:hover, .nav-logo.magnet-hover { transform: scale(1.02) }` 的悬浮缩放规则，使实体和描边徽标在鼠标悬停时始终保持在原生的 `1.0` 缩放，不再有任何缩放动画。
+   - 在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中，同步移除了 `startScale` 检测和 `onUpdate` 曲线飞行过程中的 `scale` 缩放动画逻辑，简化并加速了飞行轨迹计算。
+
+### 3. 测试与部署 (Build and Deploy)
+- 重新运行 Vite 构建并执行部署脚本将更新同步至线上环境。
+- Playwright 数据监测表明：在整个 4000ms 开启调试周期中，Logo 在 landing 瞬间（2700ms）及后续所有驻留时间，在 Y 轴上始终牢牢咬死在完美的 `111px`（对应占位符 `107px`），飞行结束时没有丝毫的瞬间移位或下沉跳跃，过渡极其顺滑！
