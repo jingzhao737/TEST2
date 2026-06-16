@@ -6,6 +6,27 @@ const workDetail = document.getElementById('workDetail');
 const pageTransition = document.getElementById('pageTransition');
 
 // ═══════════ HASH ROUTER ═══════════
+let currentMouseX = window.innerWidth / 2;
+let currentMouseY = window.innerHeight / 2;
+window.addEventListener('mousemove', (e) => {
+  if (e.clientX !== 0 || e.clientY !== 0) {
+    currentMouseX = e.clientX;
+    currentMouseY = e.clientY;
+  }
+}, { passive: true });
+
+function dispatchWakeupEvents() {
+  const workList = document.querySelector('.work-list');
+  if (workList) {
+    const wlRect = workList.getBoundingClientRect();
+    if (currentMouseX >= wlRect.left && currentMouseX <= wlRect.right && 
+        currentMouseY >= wlRect.top && currentMouseY <= wlRect.bottom) {
+      workList.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: currentMouseX, clientY: currentMouseY }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: currentMouseX, clientY: currentMouseY }));
+    }
+  }
+}
+
 const ROUTE_PREFIX = '#/work/';
 let detailOpenedFromHash = false;
 let savedScrollY = 0;
@@ -337,6 +358,7 @@ function closeDetail(popState) {
   window.__isDetailClosing = true;
   workDetail.classList.remove('open');
   workDetail.style.pointerEvents = 'none';
+  dispatchWakeupEvents();
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');
@@ -391,6 +413,7 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         resetDetailState();
+        dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));

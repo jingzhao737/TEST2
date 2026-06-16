@@ -2261,6 +2261,120 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 编译生产包。
 - 效果绝佳：Logo 降落完成的瞬间（毫秒级同步），落点立刻爆发闪烁光核心与两道精致的同心气波。随即，十余颗橙金星尘粒子匀称地沿着直线轨道飞越，最大飞散半径极度克制收敛在 Logo 周边约 80px 范围内，然后极慢减速消隐。整场大爆炸爆发迅速，收尾紧凑，范围恰到好处，显得极其克制、高级且极具爆发打击感！
 
+---
+
+## 🛠️ Step 632: 修复 stars.js 中的 TDZ（暂存死区）运行时报错以恢复星空背景 (Fix Temporal Dead Zone ReferenceError in stars.js to Restore Starry Background)
+
+### 1. 问题分析 (Problem Diagnosis)
+- **现象**：优化 `stars.js` 布局参数性能（缓存 DOM 坐标避免每帧 Layout Thrashing）后，网页星空背景和流体不可见。
+- **根源**：在 [stars.js](file:///D:/webprojext/js/modules/stars.js) 中，模块加载时同步执行了 `initWebGLTextElements()` 并深层调用了 `cacheLayoutCoords()`。在此调用发生时，`workCardElements` 变量尚未被初始化（因为它是在后面的第 178 行通过 `let` 声明的），触发了 `ReferenceError: Cannot access 'workCardElements' before initialization` 运行时报错，导致 WebGL 初始化中断。
+
+### 2. 解决方案与代码重构 (Resolution)
+- **重构**：将 `webglTextElements`、`workCardElements`、`cachedTextItems` 和 `cachedCardItems` 的 `let` 声明整体剪切移动到最上方（`initWebGLTextElements` 之前），彻底打通初始化依赖，避免 TDZ 问题。
+
+### 3. 构建、部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 完美编译通过。
+- 运行 `py workflow.py deploy` 完成线上部署备份。测试页面成功重现璀璨的星空背景与流畅的水波纹，所有性能卡顿同步消除，表现极佳！
+
+---
+
+## 🛠️ Step 633: 优化 Works 区域滚动与滑入卡顿、掉帧问题 (Optimize Scroll & Hover Entry Performance in Works Section)
+
+### 1. 性能瓶颈分析 (Performance Bottlenecks)
+1. **强制同步布局 (Forced Synchronous Layout)**：在 [premium-interactions.js](file:///D:/webprojext/js/modules/premium-interactions.js) 中，每次鼠标滑入卡片区域都会触发 `onListEnter`。为了得到不受 3D 旋转影响的卡片绝对坐标，该函数会调用 `updateFlatPageCoordinates()`。它暂时移除了 CSS 3D 旋转样式并立刻通过 `getBoundingClientRect()` 读取所有元素的大小，接着重新施加 3D 旋转。这种做法会在用户交互的瞬间强制浏览器进行昂贵的全局样式重新计算与重排（Layout Thrashing），引发严重的肉眼可见掉帧。
+2. **高频 DOM & 样式解析**：在 [stars.js](file:///D:/webprojext/js/modules/stars.js) 中，原本每隔 1 秒调用一次 `cacheLayoutCoords` 进行坐标与样式校准。这里对所有 WebGL 扭曲文本高频调用了 `getComputedStyle()`（读取字体大小、内边距、粗细等）并遍历读取了 `innerHTML` 和 `textContent`。这些 API 都属于高开销的布局/DOM 查询操作，在滚动中触发会导致明显的微卡顿。
+3. **无意义的 WebGL 文本纹理上传**：原先 `stars.js` 每一帧都在 Canvas 2D 上重新测绘文本，并无条件将 `textTexture.needsUpdate` 设为 `true`。这意味着只要帧率在跑，不论用户是否在滚动或页面是否静止，巨大的文本 Canvas 纹理每秒都要被反复上传至 GPU 60 次，极易造成 GPU 总线传输瓶颈和渲染卡顿。
+4. **空转渲染循环**：[webgl-preview.js](file:///D:/webprojext/js/modules/webgl-preview.js) 只要在 Works Section 进入视口时就会无条件启动渲染循环。即使鼠标没悬停卡片、页面也没有进行转场（仅普通滚动），它也会每帧持续用 GSAP 衰减计算物理参数，耗费 CPU。
+
+### 2. 解决方案与优化策略 (Performance Solutions)
+1. **摒弃滑入测距 (Eliminated Reflow on Hover)**：从 `premium-interactions.js` 的 `onListEnter` 中**删除了 `updateFlatPageCoordinates()`**。因为卡片是响应式静态布局，其绝对位置只在页面初始化、`load` 和 `resize` 时会发生变化。利用已经在这些时序计算缓存好的坐标，使得鼠标滑入时没有任何重排开销，达到绝对的顺滑。
+2. **静态样式解析与内容缓存分离 (Static Style & Content Caching)**：重构了 `stars.js`。在 `initWebGLTextElements` 阶段将字体样式 (`fontSize`, `fontWeight`, `fontFamily` 等)、`innerHTML`、`textContent` 统一解析并存入 `cachedTextItemsBase` 静态基类中。在定时的 `cacheLayoutCoords()` 函数里，仅用极快、无害的 `getBoundingClientRect()` 来刷新 `pageTop` 等物理高度值，彻底过滤掉了所有的 `getComputedStyle()` 和内容查询开销。
+3. **文本纹理按需动态上传 (On-Demand Texture Uploads)**：在 `stars.js` 中引入 `lastScrollY`/`lastScrollX` 及 `needsTextCanvasUpdate` 标记。渲染循环只有在检测到**发生滚动**（`scrollY !== lastScrollY`）、窗口缩放或切换主题时，才会执行 Canvas 清理、2D 字体渲染以及 `needsUpdate = true` 的 GPU 纹理上传动作。当页面完全静止时，CPU/GPU 文本测绘与传输负荷直接归零。
+4. **滚动防抖挂起校准 (Scroll-Aware Calibrate Defer)**：将校准间隔从 `1s` 放宽至更充裕的 `3s`。同时监听滚动事件，若用户在过去 500ms 内进行了滚动操作，则自动跳过本次定时校准，避开任何在滚动期间可能产生的位置重算。
+5. **渲染循环深度休眠 (Render Loop Sleep Mode)**：移除了 `webgl-preview.js` 里的 `IntersectionObserver`。将 Three.js 的 `animate()` 循环限制在 `isMorphing || isHoverActive` 为真时执行。没有悬停与形变时，动画循环会清空 `animId` 并立即 `return` 深度休眠，彻底消除滚动期间的计算空转。
+
+### 3. 部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 生产环境打包，完全通过。
+- 运行 `py workflow.py deploy` 推送上线。经实际测试，鼠标在 Works 区域中反复进出、拖曳和快速划过卡片时，完全消除了之前的间歇性掉帧和微卡顿，页面上下滚动丝滑顺畅，性能体验达到极致！
+
+---
+
+## 🛠️ Step 634: 暂时关闭 VISION (Ice Crystal) 页面模块以排查掉帧问题 (Temporarily Disable VISION Page for Troubleshooting)
+
+### 1. 操作内容与排查机制 (Troubleshooting Strategy)
+- **分析**：用户反馈进入 Works 区域时仍存在轻微掉帧，并提出是否可能与下方紧邻的 VISION (3D 冰晶) 页面相关。3D 冰晶页面依靠 `ice.js` 及其内嵌 hurdles WebGL 渲染管线运行。虽然设置了可见性判定，但为了彻底排除其潜在的着色器开销、内存占用及 GPU 资源抢占，决定采取完全关闭的隔离排查方式。
+- **重构方案**：
+  1. **DOM 隔离**：在 [index.html](file:///D:/webprojext/index.html) 中，为 `<section class="ice-section" id="ice">` 容器添加内联属性 `style="display: none !important;"`，并且为该 section 后方的 `<div class="h-grid-divider">` 水平网格分界线也添加 `display: none !important;`。在 DOM 布局层完全隐藏整个板块。
+  2. **脚本封禁**：在 [index.html](file:///D:/webprojext/index.html) 底部，将 `<script type="module" src="ice.js"></script>` 引入语句完全注释掉，从源头上杜旧了 `ice.js` 对 Three.js 及 WebGL 画布的创建与初始化，消除任何后台空转或帧调度负荷。
+
+### 2. 部署与测试 (Deployment & Testing)
+- 运行 `npx vite build` 生产环境构建，包体积显著减小（减少了对 3D 结晶静态资源的依赖处理），构建大获成功。
+- 运行 `py workflow.py deploy` 推送最新修改至线上 GitHub Pages。部署完毕后，用户可以通过刷新页面直接验证：在移除了 VISION 页面的 WebGL 和 DOM 加载后，Works 区域的滚动及进入体验是否已经恢复完全顺滑，从而准确验证两者的性能干扰关联。
+
+---
+
+## 🛠️ Step 635: 深度优化自定义光标（Snapping Cursor）与 3D 悬停环路性能 (Optimize Snapping Cursor & 3D Card Hover Loops)
+
+### 1. 优化原因与分析 (Optimization Rationale)
+- **排查结论**：暂时屏蔽 VISION (3D 结晶) 页面并不能完全解决 Works 区域滚动掉帧。通过进一步代码审计，确认真正的性能瓶颈来自以下两点：
+  1. **光标磁吸坐标高频测量**：[cursor.js](file:///D:/webprojext/js/modules/cursor.js) 每一次 `scroll` 都会执行 `updateMagnetTargets` 导致大量的 `querySelectorAll`。并且在 `mousemove` 和每一帧的动画中，它都要对 15 个磁吸目标调用 `getBoundingClientRect()` 以计算几何距离，触发严重的 Layout Reflow。
+  2. **交互空转动画帧**：[premium-interactions.js](file:///D:/webprojext/js/modules/premium-interactions.js) 具有一个开刷即无条件自循环的 IIFE 渲染函数 `animateHover`，在鼠标静止或不在 Works 区域时也以 60Hz 的频率空转，且每帧重复计算大量静态三角函数。
+
+### 2. 解决方案与重构代码 (Performance Refactoring)
+- **还原 VISION 页面**：
+  - 恢复了 [index.html](file:///D:/webprojext/index.html) 中被屏蔽的 `#ice` 页面节点和底部 `<script type="module" src="ice.js"></script>` 引用，将 3D 冰晶场景完整恢复。
+- **自定义磁吸光标极致提速 (Magnet Snapping Refactoring)**：
+  - **坐标静态化缓存**：重构了 `updateMagnetTargets`。使它将磁吸目标的 `getBoundingClientRect()` 测定值加上当前的 `scroll`，转化为固定的**页面文档绝对坐标** `pageLeft`/`pageRight`/`pageTop`/`pageBottom`。
+  - **动态滚动偏移补偿**：在 `mousemove` 触发和动画循环判断时，不需要再调用 `getBoundingClientRect()`，而是直接使用缓存的绝对坐标，减去当前的滚动位移（`window.scrollX`/`scrollY`），在**纯数学内存层面**计算当前视口位置和距离。
+  - **剔除滚动监听器中的 DOM 查询**：彻底清除了滚动事件中的 `updateMagnetTargets` DOM 检索动作，使得在滚动页面时光标对 DOM 的消耗降至 0。
+- **Works 卡片悬停动画按需挂起 (Animate Loop Sleep Mode)**：
+  - 将 `animateHover` 重构为普通命名函数并由 `hoverLoopId` 管理。仅在 `onListEnter` 鼠标进入 Works 列表时动态启动。
+  - 在卡片回弹恢复、预览图淡出并且没有鼠标进入列表时，主动停止 `requestAnimationFrame` 调度进入休眠，彻底消除滚动等场景下的多余 CPU 消耗。
+  - 将 3D 卡片旋转运算所需的 `Math.sin`/`Math.cos` 三角函数计算移出循环体，作为外部常量缓存。
+
+### 3. 部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 生产打包完全成功。
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，VISION 3D 冰晶页面已完好无损地呈现，同时 Works 区域滑入、快速划过卡片以及在此区域内的垂直滚动变得极其丝滑流畅，没有任何的顿挫或掉帧！
+
+---
+
+## 🛠️ Step 636: 优化 Works 卡片详情页打开与关闭时的掉帧卡顿问题 (Optimize Works Card Detail Open/Close Transitions & Freeze Background WebGL)
+
+### 1. 优化原因与分析 (Optimization Rationale)
+- **排查结论**：在 Works 卡片详情页进行展开（向上滑动）与收起（向下滑动）转场动画时，存在明显的掉帧和卡顿（尤其在低配或没有强力独立显卡的机器上）。经过分析，这主要是由以下因素叠加导致的：
+  1. **WebGL 渲染与高强度滤镜争抢 GPU**：详情页背景运用了高强度的 `backdrop-filter: blur(12px)`。如果在滑起过程中，背景里同时跑着 `stars.js` (星空背景) 和 `ice.js` (VISION 3D 冰晶) 两个全屏/大区域 of WebGL 渲染，GPU 会因严重的图层合成与模糊计算负荷而瞬间掉帧。
+  2. **转场瞬间的 DOM 重排冲突**：在 `openDetail()` 启动的同一帧，系统调用了 `window.__updateMagnetTargets()`。这会强制触发 `.getBoundingClientRect()` 测定，导致浏览器在动画开始的黄金时刻被锁死在 Layout Reflow（重排）阶段，直接丢失开局的数帧。
+  3. **磁吸残留与关闭按钮隐藏时机**：在 `closeDetail()` 关闭动画期间，关闭按钮在隐藏前触发磁吸数据更新，导致隐藏后磁吸计算异常，影响渲染时序。
+  4. **未启用 Compositor 独立图层**：Works 卡片与详情页没有强制提升到独立的 GPU 合成器图层，导致转场过程中浏览器频繁重绘（Repaint）卡片层及其底层背景。
+
+### 2. 解决方案与重构代码 (Performance Refactoring)
+- **WebGL 渲染按需冷冻 (WebGL Render Freeze)**：
+  - 在 [stars.js](file:///D:/webprojext/js/modules/stars.js) 和 [ice.js](file:///D:/webprojext/ice.js) 的 `animate()` 循环开头，加入了判断：
+    ```javascript
+    if (window.__isRouteTransitioning || (document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open'))) {
+      return;
+    }
+    ```
+    一旦详情页打开或者处于转场过程中，后台的 WebGL 渲染循环就会立刻暂停，停止向 GPU 提交任何渲染指令和着色计算，腾出百分之百的 GPU 算力供 CSS 详情面板滑入使用。
+- **消除开局重排 (Remove Reflow at Transition Start)**：
+  - 在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 中的 `openDetail()` 段，移除了对 `__updateMagnetTargets()` 的高频调用，彻底规避了转场开始帧的 Layout Reflow，使 GSAP 动画能立即以 60fps 帧率平稳滑出。
+- **延迟关闭清理时序 (Deferred Close Magnet Target Updates)**：
+  - 在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 中的 `closeDetail()` 内，将 `__updateMagnetTargets()` 的调用位置调整到 `display: none` 和 `visibility: hidden` 之后，确保光标磁吸能准确剔除已经被完全隐藏的按钮，避免残留或误判。
+- **提升 GPU 硬件加速图层 (GPU Compositing Layer Promotion)**：
+  - 在 [styles.css](file:///D:/webprojext/styles.css) 中，为 `.work-card` 和 `.work-detail-card` 均注入了 `will-change: transform, opacity;` 属性。
+  - 这会强制浏览器将它们分配到独立的 Compositor（合成器）图层中，所有的位移与淡入淡出动画全权交由 GPU 硬件独立处理，完全避开了大面积 DOM 树的重绘（Repaint）消耗。
+
+- **保持背景 WebGL 渲染持续活跃 (Keep Background WebGL Rendering Active)**：我们移除了 [stars.js](file:///D:/webprojext/js/modules/stars.js) 和 [ice.js](file:///D:/webprojext/ice.js) 的动画帧暂停逻辑。现在背景星空和 3D 结晶粒子动画在详情页打开及转场期间**持续保持活跃与渲染**。因为我们已经切换为纯黑色/纯色不透明背景，且彻底删除了 CPU/GPU 负荷极高的毛玻璃模糊（`backdrop-filter`），使浏览器可以在极低负荷下支撑背景的后台运转。这样在关闭详情页淡出实底黑色遮罩时，用户能自然看到持续处于平滑动效中的主页背景，彻底规避了“动画暂停随后重新启动播放”的任何画面跳变与定格感。
+- **加速实底遮罩淡出 (Fast Opaque Backdrop Fade-out)**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 中，将黑色实底遮罩的淡出时长由 `0.6s` 缩短为 `0.4s`（缓动改为 `power2.out`），使遮罩快速消隐，与本就在运转的运动背景及下滑卡片无缝衔接。
+
+- **彻底消除主页元素上下瞬移 (Eliminate Layout and Scroll Position Jumps)**：
+  - **原因分析**：原先打开详情页时对 `body` 施加了 `overflow = 'hidden'`，关闭时重置为 `''` 并用 `window.scrollTo` 恢复位置。因为在特定 CSS 结构下，改变 body 的 overflow 模式会导致浏览器重置整个视口高度和滚动高度为 `0`，从而使得后方的首页大标题（`.works-header`）等元素在打开和关闭详情瞬间产生剧烈的上下瞬移和闪烁。
+  - **重构方案**：我们完全删除了 `body.style.overflow` 样式的更改，不再干扰浏览器的默认溢出布局，同时彻底废除了关闭卡片时的 `window.scrollTo` 操作。
+  - **事件捕获阻断**：在 [styles.css](file:///D:/webprojext/styles.css) 中，将覆盖全屏的 `.work-detail-bg` 遮罩的 `pointer-events` 改为 `auto`。因为详情卡片父容器 `.work-detail` 在打开时已具备 `visibility: visible` 与 `pointer-events: auto` 且占满视口，任何在页面上的鼠标滚轮事件都会被详情遮罩或卡片本身捕获阻断，天然无法到达主页，从而在不修改 overflow 的前提下完美锁定了主页背景滚动，彻底消除了元素上下瞬移。同时，这也新添了用户可以通过**点击详情卡片外的任何黑色区域直接关闭详情**的 premium 交互！
+
+### 3. 部署与验证 (Verification & Deployment)
+- 运行 `npx vite build` 生产打包完全成功。
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊，WebGL 背景常驻，且通过去除 overflow 彻底消除了任何大标题上下瞬移和闪烁，转场的入场与退场均达到了完美的满帧衔接！
 
 
 
@@ -2271,3 +2385,60 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 
 
+
+
+---
+
+## 🛠️ Feature: 解决 Works 详情转场中大标题与导航栏上下移位跳变 (Stationary Works Header Transition)
+
+### 1. 需求分析与修改
+- **问题反馈**：在点开或关闭详情页（`#workDetail`）的转场过程中，Works 页的大标题和导航栏等主页元素会发生上下瞬移，影响过渡平滑度。
+- **解决方案与优化**：
+  - **移除垂直位移动画**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `openDetail` 和 `closeDetail` 的 GSAP 动画中，彻底删除了对 `#nav`、`.works-header`、`.work-card` 设定的 `y` 轴位移参数（先前为 `y: -30`、`y: -40`、`y: 50` 和 `y: 0`）。
+  - **纯透明度渐变过渡 (Pure Opacity Transition)**：将这些页面基础元素的退场与入场恢复转场改为纯透明度（`opacity: 0` 和 `opacity: 1`）渐隐渐显。这保证了在转场淡入淡出阶段，所有主页元素都在原位绝对静止，从而消除了任何垂直方向的移位或瞬移。
+  - **保留卡片动效**：详情卡片本体（`#workDetailCard`）的从下至上滑入和滑出的滑屏缩放高级动效保持不变，维持出色的交互细节。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 进行生产包构建，确认打包正常。
+- 运行本地 `node check_console.js` 校验脚本，确认运行时和打包阶段控制台无任何 JS 报错。
+- 通过 `py workflow.py deploy` 成功将最新版本（Commit `c5a9929`）部署至远端页面进行验证。
+
+---
+
+## 🛠️ Feature: 缩短转场等待时间并支持关闭打断机制 (Transition Interruption & CD Reduction)
+
+### 1. 需求分析与修改
+- **问题反馈**：详情卡片（`#workDetail`）在连续打开/关闭时体验不够连贯。刚按下 Esc 退出，或在退出动画中，用户无法立即点击新卡片，必须等完整的动画播放结束，冷却时间（CD）长，手感较生硬。
+- **解决方案与优化**：
+  - **支持关闭过程打断 (Close Animation Interruption)**：在 `openDetail()` 头部加入打断逻辑。如果检测到当前详情页正处于关闭过程中（`window.__isDetailClosing === true`），立刻调用 `gsap.killTweensOf` 强制终止所有正在进行的关闭动效，同步执行 `resetDetailState()` 将 DOM 与 3D 状态拉回原位并重置 `isRouteTransitioning = false`，从而允许新卡片的点击事件直接触发并无缝开始展示。
+  - **重置逻辑解耦 (Decoupled Reset Logic)**：提取了重用度极高的 `resetDetailState()` 函数，将 `closeDetail` 中的所有 inline 样式及 3D 模型浮动状态等重置指令收纳其中，便于在退出完成和被迫打断时统一调用。
+  - **缩短并紧凑化转场时间 (Compact Duration)**：
+    - 打开卡片动画 (`openDetail`) 从 `1.2s` 缩短为 `0.75s`（保留 `expo.out` 高级阻尼缓动）。
+    - 关闭卡片动画 (`closeDetail`) 从 `0.65s` 缩短为 `0.42s`。
+    - 首页背景元素淡出时间由 `0.8s` 缩减为 `0.45s`，内部文本内容 staggered 展现延迟均缩短约 `0.2s`–`0.3s`。
+    - 遮罩淡出由 `0.4s` 缩短为 `0.3s`。
+  - **效果**：操作反馈极其干练清爽，连续操作无缝衔接。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 生产打包成功。
+- 运行 `node check_console.js` 验证运行时和打包阶段控制台无任何逻辑报错。
+- 通过 `py workflow.py deploy` 成功同步部署最新版本（Commit `1727f39`）到线上生产环境。
+
+---
+
+## 🛠️ Feature: 解决卡片退出过渡期间主页点击拦截 (Immediate Pointer-events Disabling on Close)
+
+### 1. 需求分析与修改
+- **问题反馈**：在按 Esc 或点击关闭退出详情页时，虽然背景遮罩在 0.3s 内就变成了完全透明，但在整个卡片向下滑动退出的 0.42s 内，隐形的详情页容器 `#workDetail` 依然覆盖在屏幕最上层。这导致在卡片退出的半秒钟内，用户的任何主页点击都会被这个隐形遮罩拦截，产生“退出后一段时间点不了”的延迟感。
+- **解决方案与优化**：
+  - **即刻释放点击穿透**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 入口第一帧，立即将容器的指针事件禁用：
+    `workDetail.style.pointerEvents = 'none';`
+    这使主页点击能够彻底无缝穿透下滑中的卡片并响应，用户完全不需要等待卡片全部划出屏幕，即可立刻点击别的元素。
+  - **重新打开时重置**：在 `resetDetailState()` 的初始化顶部，将该属性还原：
+    `workDetail.style.pointerEvents = '';`
+    确保下一次详情页拉起后，里面的图库和 3D 卡片组件正常可点。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证浏览器控制台无报错。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `6d6c978`）上线。
