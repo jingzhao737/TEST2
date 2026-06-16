@@ -668,8 +668,11 @@ import * as THREE from 'three';
     canvasOffX = canvasRect.left - heroRect.left;
     canvasOffY = canvasRect.top - heroRect.top;
     let nav = document.querySelector('nav');
-    // Use stable position: nav bottom relative to hero, ignoring scroll
-    navBottomPx = nav ? (nav.offsetHeight + parseInt(getComputedStyle(nav).top || '0', 10)) : 80;
+    let navTop = nav ? parseInt(getComputedStyle(nav).top || '0', 10) : 24;
+    let navHeight = nav ? nav.offsetHeight : 56;
+    if (navHeight === 0) navHeight = 56;
+    navBottomPx = navHeight + navTop;
+    if (navBottomPx < 80) navBottomPx = 80;
     let clips = document.querySelectorAll('.latch-clip');
     // Size latch clips proportional to disc size
     let sampleDisc = thumbs[0];
@@ -736,6 +739,11 @@ import * as THREE from 'three';
           t.y = -200;
           t.vx = 0; t.vy = 0;
           continue;
+        } else {
+          if (!window.__hasResizedAfterLoader) {
+            window.__hasResizedAfterLoader = true;
+            resize();
+          }
         }
         if (t.delayFrames > 0) {
           t.delayFrames--;
@@ -1423,5 +1431,7 @@ import * as THREE from 'three';
   resize();
   requestAnimationFrame(render);
   window.addEventListener('resize', function() { resize(); });
+  window.addEventListener('load', function() { resize(); });
 
+  window.__thumbs = thumbs;
 })();

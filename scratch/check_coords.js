@@ -3,36 +3,32 @@ const { chromium } = require('playwright');
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  
+  await page.setViewportSize({ width: 1440, height: 900 });
+
   await page.goto('http://localhost:5173');
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(6000); // Wait for loader and physics to settle
 
-  const navRect = await page.evaluate(() => {
-    const el = document.getElementById('nav');
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return { top: r.top, bottom: r.bottom, height: r.height };
-  });
-
-  const logoRect = await page.evaluate(() => {
-    const el = document.getElementById('navLogo');
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return { left: r.left, top: r.top, width: r.width, height: r.height };
+  const thumbs = await page.evaluate(() => {
+    if (!window.__thumbs) return null;
+    return window.__thumbs.map((t, i) => {
+      return {
+        idx: i,
+        x: t.x,
+        y: t.y,
+        anchorX: t.anchorX,
+        anchorY: t.anchorY,
+        restX: t.restX,
+        restY: t.restY,
+        stringLen: t.stringLen
+      };
+    });
   });
 
   const canvasRect = await page.evaluate(() => {
     const el = document.getElementById('framesCanvas');
     if (!el) return null;
     const r = el.getBoundingClientRect();
-    return { top: r.top, bottom: r.bottom, height: r.height };
-  });
-
-  const webglCanvasRect = await page.evaluate(() => {
-    const el = document.getElementById('webglCanvas');
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    return { top: r.top, bottom: r.bottom, height: r.height };
+    return { left: r.left, top: r.top, width: r.width, height: r.height };
   });
 
   const clipRects = await page.evaluate(() => {
@@ -43,11 +39,10 @@ const { chromium } = require('playwright');
     });
   });
 
-  console.log('=== Element Coordinates ===');
-  console.log('Nav Rect:', navRect);
-  console.log('Logo Rect:', logoRect);
-  console.log('2D Canvas Rect:', canvasRect);
-  console.log('WebGL Canvas Rect:', webglCanvasRect);
+  console.log('=== Thumbs Coordinates ===');
+  console.log('Loader Finished:', await page.evaluate(() => window.loaderFinished));
+  console.log(thumbs);
+  console.log('Canvas Rect:', canvasRect);
   console.log('Clip Rects:', clipRects);
 
   await browser.close();
