@@ -1,12 +1,5 @@
 [
   {
-    "step": 112,
-    "timestamp": "2026-06-16 01:18:01",
-    "description": "Deploy Three.js WebGL records documentation and sync files",
-    "folder": "step_112_Deploy_Three.js_WebGL_records_documentation_and_sync_files",
-    "is_auto": false
-  },
-  {
     "step": 113,
     "timestamp": "2026-06-16 01:20:41",
     "description": "Adjust vinyl record proportions to make cover image larger",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 22:06:10",
     "description": "Implement gravity-free Big Bang straight-line radial expansion for logo landing sparks",
     "folder": "step_131_Implement_gravity-free_Big_Bang_straight-line_radial_expansion_for_logo_landing_sparks",
+    "is_auto": false
+  },
+  {
+    "step": 132,
+    "timestamp": "2026-06-16 22:07:52",
+    "description": "Implement immediate zero-delay trigger, smaller range, and reduced count for logo Big Bang sparks",
+    "folder": "step_132_Implement_immediate_zero-delay_trigger,_smaller_range,_and_reduced_count_for_logo_Big_Bang_sparks",
     "is_auto": false
   }
 ]

@@ -519,7 +519,7 @@
   window.triggerForgeBurst = function(x, y) {
     const colors = ['#ffffff', '#E87C50', '#FF9F1C', '#FFD700'];
     
-    // 1. Pulsing Center Flare (Flash)
+    // 1. Pulsing Center Flare (Flash) - Made slightly smaller for tighter range
     sparks.push({
       x: x,
       y: y,
@@ -527,17 +527,17 @@
       vy: 0,
       color: '#E87C50',
       type: 'center-flare',
-      size: 45.0,
+      size: 30.0,
       created: Date.now(),
       life: 600
     });
 
-    // 2. Double expanding shockwave ripples
+    // 2. Double expanding shockwave ripples - Reduced radius for a cleaner local blast
     ripples.push({
       x: x,
       y: y,
       radius: 0,
-      maxRadius: 80,
+      maxRadius: 50,
       color: '#E87C50',
       created: Date.now(),
       life: 600
@@ -546,17 +546,17 @@
       x: x,
       y: y,
       radius: 0,
-      maxRadius: 120,
+      maxRadius: 80,
       color: '#FF9F1C',
       created: Date.now(),
       life: 800
     });
 
-    // 3. Dense sparks with forging physics
-    const numSparks = 20 + Math.floor(Math.random() * 8);
+    // 3. Dense sparks with forging physics - Slightly reduced count (12-17 sparks) and speed (2.5-7.0) for a refined range
+    const numSparks = 12 + Math.floor(Math.random() * 5);
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const speed = 4.0 + Math.random() * 8.0;
+      const speed = 2.5 + Math.random() * 4.5;
       const lifeSpan = 1200 + Math.random() * 800;
       const color = colors[Math.floor(Math.random() * colors.length)];
       sparks.push({

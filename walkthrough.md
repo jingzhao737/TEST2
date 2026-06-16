@@ -2240,6 +2240,28 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 编译生产包并部署验证。
 - 视觉质感达到巅峰：在 Logo 落地后 0.1s 闪光和激波震荡的同时，20 余颗自旋的彩色十字星星粒子呈完美圆形朝着四面八方激射爆开。每一颗星星都严格沿着各自飞出的直线路径向外平滑滑行、匀称减速，并在最后极慢的滑行过程中优雅淡化隐没，完全没有任何向上或向下的弯曲，完美呈现出如宇宙大爆炸般的纯净、宏大与极致丝滑！
 
+---
+
+## 🛠️ Step 631: 大爆炸粒子动效精细化收拢与同步瞬时触发 (Refine Big Bang Particle Range, Count & Implement Synchronous Instant Triggering)
+
+### 1. 动效细节提炼与性能优化 (Refining Explosion Scale & Instant Triggering)
+- **分析**：用户体验反馈后，提出了更精确的审美调优：
+  1. **瞬时触发 (Instant Trigger)**：移除之前在 `color-console.js` 中设置的 `0.1s` 延迟。当 Logo 飞越时间线走完、定位交接完成的瞬间，直接同步且零延迟引爆闪光和星雨。
+  2. **收拢范围 (Smaller Scale)**：原本大爆炸散射出的星点飞行范围过大（初速度 4~12px，激波半径达 120px），会破坏控制台/Logo 本身的区域聚焦。需要收拢为局部的精致气场。
+  3. **精简数量 (Refined Count)**：粒子数目从 20+ 降至更利落的十余颗，保持画面的简洁干练。
+- **重构方案**：
+  - **同步时序重构**：
+    - 在 [color-console.js](file:///D:/webprojext/js/modules/color-console.js) 中，直接从展开/收回的 `onComplete` 回调中**剥离 `setTimeout`**，直接同步调用坐标测量和 `triggerForgeBurst`。
+  - **粒子范围与参数压缩**：
+    - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 的 `triggerForgeBurst` 中，将火星初速度压缩至更可控的 `2.5 + Math.random() * 4.5`（初速度 2.5~7.0px）。
+    - 脉冲闪光大小调小为 `30.0`，两重激波环的最大半径从 80/120 相应微调压缩为 **`50` 像素** 和 **`80` 像素**。
+    - 将星星的生成数目精简至 **`12 ~ 17` 颗**（`12 + Math.floor(Math.random() * 5)`）。
+
+### 2. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包。
+- 效果绝佳：Logo 降落完成的瞬间（毫秒级同步），落点立刻爆发闪烁光核心与两道精致的同心气波。随即，十余颗橙金星尘粒子匀称地沿着直线轨道飞越，最大飞散半径极度克制收敛在 Logo 周边约 80px 范围内，然后极慢减速消隐。整场大爆炸爆发迅速，收尾紧凑，范围恰到好处，显得极其克制、高级且极具爆发打击感！
+
+
 
 
 
