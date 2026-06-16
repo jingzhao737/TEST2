@@ -49,7 +49,7 @@ import gsap from 'gsap';
       const placeholderRect = placeholder.getBoundingClientRect();
       const toRect = {
         left: placeholderRect.left,
-        top: placeholderRect.top + 3.5, // add 3.5px downward offset to center it in header
+        top: placeholderRect.top + 20.0, // TEMPORARY LARGE OFFSET (+20px) FOR TESTING SNAPPING BEHAVIOR
         width: placeholderRect.width,
         height: placeholderRect.height
       };
