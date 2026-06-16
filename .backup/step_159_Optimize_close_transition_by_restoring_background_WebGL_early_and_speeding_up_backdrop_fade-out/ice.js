@@ -458,6 +458,13 @@ const LensFlareShader = {
   function animate() {
     requestAnimationFrame(animate);
     if (!visible) return;
+
+    // Pause WebGL rendering when details card is open (except when closing) or during open transition
+    const isDetailOpen = document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open');
+    const isClosing = window.__isDetailClosing;
+    if ((window.__isRouteTransitioning && !isClosing) || (isDetailOpen && !isClosing)) {
+      return;
+    }
     const now = performance.now();
     const dt = Math.min((now - lastTime) / 1000, 0.1);
     lastTime = now;

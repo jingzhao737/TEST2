@@ -2364,9 +2364,12 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
   - 在 [styles.css](file:///D:/webprojext/styles.css) 中，为 `.work-card` 和 `.work-detail-card` 均注入了 `will-change: transform, opacity;` 属性。
   - 这会强制浏览器将它们分配到独立的 Compositor（合成器）图层中，所有的位移与淡入淡出动画全权交由 GPU 硬件独立处理，完全避开了大面积 DOM 树的重绘（Repaint）消耗。
 
+- **关闭详情时背景 WebGL 提前恢复 (Pre-emptive WebGL Background Recovery)**：优化了 [stars.js](file:///D:/webprojext/js/modules/stars.js) 和 [ice.js](file:///D:/webprojext/ice.js) 的动画帧暂停逻辑，加入了 `window.__isDetailClosing` 判断过滤。当详情卡片一开始下滑退场时，背景星空和 3D 结晶粒子动画循环即刻恢复播放，消除了背景定格随后突然跳变的突兀感。
+- **加速实底遮罩淡出 (Fast Opaque Backdrop Fade-out)**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 中，将黑色实底遮罩的淡出时长由 `0.6s` 缩短为 `0.4s`（缓动改为 `power2.out`），使遮罩快速消隐，与已恢复渲染的运动背景及下滑卡片无缝衔接。
+
 ### 3. 部署与验证 (Verification & Deployment)
 - 运行 `npx vite build` 生产打包完全成功。
-- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊后，浏览器能够跳过背景元素的绘制，展开和收起转场没有任何掉帧，极其流畅！
+- 运行 `py workflow.py deploy` 部署至线上。经实际测试，将背景遮罩改为纯色实底并移除了 backdrop-filter 模糊后，浏览器能够跳过背景元素的绘制，并且关闭详情时背景粒子动画提前平滑恢复，关闭与打开转场没有任何掉帧且衔接无比自然！
 
 
 

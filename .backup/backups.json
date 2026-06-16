@@ -1,12 +1,5 @@
 [
   {
-    "step": 139,
-    "timestamp": "2026-06-16 23:03:44",
-    "description": "Allow stars to keep expanding outward as they fade by increasing drag and decreasing initial speed",
-    "folder": "step_139_Allow_stars_to_keep_expanding_outward_as_they_fade_by_increasing_drag_and_decreasing_initial_speed",
-    "is_auto": false
-  },
-  {
     "step": 140,
     "timestamp": "2026-06-16 23:04:42",
     "description": "Remove orange center-flare and shockwave ripples, leaving only pure white star particles",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:43:23",
     "description": "Optimize Works details backdrop by using solid background color to enable occlusion culling",
     "folder": "step_158_Optimize_Works_details_backdrop_by_using_solid_background_color_to_enable_occlusion_culling",
+    "is_auto": false
+  },
+  {
+    "step": 159,
+    "timestamp": "2026-06-17 00:46:33",
+    "description": "Optimize close transition by restoring background WebGL early and speeding up backdrop fade-out",
+    "folder": "step_159_Optimize_close_transition_by_restoring_background_WebGL_early_and_speeding_up_backdrop_fade-out",
     "is_auto": false
   }
 ]

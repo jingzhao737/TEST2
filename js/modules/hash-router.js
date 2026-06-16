@@ -274,9 +274,9 @@ function closeDetail(popState) {
     detailBg, detailCard, detailHeroImg, detailHeroDim, detailClose, detailTag, detailTitle, detailSubtitle, detailBody
   ]);
 
-  // Fade out backdrop smoothly
+  // Fade out backdrop smoothly (faster fade-out to reveal restoring background early)
   if (detailBg) {
-    gsap.to(detailBg, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
+    gsap.to(detailBg, { opacity: 0, duration: 0.4, ease: 'power2.out' });
   }
 
   // Fade out close button immediately to prevent lingering

@@ -890,8 +890,10 @@ import * as THREE from 'three';
     requestAnimationFrame(animate);
     if (!isVisible) return;
 
-    // Pause WebGL rendering when details card is open or transitioning to free up GPU resources
-    if (window.__isRouteTransitioning || (document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open'))) {
+    // Pause WebGL rendering when details card is open (except when closing) or during open transition
+    const isDetailOpen = document.getElementById('workDetail') && document.getElementById('workDetail').classList.contains('open');
+    const isClosing = window.__isDetailClosing;
+    if ((window.__isRouteTransitioning && !isClosing) || (isDetailOpen && !isClosing)) {
       return;
     }
 
