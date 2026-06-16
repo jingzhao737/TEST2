@@ -1598,3 +1598,15 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 部署与验证
 - 重新使用 `cmd /c npx vite build` 完成生产环境静态资源构建。
 - 执行 `python workflow.py deploy` 推送至 GitHub 部署线上页面，经测试，唱片在重叠和快速摆动时层级分明、遮挡完美，完全消除了任何穿模重叠现象。
+
+---
+
+## 🛠️ Step 601: 设定稳定版 Git 标签锚点 (Release Git Tag Anchor v3.4-stable)
+
+### 1. 目标与操作
+- 为了将当前所有已验证的稳定优化成果（包含极坐标 UV 贴图接缝修复、高阻尼长效物理吸附缩放动效、多层 Z 轴隔离与透视缩放补偿防穿模机制）作为一个稳定的里程碑节点进行归档，我们为当前代码库打上并推送了一个正式的 Git 标签（锚点）。
+- 标签名称：**`v3.4-stable`**。
+
+### 2. 部署与同步
+- 执行 `git tag -a v3.4-stable -m "Release v3.4-stable - Smooth slow snap-scale spring animation and 3D Z-clipping overlap fix"` 本地创建标签。
+- 执行 `git push origin v3.4-stable` 推送锚点至 GitHub，完成版本发布与锚定。
