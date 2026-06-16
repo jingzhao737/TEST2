@@ -543,22 +543,42 @@ import * as THREE from 'three';
         const vinylGeom = new THREE.CylinderGeometry(t.dispW / 2, t.dispW / 2, 1.6, 64, 1, false);
         vinylGeom.rotateX(Math.PI / 2);
         
-        // Convert Cap UVs to polar coordinates for circular anisotropic reflections
-        const pos = vinylGeom.attributes.position;
-        const uv = vinylGeom.attributes.uv;
-        let rOuter = t.dispW / 2;
-        let rInner = rOuter * 0.58;
-        for (let j = 0; j < pos.count; j++) {
-          let x = pos.getX(j);
-          let y = pos.getY(j);
-          let dist = Math.sqrt(x * x + y * y);
-          let angle = Math.atan2(y, x);
-          // Align UV seam with the positive X axis (theta = 0 and 2*PI) where CylinderGeometry's natural duplicate vertices are located.
-          // This prevents texture wrapping interpolation bugs that cause a warped "inverted wedge" on the opposite side of the seam.
-          let theta = angle < 0 ? angle + Math.PI * 2 : angle;
-          let u = theta / (Math.PI * 2);
-          let v = Math.max(0, Math.min(1, (dist - rInner) / (rOuter - rInner)));
-          uv.setXY(j, u, v);
+        // Convert Cap UVs to polar coordinates for circular anisotropic reflections.
+        // We use an index-based polar mapping to perfectly align the UV seam with the Cylinder's native duplicate vertices
+        // and resolve the shared center vertex problem. This completely eliminates the "fixed/inverted wedge" seam artifact!
+        let N = 64; // radialSegments
+        let uv = vinylGeom.attributes.uv;
+        
+        // Map Top Cap (Group 1): Outer vertices are indices 194 to 258, center vertices are 130 to 193
+        let topOuterStart = 3 * N + 2;
+        let topCenterStart = 2 * N + 2;
+        for (let k = 0; k <= N; k++) {
+          let outerIdx = topOuterStart + k;
+          let u = 1.0 - k / N;
+          let v = 1.0;
+          uv.setXY(outerIdx, u, v);
+        }
+        for (let k = 0; k < N; k++) {
+          let centerIdx = topCenterStart + k;
+          let u = 1.0 - (k + 0.5) / N;
+          let v = 0.0;
+          uv.setXY(centerIdx, u, v);
+        }
+        
+        // Map Bottom Cap (Group 2): Outer vertices are indices 323 to 387, center vertices are 259 to 322
+        let bottomOuterStart = 5 * N + 3;
+        let bottomCenterStart = 4 * N + 3;
+        for (let k = 0; k <= N; k++) {
+          let outerIdx = bottomOuterStart + k;
+          let u = k / N;
+          let v = 1.0;
+          uv.setXY(outerIdx, u, v);
+        }
+        for (let k = 0; k < N; k++) {
+          let centerIdx = bottomCenterStart + k;
+          let u = (k + 0.5) / N;
+          let v = 0.0;
+          uv.setXY(centerIdx, u, v);
         }
         uv.needsUpdate = true;
 
