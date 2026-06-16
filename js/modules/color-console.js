@@ -52,13 +52,9 @@ import gsap from 'gsap';
       _animating = true;
 
       const maxBulge = window.innerWidth > 768 ? 80 : 30;
+      const animState = { progress: 0 };
 
       const tl = gsap.timeline({
-        onUpdate: function() {
-          const p = tl.progress();
-          const xOffset = Math.sin(p * Math.PI) * maxBulge;
-          gsap.set(logo, { x: xOffset });
-        },
         onComplete: () => {
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
@@ -69,13 +65,22 @@ import gsap from 'gsap';
         }
       });
 
-      // Animate flat positioning and fade-in to the customization panel
-      // Using 1.8s duration and back.inOut ease for rocket-artillery rhythm
-      tl.to(logo, {
-        left: toRect.left,
-        top: toRect.top,
+      // Unified parametric tween: interpolates left/top/x based on eased virtual progress
+      tl.to(animState, {
+        progress: 1,
         duration: 1.8,
-        ease: 'back.inOut(2.2)'
+        ease: 'back.inOut(2.2)',
+        onUpdate: function() {
+          const s = animState.progress;
+          const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s);
+          const currentTop = gsap.utils.interpolate(startRect.top, toRect.top, s);
+          const xOffset = Math.sin(s * Math.PI) * maxBulge;
+          gsap.set(logo, {
+            left: currentLeft,
+            top: currentTop,
+            x: xOffset
+          });
+        }
       }, 0);
 
       tl.to(consoleEl, {
@@ -88,16 +93,16 @@ import gsap from 'gsap';
 
     } else {
       // --- CLOSING ---
+      const startRect = logo.getBoundingClientRect();
       const toRect = anchorEl.getBoundingClientRect();
       _animating = true;
       const maxBulge = window.innerWidth > 768 ? 80 : 30;
+      const animState = { progress: 0 };
+
+      // Ensure logo opacity is set to 1 before starting closing animation
+      gsap.set(logo, { opacity: 1 });
 
       const tl = gsap.timeline({
-        onUpdate: function() {
-          const p = tl.progress();
-          const xOffset = Math.sin(p * Math.PI) * maxBulge;
-          gsap.set(logo, { x: xOffset });
-        },
         onComplete: () => {
           // Clear GSAP inline styles while transitions are still disabled to prevent snapping transitions
           gsap.set(logo, { clearProps: 'all' });
@@ -112,12 +117,23 @@ import gsap from 'gsap';
         }
       });
 
-      // Animate back to original position
-      tl.to(logo, {
-        left: toRect.left,
-        top: toRect.top,
+      // Parametric return tween: keeps path geometric shape perfect
+      tl.to(animState, {
+        progress: 1,
         duration: 1.8,
-        ease: 'back.inOut(2.2)'
+        ease: 'back.inOut(2.2)',
+        onUpdate: function() {
+          const s = animState.progress;
+          const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s); // startRect is anchorEl rect (navbar)
+          const currentTop = gsap.utils.interpolate(startRect.top, toRect.top, s);
+          const xOffset = Math.sin(s * Math.PI) * maxBulge;
+          gsap.set(logo, {
+            left: currentLeft,
+            top: currentTop,
+            x: xOffset,
+            opacity: 1
+          });
+        }
       }, 0);
 
       tl.to(consoleEl, {
