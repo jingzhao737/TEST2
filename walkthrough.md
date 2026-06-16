@@ -1896,3 +1896,25 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 3. 构建与部署
 - Vite 打包完成，所有流程无报错。
 - 运行 `python workflow.py deploy` 推送上线，实机测试完全杜绝了收起瞬间的位移抽搐。
+
+
+---
+
+## 🛠️ Step 615: 消除徽标降落控制台后的几像素下移抖动，确保落点瞬间对齐 (Eliminate post-landing logo shift by adjusting onComplete execution order and disabling console-active transitions)
+
+### 1. 抖动与下移痛点分析 (Analysis of Post-Landing Shifting Jitter)
+- **现象**：当点击导航栏的实心徽标启动控制台展开动画时，描边徽标沿着抛物线轨迹飞入调色盘控制台。在动画最后一帧完成的瞬间，徽标会向下突变/滑动移动几像素，破坏了完美的降落锁定效果。
+- **成因**：
+  - 在原有的 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 的展开 timeline 的 `onComplete` 回调中，代码先执行了 `logo.style.removeProperty('transition')` 和 `logo.classList.remove('no-transition')` 以恢复导航栏徽标的常规 CSS 过渡效果。
+  - 随后，代码执行了 `gsap.set(logo, { clearProps: 'x,transform' })` 来清除动画过程中的临时 X 轴偏移量（`transform: translate(0px, 0px)`）。
+  - 由于在执行 `clearProps` 之前，CSS 过渡属性已被重新启用，且 `#navLogo` 的默认样式定义了对 `transform` 的 `0.4s` 过渡动画（`transition: ... transform 0.4s ...`），浏览器会将“移除行内 transform 属性（从 `translate(0px,0px)` 变回默认的 `none`）”识别为一个过渡状态变化。
+  - 此外，元素从 3D 硬件加速层（`translate3d`）切换回主渲染排版层（`none`）时存在微小的亚像素对齐偏差，从而触发了 `0.4s` 左右的 CSS 缓动滑动，造成了视觉上的下移抖动。
+
+### 2. 双重锁定解决方案 (Double-Locking Transition Disabling)
+- 为了完全杜绝这一过渡冲突，我们实施了双重屏蔽：
+  - **JS 执行顺序重构**：将 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中 `gsap.set(logo, { clearProps: 'x,transform' })` 的调用提前到恢复 transition 属性之前。这保证了 transform 属性被擦除的瞬间，徽标依然处于 transitions 被完全禁止的状态，从而使状态变更立刻原地静默完成。
+  - **CSS 静态禁用**：在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中对 `#navLogo.console-active` 类添加 `transition: none !important;` 规则。这确保了在控制台打开状态下，徽标绝对不会因为任何鼠标 Hover 或样式重绘而意外触发 CSS 过渡。
+
+### 3. 构建与部署 (Build and Deploy)
+- 运行 `npx vite build` 重新打包项目静态资源。
+- 运行 `python workflow.py deploy` 推送部署，实机测试表明在 2.7s 动画结束后，徽标完美、坚固地锁死在终点坐标，无任何二次移动。
