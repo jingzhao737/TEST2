@@ -150,7 +150,7 @@
       <path id="navBorderPath" fill="none" stroke="var(--nav-border, rgba(255, 255, 255, 0.15))" stroke-width="1" />
     </svg>
   </div>
-  <a href="#" class="nav-logo" data-link="home">YYJZ</a>
+  <a href="#" class="nav-logo" id="navLogo">YYJZ</a>
   <div class="nav-wave-container" id="navWaveContainer">
     <canvas class="nav-waveform" id="navWaveform" width="160" height="36"></canvas>
     <button class="nav-next-btn" id="navNextBtn" aria-label="Next track">
@@ -168,6 +168,63 @@
     <li class="nav-menu-li"> <button class="nav-menu-btn" id="navMenuBtn" aria-label="Menu"> <span class="menu-line"></span> <span class="menu-line"></span> </button> </li>
   </ul>
 </nav>
+
+<!-- Color customization console -->
+<div class="color-console" id="colorConsole">
+  <div class="color-console-header">
+    <span class="console-title">YYJZ PALETTE</span>
+    <button class="console-close-btn" id="consoleCloseBtn" aria-label="Close console">&times;</button>
+  </div>
+  <div class="color-console-content">
+    <div class="console-section">
+      <span class="section-label">PRESETS</span>
+      <div class="preset-row">
+        <button class="preset-btn active" data-preset="default" title="Orange & Cream">
+          <span class="preset-dot" style="background:#e87c50;"></span>
+          <span class="preset-dot" style="background:#faf2e3;"></span>
+        </button>
+        <button class="preset-btn" data-preset="cyberpunk" title="Neon Cyber">
+          <span class="preset-dot" style="background:#ff007f;"></span>
+          <span class="preset-dot" style="background:#00f3ff;"></span>
+        </button>
+        <button class="preset-btn" data-preset="forest" title="Forest Mint">
+          <span class="preset-dot" style="background:#2d6a4f;"></span>
+          <span class="preset-dot" style="background:#d8f3dc;"></span>
+        </button>
+        <button class="preset-btn" data-preset="ocean" title="Deep Ocean">
+          <span class="preset-dot" style="background:#0077b6;"></span>
+          <span class="preset-dot" style="background:#e0f2fe;"></span>
+        </button>
+        <button class="preset-btn" data-preset="royal" title="Royal Amethyst">
+          <span class="preset-dot" style="background:#7b2cbf;"></span>
+          <span class="preset-dot" style="background:#f3e5f5;"></span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="console-section">
+      <span class="section-label">CUSTOM PICKER</span>
+      <div class="custom-row">
+        <div class="custom-item">
+          <span class="custom-label">Primary Tone</span>
+          <div class="color-input-wrapper">
+            <input type="color" id="primaryPicker" value="#e87c50">
+            <span class="color-preview-badge" id="primaryBadge" style="background:#e87c50;"></span>
+          </div>
+        </div>
+        <div class="custom-item">
+          <span class="custom-label">Cream Accent</span>
+          <div class="color-input-wrapper">
+            <input type="color" id="secondaryPicker" value="#faf2e3">
+            <span class="color-preview-badge" id="secondaryBadge" style="background:#faf2e3;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="console-reset-btn" id="consoleResetBtn">Restore Default</button>
+  </div>
+</div>
 
 <!-- Theme toggle anchor — lives OUTSIDE <nav> to avoid clip-path cutoff -->
 <div id="navThemeAnchor" style="position:fixed;z-index:202;">
@@ -576,6 +633,7 @@
 
 <script type="module" src="js/modules/data.js"></script>
 <script type="module" src="js/modules/theme.js"></script>
+<script type="module" src="js/modules/color-console.js"></script>
 <script type="module" src="js/modules/cursor.js"></script>
 <script type="module" src="js/modules/loader.js"></script>
 <script type="module" src="js/modules/nav.js"></script>

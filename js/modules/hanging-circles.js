@@ -1081,7 +1081,8 @@ import * as THREE from 'three';
     ctx.shadowColor = 'transparent';
     for (let i = 1; i < totalHalfLoops; i += 2) {
       pathHalfLoop(ctx, i);
-      ctx.strokeStyle = 'rgba(145, 65, 35, 0.8)'; // Softer warm terracotta shadow (less harsh metallic contrast)
+      let shadowColor = window.__accentShadowRGB || '145, 65, 35';
+      ctx.strokeStyle = 'rgba(' + shadowColor + ', 0.8)';
       ctx.lineWidth = baseLineWidth * 0.72;
       ctx.stroke();
     }
@@ -1096,7 +1097,8 @@ import * as THREE from 'three';
       ctx.shadowOffsetY = 3.5;
 
       pathHalfLoop(ctx, i);
-      ctx.strokeStyle = 'rgba(232, 124, 80, 0.95)';
+      let mainColor = window.__accentRGB || '232, 124, 80';
+      ctx.strokeStyle = 'rgba(' + mainColor + ', 0.95)';
       ctx.lineWidth = baseLineWidth;
       ctx.stroke();
       ctx.restore();
