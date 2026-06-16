@@ -206,7 +206,11 @@ if (!isMobileDevice) {
     function onListEnter(e) {
       isVisible = true;
       firstMove = true;
-      updateFlatPageCoordinates(); // Refresh coordinates when entering the list
+      
+      // Wake up the hover loop if it was asleep
+      if (!hoverLoopId) {
+        hoverLoopId = requestAnimationFrame(animateHover);
+      }
 
       if (e) {
         rawMouseX = e.clientX;
@@ -374,12 +378,25 @@ if (!isMobileDevice) {
              (cp0 <= 0 && cp1 <= 0 && cp2 <= 0 && cp3 <= 0);
     }
 
+    // Precompute constant rotations and trigonometric functions for the 3D projection
+    const radY = baseY * Math.PI / 180;
+    const radX = baseX * Math.PI / 180;
+    const radZ = baseZ * Math.PI / 180;
+
+    const cosY = Math.cos(radY);
+    const sinY = Math.sin(radY);
+    const cosX = Math.cos(radX);
+    const sinX = Math.sin(radX);
+    const cosZ = Math.cos(radZ);
+    const sinZ = Math.sin(radZ);
+
     // RAF Animation Loop
     let curX1 = 0, curY1 = 0;
     let curX2 = 0, curY2 = 0;
     let firstMove = true;
+    let hoverLoopId = null;
 
-    (function animateHover() {
+    function animateHover() {
       // ── STEP 1: Update 3D list tilt target from mouse position ──
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
@@ -413,27 +430,21 @@ if (!isMobileDevice) {
 
         const d = 1750;
 
-        // Rotations at the base tilt angles (makes hit-test static and prevents boundary jitter)
-        const radY = baseY * Math.PI / 180;
-        const radX = baseX * Math.PI / 180;
-        const radZ = baseZ * Math.PI / 180;
-
         function projectPoint(pageX, pageY) {
           const vx = pageX - scrollX;
           const vy = pageY - scrollY;
           const x0 = vx - originX;
           const y0 = vy - originY;
-          const z0 = 0;
 
-          // Rotations
-          const x1 = x0 * Math.cos(radZ) - y0 * Math.sin(radZ);
-          const y1 = x0 * Math.sin(radZ) + y0 * Math.cos(radZ);
+          // Rotations using precomputed constants
+          const x1 = x0 * cosZ - y0 * sinZ;
+          const y1 = x0 * sinZ + y0 * cosZ;
 
-          const y2 = y1 * Math.cos(radX);
-          const z2 = y1 * Math.sin(radX);
+          const y2 = y1 * cosX;
+          const z2 = y1 * sinX;
 
-          const x3 = x1 * Math.cos(radY) + z2 * Math.sin(radY);
-          const z3 = -x1 * Math.sin(radY) + z2 * Math.cos(radY);
+          const x3 = x1 * cosY + z2 * sinY;
+          const z3 = -x1 * sinY + z2 * cosY;
 
           // Perspective
           const dx = x3 + originX - perspX;
@@ -577,8 +588,19 @@ if (!isMobileDevice) {
       } else {
         firstMove = true;
       }
-      requestAnimationFrame(animateHover);
-    })();
+      
+      // Determine if we should keep running or sleep to save CPU resources
+      const isAnimating = Math.abs(diffY) > 0.001 || Math.abs(diffX) > 0.001 || Math.abs(diffZ) > 0.001;
+      const isVisibleOrFading = isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01;
+      if (isVisibleOrFading || isAnimating) {
+        hoverLoopId = requestAnimationFrame(animateHover);
+      } else {
+        hoverLoopId = null;
+      }
+    }
+    
+    // Start initial animation frame (will auto-sleep once settled)
+    hoverLoopId = requestAnimationFrame(animateHover);
   }
 } else {
   // === MOBILE SCROLL PREVIEW (SCROLL TILT & AUTO SWITCH) ===

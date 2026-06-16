@@ -527,6 +527,11 @@
     createBurst(x, y, isOrange, customLife, customNumSparks);
   };
   window.triggerForgeBurst = function(x, y) {
+    // Play the synthesized metal forge clang sound
+    if (typeof window.__playForgeClangSound === 'function') {
+      window.__playForgeClangSound();
+    }
+
     // Sparks with forging physics - pure white stars with longer lifespan (reduced count to 6-8 for delicate look)
     const numSparks = 6 + Math.floor(Math.random() * 3);
     for (let i = 0; i < numSparks; i++) {
@@ -537,8 +542,8 @@
       sparks.push({
         x: x,
         y: y,
-        vx: Math.cos(angle) * speed * 1.15, // Scale horizontally by 1.15 for very soft horizontal oval expansion
-        vy: Math.sin(angle) * speed * 0.85, // Scale vertically by 0.85 for very soft horizontal oval expansion
+        vx: Math.cos(angle) * speed * 1.22, // Scale horizontally by 1.22 for a balanced horizontal oval expansion
+        vy: Math.sin(angle) * speed * 0.78, // Scale vertically by 0.78 for a balanced horizontal oval expansion
         color: color,
         type: 'star',
         size: 0.8 + Math.random() * 3.5,

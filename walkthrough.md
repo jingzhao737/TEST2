@@ -2386,3 +2386,40 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 
 
+
+---
+
+## 🛠️ Feature: 解决 Works 详情转场中大标题与导航栏上下移位跳变 (Stationary Works Header Transition)
+
+### 1. 需求分析与修改
+- **问题反馈**：在点开或关闭详情页（`#workDetail`）的转场过程中，Works 页的大标题和导航栏等主页元素会发生上下瞬移，影响过渡平滑度。
+- **解决方案与优化**：
+  - **移除垂直位移动画**：在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `openDetail` 和 `closeDetail` 的 GSAP 动画中，彻底删除了对 `#nav`、`.works-header`、`.work-card` 设定的 `y` 轴位移参数（先前为 `y: -30`、`y: -40`、`y: 50` 和 `y: 0`）。
+  - **纯透明度渐变过渡 (Pure Opacity Transition)**：将这些页面基础元素的退场与入场恢复转场改为纯透明度（`opacity: 0` 和 `opacity: 1`）渐隐渐显。这保证了在转场淡入淡出阶段，所有主页元素都在原位绝对静止，从而消除了任何垂直方向的移位或瞬移。
+  - **保留卡片动效**：详情卡片本体（`#workDetailCard`）的从下至上滑入和滑出的滑屏缩放高级动效保持不变，维持出色的交互细节。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 进行生产包构建，确认打包正常。
+- 运行本地 `node check_console.js` 校验脚本，确认运行时和打包阶段控制台无任何 JS 报错。
+- 通过 `py workflow.py deploy` 成功将最新版本（Commit `c5a9929`）部署至远端页面进行验证。
+
+---
+
+## 🛠️ Feature: 缩短转场等待时间并支持关闭打断机制 (Transition Interruption & CD Reduction)
+
+### 1. 需求分析与修改
+- **问题反馈**：详情卡片（`#workDetail`）在连续打开/关闭时体验不够连贯。刚按下 Esc 退出，或在退出动画中，用户无法立即点击新卡片，必须等完整的动画播放结束，冷却时间（CD）长，手感较生硬。
+- **解决方案与优化**：
+  - **支持关闭过程打断 (Close Animation Interruption)**：在 `openDetail()` 头部加入打断逻辑。如果检测到当前详情页正处于关闭过程中（`window.__isDetailClosing === true`），立刻调用 `gsap.killTweensOf` 强制终止所有正在进行的关闭动效，同步执行 `resetDetailState()` 将 DOM 与 3D 状态拉回原位并重置 `isRouteTransitioning = false`，从而允许新卡片的点击事件直接触发并无缝开始展示。
+  - **重置逻辑解耦 (Decoupled Reset Logic)**：提取了重用度极高的 `resetDetailState()` 函数，将 `closeDetail` 中的所有 inline 样式及 3D 模型浮动状态等重置指令收纳其中，便于在退出完成和被迫打断时统一调用。
+  - **缩短并紧凑化转场时间 (Compact Duration)**：
+    - 打开卡片动画 (`openDetail`) 从 `1.2s` 缩短为 `0.75s`（保留 `expo.out` 高级阻尼缓动）。
+    - 关闭卡片动画 (`closeDetail`) 从 `0.65s` 缩短为 `0.42s`。
+    - 首页背景元素淡出时间由 `0.8s` 缩减为 `0.45s`，内部文本内容 staggered 展现延迟均缩短约 `0.2s`–`0.3s`。
+    - 遮罩淡出由 `0.4s` 缩短为 `0.3s`。
+  - **效果**：操作反馈极其干练清爽，连续操作无缝衔接。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 生产打包成功。
+- 运行 `node check_console.js` 验证运行时和打包阶段控制台无任何逻辑报错。
+- 通过 `py workflow.py deploy` 成功同步部署最新版本（Commit `1727f39`）到线上生产环境。
