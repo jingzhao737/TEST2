@@ -144,12 +144,25 @@
 
   function updateMagnetTargets() {
     magnetTargets = [];
+    const scrollX = window.scrollX || window.pageXOffset || 0;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
     const elements = document.querySelectorAll(magnetSelector);
     elements.forEach(el => {
       if (!isElementVisible(el) || el.closest('.color-console') || el.id === 'navLogo' || el.id === 'navLogoStatic' || el.classList.contains('nav-logo')) {
         return;
       }
-      magnetTargets.push(el);
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      magnetTargets.push({
+        el: el,
+        pageLeft: rect.left + scrollX,
+        pageRight: rect.right + scrollX,
+        pageTop: rect.top + scrollY,
+        pageBottom: rect.bottom + scrollY,
+        width: rect.width,
+        height: rect.height,
+        isScrollBubble: el.classList.contains('scroll-bubble')
+      });
     });
   }
 
@@ -199,35 +212,41 @@
               let minDistance = Infinity;
               const maxSnapDistance = 30; // Only snap if pointer is within 30px of the target's boundary
               
-              for (const el of magnetTargets) {
-                if (!isElementVisible(el)) continue;
-                const rect = el.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) continue;
+              const scrollX = window.scrollX || window.pageXOffset || 0;
+              const scrollY = window.scrollY || window.pageYOffset || 0;
 
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
+              for (const targetItem of magnetTargets) {
+                if (!isElementVisible(targetItem.el)) continue;
+
+                const rectLeft = targetItem.pageLeft - scrollX;
+                const rectRight = targetItem.pageRight - scrollX;
+                const rectTop = targetItem.pageTop - scrollY;
+                const rectBottom = targetItem.pageBottom - scrollY;
+
+                const centerX = rectLeft + targetItem.width / 2;
+                const centerY = rectTop + targetItem.height / 2;
 
                 // Euclidean distance to axis-aligned bounding box
-                const dx = Math.max(rect.left - mouseX, 0, mouseX - rect.right);
-                const dy = Math.max(rect.top - mouseY, 0, mouseY - rect.bottom);
+                const dx = Math.max(rectLeft - mouseX, 0, mouseX - rectRight);
+                const dy = Math.max(rectTop - mouseY, 0, mouseY - rectBottom);
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 
                 // Asymmetric snapping: Weaken snapping on the right side of scrollbar bubbles
                 // (facing the screen edge and scroll track) so the mouse slips off easily.
                 let localMaxSnapDistance = maxSnapDistance;
-                if (el.classList.contains('scroll-bubble') && mouseX > centerX) {
+                if (targetItem.isScrollBubble && mouseX > centerX) {
                   localMaxSnapDistance = 2;
                 }
                 
                 // Hysteresis: Give the currently hovered element a 15px distance discount 
                 // so the cursor doesn't jitter back and forth between close neighbors.
-                const hysteresisDiscount = (hoveredElement && el === hoveredElement) ? 15 : 0;
+                const hysteresisDiscount = (hoveredElement && targetItem.el === hoveredElement) ? 15 : 0;
                 const effectiveDist = dist - hysteresisDiscount;
                 
                 if (dist < localMaxSnapDistance) {
                   if (effectiveDist < minDistance) {
                     minDistance = effectiveDist;
-                    closestTarget = el;
+                    closestTarget = targetItem.el;
                   }
                 }
               }
@@ -284,7 +303,6 @@
   // Update bounding rect on scroll/resize
   window.addEventListener('resize', updateMagnetTargets, { passive: true });
   window.addEventListener('scroll', function() {
-    updateMagnetTargets();
     if (hoveredElement) {
       hoveredRect = hoveredElement.getBoundingClientRect();
     }
@@ -517,27 +535,33 @@
         let minDistance = Infinity;
         const maxSnapDistance = 30;
         
-        for (const el of magnetTargets) {
-          if (!isElementVisible(el)) continue;
-          const rect = el.getBoundingClientRect();
-          if (rect.width === 0 || rect.height === 0) continue;
+        const scrollX = window.scrollX || window.pageXOffset || 0;
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+
+        for (const targetItem of magnetTargets) {
+          if (!isElementVisible(targetItem.el)) continue;
           
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
+          const rectLeft = targetItem.pageLeft - scrollX;
+          const rectRight = targetItem.pageRight - scrollX;
+          const rectTop = targetItem.pageTop - scrollY;
+          const rectBottom = targetItem.pageBottom - scrollY;
+
+          const centerX = rectLeft + targetItem.width / 2;
+          const centerY = rectTop + targetItem.height / 2;
           
-          const dx = Math.max(rect.left - mouseX, 0, mouseX - rect.right);
-          const dy = Math.max(rect.top - mouseY, 0, mouseY - rect.bottom);
+          const dx = Math.max(rectLeft - mouseX, 0, mouseX - rectRight);
+          const dy = Math.max(rectTop - mouseY, 0, mouseY - rectBottom);
           const dist = Math.sqrt(dx * dx + dy * dy);
           
           let localMaxSnapDistance = maxSnapDistance;
-          if (el.classList.contains('scroll-bubble') && mouseX > centerX) {
+          if (targetItem.isScrollBubble && mouseX > centerX) {
             localMaxSnapDistance = 2;
           }
           
           if (dist < localMaxSnapDistance) {
             if (dist < minDistance) {
               minDistance = dist;
-              closestTarget = el;
+              closestTarget = targetItem.el;
             }
           }
         }
