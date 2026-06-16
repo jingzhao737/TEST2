@@ -51,7 +51,7 @@ import gsap from 'gsap';
       consoleEl.classList.add('active');
       _animating = true;
 
-      const maxBulge = window.innerWidth > 768 ? 160 : 60;
+      const maxBulge = window.innerWidth > 768 ? 80 : 30;
 
       const tl = gsap.timeline({
         onUpdate: function() {
@@ -90,7 +90,7 @@ import gsap from 'gsap';
       // --- CLOSING ---
       const toRect = anchorEl.getBoundingClientRect();
       _animating = true;
-      const maxBulge = window.innerWidth > 768 ? 160 : 60;
+      const maxBulge = window.innerWidth > 768 ? 80 : 30;
 
       const tl = gsap.timeline({
         onUpdate: function() {
