@@ -33,7 +33,7 @@
   },
   "task.md": {
     "type": "code",
-    "hash": "bbabd3cc6cc8b4243576c8b489a2bcd91a784dd4af63742038c21dec39ea0bbe"
+    "hash": "604a5217d9d375ad0f0f52ec5f84f8795f2d6b23c16d3d357451ec9bd3444023"
   },
   "vite.config.js": {
     "type": "code",
@@ -41,7 +41,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "4fe894555865ccb2977441bb94350fc9a2a3e691a3cfc28b0b4a10f94fc3e9f2"
+    "hash": "131394be84ab5d114ae30d2712b5111487ee9bc32659dd491f8128e11d7f2e5c"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -85,11 +85,11 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "2d08461c8103791a602c63b1f676c98862536cfd900bdaf0e2eed0e4a2d72556"
+    "hash": "18ac840b95a9f8a32fbb6f4851241baf62a6d2a10fd819c52a21980a9e38892a"
   },
-  "dist\\assets\\index-C7Cks_sL.js": {
+  "dist\\assets\\index-Bgks51iC.js": {
     "type": "code",
-    "hash": "eef16a2273812dbb5de9409723630570ea36dbcaac86aaee6f00348b233ded4f"
+    "hash": "8d8472f28ee75aab8cabf7adfb96db82c26b9ba66ecc92638fbaba21e28b39d0"
   },
   "dist\\assets\\index-DMVjJK4x.css": {
     "type": "code",
@@ -121,7 +121,7 @@
   },
   "js\\modules\\color-console.js": {
     "type": "code",
-    "hash": "8fdb63d1a0898a3df0ecbf78a5a793827cd246f42e881a66dff9ab1a818d9612"
+    "hash": "9adb6c8d5f280e37ff856695ad02ab2af7f20ee568b941775e92a02fbc833ce4"
   },
   "js\\modules\\counter.js": {
     "type": "code",
@@ -149,7 +149,7 @@
   },
   "js\\modules\\laser-lines.js": {
     "type": "code",
-    "hash": "9289688d5a0fd1870344b9aa3532078f62b71670cfde9b7981b1f4dc5f4ebdb8"
+    "hash": "419686998c44c054888f1b4d77a5383332e1e86678a57935e24b43483de02595"
   },
   "js\\modules\\loader.js": {
     "type": "code",
@@ -185,11 +185,11 @@
   },
   "js\\modules\\sound-effects.js": {
     "type": "code",
-    "hash": "bbe25534695ba5d69036a4e1d8a8cb47b3568cf4e743f762ac88886013d38e28"
+    "hash": "4536bfb03202e992d55bffaecd82b879940a9d1a285d99301e6ad2951fdf6890"
   },
   "js\\modules\\stars.js": {
     "type": "code",
-    "hash": "bc605f9ba4168e2bf2627aa59d62a05284dfa95b26db43b7c722fa8878f527d7"
+    "hash": "8dfe8d228e9f1c85d361348606c10af7fcce4464611f3a5e703dd1878ed6c2d7"
   },
   "js\\modules\\theme.js": {
     "type": "code",
