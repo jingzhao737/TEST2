@@ -6,6 +6,27 @@ const workDetail = document.getElementById('workDetail');
 const pageTransition = document.getElementById('pageTransition');
 
 // ═══════════ HASH ROUTER ═══════════
+let currentMouseX = window.innerWidth / 2;
+let currentMouseY = window.innerHeight / 2;
+window.addEventListener('mousemove', (e) => {
+  if (e.clientX !== 0 || e.clientY !== 0) {
+    currentMouseX = e.clientX;
+    currentMouseY = e.clientY;
+  }
+}, { passive: true });
+
+function dispatchWakeupEvents() {
+  const workList = document.querySelector('.work-list');
+  if (workList) {
+    const wlRect = workList.getBoundingClientRect();
+    if (currentMouseX >= wlRect.left && currentMouseX <= wlRect.right && 
+        currentMouseY >= wlRect.top && currentMouseY <= wlRect.bottom) {
+      workList.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: currentMouseX, clientY: currentMouseY }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: currentMouseX, clientY: currentMouseY }));
+    }
+  }
+}
+
 const ROUTE_PREFIX = '#/work/';
 let detailOpenedFromHash = false;
 let savedScrollY = 0;
@@ -105,8 +126,89 @@ function getActivePreviewContainer() {
   }
 }
 
+function resetDetailState() {
+  workDetail.style.pointerEvents = '';
+  workDetail.classList.remove('open');
+  workDetail.style.display = 'none';
+  workDetail.style.visibility = 'hidden';
+  if (window.__updateMagnetTargets) window.__updateMagnetTargets();
+
+  const detailClose = document.getElementById('detailClose');
+  const detailHero = workDetail.querySelector('.detail-hero');
+  const detailBody = workDetail.querySelector('.detail-body');
+  const detailCard = document.getElementById('workDetailCard');
+  const detailHeroImg = document.getElementById('detailHeroImg');
+  const detailHeroDim = document.getElementById('detailHeroDim');
+  const detailTag = document.getElementById('detailTag');
+  const detailTitle = document.getElementById('detailTitle');
+  const detailSubtitle = document.getElementById('detailSubtitle');
+
+  // Reset ALL inline styles for next open cycle
+  gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
+  if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1, scaleX: 1, transformOrigin: '50% 50%' });
+  if (detailHeroImg) gsap.set(detailHeroImg, { y: 0, scale: 1, filter: 'none' });
+
+  // Reset dim overlay
+  if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
+
+  // Reset text elements to hidden start state
+  if (detailTag) gsap.set(detailTag, { opacity: 0, y: 24 });
+  if (detailTitle) gsap.set(detailTitle, { opacity: 0, y: 24 });
+  if (detailSubtitle) gsap.set(detailSubtitle, { opacity: 0, y: 24 });
+
+  // Reset DOM hero image
+  if (detailHeroImg) gsap.set(detailHeroImg, { opacity: 1 });
+
+  // Reset 3D Card active state and float animations
+  is3DCardActive = false;
+  isDragging = false;
+  currentRotateX = 0;
+  currentRotateY = 0;
+  const togglePill = document.getElementById('heroTogglePill');
+  const togglePillImg = document.getElementById('togglePillImg');
+  const togglePillCard = document.getElementById('togglePillCard');
+  if (togglePill && togglePillImg && togglePillCard) {
+    togglePill.classList.remove('card-active');
+    togglePillImg.classList.add('active');
+    togglePillCard.classList.remove('active');
+  }
+  const heroEl = document.querySelector('.detail-hero');
+  if (heroEl) {
+    heroEl.classList.remove('detail-hero-3d-active');
+    heroEl.classList.remove('detail-hero-grabbing');
+  }
+  if (floatTween) {
+    if (Array.isArray(floatTween)) {
+      floatTween.forEach(t => t.kill());
+    } else {
+      floatTween.kill();
+    }
+    floatTween = null;
+  }
+  gsap.set('#detail3dContainer', { opacity: 0, scale: 0.8, pointerEvents: 'none' });
+  gsap.set('.detail-hero-content', { opacity: 1, scale: 1, pointerEvents: 'auto' });
+  gsap.set('#detail3dCard', { rotateX: 0, rotateY: 0, x: 0, y: 0 });
+  const glare = document.getElementById('detail3dCardGlare');
+  if (glare) {
+    glare.style.opacity = 0;
+    glare.style.background = '';
+  }
+}
+
 function openDetail(data, heroImg, pushState) {
-  if (isRouteTransitioning) return;
+  if (isRouteTransitioning) {
+    if (window.__isDetailClosing) {
+      gsap.killTweensOf([
+        '#nav', '.works-header', '.work-card', '.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar',
+        '#workDetailBg', '#workDetailCard', '#detailHeroImg', '#detailHeroDim', '#detailClose', '#detailTag', '#detailTitle', '#detailSubtitle', '.detail-body'
+      ]);
+      resetDetailState();
+      window.__isDetailClosing = false;
+      isRouteTransitioning = false;
+    } else {
+      return;
+    }
+  }
   isRouteTransitioning = true;
 
   if (pushState === undefined) pushState = true;
@@ -141,14 +243,14 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 1. Smooth fade out the hover preview card ──
   if (previewContainer) {
-    gsap.to(previewContainer, { opacity: 0, duration: 0.15, ease: 'power2.out' });
+    gsap.to(previewContainer, { opacity: 0, duration: 0.12, ease: 'power2.out' });
   }
 
   // ── 2. Slide and fade out original works page elements immediately ──
-  gsap.to('#nav', { opacity: 0, duration: 0.8, ease: 'power3.inOut' });
-  gsap.to('.works-header', { opacity: 0, duration: 0.8, ease: 'power3.inOut' });
-  gsap.to('.work-card', { opacity: 0, stagger: 0.04, duration: 0.8, ease: 'power3.inOut' });
-  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.5, ease: 'power2.out' });
+  gsap.to('#nav', { opacity: 0, duration: 0.6, ease: 'power3.inOut' });
+  gsap.to('.works-header', { opacity: 0, duration: 0.6, ease: 'power3.inOut' });
+  gsap.to('.work-card', { opacity: 0, stagger: 0.02, duration: 0.6, ease: 'power3.inOut' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 0, duration: 0.45, ease: 'power2.out' });
   const btt = document.getElementById('backToTop');
   if (btt) btt.style.pointerEvents = 'none';
   const sb = document.getElementById('scrollBar');
@@ -190,7 +292,7 @@ function openDetail(data, heroImg, pushState) {
   
   // Backdrop fades in immediately in sync with card slide-up
   if (detailBg) {
-    gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power2.out' });
+    gsap.fromTo(detailBg, { opacity: 0 }, { opacity: 1, duration: 0.65, ease: 'power2.out' });
   }
 
   gsap.set(detailBody, { opacity: 0, y: 30 });
@@ -200,15 +302,16 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
+    const startScaleX = isMobile ? 1.0 : 0.4;
     gsap.fromTo(detailCard, {
       y: '100%',
-      scaleX: 0.4,
+      scaleX: startScaleX,
       transformOrigin: '50% 100%',
       opacity: 1
     }, {
       y: 0,
       scaleX: 1,
-      duration: 1.2,
+      duration: 0.95,
       ease: 'expo.out',
       onComplete: () => {
         if (window.__updateMagnetTargets) window.__updateMagnetTargets();
@@ -231,16 +334,16 @@ function openDetail(data, heroImg, pushState) {
     gsap.to(detailHeroImg, {
       y: 0,
       scale: 1.0,
-      duration: 1.2,
+      duration: 0.95,
       ease: 'expo.out'
     });
   }
 
   // ── 7. Stagger text content animations ──
-  gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.4 });
-  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.5 });
-  gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.6 });
-  gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.55 });
+  gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
+  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.35 });
+  gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
+  gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }
 
 function closeDetail(popState) {
@@ -255,6 +358,7 @@ function closeDetail(popState) {
   isRouteTransitioning = true;
   window.__isDetailClosing = true;
   workDetail.classList.remove('open');
+  workDetail.style.pointerEvents = 'none';
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');
@@ -286,14 +390,14 @@ function closeDetail(popState) {
 
   // Fade original preview container back in smoothly
   if (previewContainer) {
-    gsap.to(previewContainer, { opacity: 1, duration: 0.5, ease: 'power2.out' });
+    gsap.to(previewContainer, { opacity: 1, duration: 0.45, ease: 'power2.out' });
   }
 
   // Restore works page elements immediately in sync with detail close
-  gsap.to('#nav', { opacity: 1, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.works-header', { opacity: 1, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.work-card', { opacity: 1, scale: 1, z: 0, stagger: 0.04, duration: 0.6, ease: 'power3.out', clearProps: 'all' });
-  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.6, ease: 'power2.out', clearProps: 'all' });
+  gsap.to('#nav', { opacity: 1, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.works-header', { opacity: 1, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
+  gsap.to('.work-card', { opacity: 1, scale: 1, z: 0, stagger: 0.02, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
+  gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.55, ease: 'power2.out', clearProps: 'all' });
   const bttRestore = document.getElementById('backToTop');
   if (bttRestore) bttRestore.style.pointerEvents = '';
   const sbRestore = document.getElementById('scrollBar');
@@ -301,74 +405,21 @@ function closeDetail(popState) {
 
   // Slide down and shrink the card panel horizontally
   if (detailCard) {
+    const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);
+    const endScaleX = isMobile ? 1.0 : 0.4;
     gsap.to(detailCard, {
       y: '100%',
-      scaleX: 0.4,
+      scaleX: endScaleX,
       transformOrigin: '50% 100%',
-      duration: 0.65,
+      duration: 0.55,
       ease: 'power3.inOut',
       onComplete: function() {
-        workDetail.classList.remove('open');
-        workDetail.style.display = 'none';
-        workDetail.style.visibility = 'hidden';
-        if (window.__updateMagnetTargets) window.__updateMagnetTargets();
-        // Body overflow reset removed
-
-        // Reset ALL inline styles for next open cycle
-        gsap.set([detailClose, detailHero, detailBody], { y: 0, opacity: 1 });
-        if (detailCard) gsap.set(detailCard, { y: 0, opacity: 1, scaleX: 1, transformOrigin: '50% 50%' });
-        if (detailHeroImg) gsap.set(detailHeroImg, { y: 0, scale: 1, filter: 'none' });
-
-        // Reset dim overlay
-        if (detailHeroDim) gsap.set(detailHeroDim, { opacity: 0 });
-
-        // Reset text elements to hidden start state
-        if (detailTag) gsap.set(detailTag, { opacity: 0, y: 24 });
-        if (detailTitle) gsap.set(detailTitle, { opacity: 0, y: 24 });
-        if (detailSubtitle) gsap.set(detailSubtitle, { opacity: 0, y: 24 });
-
-        // Reset DOM hero image
-        if (detailHeroImg) gsap.set(detailHeroImg, { opacity: 1 });
-
-        // Reset 3D Card active state and float animations
-        is3DCardActive = false;
-        isDragging = false;
-        currentRotateX = 0;
-        currentRotateY = 0;
-        const togglePill = document.getElementById('heroTogglePill');
-        const togglePillImg = document.getElementById('togglePillImg');
-        const togglePillCard = document.getElementById('togglePillCard');
-        if (togglePill && togglePillImg && togglePillCard) {
-          togglePill.classList.remove('card-active');
-          togglePillImg.classList.add('active');
-          togglePillCard.classList.remove('active');
-        }
-        const heroEl = document.querySelector('.detail-hero');
-        if (heroEl) {
-          heroEl.classList.remove('detail-hero-3d-active');
-          heroEl.classList.remove('detail-hero-grabbing');
-        }
-        if (floatTween) {
-          if (Array.isArray(floatTween)) {
-            floatTween.forEach(t => t.kill());
-          } else {
-            floatTween.kill();
-          }
-          floatTween = null;
-        }
-        gsap.set('#detail3dContainer', { opacity: 0, scale: 0.8, pointerEvents: 'none' });
-        gsap.set('.detail-hero-content', { opacity: 1, scale: 1, pointerEvents: 'auto' });
-        gsap.set('#detail3dCard', { rotateX: 0, rotateY: 0, x: 0, y: 0 });
-        const glare = document.getElementById('detail3dCardGlare');
-        if (glare) {
-          glare.style.opacity = 0;
-          glare.style.background = '';
-        }
+        resetDetailState();
+        dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-        // window.scrollTo removed to prevent layout jumps since scroll was never reset
 
         window.__isDetailClosing = false;
         isRouteTransitioning = false;

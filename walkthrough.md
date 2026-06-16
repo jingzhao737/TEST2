@@ -2586,3 +2586,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证加载无逻辑和语法错误。
 - 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `da22f12`）上线。
+
+---
+
+## 🛠️ Feature: 恢复非手机端（桌面端与平板端）间距 (Restoring Desktop/Tablet Spacings)
+
+### 1. 问题分析与修改
+- **问题反馈**：上述大标题下移和导航栏内收只应该应用于手机端（小屏），桌面端和平板端的布局需要恢复为原先的设计状态。
+- **解决方案与恢复**：
+  - **恢复桌面端 (Desktop Restore)**：
+    - 将 `.hero` 的底部 padding-bottom 从 `85px` 恢复为 `110px`。
+  - **恢复平板端 (Tablet Restore, max-width: 1024px)**：
+    - 将 `.nav` 的 padding 左右内边距从 `42px` 恢复为原版的 `24px`。
+    - 将 `.hero` 的顶部 padding-top 从 `180px` 恢复为原版的 `150px`。
+  - **保留手机端 (Mobile Preserved, max-width: 768px & 480px)**：
+    - 手机端导航栏的内收 padding（`38px` / `32px`）以及首页大标题下移的顶部 padding-top (`calc(56px + 12%)` / `calc(48px + 12%)`) 依然生效。
+  - **效果**：大屏及平板布局精确回滚到原始比例；手机端继续享有优化后的中心靠拢导航和温和下沉的标题布局。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证加载无报错。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `271f3d2`）上线。
