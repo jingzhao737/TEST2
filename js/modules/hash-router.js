@@ -302,9 +302,10 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
+    const startScaleX = isMobile ? 1.0 : 0.4;
     gsap.fromTo(detailCard, {
       y: '100%',
-      scaleX: 0.4,
+      scaleX: startScaleX,
       transformOrigin: '50% 100%',
       opacity: 1
     }, {
@@ -405,9 +406,10 @@ function closeDetail(popState) {
 
   // Slide down and shrink the card panel horizontally
   if (detailCard) {
+    const endScaleX = isMobile ? 1.0 : 0.4;
     gsap.to(detailCard, {
       y: '100%',
-      scaleX: 0.4,
+      scaleX: endScaleX,
       transformOrigin: '50% 100%',
       duration: 0.55,
       ease: 'power3.inOut',

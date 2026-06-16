@@ -1,12 +1,5 @@
 [
   {
-    "step": 151,
-    "timestamp": "2026-06-17 00:13:46",
-    "description": "Temporarily disable vision section and comment out ice.js for scroll performance testing",
-    "folder": "step_151_Temporarily_disable_vision_section_and_comment_out_ice.js_for_scroll_performance_testing",
-    "is_auto": false
-  },
-  {
     "step": 152,
     "timestamp": "2026-06-17 00:14:54",
     "description": "Restore VISION section and ice.js script",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:20:14",
     "description": "Update walkthrough.md with transition durations softening details",
     "folder": "step_170_Update_walkthrough.md_with_transition_durations_softening_details",
+    "is_auto": false
+  },
+  {
+    "step": 171,
+    "timestamp": "2026-06-17 01:22:41",
+    "description": "Optimize works details mobile layout and disable scale transitions on mobile viewports",
+    "folder": "step_171_Optimize_works_details_mobile_layout_and_disable_scale_transitions_on_mobile_viewports",
     "is_auto": false
   }
 ]

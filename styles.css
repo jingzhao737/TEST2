@@ -2244,6 +2244,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     width: 44px;
     height: 44px;
   }
+  .detail-body {
+    padding: 40px 20px 60px !important;
+  }
+  .detail-meta {
+    flex-wrap: wrap !important;
+    gap: 20px 32px !important;
+    padding: 20px 0 36px !important;
+    margin-bottom: 36px !important;
+  }
+  .detail-gallery {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin: 36px 0 !important;
+  }
 }
 
 .detail-body {

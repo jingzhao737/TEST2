@@ -67,11 +67,27 @@
   - `[x]` **滚动防抖与间隔调整 (Scroll-Aware Cache Throttle)**：将 `stars.js` 中的坐标定期校准间隔从 1 秒提升至 3 秒，并加入滚动监听器，在用户处于主动滚动期间自动跳过定时校准，避免在滚动时触发布局重算。
   - `[x]` **WebGL 预览渲染循环按需唤醒 (Animate Loop Sleep Mode)**：移除 `webgl-preview.js` 内部的 `IntersectionObserver` 监测。将 animate 循环改为只在卡片悬停 (`isHoverActive`) 或详情页形变过渡 (`isMorphing`) 处于激活状态时运行，未悬停时自动进入休眠，从而彻底释放 Works 区域滚动时的空转渲染消耗。
 
+- `[x]` **临时关闭 VISION (Ice Crystal) 页面模块以排查掉帧问题 (Temporarily Disable VISION Page for Troubleshooting)**
+  - `[x]` 在 `index.html` 中为 `<section class="ice-section" id="ice">` 容器及其下方的横向分界线添加 `style="display: none !important;"`，在 DOM 渲染树上完全移除其渲染和布局。
+  - `[x]` 在 `index.html` 底部注释掉 `<script type="module" src="ice.js"></script>`，停止该 3D 结晶模块在背景的初始化与 WebGL/Three.js 资源加载。
+  - `[x]` 编译生产包并通过 `py workflow.py deploy` 部署至线上。
 
+- `[x]` **深度优化自定义光标（Snapping Cursor）与 3D 悬停环路性能 (Optimize Snapping Cursor & 3D Card Hover loops)**
+  - `[x]` **恢复 3D 结晶页面**：将 `index.html` 中 `#ice` 板块、网格线和 `ice.js` 引用全部恢复正常。
+  - `[x]` **磁吸坐标静态缓存 (Static Coordinate Snapping Cache)**：重构 `cursor.js` 中的 `updateMagnetTargets`。将所有磁吸目标的 `getBoundingClientRect()` Viewport 视口值与当前 `scroll` 进行相加，转化为不变的**页面文档绝对坐标**。在 `mousemove` 监测和动画循环中直接进行纯数学减法位移计算判定，彻底消除了在移动鼠标时对所有目标重复调用 `getBoundingClientRect()` 造成的 Layout Reflow。
+  - `[x]` **彻底消除滚动中的磁吸更新 (Zero DOM operations on Scroll)**：清空 `cursor.js` 中 `scroll` 监听器内的 `updateMagnetTargets()` 查询，使得页面滚动时自定义光标模块对 CPU/DOM 的占用率完美归零。
+  - `[x]` **3D 悬停动画按需激活与休眠 (Animate Loop Wake & Sleep)**：重构 `premium-interactions.js` 中的 `animateHover` 循环。移除原本开刷即空转的 IIFE 自执行机制，仅在鼠标划入列表 (`onListEnter`) 时动态开启，在鼠标离开且旋转位置回弹复位后自动切断并停止 `requestAnimationFrame` 调度。
+  - `[x]` **预计算三角函数常量 (Precomputed Trigonometric Constants)**：将 `premium-interactions.js` 中卡片 3D 透视投影公式所需的 sines / cosines 三角函数计算移至循环体外静态常量化，省去每帧对 16 个顶点的重复 `Math.sin` 和 `Math.cos` 计算。
 
-
-
-
+- `[x]` **优化 Works 卡片详情页打开与关闭时的掉帧卡顿问题 (Optimize Works Card Detail Open/Close Transitions & Keep Background Live)**
+  - `[x]` **保持背景 WebGL 渲染持续活跃 (Keep Background WebGL Rendering Active)**：移除 `stars.js` 和 `ice.js` 在 `animate()` 循环中关于 `workDetail` 开启状态及转场的暂停判断，使背景星空与 3D 结晶粒子动画循环在详情页开启及转场期间持续保持活跃与渲染。配合实底不透明背景和无毛玻璃的设计，完全规避了暂停/重启导致的定格与突兀跳变，实现了极致的视觉连续性。
+  - `[x]` **避免转场启动重排 (Eliminate Animation Startup Reflow)**：在 `hash-router.js` 的 `openDetail()` 启动段中移除 `__updateMagnetTargets()` 调用，彻底避免在详情卡片动画启动帧触发 DOM 重排。
+  - `[x]` **延迟磁吸状态清理 (Defer Magnet Target Updates)**：在 `hash-router.js` 的 `closeDetail()` 中，将 `__updateMagnetTargets()` 调用时序调整至 `display: none` 和 `visibility: hidden` 之后，确保光标磁吸计算能精准剔除隐藏的关闭按钮。
+  - `[x]` **开启 Compositor 图层硬件加速 (GPU Layer Promotion)**：在 `styles.css` 中为 `.work-card` 与 `.work-detail-card` 显式设置 `will-change: transform, opacity;`，使其被强制提升至独立合成器图层，彻底规避滚动 and 转场期间的大面积重绘。
+  - `[x]` **遮罩改用纯色实底并移除毛玻璃滤镜 (Opaque Solid Backdrop & Zero Blur Overhead)**：在 [styles.css](file:///D:/webprojext/styles.css) 中，将 `.work-detail-bg` 的背景色由半透明黑 `rgba(0,0,0,0.65)` 替换为纯黑色 `#000`（浅色模式下替换为 `#f5f0e8`），并彻底删除 `backdrop-filter: blur(12px)`。当遮罩层完全不透明时，可激活浏览器的不透明度遮挡优化（Occlusion Culling/Overdraw Avoidance），彻底停止渲染底部的整个主页 DOM 树与 Canvas；同时彻底免除了耗费极高 GPU 算力的毛玻璃计算，彻底消除卡顿。
+  - `[x]` **移除背景过渡 Transition 冲突 (Remove CSS transition on Backdrop)**：移除 `.work-detail-bg` 上的 CSS 混合过渡，完全将淡入淡出动画控制权移交给 GSAP，彻底避免双重插值冲突。
+  - `[x]` **加速实底遮罩淡出 (Fast Backdrop Fade-out)**：在 `hash-router.js` 中将遮罩淡出时长由 `0.6s` 缩短至 `0.4s`（缓动改为 `power2.out`），使黑色遮罩能迅速清除，让已提前恢复动画的活动背景与下滑卡片衔接得行云流水。
+  - `[x]` **彻底消除主页元素上下瞬移 (Eliminate Layout and Scroll Position Jumps)**：移除了 `openDetail` 中的 `document.body.style.overflow = 'hidden'` 和 `closeDetail` 中的 `document.body.style.overflow = ''` 及 `window.scrollTo`。在 CSS 中将 `.work-detail-bg` 的 `pointer-events` 改为 `auto`，利用全屏 overlay 的事件捕获机制天然阻断主页鼠标滚轮滚动，无需改变 body 溢出模式。这彻底防止了设置 overflow 时浏览器重置滚动视口高度导致的首页大标题等元素上下瞬移，且同时激活了点击背景黑色区域关闭详情卡片的交互。
 
 
 
