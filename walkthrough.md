@@ -2607,3 +2607,31 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证加载无报错。
 - 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `271f3d2`）上线。
+
+---
+
+## 🛠️ Feature: 修复手机端主题切换拉线定位失效与同步内收 (Mobile Theme Toggle Layout Observer Fix)
+
+### 1. 问题分析与修改
+- **问题反馈**：手机端黑白模式切换开关（拉绳按钮）在页面加载时太靠边，没有跟随菜单按钮（Menu Button）一起向内收缩对正。
+- **原因分析**：
+  - 原理上，主题拉线的水平位置是在 [theme.js](file:///D:/webprojext/js/modules/theme.js) 中通过读取 `menuBtn.getBoundingClientRect()` 动态居中计算得到的。
+  - 然而原本的 `theme.js` 仅在脚本初始化执行时调用了一次 `positionAnchor()`，之后只监听了 `resize`、`scroll` 和 `#nav` 属性变化的 `MutationObserver`。
+  - 在页面首次加载时，由于外部 CSS 样式表（包含移动端 `padding` 覆写）是异步加载的，脚本执行时的菜单按钮尚处于屏幕最右侧边缘的默认占位处，导致拉线被固定在错误的极右端边缘。后续只有当用户滚动屏幕或改变视口大小时，位置才会重新修正，造成了首屏加载时的严重定位滞后和靠边现象。
+- **解决方案与修复**：
+  - **补全首屏加载监听**：在 `theme.js` 中添加了 `window.addEventListener('load', positionAnchor)`，保证所有外部样式资源完全加载后进行二次对齐修正。
+  - **引入高性能布局观测器 (ResizeObserver)**：为 `menuBtn` 与 `navEl` 注册了 `ResizeObserver`：
+    ```javascript
+    if (typeof ResizeObserver !== 'undefined' && menuBtn) {
+      const ro = new ResizeObserver(() => positionAnchor());
+      ro.observe(menuBtn);
+      if (navEl) ro.observe(navEl);
+    }
+    ```
+    无论任何原因引发的布局重排（字体/图片加载、屏幕尺寸变化、导航栏收缩），均能在第一帧高精度、零延迟地同步将黑白天拉绳重新定位于菜单按钮中心。
+  - **效果**：首屏加载时，黑白天拉绳立即精确挂在内收后的菜单按钮下方，滑动或旋转屏幕时对位也丝滑跟随，彻底解决了靠边和定位迟滞。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包通过。
+- 运行 `node check_console.js` 验证浏览器控制台无报错。
+- 通过 `py workflow.py deploy` 成功将代码同步提交并推送（Commit `586ec53`）上线。

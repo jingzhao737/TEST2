@@ -1,12 +1,5 @@
 [
   {
-    "step": 164,
-    "timestamp": "2026-06-17 01:07:11",
-    "description": "Update walkthrough.md with transition fluidity optimization details",
-    "folder": "step_164_Update_walkthrough.md_with_transition_fluidity_optimization_details",
-    "is_auto": false
-  },
-  {
     "step": 165,
     "timestamp": "2026-06-17 01:10:48",
     "description": "Disable workDetail pointer-events immediately on close transition to resolve home page click interception",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:43:07",
     "description": "fix add ResizeObserver and load listener to ensure mobile theme toggle aligns correctly",
     "folder": "step_183_fix_add_ResizeObserver_and_load_listener_to_ensure_mobile_theme_toggle_aligns_correctly",
+    "is_auto": false
+  },
+  {
+    "step": 184,
+    "timestamp": "2026-06-17 01:43:20",
+    "description": "docs update walkthrough with theme observer fix",
+    "folder": "step_184_docs_update_walkthrough_with_theme_observer_fix",
     "is_auto": false
   }
 ]

@@ -22,6 +22,7 @@
     anchor.style.left = (r.left + r.width / 2) + 'px';
   }
   positionAnchor();
+  window.addEventListener('load', positionAnchor);
   window.addEventListener('resize', positionAnchor);
   window.addEventListener('scroll', positionAnchor, { passive: true });
   // Watch for nav class changes (e.g. 'scrolled' added/removed) instead of
@@ -29,6 +30,11 @@
   var navEl = document.getElementById('nav');
   if (navEl) {
     new MutationObserver(positionAnchor).observe(navEl, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
+  if (typeof ResizeObserver !== 'undefined' && menuBtn) {
+    const ro = new ResizeObserver(() => positionAnchor());
+    ro.observe(menuBtn);
+    if (navEl) ro.observe(navEl);
   }
 
   // ── Audio ──
