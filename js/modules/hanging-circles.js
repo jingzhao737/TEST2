@@ -725,6 +725,7 @@ import * as THREE from 'three';
       }
     }
 
+    // 1. Calculate preliminary physics forces and positions
     for (let i = 0; i < thumbs.length; i++) {
       let t = thumbs[i];
 
@@ -902,40 +903,114 @@ import * as THREE from 'three';
         continue;
       }
 
-      // Rope constraint variables
-      let ax = t.anchorX, ay = t.anchorY;
-      let dx = t.x - ax;
-      let dy = t.y - ay;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-      let ropeLen = t.restY - t.anchorY + t.dispH * 0.5;
-
-      // Normal physics: gravity + rope constraint
+      // Normal physics: gravity + preliminary movement
       t.vy += gravity;
       t.vx *= damping;
       t.vy *= damping;
       t.x += t.vx;
       t.y += t.vy;
+    }
 
-      // Enforce rope length constraint
-      dx = t.x - ax;
-      dy = t.y - ay;
-      dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist > ropeLen && dist > 0.01) {
-        let nx = dx / dist, ny = dy / dist;
-        t.x = ax + nx * ropeLen;
-        t.y = ay + ny * ropeLen;
-        // Remove outward radial velocity (rope can't push, only pull)
-        let vradial = t.vx * nx + t.vy * ny;
-        if (vradial > 0) {
-          t.vx -= vradial * nx * 1.35;
-          t.vy -= vradial * ny * 1.35;
-          if (vradial > 2.5) {
-            t._swayV += (Math.random() - 0.5) * 0.08;
+    // 2. Multi-body physics solver iterations (resolves circle-circle collisions and rope length constraints)
+    for (let iter = 0; iter < 3; iter++) {
+      // A. Circle-circle collisions
+      for (let i = 0; i < thumbs.length; i++) {
+        let t1 = thumbs[i];
+        if (t1.entering) continue;
+        
+        for (let j = i + 1; j < thumbs.length; j++) {
+          let t2 = thumbs[j];
+          if (t2.entering) continue;
+          
+          let dx = t2.x - t1.x;
+          let dy = t2.y - t1.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Radius of each disc is half of its display width
+          let r1 = t1.dispW / 2;
+          let r2 = t2.dispW / 2;
+          let minDist = r1 + r2;
+          
+          if (dist < minDist && dist > 0.01) {
+            let overlap = minDist - dist;
+            let nx = dx / dist;
+            let ny = dy / dist;
+            
+            // Mass calculation: dragged and latched discs have infinite mass (cannot be pushed)
+            let isDragged1 = (i === draggedIdx);
+            let isDragged2 = (j === draggedIdx);
+            let isLatched1 = (i === latchedIdx);
+            let isLatched2 = (j === latchedIdx);
+            
+            let invM1 = (isDragged1 || isLatched1) ? 0 : 1;
+            let invM2 = (isDragged2 || isLatched2) ? 0 : 1;
+            
+            if (invM1 + invM2 > 0) {
+              // Positional correction: push them apart along normal
+              let ratio1 = invM1 / (invM1 + invM2);
+              let ratio2 = invM2 / (invM1 + invM2);
+              
+              t1.x -= nx * overlap * ratio1;
+              t1.y -= ny * overlap * ratio1;
+              t2.x += nx * overlap * ratio2;
+              t2.y += ny * overlap * ratio2;
+              
+              // Velocity reflection (elastic impulse response)
+              let rvx = t2.vx - t1.vx;
+              let rvy = t2.vy - t1.vy;
+              let velAlongNormal = rvx * nx + rvy * ny;
+              
+              if (velAlongNormal < 0) {
+                let restitution = 0.55; // springy vinyl bounce bounciness
+                let impulse = -(1 + restitution) * velAlongNormal / (invM1 + invM2);
+                
+                t1.vx -= nx * impulse * invM1;
+                t1.vy -= ny * impulse * invM1;
+                t2.vx += nx * impulse * invM2;
+                t2.vy += ny * impulse * invM2;
+                
+                // Add physical reaction sway to rope curve
+                if (invM1 > 0) t1._swayV += (Math.random() - 0.5) * 0.06;
+                if (invM2 > 0) t2._swayV += (Math.random() - 0.5) * 0.06;
+              }
+            }
           }
         }
       }
+      
+      // B. Enforce rope length constraints for all non-dragged discs
+      for (let i = 0; i < thumbs.length; i++) {
+        let t = thumbs[i];
+        if (i === draggedIdx || t.entering) continue;
+        
+        let ax = t.anchorX, ay = t.anchorY;
+        let dx = t.x - ax;
+        let dy = t.y - ay;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        let ropeLen = t.restY - t.anchorY + t.dispH * 0.5;
+        
+        if (dist > ropeLen && dist > 0.01) {
+          let nx = dx / dist, ny = dy / dist;
+          t.x = ax + nx * ropeLen;
+          t.y = ay + ny * ropeLen;
+          
+          let vradial = t.vx * nx + t.vy * ny;
+          if (vradial > 0) {
+            t.vx -= vradial * nx * 1.35;
+            t.vy -= vradial * ny * 1.35;
+            if (vradial > 2.5) {
+              t._swayV += (Math.random() - 0.5) * 0.08;
+            }
+          }
+        }
+      }
+    }
 
-      // Sway for rope curve with springy oscillation
+    // 3. Finalize sway physics for rope curve drawing
+    for (let i = 0; i < thumbs.length; i++) {
+      let t = thumbs[i];
+      if (t.entering) continue;
+      
       if (t._sway === undefined) t._sway = 0;
       if (t._swayV === undefined) t._swayV = 0;
       let windSway = 0;
