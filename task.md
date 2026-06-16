@@ -45,5 +45,7 @@
   - `[x]` 在 `laser-lines.js` 中将点击产生的激光十字星爆裂函数 `createBurst` 封装并暴露为全局方法 `window.triggerLaserBurst(x, y, isOrange, customLife, customNumSparks)`.
   - `[x]` 在 `color-console.js` 中，控制台打开与关闭动画结束的 0.1s 延迟回调中，除了触发 fluid 涟漪之外，增加触发 `window.triggerLaserBurst` 在徽标落点产生打铁般炫目的激光十字星爆裂特效.
   - `[x]` 优化 `laser-lines.js` 中的粒子物理模拟（增加重力与偏向速度，降低阻力），使其呈现如打铁火花般喷溅、划出弧线并优雅坠落的精细质感。
+  - `[x]` 确保普通鼠标点击的星星粒子动画和画角粒子保持原有的无重力、无自旋、高阻尼向上微漂的原生效果不变。
+
 
 

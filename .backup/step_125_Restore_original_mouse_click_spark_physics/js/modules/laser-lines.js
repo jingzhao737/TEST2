@@ -123,26 +123,32 @@
   }
 
   // Generate laser spark burst on click
-  function createBurst(x, y, isOrange = false) {
+  function createBurst(x, y, isOrange = false, customLife = null, customNumSparks = null) {
     const burstColor = isOrange ? '#E87C50' : '#ffffff'; // Monochromatic: all orange on interactive elements, all white on general background
+    const isIronSpark = (customLife !== null);
     
     // Burst Micro-Sparks (Small Cross-Stars)
-    const numSparks = 4 + Math.floor(Math.random() * 4); // 4-7 sparks
+    const numSparks = customNumSparks !== null ? customNumSparks : (4 + Math.floor(Math.random() * 4)); // 4-7 sparks
     for (let i = 0; i < numSparks; i++) {
       const angle = (i / numSparks) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-      const speed = 2.5 + Math.random() * 6.5; // Slightly slower, more controlled dispersion
+      // Faster, more energetic speed profile to simulate iron sparks flying
+      const speed = isIronSpark ? (4.0 + Math.random() * 8.0) : (2.5 + Math.random() * 6.5);
+      const lifeSpan = isIronSpark ? (customLife * (0.8 + Math.random() * 0.4)) : (500 + Math.random() * 300);
       sparks.push({
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
+        // Initial upward burst bias (making sparks shoot up and fall down beautifully like striking metal)
+        vy: Math.sin(angle) * speed - (isIronSpark ? 2.5 : 0.0),
         color: burstColor,
         type: 'star', // All particles are cross-stars
         size: 0.8 + Math.random() * 3.8, // Size variation: 0.8px to 4.6px
-        angle: 0,
-        spin: 0, // No rotation, keeping them perfectly upright +
+        angle: isIronSpark ? (Math.random() * Math.PI * 2) : 0,
+        spin: isIronSpark ? ((Math.random() - 0.5) * 0.08) : 0, // Slow spin for high-quality shimmering/twinkling effect on iron sparks
         created: Date.now(),
-        life: 500 + Math.random() * 300 // 500ms - 800ms lifespan
+        life: lifeSpan,
+        drag: isIronSpark ? 0.96 : 0.90, // Custom drag per type (mouse click has original 0.90)
+        gravity: isIronSpark ? 0.20 : -0.025 // Custom gravity per type (mouse click has original -0.025 upward float)
       });
     }
   }
@@ -164,7 +170,9 @@
         angle: 0,
         spin: 0,
         created: Date.now(),
-        life: 400 + Math.random() * 300 // 400ms - 700ms lifespan
+        life: 400 + Math.random() * 300, // 400ms - 700ms lifespan
+        drag: 0.90, // Original drag
+        gravity: -0.025 // Original upward float
       });
     }
   }
@@ -382,15 +390,17 @@
         continue;
       }
 
-      // Update position with air drag & slow upward energy float (no heavy gravity)
+      // Update position with air drag & gravity based on particle properties
       s.x += s.vx;
       s.y += s.vy;
       if (s.type === 'center-flare') {
         // Center flare stays fixed at click coordinate
       } else {
-        s.vx *= 0.90; // Higher friction for a snappier, more localized deceleration
-        s.vy *= 0.90;
-        s.vy -= 0.025; // Subtle upward float to mimic energy dissipating
+        const dragFactor = s.drag !== undefined ? s.drag : 0.90;
+        const gravityFactor = s.gravity !== undefined ? s.gravity : -0.025;
+        s.vx *= dragFactor;
+        s.vy *= dragFactor;
+        s.vy += gravityFactor;
       }
 
       const size = s.size * (1 - age);
@@ -495,4 +505,8 @@
   window.__segments = segments;
   window.__sparks = sparks;
   window.__ripples = ripples;
+  window.triggerLaserBurst = function(x, y, isOrange = false, customLife = null, customNumSparks = null) {
+    createBurst(x, y, isOrange, customLife, customNumSparks);
+  };
 })();
+

@@ -2114,5 +2114,33 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `npx vite build` 编译生产包。
 - 效果完美：在 Logo 飞抵两端 100ms（0.1s）后，瞬间产生 12 颗带有明显自旋亮光的品牌橙色十字星尘粒子向四周高速喷射起飞，随后像真实的炙热铁屑在空气中重力跌落一般，划出一道道优雅的向下坠落弧线并悠然淡出。时间节奏紧凑利落，物理效果质感拉满！
 
+---
+
+## 🛠️ Step 624: 恢复普通鼠标点击星星的原生飘散物理特性 (Restore Original Physics to Normal Mouse Click Sparks)
+
+### 1. 痛点与设计考虑 (Pain Point & Design Choices)
+- **痛点**：在 Step 623 中，我们在更新循环里对所有 `type: 'star'` 粒子一刀切地应用了重力下坠（`s.vy += 0.20`）和低阻力惯性（`s.vx *= 0.96`），导致普通的鼠标点击和线条拐角处的白色小星星粒子也出现了下坠现象。用户反馈表示希望**鼠标点击处的星星特效恢复原样，只在 Logo 降落时应用打铁般的火星子下坠特效**。
+- **重构方案**：使用面向对象的方式，将粒子的运动参数（`drag` 阻尼、`gravity` 重力加速度、初始旋转 `spin` 等）直接封装在粒子对象自身的属性中，在更新循环中动态获取，实现不同触发源粒子行为的彻底隔离与精准还原。
+
+### 2. 粒子属性参数化隔离 (Parameterizing Spark Properties)
+- **粒子初始化定制**：
+  - 在 [laser-lines.js](file:///D:/webprojext/js/modules/laser-lines.js) 的 `createBurst` 函数中，根据是否为 Logo 降落铁水花粒子（`isIronSpark`）写入不同的物理属性：
+    - **Logo 降落粒子**：`drag = 0.96`，`gravity = 0.20`，包含随机初始角度 `angle` 与自旋转速 `spin = (random - 0.5) * 0.08`。
+    - **普通鼠标点击粒子**：`drag = 0.90`，`gravity = -0.025`（向上漂浮），不带旋转（`angle = 0`, `spin = 0`）。
+  - 在 `triggerCornerBurst` 生成线条拐角粒子时，同样显式附加 `drag = 0.90` 与 `gravity = -0.025` 属性。
+- **物理循环动态适配**：
+  - 重构更新循环中的累加逻辑，根据 `s.drag` 和 `s.gravity` 进行更新：
+    - `s.vx *= (s.drag !== undefined ? s.drag : 0.90)`
+    - `s.vy *= (s.drag !== undefined ? s.drag : 0.90)`
+    - `s.vy += (s.gravity !== undefined ? s.gravity : -0.025)`
+  - 这种设计干净地恢复了原生鼠标星星效果，又维持了全新的 Logo 降落铁星下坠动态。
+
+### 3. 测试与验证 (Testing & Verification)
+- 运行 `npx vite build` 编译生产包。
+- 效果达到完美状态：
+  1. 鼠标在屏幕各处点击、移动所产生的白色/橙色小星星，立刻恢复了先前最习惯的**无自转、高阻尼快速减速，且受到微弱上升气流影响缓缓向上微漂并消散**的原生交互效果。
+  2. Logo 降落时（0.1s 延时后）的 12 颗橙色大火花依然精准保持了**高初速斜向抛射、带自旋转动闪烁、且受重力划出弧线向下坠落**的金属打铁火花质感，满足了所有动效定制需求！
+
+
 
 
