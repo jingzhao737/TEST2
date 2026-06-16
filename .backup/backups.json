@@ -1,12 +1,5 @@
 [
   {
-    "step": 154,
-    "timestamp": "2026-06-17 00:23:56",
-    "description": "Optimize Works detail card transitions by pausing background WebGL and deferring magnet targets",
-    "folder": "step_154_Optimize_Works_detail_card_transitions_by_pausing_background_WebGL_and_deferring_magnet_targets",
-    "is_auto": false
-  },
-  {
     "step": 155,
     "timestamp": "2026-06-17 00:37:33",
     "description": "Optimize Works detail card transitions with uniform scale, choreographed fade timelines and dynamic active-blur helpers",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:24:43",
     "description": "Fix isMobile reference error in closeDetail transition function",
     "folder": "step_173_Fix_isMobile_reference_error_in_closeDetail_transition_function",
+    "is_auto": false
+  },
+  {
+    "step": 174,
+    "timestamp": "2026-06-17 01:24:58",
+    "description": "Update walkthrough.md with ReferenceError hotfix details",
+    "folder": "step_174_Update_walkthrough.md_with_ReferenceError_hotfix_details",
     "is_auto": false
   }
 ]

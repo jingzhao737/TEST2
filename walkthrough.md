@@ -2502,3 +2502,23 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 `npx vite build` 编译打包通过。
 - 运行 `node check_console.js` 验证无运行时控制台报错。
 - 通过 `py workflow.py deploy` 成功提交并同步推送（Commit `445db79`）到线上生产环境。
+
+---
+
+## 🛠️ Hotfix: 修复退出函数 isMobile 未定义引用报错 (closeDetail ReferenceError Fix)
+
+### 1. 问题分析 with 修改
+- **问题反馈**：作品详情页点开后关不掉了，按 Esc 或点击 Close 均没有任何反应。
+- **原因分析**：
+  - 在上一轮将 `scaleX` 弹性过渡跟移动端状态解耦时，我们在 `closeDetail()` 的卡片滑出动效中使用到了 `isMobile` 变量。
+  - 但是我们在该函数内部**漏掉了 `isMobile` 变量的本地声明**（它只在 `openDetail()` 中被定义）。
+  - 这导致在尝试退出时，JavaScript 引擎在读取 `isMobile` 时直接抛出了致命的 `ReferenceError: isMobile is not defined` 错误，导致 GSAP 执行流在半途瞬间崩毁。由于动画未顺利完成，转场锁 `isRouteTransitioning` 无法被重置，页面因而完全卡死，无法关闭。
+- **解决方案与修复**：
+  - 在 [hash-router.js](file:///D:/webprojext/js/modules/hash-router.js) 的 `closeDetail()` 的卡片滑出运动分支上，重新补全了 `isMobile` 的计算定义：
+    `const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);`
+  - **效果**：报错彻底根除，卡片展开与关闭过渡百分之百恢复平滑响应。
+
+### 2. 部署与验证
+- 重新运行 `npx vite build` 编译打包正常。
+- 运行 `node check_console.js` 验证控制台日志无错误。
+- 通过 `py workflow.py deploy` 成功将最新版本（Commit `a5523bf`）部署至线上。
