@@ -1,12 +1,5 @@
 [
   {
-    "step": 131,
-    "timestamp": "2026-06-16 22:06:10",
-    "description": "Implement gravity-free Big Bang straight-line radial expansion for logo landing sparks",
-    "folder": "step_131_Implement_gravity-free_Big_Bang_straight-line_radial_expansion_for_logo_landing_sparks",
-    "is_auto": false
-  },
-  {
     "step": 132,
     "timestamp": "2026-06-16 22:07:52",
     "description": "Implement immediate zero-delay trigger, smaller range, and reduced count for logo Big Bang sparks",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 00:10:30",
     "description": "Optimize Works section scroll and mouse hover entry performance, removing layout reflows and reducing GPU texture uploads",
     "folder": "step_150_Optimize_Works_section_scroll_and_mouse_hover_entry_performance,_removing_layout_reflows_and_reducing_GPU_texture_uploads",
+    "is_auto": false
+  },
+  {
+    "step": 151,
+    "timestamp": "2026-06-17 00:13:46",
+    "description": "Temporarily disable vision section and comment out ice.js for scroll performance testing",
+    "folder": "step_151_Temporarily_disable_vision_section_and_comment_out_ice.js_for_scroll_performance_testing",
     "is_auto": false
   }
 ]

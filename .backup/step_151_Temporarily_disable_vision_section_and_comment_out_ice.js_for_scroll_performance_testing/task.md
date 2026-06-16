@@ -52,6 +52,21 @@
   - `[x]` 应用户最新需求设计独立炫酷的“装备锻造成功”爆破动效：在 `laser-lines.js` 中新增并暴露 `window.triggerForgeBurst(x, y)` API，该 API 包含 1 重中心脉冲高亮闪烁光圈（`center-flare`）、2 重彩色扩张 HUD 激波光环（`ripples`）、以及 20~28 颗包含白、金、黄、橙多色混合、自旋闪烁、缓动滑行下坠（寿命达 1.2s~2s）的高能铁花粒子。
   - `[x]` 针对粒子后期“直线下坠”导致的呆板定格感，在粒子物理方程中加入热空气对流扰动（Brownian Motion），提供轻微的横向左右摆动（Sway）与纵向颤动（Flutter），并将重力加速度调至 `0.04`，从而保证粒子在收尾期能如空气中漂浮的余烬般生动滑行。
   - `[x]` 应用户最新优化需求，将锻造粒子动效进一步重构为无重力干扰的“宇宙大爆炸”式纯径向直线扩散：去除向上重力偏置和下落重力（`gravity: 0`），并设置高品质的滑动阻尼（`0.95`），确保所有粒子在 1.2s~2s 的生命周期中，完全保持初始抛射方向，以完美的直线向外匀称扩散、缓缓减速并优雅淡出，完全消除任何向下或向上的漂移感。
+  - `[x]` 微调大爆炸粒子动效范围与触发时序：移除 0.1s 的 `setTimeout` 延迟，使爆破动效在 Logo 时间线结束的瞬间即时触发；同时将火花粒子初速度区间降为 `2.5~7.0`，双重激波环的最大半径压缩至 `50px` 和 `80px`，并将火星数量精简到 `12~17` 颗，使动效更紧凑精致。
+
+- `[x]` **修复 stars.js 中的 TDZ（暂存死区）初始化 ReferenceError 错误**
+  - `[x]` 解决 `stars.js` 在模块加载时，由于 `initWebGLTextElements` 在声明 `workCardElements` 变量之前就被调用而引发的 `ReferenceError: Cannot access 'workCardElements' before initialization` 运行时报错。
+  - `[x]` 将 `webglTextElements`, `workCardElements`, `cachedTextItems`, `cachedCardItems` 的 `let` 声明语句整体移动至 `initWebGLTextElements` 函数 the 定义及调用之前。
+  - `[x]` 本地构建与打包（`npx vite build`）校验编译完全通过。
+  - `[x]` 运行 `py workflow.py deploy` 命令，将最新修复自动提交并成功推送至 GitHub Pages 线上服务。
+
+- `[x]` **优化 Works 区域滚动与鼠标进入卡顿、掉帧问题 (Optimize Scroll & Hover Entry Performance in Works)**
+  - `[x]` **消除强制同步布局 (Remove Forced Reflows)**：从 `premium-interactions.js` 中的 `onListEnter()` 函数里移除 `updateFlatPageCoordinates()`。利用已在页面初始化、`load` 和 `resize` 时算好的页面坐标，彻底避免鼠标滑入卡片区域时频繁切换 3D 旋转所造成的严重页面重排和卡顿。
+  - `[x]` **优化 WebGL 文本静态渲染缓存 (Decouple Style Resolution from Geometry mapping)**：将 `stars.js` 的缓存机制重构为静态基础缓存 `cachedTextItemsBase`。使每次坐标更新（`cacheLayoutCoords`）只需获取 `getBoundingClientRect()` 测定位置，不再重复进行开销极高的 `getComputedStyle()` 样式解析以及 `innerHTML`/`textContent` DOM 节点读取。
+  - `[x]` **按需上传 WebGL 文本纹理 (Upload Textures on Demand)**：在 `stars.js` 渲染循环中加入滚动状态与文本改变检测。仅在滚动位置发生变化、页面缩放、或切换主题时才重新擦写文本 Canvas 并设置 `textTexture.needsUpdate = true` 上传至 GPU。当页面静止时，文本纹理的 CPU 测绘与 GPU 传输开销降为 0。
+  - `[x]` **滚动防抖与间隔调整 (Scroll-Aware Cache Throttle)**：将 `stars.js` 中的坐标定期校准间隔从 1 秒提升至 3 秒，并加入滚动监听器，在用户处于主动滚动期间自动跳过定时校准，避免在滚动时触发布局重算。
+  - `[x]` **WebGL 预览渲染循环按需唤醒 (Animate Loop Sleep Mode)**：移除 `webgl-preview.js` 内部的 `IntersectionObserver` 监测。将 animate 循环改为只在卡片悬停 (`isHoverActive`) 或详情页形变过渡 (`isMorphing`) 处于激活状态时运行，未悬停时自动进入休眠，从而彻底释放 Works 区域滚动时的空转渲染消耗。
+
 
 
 
