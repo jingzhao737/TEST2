@@ -33,7 +33,7 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "ed6294b02520ec94451166a5cf8886cdba4f481d93cca222052663a0953b8389"
+    "hash": "33c676d7f5b665885ccf874a364d74e72db69f6d21ee644e3a614f52e210d057"
   },
   "task.md": {
     "type": "code",
@@ -45,7 +45,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "e66f3a11662a3684a8fb45ca9e1c0da4693bd7a646b4fac4c816a6c7abfe1315"
+    "hash": "476ea22a7e64245793067c7ea4869da7801d68f717bc60cb5ce5b9c07a9385e2"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -89,15 +89,15 @@
   },
   "dist\\index.html": {
     "type": "code",
-    "hash": "9cd0e47fad7809338f22b10e11b0a814da279683d988b485ecdb9349311a6e2b"
+    "hash": "95ac5ac8c6fb868c372f475470fb287f427e6dc074f08ac24d32bb34b9b365ed"
   },
-  "dist\\assets\\index-CognX_5X.css": {
+  "dist\\assets\\index-BB5m9j6l.css": {
     "type": "code",
-    "hash": "70f8e3cd006fee8150dab910e5bd5cd682bf9885dd03a0e823dbb502326a6cb9"
+    "hash": "753b3e6423e8605ff4ad25ebc225e4d0253224cd515e6c2e6b9b4dacd6b122a2"
   },
-  "dist\\assets\\index-DSh7bp87.js": {
+  "dist\\assets\\index-KLXNDxEi.js": {
     "type": "code",
-    "hash": "5374de5d2937aec6d3722244b3e08467f82288bd7e6901b69c260dad43f38da3"
+    "hash": "48b23a48debe5fb2e83e2978cf5949ccceb647f0739d176561a036e732cb6977"
   },
   "images\\index.txt": {
     "type": "code",
@@ -149,7 +149,7 @@
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
-    "hash": "e5d7722b3b439776416aa6fb06cecd9cbdf17b65eeaf0c82fe17688caaa579b4"
+    "hash": "a88eb1fc21af9bb932da5c1406f7995ed8acda2f2019356d8820c128ceb3e4c9"
   },
   "js\\modules\\laser-lines.js": {
     "type": "code",
@@ -177,7 +177,7 @@
   },
   "js\\modules\\premium-interactions.js": {
     "type": "code",
-    "hash": "d981cf3b7c6357d03e5c9b297219574a74448855227279246538e77a28360d86"
+    "hash": "fe1918dbf287fc93a98601c1ce365fe1d7c0c6e000fed575f36ae97fa798cfc9"
   },
   "js\\modules\\scroll-reveal.js": {
     "type": "code",
@@ -189,7 +189,7 @@
   },
   "js\\modules\\sound-effects.js": {
     "type": "code",
-    "hash": "4536bfb03202e992d55bffaecd82b879940a9d1a285d99301e6ad2951fdf6890"
+    "hash": "5163c89c382c26f89d42424f55bfe0f2387487a6c3eda6d6f1bf872e1cc2a702"
   },
   "js\\modules\\stars.js": {
     "type": "code",
@@ -197,7 +197,7 @@
   },
   "js\\modules\\theme.js": {
     "type": "code",
-    "hash": "e405ff8ad4fdf00b115261f0d0d8280796c990a1e0acf8ae5e9578cade1b0a30"
+    "hash": "9396f43da0b5f18d324abc77dfd04fa3694d6e2a184630c14575a04587898d65"
   },
   "js\\modules\\webgl-preview.js": {
     "type": "code",

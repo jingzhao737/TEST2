@@ -1,12 +1,5 @@
 [
   {
-    "step": 167,
-    "timestamp": "2026-06-17 01:17:35",
-    "description": "Wake up 3D hit testing automatically via dispatchWakeupEvents on close detail transitions",
-    "folder": "step_167_Wake_up_3D_hit_testing_automatically_via_dispatchWakeupEvents_on_close_detail_transitions",
-    "is_auto": false
-  },
-  {
     "step": 168,
     "timestamp": "2026-06-17 01:17:49",
     "description": "Update walkthrough.md with event wakeup fix details",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-17 01:45:35",
     "description": "docs update walkthrough with mobile nav shift details",
     "folder": "step_186_docs_update_walkthrough_with_mobile_nav_shift_details",
+    "is_auto": false
+  },
+  {
+    "step": 187,
+    "timestamp": "2026-06-17 01:50:23",
+    "description": "fix play card click sound on fallback 3D clicks and resolve mobile audio context suspension",
+    "folder": "step_187_fix_play_card_click_sound_on_fallback_3D_clicks_and_resolve_mobile_audio_context_suspension",
     "is_auto": false
   }
 ]

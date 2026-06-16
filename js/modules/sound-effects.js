@@ -142,13 +142,19 @@
     // Interactive element selector — clicking these uses the heavier click sound
     const interactiveSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble, #framesCanvas';
 
-    // Global mousedown — fires instantly on press (not on release like 'click')
-    document.addEventListener('mousedown', (e) => {
+    function handlePress(e) {
       const target = e.target;
       if (!target) return;
 
-      // Check if clicking a works card
-      const isWorkCard = typeof target.closest === 'function' && target.closest('.work-card');
+      // Check if clicking a works card (directly or via fallback 3D click areas)
+      let isWorkCard = typeof target.closest === 'function' && target.closest('.work-card');
+      if (!isWorkCard) {
+        const isWorksSection = typeof target.closest === 'function' && target.closest('.works');
+        if (isWorksSection && window.__hoveredCardIndex !== undefined && window.__hoveredCardIndex >= 0) {
+          isWorkCard = true;
+        }
+      }
+
       if (isWorkCard) {
         playCardClickSound();
         return;
@@ -162,7 +168,14 @@
         // Lighter, shorter "tap" sound for blank/non-interactive areas
         playHoverSound();
       }
-    });
+    }
+
+    const isMobileDevice = ('ontouchstart' in window) || (window.innerWidth <= 768);
+    if (isMobileDevice) {
+      document.addEventListener('click', handlePress);
+    } else {
+      document.addEventListener('mousedown', handlePress);
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -259,9 +272,9 @@
       ctx.resume().catch(function(e) { console.warn('Failed to resume AudioContext:', e); });
     }
   }
-  window.addEventListener('mousedown', resumeGlobalContext, { passive: true });
-  window.addEventListener('touchstart', resumeGlobalContext, { passive: true });
-  window.addEventListener('keydown', resumeGlobalContext, { passive: true });
+  window.addEventListener('mousedown', resumeGlobalContext, { capture: true, passive: true });
+  window.addEventListener('touchstart', resumeGlobalContext, { capture: true, passive: true });
+  window.addEventListener('keydown', resumeGlobalContext, { capture: true, passive: true });
 
   window.__playHoverSound = playHoverSound;
   window.__playClickSound = playClickSound;
