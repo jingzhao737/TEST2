@@ -1,12 +1,5 @@
 [
   {
-    "step": 102,
-    "timestamp": "2026-06-16 01:02:10",
-    "description": "Restore volume HUD font back to Google Sans",
-    "folder": "step_102_Restore_volume_HUD_font_back_to_Google_Sans",
-    "is_auto": false
-  },
-  {
     "step": 103,
     "timestamp": "2026-06-16 01:02:30",
     "description": "Restore volume HUD font description",
@@ -137,6 +130,13 @@
     "timestamp": "2026-06-16 01:34:16",
     "description": "Add self-illumination (emissive map) to record label to brighten cover images",
     "folder": "step_121_Add_self-illumination_(emissive_map)_to_record_label_to_brighten_cover_images",
+    "is_auto": false
+  },
+  {
+    "step": 122,
+    "timestamp": "2026-06-16 21:31:34",
+    "description": "Add post-flight logo star particle splash on return flight completion",
+    "folder": "step_122_Add_post-flight_logo_star_particle_splash_on_return_flight_completion",
     "is_auto": false
   }
 ]
