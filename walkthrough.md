@@ -3230,3 +3230,25 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交并发布。真机实际滚动测试表明：当页面向下滚动至 `#work` 触发点时，四块卡片犹如庞大的悬浮飞盘，带着旋转与强烈的景深运动模糊从左上角划出一道优美的弧线，依次“呼啸而来”卡入网格，落地手感扎实平滑，极具未来科技感与视觉震撼度！
+
+
+---
+
+## 🛠️ Step 649: 增强作品卡片“磨砂物理厚玻璃”斜切边缘反光与背景模糊质感 (Works Cards Glass Thickness Enhancement)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：用户反馈希望卡片能“加点厚度，就像一个有厚度的玻璃一样”。原有卡片较扁平，缺乏厚重质感。
+- **重构方案 (Skeuomorphic 3D Beveled Glass Panel)**：
+  - **背景深度磨砂 (Frosted Backdrop)**：
+    为 `.work-card` 容器添加 `backdrop-filter: blur(16px)`（及 WebKit 兼容前缀）。当背景的动效线、星星或 WebGL 元素穿过卡片后方时，会呈现出物理磨砂折射，形成厚重的透光玻璃体积感。
+  - **光刃斜切边缘（Double-Layered Inset Bevels）**：
+    - 在左上角配置极细的强白高光（`inset 1px 1px 0px rgba(255, 255, 255, 0.12)`，hover 状态下增强至 `0.28` 强度），模拟环境光投射在切角边缘产生的折射微光。
+    - 在右下角配置深色暗边（`inset -1px -1px 0px rgba(0, 0, 0, 0.25)`，hover 状态下减为 `0.2` 强度），利用视觉假象呈现出物理边缘的厚度侧影。
+  - **亮色模式升级（White-Glass panels）**：
+    在亮色模式下，将默认卡片底色升级为 `rgba(255, 255, 255, 0.45)` 的乳白玻璃，配合高强度白高光（`0.65` 强度）和极软暗影，模拟真实的磨砂白玻璃板。
+  - **悬浮层叠阴影（Outset Floating Depth）**：
+    在 hover 状态下，增强外阴影的模糊范围和深度（`0 24px 60px rgba(0,0,0,0.4)`），使卡片在视觉上向上悬浮，空间厚度拉满。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交并发布。真机交互测试表明，卡片犹如极具分量的工艺水晶切片，侧边折光锐利，背景磨砂质感高级，极具三维立体厚度！

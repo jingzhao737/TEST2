@@ -321,8 +321,8 @@
   - [x] Stagger 级联延迟（`0.15s`）有序飞入。
   - [x] 运行编译打包进行校验，并提交发布。
 
-- [ ] **作品卡片磨砂玻璃厚度质感增强 (Works Cards Glass Thickness Enhancement)**
-  - [ ] 修改 `styles.css` 的 `.work-list .work-card` 类，添加 `backdrop-filter: blur(16px)` 和斜切内阴影（双层 inset box-shadow）。
-  - [ ] 修改 `styles.css` 的 `.work-list .work-card.hovered` 类，在 hover 状态下增强左上角高光并加深/扩散悬浮投影。
-  - [ ] 调整 `styles.css` 中的 light theme 对抗样式，使其在亮色模式下依然拥有剔透的白玻璃切边质感。
-  - [ ] 运行 `npx vite build` 重新编译项目并发布。
+- [x] **作品卡片磨砂玻璃厚度质感增强 (Works Cards Glass Thickness Enhancement)**
+  - [x] 修改 `styles.css` 的 `.work-list .work-card` 类，添加 `backdrop-filter: blur(16px)` 和斜切内阴影（双层 inset box-shadow）。
+  - [x] 修改 `styles.css` 的 `.work-list .work-card.hovered` 类，在 hover 状态下增强左上角高光并加深/扩散悬浮投影。
+  - [x] 调整 `styles.css` 中的 light theme 对抗样式，使其在亮色模式下依然拥有剔透的白玻璃切边质感。
+  - [x] 运行 `npx vite build` 重新编译项目并发布。
