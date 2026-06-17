@@ -3041,3 +3041,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机测试下 Logo 启动响应毫无延迟，空中的运动速度梯次变化分明，体感极佳。
+
+---
+
+## 🛠️ Step 641: 移除调色盘飞行徽标描边样式并改用纯实心呈现 (Discard Logo Outline Style & Make Flying Logo Solid)
+
+### 1. 优化方案 (Solutions)
+- **目标**：响应用户“要不把描边的直接做成 logo 实心的吧，描边的样式不要了”的指示，将原本在半空中飞行时以“描边（Outline）”样式呈现的 `#navLogo` 彻底重构为与其始发点和着陆点一致的“纯实心（Solid）”样式。
+- **重构方案**：
+  - **CSS 描边与透明度剥离**：在 `styles.css` 中，剔除 `#navLogo` 所有相关选择器的 `-webkit-text-stroke`（文本描边）与 `color: transparent !important`（透明填充）属性：
+    1. 移除 `#navLogo` 初始定义下的透明色与描边。
+    2. 移除 `:root.light #navLogo` 在浅色模式下的描边。
+    3. 移除 `#navLogo.console-active` 在控制台激活状态下的描边。
+    4. 移除 `:root.light #navLogo.console-active` 在浅色控制台下的描边。
+  - **实色自然继承 (Solid Inheritance)**：由于 `#navLogo` 挂载了 `.nav-logo` 类名，移除上述描边与透明特写后，它在飞行时将自然继承主导航栏及控制台对应的实色填充属性（如暗色下的 `var(--fg)`、亮色下的 `#fafaf7`），且进入控制台 placeholder 后自然交接为控制台主色（`var(--fg) !important`）。
+- **效果**：出场与退场动画更显高度一体化。Logo 从导航栏出发升空至落入控制台期间，始终保持尊贵的纯实色质感，完全抹去了原本描边状态的粗糙感，与极简的视差页面调性更加契合。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。测试证明，徽标在飞行、停留和折返状态下都完美以实色展示，过渡与交接无任何闪烁，观感极大提升。

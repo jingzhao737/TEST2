@@ -276,3 +276,8 @@
 - `[x]` **优化调色盘打开时 Logo 出飞 Ease 曲线 (Optimize Color Console Opening Logo Flight Easing)**
   - `[x]` 将出飞曲线由 `'power4.inOut'` 变更为 `'power4.out'`，实现起跑即加速（快10%）、中段匀速前推（中30%）、尾端柔和徐徐降落（慢60%）的完美动力感。
   - `[x]` 编译项目生产环境包并通过 `python workflow.py deploy` 推送部署。
+
+- `[x]` **移除调色盘飞行徽标描边样式并改用纯实心呈现 (Discard Logo Outline Style & Make Flying Logo Solid)**
+  - `[x]` 从 `styles.css` 中移除 `#navLogo` 及其不同状态（包括 `:root.light` 和 `.console-active`）的 `color: transparent !important` 与 `-webkit-text-stroke` 描边属性。
+  - `[x]` 让飞行中的 Outline Logo（`#navLogo`）自然继承 `.nav-logo` 的实色属性，实现出飞前与落点后实色接力演进。
+  - `[x]` 编译打包并推送发布到生产环境。
