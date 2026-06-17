@@ -271,9 +271,20 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       const dxB = vx * 0.021 * W;
       const dyB = -vy * 0.021 * H;
       
+      // Retrieve the current accent color RGB values dynamically (fallback to default orange 232, 124, 80)
+      const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+      let rgbParts = accentRgb.split(',').map(x => parseInt(x.trim(), 10));
+      if (rgbParts.length !== 3 || rgbParts.some(isNaN)) {
+        rgbParts = [232, 124, 80];
+      }
+      const [targetR, targetG, targetB] = rgbParts;
+
       if (isLightMode) {
-        // Light Mode: Subtractive Chromatic Aberration using multiply blend mode to form orange (rgb(232, 124, 80))
-        // Target: R=232, G=124, B=80 -> Subtraction coefficients: R_sub=0.090, G_sub=0.514, B_sub=0.686
+        // Light Mode: Subtractive Chromatic Aberration using multiply blend mode to form the custom accent color
+        // Subtraction coefficients: (255 - target) / 255
+        const coeffR = (255 - targetR) / 255;
+        const coeffG = (255 - targetG) / 255;
+        const coeffB = (255 - targetB) / 255;
         const baseA = opacity * 1.5;
         
         // 1. Red channel subtraction (Cyan color)
@@ -281,8 +292,8 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
         const ry = screenY + dyR - rect.top;
         if (rx >= -r && rx <= w + r && ry >= -r && ry <= h + r) {
           const gradR = ctx.createRadialGradient(rx, ry, 0, rx, ry, r);
-          const a0 = Math.min(1.0, 2.5 * baseA * 0.090);
-          const a25 = Math.min(1.0, 0.84 * baseA * 0.090);
+          const a0 = Math.min(1.0, 2.5 * baseA * coeffR);
+          const a25 = Math.min(1.0, 0.84 * baseA * coeffR);
           gradR.addColorStop(0, `rgba(0, 255, 255, ${a0})`);
           gradR.addColorStop(0.25, `rgba(0, 255, 255, ${a25})`);
           gradR.addColorStop(1, 'rgba(0, 255, 255, 0)');
@@ -297,8 +308,8 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
         const gy = screenY + dyG - rect.top;
         if (gx >= -r && gx <= w + r && gy >= -r && gy <= h + r) {
           const gradG = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
-          const a0 = Math.min(1.0, 2.5 * baseA * 0.514);
-          const a25 = Math.min(1.0, 0.84 * baseA * 0.514);
+          const a0 = Math.min(1.0, 2.5 * baseA * coeffG);
+          const a25 = Math.min(1.0, 0.84 * baseA * coeffG);
           gradG.addColorStop(0, `rgba(255, 0, 255, ${a0})`);
           gradG.addColorStop(0.25, `rgba(255, 0, 255, ${a25})`);
           gradG.addColorStop(1, 'rgba(255, 0, 255, 0)');
@@ -313,8 +324,8 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
         const by = screenY + dyB - rect.top;
         if (bx >= -r && bx <= w + r && by >= -r && by <= h + r) {
           const gradB = ctx.createRadialGradient(bx, by, 0, bx, by, r);
-          const a0 = Math.min(1.0, 2.5 * baseA * 0.686);
-          const a25 = Math.min(1.0, 0.84 * baseA * 0.686);
+          const a0 = Math.min(1.0, 2.5 * baseA * coeffB);
+          const a25 = Math.min(1.0, 0.84 * baseA * coeffB);
           gradB.addColorStop(0, `rgba(255, 255, 0, ${a0})`);
           gradB.addColorStop(0.25, `rgba(255, 255, 0, ${a25})`);
           gradB.addColorStop(1, 'rgba(255, 255, 0, 0)');
@@ -324,49 +335,49 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
           ctx.fill();
         }
       } else {
-        // Dark Mode: Additive Chromatic Aberration using screen blend mode to form orange (rgb(232, 124, 80))
-        // 1. Red channel glow (Red color scaled to 232)
+        // Dark Mode: Additive Chromatic Aberration using screen blend mode to form the custom accent color
+        // 1. Red channel glow (Red color scaled to targetR)
         const rx = screenX + dxR - rect.left;
         const ry = screenY + dyR - rect.top;
         if (rx >= -r && rx <= w + r && ry >= -r && ry <= h + r) {
           const gradR = ctx.createRadialGradient(rx, ry, 0, rx, ry, r);
           const a0 = Math.min(1.0, 2.5 * opacity);
           const a25 = Math.min(1.0, 0.84 * opacity);
-          gradR.addColorStop(0, `rgba(232, 0, 0, ${a0})`);
-          gradR.addColorStop(0.25, `rgba(232, 0, 0, ${a25})`);
-          gradR.addColorStop(1, 'rgba(232, 0, 0, 0)');
+          gradR.addColorStop(0, `rgba(${targetR}, 0, 0, ${a0})`);
+          gradR.addColorStop(0.25, `rgba(${targetR}, 0, 0, ${a25})`);
+          gradR.addColorStop(1, `rgba(${targetR}, 0, 0, 0)`);
           ctx.fillStyle = gradR;
           ctx.beginPath();
           ctx.arc(rx, ry, r, 0, Math.PI * 2);
           ctx.fill();
         }
         
-        // 2. Green channel glow (Green color scaled to 124)
+        // 2. Green channel glow (Green color scaled to targetG)
         const gx = screenX + dxG - rect.left;
         const gy = screenY + dyG - rect.top;
         if (gx >= -r && gx <= w + r && gy >= -r && gy <= h + r) {
           const gradG = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
           const a0 = Math.min(1.0, 2.5 * opacity);
           const a25 = Math.min(1.0, 0.84 * opacity);
-          gradG.addColorStop(0, `rgba(0, 124, 0, ${a0})`);
-          gradG.addColorStop(0.25, `rgba(0, 124, 0, ${a25})`);
-          gradG.addColorStop(1, 'rgba(0, 124, 0, 0)');
+          gradG.addColorStop(0, `rgba(0, ${targetG}, 0, ${a0})`);
+          gradG.addColorStop(0.25, `rgba(0, ${targetG}, 0, ${a25})`);
+          gradG.addColorStop(1, `rgba(0, ${targetG}, 0, 0)`);
           ctx.fillStyle = gradG;
           ctx.beginPath();
           ctx.arc(gx, gy, r, 0, Math.PI * 2);
           ctx.fill();
         }
         
-        // 3. Blue channel glow (Blue color scaled to 80)
+        // 3. Blue channel glow (Blue color scaled to targetB)
         const bx = screenX + dxB - rect.left;
         const by = screenY + dyB - rect.top;
         if (bx >= -r && bx <= w + r && by >= -r && by <= h + r) {
           const gradB = ctx.createRadialGradient(bx, by, 0, bx, by, r);
           const a0 = Math.min(1.0, 2.5 * opacity);
           const a25 = Math.min(1.0, 0.84 * opacity);
-          gradB.addColorStop(0, `rgba(0, 0, 80, ${a0})`);
-          gradB.addColorStop(0.25, `rgba(0, 0, 80, ${a25})`);
-          gradB.addColorStop(1, 'rgba(0, 0, 80, 0)');
+          gradB.addColorStop(0, `rgba(0, 0, ${targetB}, ${a0})`);
+          gradB.addColorStop(0.25, `rgba(0, 0, ${targetB}, ${a25})`);
+          gradB.addColorStop(1, `rgba(0, 0, ${targetB}, 0)`);
           ctx.fillStyle = gradB;
           ctx.beginPath();
           ctx.arc(bx, by, r, 0, Math.PI * 2);

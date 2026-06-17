@@ -223,13 +223,16 @@
     // SAFETY CLIP: Clamp ampScale to 1.32 to keep waveforms visually prominent but inside boundary safety margins
     let ampScale = Math.min(1.32, window.__waveAmp);
 
-    // Gradient 1: Accent Orange for Main Wave
+    // Get accent color dynamically from document.documentElement style or fallback to default orange (232, 124, 80)
+    let accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+
+    // Gradient 1: Accent Color for Main Wave
     let grad1 = ctx.createLinearGradient(0, 0, waveW, 0);
-    grad1.addColorStop(0, 'rgba(232, 124, 80, 0)');
-    grad1.addColorStop(0.18, 'rgba(232, 124, 80, 0.85)');
-    grad1.addColorStop(0.5, 'rgba(232, 124, 80, 1)');
-    grad1.addColorStop(0.82, 'rgba(232, 124, 80, 0.85)');
-    grad1.addColorStop(1, 'rgba(232, 124, 80, 0)');
+    grad1.addColorStop(0, `rgba(${accentRgb}, 0)`);
+    grad1.addColorStop(0.18, `rgba(${accentRgb}, 0.85)`);
+    grad1.addColorStop(0.5, `rgba(${accentRgb}, 1)`);
+    grad1.addColorStop(0.82, `rgba(${accentRgb}, 0.85)`);
+    grad1.addColorStop(1, `rgba(${accentRgb}, 0)`);
 
     // Gradient 2: Delicate White/Gold for Secondary Wave
     let grad2 = ctx.createLinearGradient(0, 0, waveW, 0);
@@ -241,11 +244,11 @@
 
     // Gradient 3: Faint Accent Glow for Background Wave
     let grad3 = ctx.createLinearGradient(0, 0, waveW, 0);
-    grad3.addColorStop(0, 'rgba(232, 124, 80, 0)');
-    grad3.addColorStop(0.25, 'rgba(232, 124, 80, 0.22)');
-    grad3.addColorStop(0.5, 'rgba(232, 124, 80, 0.35)');
-    grad3.addColorStop(0.75, 'rgba(232, 124, 80, 0.22)');
-    grad3.addColorStop(1, 'rgba(232, 124, 80, 0)');
+    grad3.addColorStop(0, `rgba(${accentRgb}, 0)`);
+    grad3.addColorStop(0.25, `rgba(${accentRgb}, 0.22)`);
+    grad3.addColorStop(0.5, `rgba(${accentRgb}, 0.35)`);
+    grad3.addColorStop(0.75, `rgba(${accentRgb}, 0.22)`);
+    grad3.addColorStop(1, `rgba(${accentRgb}, 0)`);
 
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -326,15 +329,16 @@
         }
         ctx.clip(); // Ensure all sub-drawings conform to the rounded corners, rounding the right edge
 
-        ctx.fillStyle = 'rgba(232, 124, 80, ' + (0.13 * opacity) + ')';
+        let accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+        ctx.fillStyle = 'rgba(' + accentRgb + ', ' + (0.13 * opacity) + ')';
         ctx.fill();
 
         // High-end breathing edge glow line at the right edge
         let edgeGlow = (0.55 + Math.sin(Date.now() * 0.007) * 0.20) * opacity;
         ctx.save();
-        ctx.shadowColor = 'rgba(232, 124, 80, 0.95)';
+        ctx.shadowColor = 'rgba(' + accentRgb + ', 0.95)';
         ctx.shadowBlur = 6;
-        ctx.fillStyle = 'rgba(232, 124, 80, ' + edgeGlow + ')';
+        ctx.fillStyle = 'rgba(' + accentRgb + ', ' + edgeGlow + ')';
         ctx.fillRect(barW - 2.5, 0, 2.5, waveH);
         ctx.restore();
 
