@@ -2791,5 +2791,28 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `powershell -ExecutionPolicy Bypass -Command "npx vite build"`，生产包零报错构建成功。
 - 使用 `python workflow.py deploy` 推送提交。现场点击效果流畅，在放大到 1.0 的过程中，Canvas 星空也等比例展开，粒子无任何抖动和拉伸，玻璃底框和外发光以极强的物理包裹感由中心徽标向四周铺开，视觉质感极佳。
 
+---
 
+## 🛠️ Step 628: 清理并删除调色盘内不再使用的轨迹调试器区块 (Remove Unused Trajectory Debugger Section)
 
+### 1. 需求与实现方案 (Requirements & Implementation Concept)
+- **需求**：把调试面板从 DOM 中删除，并清理相关的 JS 冗余逻辑以缩减体积。
+- **实现方案**：
+  1. **HTML 节点移除**：从 [index.html](file:///c:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中完全删除了 `.trajectory-debug-section` 的所有 DOM 元素。
+  2. **JS 代码清理**：在 [color-console.js](file:///c:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中完全清除了 `// --- TRAJECTORY DEBUGGER IMPLEMENTATION ---` 下的所有逻辑，只保留了 console stars 的 `MutationObserver` 激活逻辑。
+  3. **参数常量化**：将飞行参数写死为完美配置（`duration = 2.7`，`maxBulge = 36`，`ease = 'power4.inOut'`）。
+
+---
+
+## 🛠️ Step 629: 引入 Awwwards 级别圆形蒙版水波展开动画 (Awwwards-style Circular Mask Reveal & Pop Expansion)
+
+### 1. 痛点与实现方案 (Pain Points & Solutions)
+- **痛点**：单纯的 opacity 渐变淡入会完全遮蔽 `scale` 从小到大的物理细节（卡片较小时几乎透明不可见，导致感觉依然是简单的透明度变化），缺乏震撼的“展开”菜单动态体验。
+- **优化方案**：
+  1. **双重叠加动效体系**：将入场时的 opacity 动画极速压缩至 `0.2` 秒完成（`opacity: 0` -> `1.0`），使卡片初始大小状态立马呈屏幕上。接着，将卡片的物理放大从 `scale: 0.3` 开始（`transformOrigin: "60px 30px"`），避免过小缩放引起的界面挤压感。
+  2. **圆形剪裁蒙版展开 (Circular WebGL-style Clip Path Reveal)**：使用 CSS 的 `clipPath: circle(0% at 60px 30px)` 作为入场首帧，在 `1.4` 秒的时间内配合 `power4.out` 缓动扩展至 `circle(150% at 60px 30px)`。这创造了如同 Awwwards 级设计中常见的以徽标降落点为圆心的圆形极速水波扩散展开效果，质感拉满。
+  3. **解除阴影裁切限制**：由于 `clip-path` 会裁切元素外部的 `box-shadow`（外发光），我们在 timeline 的 `onComplete` 回调中运行 `gsap.set(consoleEl, { clearProps: 'clipPath,webkitClipPath' })` 彻底清除蒙版，使得控制台卡片的高端玻璃内发光和调色盘动态外发光能够恢复在界面上无限制扩散渲染。
+  4. **退出折叠**：点击关闭时，底卡以相同的轴心快速向内收缩回 `scale: 0.3` 且蒙版闭合回 `circle(0%)`，并淡出隐藏。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 编译，生产环境构建通过，各项动画参数非常匹配，交互感觉极其丝滑且具有很强的未来科技感。
