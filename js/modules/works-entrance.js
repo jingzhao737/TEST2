@@ -72,7 +72,16 @@ if (cards.length && section) {
     scrollTrigger: {
       trigger: '#work',
       start: 'top 85%', // Plays when the top of `#work` enters 85% of viewport height
-      toggleActions: 'play none none none' // Play once and stay revealed
+      toggleActions: 'play none none none', // Play once and stay revealed
+      onEnter: () => {
+        // Sync the works-header reveal with the card entrance animation.
+        // In the 3D desktop layout the header may be below the IntersectionObserver
+        // threshold when the ScrollTrigger fires (due to the 240px top padding),
+        // causing anim-done to be added late and the header to "flash" into position
+        // only after the fly-in finishes. Triggering it here eliminates the race.
+        const header = document.querySelector('.works-header');
+        if (header) header.classList.add('anim-done');
+      }
     },
     onStart: () => {
       animationStarted = true;
