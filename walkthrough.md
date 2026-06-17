@@ -3005,3 +3005,18 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境打包通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机交互下进行极限高频打断和双击，实心与空心 Logo 完美交接，并发切换表现极度稳定。
+---
+
+## Commit 23be71c - 2026-06-17
+
+### 1. 痛点与解决方案 (Pain Points & Solutions)
+- **痛点**：调色盘退场动画感觉像直接缩放或消失，不符合入场时优雅圆圈剪切（clip-path）层层展开的质感；且在打断时由于视口重绘和坐标计算偏差，可能会存在极微小的抖动。
+- **优化**：
+  1. **响应式折叠曲线（Ease Optimization）**：将控制台退场时剪切和缩放动画的 ease 曲线从 `'power3.inOut'` 调整为 `'power3.out'`。这样，当调色盘关闭时，折叠效果在最初的 0.1s~0.3s 便会以最明显的响应度进行圆圈收缩，完美呈现圆圈折叠退场的动效特征。
+  2. **淡出时间微调（Opacity Desync Merge）**：将淡出动画的起始时间微调至 `0.45s`，持续 `0.6s`，使其在折叠完成的末尾 60% 阶段与剪切动画完美交织，实现圆圈缩至极小处后平滑过渡至隐形，不留任何痕迹。
+  3. **高精准度空中起始坐标（Inline Property Calculation）**：如果打断发生在空中（`isLogoInBody` 为 `true`），直接读取 inline styles 中的 `logo.style.left` 和 `logo.style.top`，代替易受 Reflow 干扰的 `getBoundingClientRect()`，确保数学计算的 absolute 精度与反向飞行的无缝融合。
+  4. **状态写入与逻辑结构对齐（GSAP Set-To Pattern）**：用 `gsap.set` 初始化退出状态结合 `offsetHeight` 重绘，替换了 `tl.fromTo` 逻辑，确保与入场代码的结构对齐，杜绝由于 timelines 内部 `immediateRender` 阶段的诡异初始化引起的不稳定。
+
+### 2. 验证 (Deployment & Verification)
+- 运行 `powershell -ExecutionPolicy Bypass -Command "npx vite build"` 成功。
+- 在主流浏览器中对“开、关、打断飞行、打断返回”等所有交互链路进行了压力测试，退场动画展现出极其连贯且明显的圆圈折叠特征，手感极佳。

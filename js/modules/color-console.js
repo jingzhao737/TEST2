@@ -471,8 +471,8 @@ import gsap from 'gsap';
  
       // Setup initial animated outline logo state
       const currentX = isLogoInBody ? (parseFloat(gsap.getProperty(logo, "x")) || 0) : 0;
-      const startBaselineLeft = startRect.left - currentX;
-      const startBaselineTop = startRect.top;
+      const startBaselineLeft = isLogoInBody ? (parseFloat(logo.style.left) || 0) : (startRect.left - currentX);
+      const startBaselineTop = isLogoInBody ? (parseFloat(logo.style.top) || 0) : startRect.top;
 
       gsap.set(logo, {
         left: startBaselineLeft,
@@ -606,8 +606,8 @@ import gsap from 'gsap';
       
       // Re-apply starting position inline so it doesn't jump
       const currentX = isLogoInBody ? (parseFloat(gsap.getProperty(logo, "x")) || 0) : 0;
-      const startBaselineLeft = startRect.left - currentX;
-      const startBaselineTop = startRect.top;
+      const startBaselineLeft = isLogoInBody ? (parseFloat(logo.style.left) || 0) : (startRect.left - currentX);
+      const startBaselineTop = isLogoInBody ? (parseFloat(logo.style.top) || 0) : startRect.top;
 
       gsap.set(logo, {
         left: startBaselineLeft,
@@ -706,30 +706,31 @@ import gsap from 'gsap';
       const startScale = gsap.getProperty(consoleEl, "scale");
       const currentOpacity = gsap.getProperty(consoleEl, "opacity");
 
-      tl.fromTo(consoleEl, 
-        {
-          scale: startScale,
-          clipPath: startClip,
-          webkitClipPath: startClip,
-          transformOrigin: "60px 30px",
-          opacity: currentOpacity
-        },
-        {
-          scale: 0.3,
-          clipPath: "circle(0% at 60px 30px)",
-          webkitClipPath: "circle(0% at 60px 30px)",
-          transformOrigin: "60px 30px",
-          duration: 1.0,
-          ease: 'power3.inOut'
-        }, 
-        0.05
-      );
+      // Setup initial states using gsap.set to ensure DOM properties are correctly set
+      gsap.set(consoleEl, {
+        scale: startScale,
+        clipPath: startClip,
+        webkitClipPath: startClip,
+        transformOrigin: "60px 30px",
+        opacity: currentOpacity
+      });
+      consoleEl.offsetHeight; // Force reflow
 
-      // Card opacity fade out (delayed slightly to keep the circular mask shrink visible)
+      tl.to(consoleEl, {
+        scale: 0.3,
+        clipPath: "circle(0% at 60px 30px)",
+        webkitClipPath: "circle(0% at 60px 30px)",
+        transformOrigin: "60px 30px",
+        duration: 1.0,
+        ease: 'power3.out' // Using power3.out to make the circular fold shrink immediately and visibly
+      }, 0.05);
+
+      // Card opacity fade out (starts at 0.45s to keep the circular mask shrink visible, completing at 1.05s)
       tl.to(consoleEl, {
         opacity: 0,
-        duration: 0.2
-      }, 0.85);
+        duration: 0.6,
+        ease: 'power2.out'
+      }, 0.45);
 
       toggleTimeline = tl;
     }
