@@ -393,3 +393,8 @@
   - [x] 修改 `js/modules/works-entrance.js`，将卡片弧线飞入动画的默认 `ease` 缓动由 `expo.out` 变更为 `elastic.out(1, 0.75)` (科技感软弹簧)。
   - [x] 在调试控制面板的预设速度曲线列表中，将 `elastic.out(1, 0.75)` 移动到第一位，使其成为默认选中项，与实际默认动效一致。
   - [x] 成功编译构建并推送部署上线。
+
+- [x] **清除临时调试操控台及浮动徽标等调试代码 (Remove Temporary Debug Panel & HUD)**
+  - [x] 在 `js/modules/works-entrance.js` 中彻底清理所有与调试面板、参数滑块、下拉菜单及悬浮 Badge 相关的 DOM 创建和动画调度逻辑。
+  - [x] 确保只保留搭载了最新 `elastic.out(1, 0.75)` (科技感软弹簧) 缓动、`1.6s` 时长的纯净作品卡片 ScrollTrigger 飞入动画代码。
+  - [x] 成功编译构建并推送部署上线。
