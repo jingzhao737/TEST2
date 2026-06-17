@@ -5,15 +5,22 @@
 ### 1. Brand Color Restoration Behavior
 - **Restore Default Button Fix**: Updated the click handler for `consoleResetBtn` in [color-console.js](file:///c:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) to explicitly call `applyColors('#e87c50', '#faf2e3', true)`. This guarantees that the original brand colors (Primary: `#e87c50`, Secondary: `#faf2e3`) are always forced and saved under all circumstances, rather than clearing properties to stylesheet defaults which previously caused inconsistent fallbacks (like grey/black in light mode).
 
-### 2. UI Customizations & Hide Debugger
+### 2. UI Customizations & Presets Alignment
 - **Copy Color Functionality**: Added a "Copy Colors" button to the color console that copies the currently picked primary and secondary HEX codes to the clipboard with visual feedback.
 - **Hidden Debugger Panel**: Cleaned up the color console layout by setting the temporary trajectory parameter adjustment panel to hidden.
-- **Presets Alignment**: Updated presets 3 and 4 in the color console:
+- **Presets Updated**:
+  - Preset 1: Primary: `#D6FF3E`, Secondary: `#1756FD`
   - Preset 3: Primary: `#52ffc5`, Secondary: `#ff4747`
   - Preset 4: Primary: `#1f5be5`, Secondary: `#e12323`
+  - Preset 5: Primary: `#965AFA`, Secondary: `#AFEF02`
 
-### 3. Dynamic Theme Synchronization
-- Fully integrated all canvas, lasers, waveforms, poetry text glows, chromatic aberration shaders, and 3D visual panels to dynamically bind and update when presets/custom colors are adjusted.
+### 3. SVG Liquid Paint Wave Transition
+- **Staggered Wave Morph Animation**: Replaced standard color fades/slide-outs with a high-end, dual-layered SVG liquid paint wave transition.
+- **Physics-based Shape Morphing**: Animates SVG path bezier control points using GSAP to simulate viscous paint covering the screen from the bottom and snapping up to the top.
+- **Perfect Timing Sync & Specificity**: Precision-aligned the page variable switch at exactly `t = 0.82s` (when the viewport is 100% covered) and overrode static CSS specificity constraints using JS style properties to prevent instant color flashes.
+
+### 4. Git Tag Milestone
+- Anchored this milestone version by tagging the release commit as [v3.7-stable](https://github.com/jingzhao737/TEST2/releases/tag/v3.7-stable).
 
 ---
 
