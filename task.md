@@ -311,12 +311,12 @@
   - [x] 将绝对插值重构为相对偏差插值（`currentOffset = interpolate(initialOffset, 0, s)`），然后结合实时获取的 `currentTargetRect` 叠加输出绝对物理位置。
   - [x] 成功编译构建并发布（Commit `b8444ef`），实现不论导航栏因滚动如何位移，Logo 返回均能自适应贴合，零闪现跳变。
 
-- [ ] **作品卡片弧线飞入动画 (Works Cards Curved Scroll Entrance Animation)**
-  - [ ] 移除 `index.html` 中 4 个 `.work-card` 的 `.anim-up` 类，防止其触发默认的淡入上滑。
-  - [ ] 在 `index.html` 尾部引入新模块 `js/modules/works-entrance.js`。
-  - [ ] 创建 `js/modules/works-entrance.js` 模块，使用 GSAP `ScrollTrigger` 绑定作品区块 `#work`。
-  - [ ] 动态计算每个卡片在当前屏幕布局下的绝对页位置与视口左上角的偏移量（处理 resize 重新计算）。
-  - [ ] 构建由绝对插值和法向 Sine 波动（正弦起伏）合成的抛物线弧度轨迹。
-  - [ ] 应用大缩放（`scale: 4.5`）、偏角（`-60deg`）以及运动模糊（`blur`）在飞入过程中。
-  - [ ] Stagger 级联延迟（`0.15s`）有序飞入。
-  - [ ] 运行编译打包进行校验，并提交发布。
+- [x] **作品卡片弧线飞入动画 (Works Cards Curved Scroll Entrance Animation)**
+  - [x] 移除 `index.html` 中 4 个 `.work-card` 的 `.anim-up` 类，防止其触发默认的淡入上滑。
+  - [x] 在 `index.html` 尾部引入新模块 `js/modules/works-entrance.js`。
+  - [x] 创建 `js/modules/works-entrance.js` 模块，使用 GSAP `ScrollTrigger` 绑定作品区块 `#work`。
+  - [x] 动态计算每个卡片在当前屏幕布局下的绝对页位置与视口左上角的偏移量（处理 resize 重新计算）。
+  - [x] 构建由绝对插值和法向 Sine 波动（正弦起伏）合成的抛物线弧度轨迹。
+  - [x] 应用大缩放（`scale: 4.5`）、偏角（`-60deg`）以及运动模糊（`blur`）在飞入过程中。
+  - [x] Stagger 级联延迟（`0.15s`）有序飞入。
+  - [x] 运行编译打包进行校验，并提交发布。

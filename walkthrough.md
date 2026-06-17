@@ -3201,3 +3201,32 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，返航飞行中无论是上下滚动还是导航栏频繁收缩展开，Logo 返回过程始终如丝般顺滑依附在对应的位置，无任何闪跳！
+
+
+---
+
+## 🛠️ Step 648: 实现作品卡片大缩放法向 Sine 弧线飞入 ScrollTrigger 级联滚动动画 (Works Cards Curved Scroll Entrance Animation)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：原有作品列表卡片在进入视口时，使用的是简单的 opacity 与 translateY(36px) 上滑淡入显现，缺乏视觉冲击力与夸张的动效张力。
+- **重构方案 (Curved Bezier Fly-in with Vector Bulging)**：
+  - **CSS 静态去过渡**：从 `index.html` 4 个 `.work-card` 节点中移除了 `.anim-up` 类，防止其触发默认的 IntersectionObserver 显现，改由 GSAP ScrollTrigger 绝对接管。
+  - **绝对坐标实时转换**：
+    - 在初始化和 resize 时，清空卡片变换并动态测算卡片在当前屏幕布局下的绝对物理页位置（`pageLeft` 和 `pageTop`）。
+    - 在 ScrollTrigger 动画运行的每一帧中，根据当前滚动高度 `window.scrollY` 实时反向计算出将卡片定位到“视口左上角外”所需要的起点绝对偏差 `startX` 和 `startY`。这保证了无论在何种滚动速度和页面高度下，起点位置永远自适应铆定在当前视口左上角。
+  - **法向正弦抛物线公式（Orthogonal Vector Projection）**：
+    - 计算出从起点到降落终点 (0, 0) 的直连位移向量 `(dx, dy)` 和距离 `dist`。
+    - 求出其正交单位向量 `(px, py)` 充当侧向偏移基准：`px = -dy / dist`, `py = dx / dist`。
+    - 结合正弦曲线 `bulge = Math.sin(progress * Math.PI) * maxBulge`（PC端 `maxBulge = 320px`，移动端 `120px`）计算出侧向鼓包偏移量，与直线位移相加得到高帧率的曲线滑行轨迹：
+      `x = baseX + px * bulge`
+      `y = baseY + py * bulge`
+  - **多维大片级视觉融合 (Cinematic VFX Animation)**：
+    - **尺寸巨变**：`scale: 4.5 -> 1.0`
+    - **动感旋转**：`rotation: -60deg -> 0deg`
+    - **运动模糊**：`filter: blur(15px) -> blur(0px)`
+    - **级联飞入**：使用 `idx * 0.16s` 级联交错 Stagger 依次弹射飞出。
+    - **交接清理**：动画结束的 `onComplete` 回调中，调用 `clearProps: 'all'` 彻底清除 GSAP 行内样式，确保卡片完美恢复自然 CSS 悬浮 3D 偏转和卡片交互。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交并发布。真机实际滚动测试表明：当页面向下滚动至 `#work` 触发点时，四块卡片犹如庞大的悬浮飞盘，带着旋转与强烈的景深运动模糊从左上角划出一道优美的弧线，依次“呼啸而来”卡入网格，落地手感扎实平滑，极具未来科技感与视觉震撼度！
