@@ -424,7 +424,14 @@ import gsap from 'gsap';
       };
       
       // Setup consoleEl starting animation state inline (reversing the y:0 scale:1 set above)
-      gsap.set(consoleEl, { y: -12, scale: 0.97, opacity: 0 }); 
+      gsap.set(consoleEl, { x: -30, y: -20, scale: 0.93, opacity: 0 }); 
+      
+      // Select internal elements for staggered entry
+      const consoleHeader = consoleEl.querySelector('.color-console-header');
+      const consoleSections = consoleEl.querySelectorAll('.console-section');
+      const consoleActions = consoleEl.querySelector('.console-actions-row');
+      gsap.set([consoleHeader, ...consoleSections, consoleActions], { y: 15, opacity: 0 });
+      
       consoleEl.offsetHeight; // Force reflow
  
       // Setup initial animated outline logo state
@@ -502,11 +509,20 @@ import gsap from 'gsap';
 
       tl.to(consoleEl, {
         opacity: 1,
+        x: 0,
         y: 0,
         scale: 1,
-        duration: 0.6,
-        ease: 'power3.out'
-      }, 0);
+        duration: 1.4,
+        ease: 'power4.out'
+      }, 0.8);
+
+      tl.to([consoleHeader, ...consoleSections, consoleActions], {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: 'power3.out',
+        stagger: 0.12
+      }, 1.2);
 
     } else {
       // --- CLOSING ---
@@ -556,6 +572,12 @@ import gsap from 'gsap';
             gsap.set(staticLogo, { clearProps: 'opacity' });
           }
           
+          // Clear internal elements inline styles as well
+          const consoleHeader = consoleEl.querySelector('.color-console-header');
+          const consoleSections = consoleEl.querySelectorAll('.console-section');
+          const consoleActions = consoleEl.querySelector('.console-actions-row');
+          gsap.set([consoleHeader, ...consoleSections, consoleActions], { clearProps: 'all' });
+
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
           logo.classList.remove('console-active');
@@ -593,8 +615,9 @@ import gsap from 'gsap';
 
       tl.to(consoleEl, {
         opacity: 0,
-        y: -12,
-        scale: 0.97,
+        x: -30,
+        y: -20,
+        scale: 0.93,
         duration: 0.5,
         ease: 'power3.in'
       }, 0);
