@@ -583,7 +583,9 @@ import gsap from 'gsap';
       const isLogoInBody = logo.parentElement === document.body;
 
       // Temporarily clear transforms to get unscaled rects
-      logo.style.transform = 'none';
+      if (!isLogoInBody) {
+        logo.style.transform = 'none';
+      }
       if (staticLogo) {
         staticLogo.style.transform = 'none';
       }
@@ -610,15 +612,17 @@ import gsap from 'gsap';
       });
       logo.offsetHeight; // Force reflow
       
-      logo.style.transform = ''; // Restore
+      if (!isLogoInBody) {
+        logo.style.transform = ''; // Restore
+      }
       if (staticLogo) {
         staticLogo.style.transform = ''; // Restore
       }
       
       _animating = true;
       const maxBulge = window.innerWidth > 768 ? 36 : 28;
-      const duration = 0.9;
-      const ease = 'power4.inOut';
+      const duration = 1.2;
+      const ease = 'power3.inOut';
       const animState = { progress: 0 };
 
       // Query internal elements for staggered fade out and clearance
@@ -686,9 +690,9 @@ import gsap from 'gsap';
       tl.to([consoleHeader, ...consoleSections, consoleActions], {
         y: 15,
         opacity: 0,
-        duration: 0.3,
+        duration: 0.4,
         ease: 'power2.in',
-        stagger: { each: 0.04, from: 'end' }
+        stagger: { each: 0.05, from: 'end' }
       }, 0);
 
       // Card scale and clip-path shrink (origin: 60px 30px)
@@ -710,8 +714,8 @@ import gsap from 'gsap';
           clipPath: "circle(0% at 60px 30px)",
           webkitClipPath: "circle(0% at 60px 30px)",
           transformOrigin: "60px 30px",
-          duration: 0.6,
-          ease: 'power4.in'
+          duration: 1.0,
+          ease: 'power3.inOut'
         }, 
         0.05
       );
@@ -719,8 +723,8 @@ import gsap from 'gsap';
       // Card opacity fade out (delayed slightly to keep the circular mask shrink visible)
       tl.to(consoleEl, {
         opacity: 0,
-        duration: 0.1
-      }, 0.55);
+        duration: 0.2
+      }, 0.85);
 
       toggleTimeline = tl;
     }
