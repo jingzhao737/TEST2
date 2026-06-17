@@ -840,9 +840,6 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     padding-left:calc((100cqw - 1440px) / 2 + 32px);
     padding-right:calc((100cqw - 1440px) / 2 + 32px);
   }
-}
-.work-card{border-top-color:transparent !important}
-.work-card:last-child{border-bottom-color:transparent !important}
 .work-card:focus,.work-card:focus-visible{outline:none}
 
 /* Animated left accent line on hover */
@@ -2455,7 +2452,24 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .works{padding:140px 40px 130px}
   .works-header{margin-bottom:72px;flex-direction:column;align-items:flex-start;gap:12px}
   .works-count{align-self:flex-end}
-  .work-card{grid-template-columns:60px 1fr 120px 80px;gap:24px;padding:32px 44px;margin-left:-20px;margin-right:-20px}
+  .work-card{
+    grid-template-columns:60px 1fr 120px 80px;
+    gap:24px;
+    padding:32px 44px;
+    margin-left:0;
+    margin-right:0;
+    margin-bottom:16px;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.09'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  }
   .work-card.hovered .work-idx,
   .work-card.hovered .work-meta,
   .work-card.hovered .work-tags {
@@ -2574,7 +2588,27 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .section-heading{font-size:clamp(2.4rem,8.5vw,3.6rem);letter-spacing:.02em}
   .works{padding:180px 32px 110px}
   .works-header{margin-bottom:48px}
-  .work-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:24px 24px;margin-left:-16px;margin-right:-16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .work-card{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+    padding:24px 24px;
+    margin-left:0;
+    margin-right:0;
+    margin-bottom:12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
   .work-card:active{background:var(--card-bg)}
   .work-idx{font-size:0.62rem;letter-spacing:0.15em;opacity:0.7;transform:none !important}
   .work-meta{transform:none !important;width:100%}
@@ -3321,15 +3355,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     padding: 36px 48px;
     gap: 32px;
     grid-template-columns: 80px 1fr 140px 80px;
-    border: 1.5px solid rgba(255, 255, 255, 0.32);
+    border: 1.5px solid rgba(255, 255, 255, 0.45);
     border-radius: 12px;
     background-image: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.09'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.14'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.12) 100%);
     background-repeat: repeat, no-repeat;
     background-size: auto, cover;
-    backdrop-filter: blur(36px);
-    -webkit-backdrop-filter: blur(36px);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
     /* Multi-layered box-shadow to simulate double-sided chamfered edge reflections and glass thickness */
     box-shadow: 
       inset 1px 1px 0px rgba(255, 255, 255, 0.45),
@@ -3355,8 +3389,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
      NO .work-card:hover rules exist — prevents CSS native hover from causing jitter */
   .work-list .work-card.hovered {
     background-image: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.09'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.09) 100%);
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.14'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.16) 100%);
     background-repeat: repeat, no-repeat;
     background-size: auto, cover;
     border-color: rgba(var(--accent-rgb), 0.85);
