@@ -3080,3 +3080,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机功能交互测试表明，重影彻底消失，Logo 规规矩矩地落在控制台框体内。
+
+---
+
+## 🛠️ Step 643: 消除起跑出发时留在原地的淡出重影徽标 (Eliminate Logo Ghosting/Duplication on Departure)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：用户反馈，在 Logo 动画飞走的一瞬间，“会留一个会透明度变 0 动画的 logo 在原地”，希望能把这个原地淡出的残留重影完全去掉。
+- **原因剖析**：
+  1. 之前为了营造渐变过渡，在打开控制台时，导航栏的静态实心徽标 `staticLogo` 会被执行一个 `0.4` 秒的 `opacity: 0` 渐隐动画。
+  2. 同时，飞行徽标 `logo` 在原位被设定为 `opacity: 0` 起点，并进行一个 `0.4` 秒的 `opacity: 1` 渐显飞行。
+  3. 因为两者皆为纯实心，且重叠在同一物理位置上，这就导致在前 `0.4s` 内，用户可以清晰地看到两个实心徽标“重叠撕裂”：一个留存原地缓缓消失，另一个则从中剥离并飞向控制台，产生了明显的 duplicate 双重残像。
+- **优化重构**：
+  - **静态徽标瞬时隐藏**：在 GSAP 动画时间线最开端（`0` 时刻），直接调用 `tl.set(staticLogo, { opacity: 0 }, 0)` 将 navbar 处的静态徽标瞬间隐藏（耗时 `0s`），取消原有的 `0.4s` 渐隐。
+  - **飞行徽标瞬时激活**：在初始化 `gsap.set(logo, ...)` 中，将 `logo` 起飞前的 opacity 初始值由 `0` 直接设为 `1`（如果尚未处于飞行状态），并在时间线最开端添加 `tl.set(logo, { opacity: 1 }, 0)`。
+- **效果**：在点击打开的瞬间，原本静止的导航栏 Logo 仿佛“拔地而起”直接飞走，原地再无任何残留的淡出残影，徽标飞行动作干净利落，符合严谨的物理直觉。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。经真机实际操作，在起飞的起始帧，Logo 瞬间起飞，导航栏旧址处完全干净，极具动力表现。

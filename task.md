@@ -286,3 +286,9 @@
   - `[x]` 将 `styles.css` 中控制台头部 Logo 样式的选择器由 `.color-console-header .nav-logo` 扩充为 `.color-console-header #navLogo, .color-console-header .nav-logo`。
   - `[x]` 提高选择器权重以成功覆盖 `#navLogo` 自带的 `position: fixed !important` 固态导航属性，使 Logo 在完成飞行动作后能够正确切换为 `position: relative !important` 并归入控制台的占位 placeholder 框，彻底解决在导航栏原位留下静态残留的显示 Bug。
   - `[x]` 编译并部署发布至生产环境。
+
+- `[x]` **消除起跑出发时留在原地的淡出重影徽标 (Eliminate Logo Ghosting/Duplication on Departure)**
+  - `[x]` 在 `color-console.js` 的出飞设置中，将 `logo` 的初始 `opacity` 设为 `1`（当 `isLogoInBody` 为 false 时直接呈现），并取消原先从 `0` 到 `1` 的 `0.4` 秒淡入过程。
+  - `[x]` 重构起跑时间线，将静态徽标 `staticLogo` 的渐隐改为瞬间隐藏（`tl.set(staticLogo, { opacity: 0 }, 0)`），彻底废除原有的缓慢淡出过渡。
+  - `[x]` 消除起跑时留在原地慢慢变透明的 duplicate 重影，实现徽标“拔地而起、瞬间起飞”的视觉连贯性。
+  - `[x]` 编译并部署发布至生产环境。

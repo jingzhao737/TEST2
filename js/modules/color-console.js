@@ -478,7 +478,7 @@ import gsap from 'gsap';
         left: startBaselineLeft,
         top: startBaselineTop,
         x: currentX,
-        opacity: isLogoInBody ? gsap.getProperty(logo, "opacity") : 0
+        opacity: isLogoInBody ? gsap.getProperty(logo, "opacity") : 1
       });
       logo.classList.add('console-active');
       logo.offsetHeight; // Force reflow
@@ -525,13 +525,13 @@ import gsap from 'gsap';
         }
       });
  
-      // Smoothly fade out the solid logo in the navbar
+      // Instantly hide the solid logo in the navbar at start of flight to prevent ghosting
       if (staticLogo) {
-        tl.to(staticLogo, { opacity: 0, duration: 0.4, ease: 'power2.out' }, 0);
+        tl.set(staticLogo, { opacity: 0 }, 0);
       }
  
-      // Smoothly fade in the outline logo at the start of flight
-      tl.to(logo, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0);
+      // Instantly show the outline logo at the start of flight
+      tl.set(logo, { opacity: 1 }, 0);
  
       // Unified parametric tween: interpolates left/top/x based on eased virtual progress
       tl.to(animState, {
