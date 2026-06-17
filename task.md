@@ -107,3 +107,13 @@
   - `[x]` 将底板 Opacity 渐隐时间缩短为 `0.15s`，延迟调整为 `0.8s`，确保与缩敛终点合拍。
   - `[x]` 将子级元素 stagger 坠退时间缩短为 `0.5s`，stagger 间距改为 `0.06s`，`0s` 即时起跑。
   - `[x]` 编译项目生产环境构建包并推送部署到 GitHub 线上。
+
+- `[x]` **无缝物理打断与退场进一步加速优化 (Seamless Physics Interruption & Additional Exit Speedup)**
+  - `[x]` 在模块级引入 `toggleTimeline` 状态变量，用于跟踪 and 杀死当前未完结的动画。
+  - `[x]` 重构 `toggleConsole` 开始阶段：若 Logo 正在飞行（`isLogoInBody` 且 timeline 活跃），使用 `logo.getBoundingClientRect()` 测定实时中途坐标。
+  - `[x]` 移除 `if (_animating) return;` 阻断逻辑，允许玩家随时进行关闭或打开。
+  - `[x]` 重构 `isOpening` 与 `else` 退出块：自动读取当前底板的 `scale`、`opacity` 及 `clip-path` 并将其设为新 Timeline 的渐变起点，实现空中无缝平滑反向飞跃/收敛。
+  - `[x]` 将 Logo 退场飞行总时长进一步压缩至 `0.9s`（原为 `1.4s`）。
+  - `[x]` 将底卡缩回与蒙版折叠时间缩短为 `0.6s`（延时 `0.05s`），底卡 Opacity 渐隐缩短为 `0.1s`（延时 `0.55s`）。
+  - `[x]` 将子项 Staggered 坠退时长压缩至 `0.3s`，stagger 间距改为 `0.04s`。
+  - `[x]` 编译项目并在 GitHub 生产环境部署发布。

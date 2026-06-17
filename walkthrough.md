@@ -2903,3 +2903,27 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，加速后的退场过渡节奏极佳，既具备圆形水波收缩的视觉质感，又极其迅速敏捷，体验无可挑剔。
+
+---
+
+## 🛠️ Step 635: 引入无级打断 (Instant Interruption) 与平滑空中折返机制 (Smooth Mid-Air Reversal)
+
+### 1. 优化方案 (Solutions)
+- **目标**：满足用户关于“不一定要等 logo 动画做完才能关掉调色盘，是可以被打断的，打断了 logo 会返回原点”以及“退场再快点”的高难度物理动效交互诉求。
+- **重构机制**：
+  1. **全局动画句柄接管 (Timeline Thread Control)**：在模块级引入 `toggleTimeline` 状态句柄。每次触发 toggle 开关（无论打开还是关闭）时，首先调用 `toggleTimeline.kill()` 彻底杀死当前的未完成动画线，彻底废除原本点击后直到完场前都无法操作的硬限制。
+  2. **空中捕获起跑点 (Viewport Relative Spacial Capture)**：
+     - 若用户在**打开飞行中途**（Logo 还在半空中）点击关闭，或在**关闭返航中途**点击重新打开：我们不再从固定的导航栏或控制台起点计算差值，而是使用 `logo.getBoundingClientRect()` 实测得到这一瞬间 Logo 在视口中的精确**绝对三维像素坐标**作为新旅程的起点 `startRect`。
+     - 同时，利用 `gsap.getProperty(consoleEl, ...)` 获取此时底框的 `scale`、`opacity` 以及实时的 `clip-path` 裁剪百分比。
+  3. **非线性反向缓动 (Smooth Non-linear Reverse)**：
+     - 如果是中途折返，GSAP 不再强制将底框状态重置回 `scale(0.3)/circle(0%)`，而是**无级继承**当前状态直接朝目标点反向推进。如果是完整打开状态下关闭，才会按需补足 `circle(150%...)` 启动退场。
+  4. **进一步压缩退场时长**：
+     - 徽标返航飞行总时长从 `1.4s` 进一步**优化压缩至 `0.9s`**（`ease: 'power4.inOut'`），飞起后极速弹回导航栏。
+     - 底框缩敛与圆形蒙版关闭时长压缩至 `0.6s`（`ease: 'power4.in'`，于 `0.05s` 延迟启动，在 `0.65s` 时闭合归零）。
+     - 底板 Opacity 渐隐时长压缩至 `0.1s`（于 `0.55s` 延迟启动，在 `0.65s` 时随底板缩敛一同隐藏）。
+     - 设置子项 staggered 坠落时长缩短至 `0.3s`（`stagger` 改为 `0.04s`，`0s` 启动，`0.42s` 内全部消失）。
+- **效果**：交互响应效率极高。在飞行中途任意时刻点击，Logo 都会如拥有真实物理质量一般从空中“顺滑折返”，完美打断且平稳落地，完全免除了操作死锁。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境打包通过。
+- 使用 `python workflow.py deploy` 推送代码提交。经过真机疯狂双击、乱按测试，Logo 均能在飞行的任意百分比位置流畅调头起飞/返航，底框也以相同的无缝状态缩放、裁剪，打断动效物理表现极佳。
