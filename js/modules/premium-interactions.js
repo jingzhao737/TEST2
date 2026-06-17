@@ -294,7 +294,7 @@ if (!isMobileDevice) {
         gsap.killTweensOf(previewAnim, 'orangeZ');
         orangeSwitchTimeline = gsap.timeline()
           .to(previewAnim, {
-            orangeZ: -24, // Dive down deep behind the glass card (Z=-24)
+            orangeZ: -36, // Dive down deep behind the glass card (Z=-36) to avoid 3D plane clipping
             duration: 0.16,
             ease: 'power2.in'
           })
