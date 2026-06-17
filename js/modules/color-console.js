@@ -321,7 +321,7 @@ import gsap from 'gsap';
     default: { primary: '#e87c50', secondary: '#faf2e3' },
     cyberpunk: { primary: '#ff007f', secondary: '#00f3ff' },
     forest: { primary: '#52ffc5', secondary: '#ff4747' },
-    ocean: { primary: '#0077b6', secondary: '#e0f2fe' },
+    ocean: { primary: '#1f5be5', secondary: '#e12323' },
     royal: { primary: '#7b2cbf', secondary: '#f3e5f5' }
   };
 
