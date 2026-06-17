@@ -843,6 +843,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 .work-card{border-top-color:transparent !important}
 .work-card:last-child{border-bottom-color:transparent !important}
+.work-card:focus,.work-card:focus-visible{outline:none}
 
 /* Animated left accent line on hover */
 .work-card::after{
