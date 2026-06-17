@@ -16,6 +16,7 @@ if (!isMobileDevice) {
     let isVisible = false;
     let activeCardIndex = -1;
     let activeTimeline = null;
+    let orangeSwitchTimeline = null;
 
     // Animation state object driven by GSAP tweens for the staggered entrance & overshoot rebound
     const previewAnim = {
@@ -99,6 +100,7 @@ if (!isMobileDevice) {
       isPreviewActive = true;
       
       if (activeTimeline) activeTimeline.kill();
+      if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
       gsap.killTweensOf([wrapper, previewAnim]);
       
       // Instantly make the wrapper visible and set opacity to 1.0 to prevent 3D flattening
@@ -131,6 +133,7 @@ if (!isMobileDevice) {
       activeCardIndex = -1;
       
       if (activeTimeline) activeTimeline.kill();
+      if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
       gsap.killTweensOf([wrapper, previewAnim]);
       
       activeTimeline = gsap.timeline();
@@ -284,6 +287,24 @@ if (!isMobileDevice) {
 
       const src = card.dataset.image;
       if (!src || index === activeCardIndex) return;
+
+      // Trigger diving spring animation for the orange shadow block when switching cards
+      if (isPreviewActive) {
+        if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
+        gsap.killTweensOf(previewAnim, 'orangeZ');
+        orangeSwitchTimeline = gsap.timeline()
+          .to(previewAnim, {
+            orangeZ: -24, // Dive down deep behind the glass card (Z=-24)
+            duration: 0.16,
+            ease: 'power2.in'
+          })
+          .to(previewAnim, {
+            orangeZ: 10, // Spring back up to the sandwich layer height (Z=10)
+            duration: 0.6,
+            ease: 'elastic.out(1.0, 0.6)'
+          });
+      }
+
       activeCardIndex = index;
       hoveredCardIndex = index;
       window.__hoveredCardIndex = index;
