@@ -396,15 +396,7 @@ function closeDetail(popState) {
   // Restore works page elements immediately in sync with detail close
   gsap.to('#nav', { opacity: 1, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
   gsap.to('.works-header', { opacity: 1, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
-  gsap.to('.work-card', {
-    opacity: 1, scale: 1, z: 0, stagger: 0.02, duration: 0.55, ease: 'power3.out', clearProps: 'all',
-    onStart: function() {
-      // Clear interaction-blocking flags as soon as cards start fading back in —
-      // user can re-click immediately without waiting for the panel slide-out to finish.
-      window.__isDetailClosing = false;
-      isRouteTransitioning = false;
-    }
-  });
+  gsap.to('.work-card', { opacity: 1, scale: 1, z: 0, stagger: 0.02, duration: 0.55, ease: 'power3.out', clearProps: 'all' });
   gsap.to(['.h-grid-divider', '#ambientGlow', '#backToTop', '.scroll-bar'], { opacity: 1, duration: 0.55, ease: 'power2.out', clearProps: 'all' });
   const bttRestore = document.getElementById('backToTop');
   if (bttRestore) bttRestore.style.pointerEvents = '';
@@ -428,6 +420,9 @@ function closeDetail(popState) {
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
+
+        window.__isDetailClosing = false;
+        isRouteTransitioning = false;
       }
     });
   }

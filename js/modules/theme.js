@@ -159,14 +159,13 @@
     _dragOverlay.style.cssText = [
       'position:fixed',
       'inset:0',
-      'z-index:150',
+      'z-index:9999', // Must exceed 3D-transformed work cards which can visually protrude above a z-index:150 plane in CSS 3D space
       'pointer-events:auto',
       'cursor:grabbing',
       'user-select:none',
       '-webkit-user-select:none'
     ].join(';');
     document.body.appendChild(_dragOverlay);
-    // navThemeAnchor is z-index:202 (above overlay at 150) — no change needed
   }
 
   function _removeOverlay() {
