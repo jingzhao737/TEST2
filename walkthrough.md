@@ -3060,3 +3060,23 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。测试证明，徽标在飞行、停留和折返状态下都完美以实色展示，过渡与交接无任何闪烁，观感极大提升。
+
+---
+
+## 🛠️ Step 642: 解决控制台打开后 Logo 在导航栏原位残留的 specificity 规格冲突 Bug (Fix Specifity Conflict to Correctly Relocate Landing Logo)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：将飞行徽标改用纯实心呈现后，用户反馈“实心了怎么还有个 logo 在原位”（即控制台完全展开并稳定显示时，导航栏原位置依然有一个多余的 logo 重影）。
+- **原因剖析**：
+  1. 调色盘在打开后，会调用 `placeholder.appendChild(logo)` 将飞行徽标 `#navLogo` 实体转移至控制台头部的占位框中。
+  2. 在 CSS 权重设计中，由于 `#navLogo` 作为 ID 选择器具有极高的优先级 `(1, 0, 0)`，且自带了 `position: fixed !important; top: 41px; left: ...;` 等强制固定在导航栏的原位样式。
+  3. 控制台头部用于规范 Logo 布局的类名选择器 `.color-console-header .nav-logo` 仅具有类名级别权重 `(0, 2, 0)`。
+  4. 虽然该规则中声明了 `position: relative !important;` 等以期望将 Logo 还原，但由于 CSS 权重级被 `#navLogo` ID 碾压，导致浏览器依旧强制执行 `position: fixed !important`。这使得飞行 Logo 在逻辑上虽然已归档至控制台占位框，但在视觉排版上仍雷打不动地固定在导航栏的原有位置上，且处于完全显示状态，从而产生了“原位残留”的重影现象。
+- **修复方案**：
+  - **CSS 权重级覆盖升级**：将控制台头部 Logo 样式的选择器由 `.color-console-header .nav-logo` 调整扩充为 **`.color-console-header #navLogo, .color-console-header .nav-logo`**。
+  - **权重跃升效果**：跃升后的选择器拥有 ID + Class 复合权重 `(1, 1, 0)`，能够成功压制 `#navLogo` ID 选择器的原生定义，使飞行 Logo 在置入控制台头部后，能够顺利接受 `position: relative !important; top: auto !important; left: auto !important; transform: none !important;` 规则的排布，从而顺理成章地回归控制台卡片，完全消除了原位置的重影和残留问题。
+- **效果**：控制台开启后，导航栏处完美变为空白，实心 Logo 规整、正确地降落并静止在控制台卡片顶部，逻辑与视觉表现高度吻合。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机功能交互测试表明，重影彻底消失，Logo 规规矩矩地落在控制台框体内。

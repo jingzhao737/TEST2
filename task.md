@@ -281,3 +281,8 @@
   - `[x]` 从 `styles.css` 中移除 `#navLogo` 及其不同状态（包括 `:root.light` 和 `.console-active`）的 `color: transparent !important` 与 `-webkit-text-stroke` 描边属性。
   - `[x]` 让飞行中的 Outline Logo（`#navLogo`）自然继承 `.nav-logo` 的实色属性，实现出飞前与落点后实色接力演进。
   - `[x]` 编译打包并推送发布到生产环境。
+
+- `[x]` **解决控制台打开后 Logo 在导航栏原位残留的 specificity 规格冲突 Bug (Fix Specifity Conflict to Correctly Relocate Landing Logo)**
+  - `[x]` 将 `styles.css` 中控制台头部 Logo 样式的选择器由 `.color-console-header .nav-logo` 扩充为 `.color-console-header #navLogo, .color-console-header .nav-logo`。
+  - `[x]` 提高选择器权重以成功覆盖 `#navLogo` 自带的 `position: fixed !important` 固态导航属性，使 Logo 在完成飞行动作后能够正确切换为 `position: relative !important` 并归入控制台的占位 placeholder 框，彻底解决在导航栏原位留下静态残留的显示 Bug。
+  - `[x]` 编译并部署发布至生产环境。

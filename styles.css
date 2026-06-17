@@ -3439,6 +3439,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   min-height: 24px;
 }
 
+.color-console-header #navLogo,
 .color-console-header .nav-logo {
   position: relative !important;
   top: auto !important;
