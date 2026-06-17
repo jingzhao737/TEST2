@@ -370,3 +370,9 @@
   - [x] 联动卡片点击下沉时间轴（`z: -40px` 与 `scale: 0.95`），使上层预览图 `imgZ` 在 `0.08s` 内快速下沉至 **`18px`**，下层底色块 `orangeZ` 快速回升至 **`-10px`**，形成三维夹压动作；随后以 `back.out(2.5)` 弹性曲线在 `0.32s` 内同步回弹复位（Z=52px 和 Z=-25px），提供高级的触觉回馈。
   - [x] 在 `js/modules/work-detail.js` 的 `openCard` 内部，同步调用 `window.triggerPreviewPinchAnimation()` 触发视觉联结。
   - [x] 成功编译构建并发布。
+
+- [x] **作品卡片飞入入场动画 Ease 缓动曲线优化与速度感增强 (Optimize Works Cards Flight Entrance Easing & Duration)**
+  - [x] 修改 `js/modules/works-entrance.js`，将作品卡片弧线飞入动画的 `ease` 缓动函数由 `power3.out` 变更为更具速度感与高级感的 `expo.out`。
+  - [x] 将动画时长 `duration` 从 `1.3s` 稍微延长至 `1.6s`，以配合 `expo.out` 极陡的初始加速与平滑极缓的微漂降落尾端，产生更强烈的速度感与软着陆质感。
+  - [x] 运行 `cmd.exe /c "npx vite build"` 重新编译打包项目。
+  - [x] 运行 `python workflow.py deploy` 推送部署上线。

@@ -3420,3 +3420,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目。
 - 运行 `python workflow.py deploy` 推送部署上线。测试表明，点击卡片时，前方的预览图会猛然下沉，底部的橙色色块会同步向上迎合，整套 3D 夹层像一个带有强力橡胶弹簧的按键一样收缩并以漂亮的弧度反弹回去，交互手感极其爽脆高級！
+
+
+---
+
+## 🛠️ Step 656: 作品卡片飞入入场动画 Ease 缓动曲线优化与速度感增强 (Optimize Works Cards Flight Entrance Easing & Duration)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：原本的作品卡片飞入入场动画采用的 `power3.out` 缓动虽然平滑，但整体运动过程相对匀称，缺乏那种“瞬间爆发飞入、随后极度柔和磁吸降落”的高级速度变化和动态张力，落地过程也稍显仓促。
+- **高级缓动与速度感优化设计 (Premium Easing & Speed Dynamics)**：
+  - **指数衰减缓动 (expo.out Easing)**：
+    - 将飞入时间轴（Timeline）的 `ease` 函数修改为 **`expo.out`**（指数衰减）。
+    - 该缓动函数具有极度陡峭的起始坡度，在前 25% 的时间里就能完成超过 80% 的位移，给人以惊人的速度感和爆发力；而在后半段则以极长且顺滑的磁吸渐变平稳滑入终点。
+  - **飘逸着陆时长 (1.6s Duration)**：
+    - 将飞入的总时长从 `1.3s` 调长至 **`1.6s`**。
+    - 延长时长并非让动画变慢，而是为了让 `expo.out` 尾端那极度缓慢的微漂漂移阶段（Soft Landing）得以充分展现，营造出极其高级、轻盈的软着陆和磁吸贴合质感。
+  - **保持 resize 稳定性**：
+    - 沿用此前的 state 锁以及 cleanup 逻辑，完美兼容浏览器窗口缩放时无跳变重置的稳定性。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目。
+- 运行 `python workflow.py deploy` 部署发布。实际效果极其惊艳：卡片自屏外以闪电般的速度席卷而来，随即便如同进入了慢动作时间般，以极其优雅、磁吸浮空的软着陆轨迹慢慢贴合落地，速度落差的动态对比极强，充满高级美感！

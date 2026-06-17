@@ -90,8 +90,8 @@ if (cards.length && section) {
 
     tl.to(animState, {
       progress: 1,
-      duration: 1.3,
-      ease: 'power3.out',
+      duration: 1.6,
+      ease: 'expo.out',
       onStart: () => {
         // Ensure card is visible at start of tween
         gsap.set(card, { opacity: 0.01 });
