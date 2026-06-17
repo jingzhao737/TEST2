@@ -3419,7 +3419,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .color-console.active {
   opacity: 1;
-  transform: none !important;
+  transform: none;
   pointer-events: auto;
   transition: none !important;
 }

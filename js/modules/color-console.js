@@ -653,14 +653,23 @@ import gsap from 'gsap';
       }, 0.15);
 
       // Card scale and clip-path shrink (origin: 60px 30px)
-      tl.to(consoleEl, {
-        scale: 0.3,
-        clipPath: "circle(0% at 60px 30px)",
-        webkitClipPath: "circle(0% at 60px 30px)",
-        transformOrigin: "60px 30px",
-        duration: 1.8,
-        ease: 'power4.in'
-      }, 0.15);
+      tl.fromTo(consoleEl, 
+        {
+          scale: 1,
+          clipPath: "circle(150% at 60px 30px)",
+          webkitClipPath: "circle(150% at 60px 30px)",
+          transformOrigin: "60px 30px"
+        },
+        {
+          scale: 0.3,
+          clipPath: "circle(0% at 60px 30px)",
+          webkitClipPath: "circle(0% at 60px 30px)",
+          transformOrigin: "60px 30px",
+          duration: 1.8,
+          ease: 'power4.in'
+        }, 
+        0.15
+      );
 
       // Card opacity fade out (delayed slightly to keep the circular mask shrink visible)
       tl.to(consoleEl, {
