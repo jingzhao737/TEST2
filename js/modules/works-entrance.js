@@ -3,11 +3,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-document.addEventListener('DOMContentLoaded', () => {
-  const cards = gsap.utils.toArray('.work-card');
-  const section = document.querySelector('.works');
-  if (!cards.length || !section) return;
+const cards = gsap.utils.toArray('.work-card');
+const section = document.querySelector('.works');
 
+if (cards.length && section) {
   const cardData = [];
 
   // Measure static coordinates relative to the document
@@ -41,10 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial measurement
   measureCards();
 
-  // Recalculate coordinates on window resize
-  window.addEventListener('resize', () => {
-    measureCards();
-  });
+  // Re-measure on window load and window resize
+  window.addEventListener('load', measureCards);
+  window.addEventListener('resize', measureCards);
 
   // Create GSAP ScrollTrigger timeline
   const tl = gsap.timeline({
@@ -120,4 +118,4 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, idx * 0.16); // Stagger cards by 0.16s
   });
-});
+}
