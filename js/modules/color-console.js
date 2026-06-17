@@ -17,6 +17,7 @@ import gsap from 'gsap';
   if (!logo || !consoleEl) return;
 
   let _animating = false;
+  let toggleTimeline = null;
 
   // --- Console Stars Background (Synchronized with Nav Bar Stars) ---
   const consoleStarsCanvas = document.getElementById('consoleStarsCanvas');
@@ -375,8 +376,13 @@ import gsap from 'gsap';
   });
 
   function toggleConsole(active) {
-    if (_animating) return;
     const isOpening = active !== undefined ? active : !consoleEl.classList.contains('active');
+
+    // Kill any active toggle timeline before starting a new one to enable instant interruptibility
+    if (toggleTimeline) {
+      toggleTimeline.kill();
+      toggleTimeline = null;
+    }
 
     // 1. Disable CSS transitions instantly to avoid race condition/jitter
     logo.style.setProperty('transition', 'none', 'important');
@@ -390,14 +396,22 @@ import gsap from 'gsap';
       const placeholder = document.getElementById('consoleTitlePlaceholder');
       if (!placeholder) return;
 
-      // Measure starting position in navbar
-      if (staticLogo) {
-        staticLogo.style.transform = 'none';
-        staticLogo.offsetHeight; // Force reflow
-      }
-      const startRect = anchorEl.getBoundingClientRect();
-      if (staticLogo) {
-        staticLogo.style.transform = ''; // Restore
+      const isLogoInBody = logo.parentElement === document.body;
+
+      // Measure starting position in navbar or current mid-air position
+      let startRect;
+      if (isLogoInBody) {
+        gsap.killTweensOf(logo);
+        startRect = logo.getBoundingClientRect();
+      } else {
+        if (staticLogo) {
+          staticLogo.style.transform = 'none';
+          staticLogo.offsetHeight; // Force reflow
+        }
+        startRect = anchorEl.getBoundingClientRect();
+        if (staticLogo) {
+          staticLogo.style.transform = ''; // Restore
+        }
       }
       
       // Add active class and measure target position under layout-active conditions
@@ -424,21 +438,29 @@ import gsap from 'gsap';
       };
       
       // Setup consoleEl starting animation state inline (reversing the y:0 scale:1 set above)
+      const currentScale = isLogoInBody ? gsap.getProperty(consoleEl, "scale") : 0.3;
+      const currentOpacity = isLogoInBody ? gsap.getProperty(consoleEl, "opacity") : 0;
+      const currentClip = consoleEl.style.clipPath || consoleEl.style.webkitClipPath;
+      const targetClip = isLogoInBody && currentClip && currentClip !== 'none' ? currentClip : "circle(0% at 60px 30px)";
+
       gsap.set(consoleEl, {
         x: 0,
         y: 0,
-        scale: 0.3,
+        scale: currentScale,
         transformOrigin: "60px 30px",
-        opacity: 0,
-        clipPath: "circle(0% at 60px 30px)",
-        webkitClipPath: "circle(0% at 60px 30px)"
+        opacity: currentOpacity,
+        clipPath: targetClip,
+        webkitClipPath: targetClip
       }); 
       
       // Select internal elements for staggered entry
       const consoleHeader = consoleEl.querySelector('.color-console-header');
       const consoleSections = consoleEl.querySelectorAll('.console-section');
       const consoleActions = consoleEl.querySelector('.console-actions-row');
-      gsap.set([consoleHeader, ...consoleSections, consoleActions], { y: 15, opacity: 0 });
+      
+      if (!isLogoInBody) {
+        gsap.set([consoleHeader, ...consoleSections, consoleActions], { y: 15, opacity: 0 });
+      }
       
       consoleEl.offsetHeight; // Force reflow
  
@@ -446,7 +468,8 @@ import gsap from 'gsap';
       gsap.set(logo, {
         left: startRect.left,
         top: startRect.top,
-        opacity: 0
+        x: 0,
+        opacity: isLogoInBody ? gsap.getProperty(logo, "opacity") : 0
       });
       logo.classList.add('console-active');
       logo.offsetHeight; // Force reflow
@@ -475,6 +498,7 @@ import gsap from 'gsap';
           updateConsoleGeometry();
           
           _animating = false;
+          toggleTimeline = null;
 
           // Trigger logo landing star splash immediately upon landing
           const rect = logo.getBoundingClientRect();
@@ -548,8 +572,12 @@ import gsap from 'gsap';
         stagger: 0.1
       }, 0.6);
 
+      toggleTimeline = tl;
+
     } else {
       // --- CLOSING ---
+      const isLogoInBody = logo.parentElement === document.body;
+
       // Temporarily clear transforms to get unscaled rects
       logo.style.transform = 'none';
       if (staticLogo) {
@@ -560,15 +588,17 @@ import gsap from 'gsap';
       const startRect = logo.getBoundingClientRect();
       const toRect = anchorEl.getBoundingClientRect();
       
-      // DOM Handover: move logo back to body for flight
-      document.body.appendChild(logo);
+      // DOM Handover: move logo back to body for flight if not already there
+      if (!isLogoInBody) {
+        document.body.appendChild(logo);
+      }
       
       // Re-apply starting position inline so it doesn't jump
       gsap.set(logo, {
         left: startRect.left,
         top: startRect.top,
         x: 0,
-        opacity: 1
+        opacity: isLogoInBody ? gsap.getProperty(logo, "opacity") : 1
       });
       logo.offsetHeight; // Force reflow
       
@@ -579,7 +609,7 @@ import gsap from 'gsap';
       
       _animating = true;
       const maxBulge = window.innerWidth > 768 ? 36 : 28;
-      const duration = 1.4;
+      const duration = 0.9;
       const ease = 'power4.inOut';
       const animState = { progress: 0 };
 
@@ -614,16 +644,17 @@ import gsap from 'gsap';
           // 3. Clear the transition inline override last
           consoleEl.style.transition = '';
           _animating = false;
+          toggleTimeline = null;
         }
       });
 
       // Smoothly fade the solid logo back in as outline approaches the navbar
       if (staticLogo) {
-        gsap.to(staticLogo, { opacity: 1, duration: 0.4, ease: 'power2.inOut', delay: duration - 0.4 });
+        gsap.to(staticLogo, { opacity: 1, duration: 0.3, ease: 'power2.inOut', delay: duration - 0.3 });
       }
 
       // Smoothly fade out outline logo as it lands to morph back into solid logo
-      tl.to(logo, { opacity: 0, duration: 0.3, ease: 'power2.inOut' }, duration - 0.3);
+      tl.to(logo, { opacity: 0, duration: 0.25, ease: 'power2.inOut' }, duration - 0.25);
 
       // Parametric return tween: keeps path geometric shape perfect
       tl.to(animState, {
@@ -647,25 +678,31 @@ import gsap from 'gsap';
       tl.to([consoleHeader, ...consoleSections, consoleActions], {
         y: 15,
         opacity: 0,
-        duration: 0.5,
+        duration: 0.3,
         ease: 'power2.in',
-        stagger: { each: 0.06, from: 'end' }
+        stagger: { each: 0.04, from: 'end' }
       }, 0);
 
       // Card scale and clip-path shrink (origin: 60px 30px)
+      const currentClip = consoleEl.style.clipPath || consoleEl.style.webkitClipPath;
+      const startClip = currentClip && currentClip !== 'none' ? currentClip : "circle(150% at 60px 30px)";
+      const startScale = gsap.getProperty(consoleEl, "scale");
+      const currentOpacity = gsap.getProperty(consoleEl, "opacity");
+
       tl.fromTo(consoleEl, 
         {
-          scale: 1,
-          clipPath: "circle(150% at 60px 30px)",
-          webkitClipPath: "circle(150% at 60px 30px)",
-          transformOrigin: "60px 30px"
+          scale: startScale,
+          clipPath: startClip,
+          webkitClipPath: startClip,
+          transformOrigin: "60px 30px",
+          opacity: currentOpacity
         },
         {
           scale: 0.3,
           clipPath: "circle(0% at 60px 30px)",
           webkitClipPath: "circle(0% at 60px 30px)",
           transformOrigin: "60px 30px",
-          duration: 0.9,
+          duration: 0.6,
           ease: 'power4.in'
         }, 
         0.05
@@ -674,8 +711,10 @@ import gsap from 'gsap';
       // Card opacity fade out (delayed slightly to keep the circular mask shrink visible)
       tl.to(consoleEl, {
         opacity: 0,
-        duration: 0.15
-      }, 0.8);
+        duration: 0.1
+      }, 0.55);
+
+      toggleTimeline = tl;
     }
   }
 
