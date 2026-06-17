@@ -3677,3 +3677,35 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   border-color: rgba(0, 0, 0, 0.15) !important;
   color: #1a1a1a !important;
 }
+
+/* Color Wipe Transition Overlay */
+.color-transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999999;
+  overflow: hidden;
+  display: none;
+}
+
+.color-block {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  transition: none;
+}
+
+.secondary-block {
+  top: -100vh;
+  left: -100vw;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.primary-block {
+  bottom: -100vh;
+  right: -100vw;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}

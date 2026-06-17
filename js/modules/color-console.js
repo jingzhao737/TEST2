@@ -416,6 +416,7 @@ import gsap from 'gsap';
 
   // Apply colors to document with optional GSAP transition animation and save to state
   let colorTween = null;
+  let transitionTimeline = null;
   function applyColors(primary, secondary, save = true, animate = true) {
     if (save) {
       localStorage.setItem('customPrimary', primary);
@@ -423,28 +424,65 @@ import gsap from 'gsap';
     }
 
     if (colorTween) colorTween.kill();
+    if (transitionTimeline) transitionTimeline.kill();
 
     if (animate) {
-      const current = getCurrentColors();
-      const targetP = parseToRgbObj(primary);
-      const targetS = parseToRgbObj(secondary);
+      const overlay = document.getElementById('colorTransitionOverlay');
+      const secBlock = overlay ? overlay.querySelector('.secondary-block') : null;
+      const priBlock = overlay ? overlay.querySelector('.primary-block') : null;
 
-      const tweenState = {
-        pr: current.primary.r, pg: current.primary.g, pb: current.primary.b,
-        sr: current.secondary.r, sg: current.secondary.g, sb: current.secondary.b
-      };
+      if (overlay && secBlock && priBlock) {
+        // Set target colors
+        secBlock.style.backgroundColor = secondary;
+        priBlock.style.backgroundColor = primary;
 
-      colorTween = gsap.to(tweenState, {
-        pr: targetP.r, pg: targetP.g, pb: targetP.b,
-        sr: targetS.r, sg: targetS.g, sb: targetS.b,
-        duration: 0.8,
-        ease: 'power2.out',
-        onUpdate: () => {
-          const pColor = rgbObjToHex({ r: tweenState.pr, g: tweenState.pg, b: tweenState.pb });
-          const sColor = rgbObjToHex({ r: tweenState.sr, g: tweenState.sg, b: tweenState.sb });
-          updateStyles(pColor, sColor);
-        }
-      });
+        // Reset starting position off-screen
+        gsap.set(secBlock, { top: '-100vh', left: '-100vw' });
+        gsap.set(priBlock, { bottom: '-100vh', right: '-100vw' });
+        overlay.style.display = 'block';
+
+        // Animate overlay blocks
+        transitionTimeline = gsap.timeline({
+          onComplete: () => {
+            overlay.style.display = 'none';
+          }
+        });
+
+        // 1. Slide in to meet at the center (covering the entire screen)
+        transitionTimeline.to(secBlock, { top: '0vh', left: '0vw', duration: 0.6, ease: 'power3.inOut' }, 0);
+        transitionTimeline.to(priBlock, { bottom: '0vh', right: '0vw', duration: 0.6, ease: 'power3.inOut' }, 0);
+
+        // 2. Midway: Apply colors to the page instantly behind the scenes
+        transitionTimeline.call(() => {
+          updateStyles(primary, secondary);
+        }, null, 0.45); // Run slightly before completing slide-in to feel responsive
+
+        // 3. Slide out sweeping off-screen (revealing the newly styled page)
+        transitionTimeline.to(secBlock, { top: '100vh', left: '100vw', duration: 0.6, ease: 'power3.inOut', delay: 0.15 });
+        transitionTimeline.to(priBlock, { bottom: '100vh', right: '100vw', duration: 0.6, ease: 'power3.inOut', delay: 0.15 });
+      } else {
+        // Fallback to smooth numeric fade
+        const current = getCurrentColors();
+        const targetP = parseToRgbObj(primary);
+        const targetS = parseToRgbObj(secondary);
+
+        const tweenState = {
+          pr: current.primary.r, pg: current.primary.g, pb: current.primary.b,
+          sr: current.secondary.r, sg: current.secondary.g, sb: current.secondary.b
+        };
+
+        colorTween = gsap.to(tweenState, {
+          pr: targetP.r, pg: targetP.g, pb: targetP.b,
+          sr: targetS.r, sg: targetS.g, sb: targetS.b,
+          duration: 0.8,
+          ease: 'power2.out',
+          onUpdate: () => {
+            const pColor = rgbObjToHex({ r: tweenState.pr, g: tweenState.pg, b: tweenState.pb });
+            const sColor = rgbObjToHex({ r: tweenState.sr, g: tweenState.sg, b: tweenState.sb });
+            updateStyles(pColor, sColor);
+          }
+        });
+      }
     } else {
       updateStyles(primary, secondary);
     }
