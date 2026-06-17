@@ -331,3 +331,8 @@
   - [x] 修改 `styles.css` 的 `.work-list .work-card` 类，提升背景与边框的亮透明度，并叠加白色软磨砂内发光（`inset 0 0 16px white`）。
   - [x] 修改 `styles.css` 的 `.work-list .work-card.hovered` 类，在 hover 状态下叠加主题色（`accent`）内反射发光（`inset 0 0 20px accent`）并增亮外描边。
   - [x] 运行 `npx vite build` 重新编译项目并发布。
+
+- [x] **作品卡片内发光与亮度极限强化 (Works Cards Glass Glow & Brightness Max-Boost)**
+  - [x] 修改 `styles.css` 的 `.work-list .work-card` 类，大幅提升背景（`9%`）、边框（`28%`）以及白色内发光（`24px / 0.12`）和高光切面（`0.35`）。
+  - [x] 修改 `styles.css` 的 `.work-list .work-card.hovered` 类，提升背景（`15%`）、边框（`85%`）以及主题色内发光（`32px / 0.28`）和高光切面（`0.55`）。
+  - [x] 运行 `npx vite build` 重新编译项目并发布。
