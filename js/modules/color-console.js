@@ -322,7 +322,7 @@ import gsap from 'gsap';
     cyberpunk: { primary: '#ff007f', secondary: '#00f3ff' },
     forest: { primary: '#52ffc5', secondary: '#ff4747' },
     ocean: { primary: '#1f5be5', secondary: '#e12323' },
-    royal: { primary: '#7b2cbf', secondary: '#f3e5f5' }
+    royal: { primary: '#965AFA', secondary: '#AFEF02' }
   };
 
   // Apply colors to document and save to state
