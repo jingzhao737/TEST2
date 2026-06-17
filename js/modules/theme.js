@@ -101,7 +101,8 @@
       playClick();
       dragging = false;
       springBack();
-      setTimeout(_removeOverlay, 150);
+      // Do NOT schedule overlay removal here — the user may still be holding the mouse.
+      // onEnd (mouseup) is responsible for removing the overlay after release.
     }
   }
 
@@ -200,7 +201,10 @@
   }
 
   function onEnd(e) {
-    if (!dragging) return;
+    // Guard: exit only if there's truly no active drag session.
+    // When threshold fires during mousemove, dragging becomes false but the
+    // overlay is still live — we must schedule its removal here on mouseup.
+    if (!dragging && !_dragOverlay) return;
     dragging = false;
     if (pullY > 0 && !toggled) {
       bounceBack();
