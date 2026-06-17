@@ -11,7 +11,7 @@
   --accent-rgb:232,124,80;
   --accent-glow:rgba(var(--accent-rgb),.11);--accent-soft:rgba(var(--accent-rgb),.04);
   --accent-hover:#F09568;
-  --muted:#6e6c66;--border:rgba(255,255,255,.05);--card-bg:#161616;
+  --muted:#6e6c66;--border:rgba(255,255,255,.05);--card-bg:#161616;--card-txt-muted:rgba(255,255,255,.7);
   --detail-card-border: rgba(255, 255, 255, 0.15);
   --nav-bg:rgba(0,0,0,.35);--nav-bg-scrolled:rgba(0,0,0,.55);
   --nav-border:rgba(255,255,255,.15);
@@ -44,7 +44,7 @@
   --accent-rgb:155,142,126;
   --accent-glow:rgba(155,142,126,.12);--accent-soft:rgba(155,142,126,.04);
   --accent-hover:#B0A397;
-  --muted:#888;--border:rgba(0,0,0,.08);--card-bg:#fff;
+  --muted:#888;--border:rgba(0,0,0,.08);--card-bg:#fff;--card-txt-muted:rgba(0,0,0,.5);
   --detail-card-border: rgba(0, 0, 0, 0.12);
   --nav-bg:rgba(255,255,255,.85);--nav-bg-scrolled:rgba(255,255,255,.95);
   --nav-border:rgba(0,0,0,.08);
@@ -858,8 +858,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .work-idx{
   font-family:'Google Sans',sans-serif;
   font-size:.68rem;
-  color:var(--fg);
-  opacity:.8;
+  color:var(--card-txt-muted);
   letter-spacing:.2em;
   font-weight:600;
   text-transform:uppercase;
@@ -895,8 +894,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .work-medium{
   font-family:'Google Sans',sans-serif;
   font-size:.65rem;
-  color:var(--fg);
-  opacity:.8;
+  color:var(--card-txt-muted);
   font-weight:400;
   letter-spacing:.2em;
   text-transform:uppercase;
@@ -924,9 +922,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   padding:6px 16px;
   border-radius:100px;
   background:transparent;
-  border:1px solid rgba(255,255,255,.2);
-  color:var(--fg);
-  opacity:.8;
+  border:1px solid rgba(255,255,255,.15);
+  color:var(--card-txt-muted);
   transition:background 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .work-card.hovered .tag{
@@ -939,8 +936,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .work-year{
   font-family:'Google Sans',sans-serif;
   font-size:.8rem;
-  color:var(--fg);
-  opacity:.8;
+  color:var(--card-txt-muted);
   font-weight:500;
   letter-spacing:.1em;
   text-align:right;
@@ -2586,7 +2582,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .work-medium{font-size:0.68rem;margin-top:4px;display:block;opacity:0.75}
   .work-tags{display:flex !important;gap:6px;flex-wrap:wrap;transform:none !important;margin-top:4px}
   .tag{font-size:0.52rem;padding:4px 12px;letter-spacing:0.1em}
-  .work-year{display:block !important;position:absolute;top:24px;right:24px;font-size:0.65rem;letter-spacing:0.1em;font-weight:500;color:var(--fg);opacity:.8;transition:color 0.4s ease, opacity 0.4s ease}
+  .work-year{display:block !important;position:absolute;top:24px;right:24px;font-size:0.65rem;letter-spacing:0.1em;font-weight:500;color:var(--card-txt-muted);transition:color 0.4s ease, opacity 0.4s ease}
   .work-preview{display:none}
   .work-preview-wrapper.mobile-preview {
     left: auto !important;
@@ -2793,7 +2789,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 :root.light .work-card.hovered .work-name{color:#fafaf7}
 :root.light .work-card.hovered .work-medium,
 :root.light .work-card.hovered .work-year{color:rgba(250,250,247,.7)}
-:root.light .tag{background:rgba(0,0,0,.04);color:var(--muted);border:1px solid rgba(0,0,0,.08)}
+:root.light .tag{background:rgba(0,0,0,.04);color:var(--card-txt-muted);border:1px solid rgba(0,0,0,.08)}
 :root.light .work-card.hovered .tag{background:rgba(255,255,255,.12);color:#fafaf7}
 :root.light .work-preview{box-shadow:0 40px 100px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.05)}
 :root.light .ice-hint{color:rgba(0,0,0,.25)}
