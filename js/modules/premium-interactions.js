@@ -201,6 +201,9 @@ if (!isMobileDevice) {
       workList.style.transform = oldTransform;
     }
 
+    // Expose globally so that works-entrance.js can trigger it once card flight animations complete
+    window.__recalculateWorksCoordinates = updateFlatPageCoordinates;
+
     // Initialize flat page layout bounds
     updateFlatPageCoordinates();
     window.addEventListener('load', updateFlatPageCoordinates);

@@ -3525,3 +3525,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目。
 - 运行 `python workflow.py deploy` 推送部署上线。测试表明，线上页面中已没有任何多余的悬浮操控舱或调试徽标，卡片依然保留了最新确认的高品质科技感弹簧飞入及阻尼软着陆物理振荡，动效表现极为惊艳，且代码树完全恢复纯净生产状态！
+
+
+---
+
+## 🛠️ Step 661: 修复卡片飞入动画结束后 hover 悬浮坐标未重算导致失效的 Bug (Fix Card Hover Coords Invalidation on Refresh)
+
+### 1. 优化方案 (Solutions)
+- **原因分析**：
+  - 在 `premium-interactions.js` 中，卡片 3D 透视悬浮以及图片堆叠交互依赖静态坐标缓存 `cardPageRects` 来进行鼠标碰撞测试（Hit-testing）。
+  - 该碰撞测试数组在模块加载（Page Load）时进行初始计算，且只绑定在 `resize` 和 `load` 事件上更新。
+  - **根本原因**：当刷新网页时，`works-entrance.js` 尚未触发飞入入场动画，所有的卡片处于隐藏或初始离散飞入状态。此时 `premium-interactions.js` 测得的卡片布局坐标是离散状态或错位的。当动画飞入结束、卡片回归正常的 CSS 位置后，由于没有触发 `resize`，碰撞坐标数组依然停留在“飞入前的状态”，这导致用户直接去 hover 卡片时碰撞判定彻底失效。只有当用户手动缩放浏览器（触发 `resize`）时，碰撞数组才会重算， hover 才会恢复正常。
+- **动态坐标接力重算设计 (Coordinate Recalculation Chain)**：
+  - **方法暴露**：在 `js/modules/premium-interactions.js` 中，将私有的平铺坐标重算函数 `updateFlatPageCoordinates` 暴露为全局挂载的 `window.__recalculateWorksCoordinates` 方法。
+  - **落地即时重算**：
+    - 在 `js/modules/works-entrance.js` 中，针对每张卡片 GSAP Tween 的 `onComplete` 回调（当卡片完成了其飞入曲线并使用 `clearProps` 清理掉 GSAP 内联样式归位为自然 CSS 布局的瞬间），调用 `window.__recalculateWorksCoordinates()`。
+    - 在整个飞入 timeline 的 `onComplete` 时，也执行一次调用进行最终校验。
+    - **物理体感**：这确保了每一张卡片只要降落并回归自然 CSS 状态，其在三维空间碰撞盒中的坐标就会瞬间被更新，无需任何 resize 即可拥有 100% 灵敏的 hover 及 3D 浮动反馈。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目。
+- 运行 `python workflow.py deploy` 推送部署上线。测试表明，刷新页面后滚动到作品区，卡片飞入落地后，鼠标悬浮在卡片上能够瞬间展现 3D 偏转和双层图片预览，完美解决了不 resize 就不生效的 Layout 静态缓存 Bug！

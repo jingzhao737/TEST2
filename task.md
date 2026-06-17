@@ -398,3 +398,8 @@
   - [x] 在 `js/modules/works-entrance.js` 中彻底清理所有与调试面板、参数滑块、下拉菜单及悬浮 Badge 相关的 DOM 创建和动画调度逻辑。
   - [x] 确保只保留搭载了最新 `elastic.out(1, 0.75)` (科技感软弹簧) 缓动、`1.6s` 时长的纯净作品卡片 ScrollTrigger 飞入动画代码。
   - [x] 成功编译构建并推送部署上线。
+
+- [x] **修复卡片飞入动画结束后 hover 悬浮坐标未重算导致失效的 Bug (Fix Card Hover Coords Invalidation on Refresh)**
+  - [x] 在 `js/modules/premium-interactions.js` 中将私有的 `updateFlatPageCoordinates` 方法向外暴露为全局方法 `window.__recalculateWorksCoordinates`。
+  - [x] 在 `js/modules/works-entrance.js` 中，卡片飞入动画的单张卡片 `onComplete` 回调与主时间轴的 `onComplete` 回调里，同步触发全局方法进行坐标重算。
+  - [x] 成功编译构建并推送部署。

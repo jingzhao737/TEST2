@@ -81,6 +81,11 @@ if (cards.length && section) {
       animationCompleted = true;
       window.removeEventListener('load', measureCards);
       window.removeEventListener('resize', measureCards);
+
+      // Recalculate coordinates for premium-interactions once all cards land
+      if (typeof window.__recalculateWorksCoordinates === 'function') {
+        window.__recalculateWorksCoordinates();
+      }
     }
   });
 
@@ -146,6 +151,11 @@ if (cards.length && section) {
       onComplete: () => {
         // Clear GSAP inline styles to hand over styling back to CSS (hover effects, etc.)
         gsap.set(card, { clearProps: 'all' });
+
+        // Recalculate coordinates for premium-interactions
+        if (typeof window.__recalculateWorksCoordinates === 'function') {
+          window.__recalculateWorksCoordinates();
+        }
       }
     }, idx * 0.16); // Stagger cards by 0.16s
   });
