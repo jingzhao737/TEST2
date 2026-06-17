@@ -290,5 +290,5 @@
 - `[x]` **消除起跑出发时留在原地的淡出重影徽标 (Eliminate Logo Ghosting/Duplication on Departure)**
   - `[x]` 在 `color-console.js` 的出飞设置中，将 `logo` 的初始 `opacity` 设为 `1`（当 `isLogoInBody` 为 false 时直接呈现），并取消原先从 `0` 到 `1` 的 `0.4` 秒淡入过程。
   - `[x]` 重构起跑时间线，将静态徽标 `staticLogo` 的渐隐改为瞬间隐藏（`tl.set(staticLogo, { opacity: 0 }, 0)`），彻底废除原有的缓慢淡出过渡。
-  - `[x]` 消除起跑时留在原地慢慢变透明的 duplicate 重影，实现徽标“拔地而起、瞬间起飞”的视觉连贯性。
+  - `[x]` **重要修复**：在出飞瞬间，同步使用 `staticLogo.style.setProperty('transition', 'none', 'important')` 强制剥离其 CSS transition 过渡，彻底阻止浏览器拦截 opacity 的突变行为进行 0.4 秒隐性淡出，并在 `onComplete` 回调中还原，彻底消除肉眼可见的原地重影残留。
   - `[x]` 编译并部署发布至生产环境。

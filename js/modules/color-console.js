@@ -392,6 +392,10 @@ import gsap from 'gsap';
     // 1. Disable CSS transitions instantly to avoid race condition/jitter
     logo.style.setProperty('transition', 'none', 'important');
     logo.classList.add('no-transition');
+    if (staticLogo) {
+      staticLogo.style.setProperty('transition', 'none', 'important');
+      staticLogo.classList.add('no-transition');
+    }
     consoleEl.style.transition = 'none';
 
     // Target element to match positioning
@@ -499,6 +503,10 @@ import gsap from 'gsap';
           placeholder.appendChild(logo);
           // Clear GSAP inline styles to let CSS take over positioning
           gsap.set(logo, { clearProps: 'all' });
+          if (staticLogo) {
+            staticLogo.style.removeProperty('transition');
+            staticLogo.classList.remove('no-transition');
+          }
           
           // Restore unclipped box shadow by clearing clipPath
           gsap.set(consoleEl, { clearProps: 'clipPath,webkitClipPath' });
@@ -649,6 +657,8 @@ import gsap from 'gsap';
           gsap.set(consoleEl, { clearProps: 'transform,opacity,clipPath,webkitClipPath,transformOrigin' });
           if (staticLogo) {
             gsap.set(staticLogo, { clearProps: 'opacity' });
+            staticLogo.style.removeProperty('transition');
+            staticLogo.classList.remove('no-transition');
           }
           
           // Clear internal elements inline styles as well

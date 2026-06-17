@@ -3099,3 +3099,22 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。经真机实际操作，在起飞的起始帧，Logo 瞬间起飞，导航栏旧址处完全干净，极具动力表现。
+
+---
+
+## 🛠️ Step 644: 强制剥离静态徽标 CSS Transition 属性，彻底根除原地淡出重影 (Force Disable CSS Transition on Static Logo to Fix Ghosting)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：在 Step 643 后，用户反馈原地仍能肉眼看见一个 YYJZ 复制体般的重影以 `100% -> 0%` 的形式隐去。
+- **原因剖析**：
+  1. 在 `styles.css` 中，`.nav-logo`（即 `#navLogoStatic`）被绑定了全局的 CSS 渐变规则：`transition: opacity 0.4s var(--ease-out-expo), ...`。
+  2. 虽然我们在 JS 中利用 `tl.set(staticLogo, { opacity: 0 }, 0)` 将其不透明度瞬间调为 `0`，但因为该 CSS transition 属性的拦截，浏览器强制在后台运行了一个 `0.4` 秒的过渡动画，将原本的“瞬间置隐”变为了“缓速渐退”。这就导致用户眼睁睁看着原地留下一个淡出的 YYJZ，造成重影现象。
+- **修复方案**：
+  - **动态强力去过渡化 (Dynamic Transition Purging)**：
+    - 在 `toggleConsole` 动画开始时，同步执行 `staticLogo.style.setProperty('transition', 'none', 'important')` 及 `staticLogo.classList.add('no-transition')`，强制去除静态徽标的 CSS 过渡。
+    - 并在打开和关闭动画完成的 `onComplete` 回调中，分别调用 `style.removeProperty('transition')` 与 `classList.remove('no-transition')` 还原其 CSS 悬浮/变色过渡属性。
+- **效果**：在起航时刻，由于 transitions 瞬间变为 `none`，`opacity: 0` 被无缝在首帧瞬间应用，原地重影率百分之百归零。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机功能交互测试表明，起跑零重影，瞬间离开，视觉非常清爽。
