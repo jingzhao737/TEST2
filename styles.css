@@ -3401,13 +3401,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   top: 88px;
   left: 24px;
   width: 320px;
-  background: rgba(18, 18, 18, 0.76);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--nav-border);
   border-radius: 16px;
   z-index: 900; /* below z-nav-decoration but above content */
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 0 10px var(--nav-inner-glow), 0 0 25px rgba(var(--accent-rgb), 0.1);
   overflow: hidden;
   font-family: 'Google Sans', sans-serif;
   color: #FAF2E3;
@@ -3426,9 +3426,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 /* Light mode adjustments */
 :root.light .color-console {
-  background: rgba(245, 240, 232, 0.82);
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  background: var(--nav-bg);
+  border-color: var(--nav-border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15), inset 0 0 10px var(--nav-inner-glow), 0 0 25px rgba(var(--accent-rgb), 0.05);
   color: #1a1a1a;
 }
 
@@ -3438,6 +3438,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   align-items: center;
   padding: 18px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 2;
 }
 
 :root.light .color-console-header {
@@ -3486,6 +3488,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .color-console-content {
   padding: 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .console-section {

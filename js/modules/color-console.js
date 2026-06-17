@@ -18,6 +18,362 @@ import gsap from 'gsap';
 
   let _animating = false;
 
+  // --- Console Stars Background (Synchronized with Nav Bar Stars) ---
+  const consoleStarsCanvas = document.getElementById('consoleStarsCanvas');
+  const consoleCtx = consoleStarsCanvas ? consoleStarsCanvas.getContext('2d') : null;
+  const consoleDpr = window.devicePixelRatio || 1;
+  let consoleStars = [];
+  let consoleStarsAnimId = null;
+
+  function fract(x) {
+    return x - Math.floor(x);
+  }
+
+  function hash3(x, y) {
+    let qx = fract(x * 443.897);
+    let qy = fract(y * 441.423);
+    let qz = fract(x * 437.195);
+    
+    let dotVal = qx * (qy + 19.19) + qy * (qz + 19.19) + qz * (qx + 19.19);
+    qx += dotVal;
+    qy += dotVal;
+    qz += dotVal;
+    
+    return [
+      fract((qx + qy) * qz),
+      fract((qx + qx) * qy),
+      fract((qy + qz) * qx)
+    ];
+  }
+
+  function initConsoleStars() {
+    consoleStars = [];
+    if (!consoleEl) return;
+    
+    const rect = consoleEl.getBoundingClientRect();
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    if (W === 0 || H === 0) return;
+    
+    const aspect = W / H;
+    const pad = 2; // Pad cells to ensure stars near border are drawn
+    
+    // Rotation pivot in viewport UV (px = W * 0.75, py = H * 0.5)
+    const pUvX = 0.75;
+    const pUvY = 0.5;
+    
+    // Pivot in spaceUv space
+    const p_space_x = (pUvX - 0.5) * aspect + 0.5;
+    const p_space_y = pUvY;
+    
+    // Find the furthest distance from pivot to any of the 4 corners of the console card in spaceUv
+    const corners = [
+      { x: rect.left / W, y: 1.0 - rect.top / H },
+      { x: rect.right / W, y: 1.0 - rect.top / H },
+      { x: rect.left / W, y: 1.0 - rect.bottom / H },
+      { x: rect.right / W, y: 1.0 - rect.bottom / H }
+    ];
+    
+    let maxD2 = 0;
+    corners.forEach(c => {
+      const sx = (c.x - 0.5) * aspect + 0.5;
+      const sy = c.y;
+      const dx = sx - p_space_x;
+      const dy = sy - p_space_y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 > maxD2) {
+        maxD2 = d2;
+      }
+    });
+    
+    const R_space = Math.sqrt(maxD2) + 0.5; // add 0.5 extra padding for safety
+    
+    // Bounding box in spaceUv space
+    const spaceUv_min_x = p_space_x - R_space;
+    const spaceUv_max_x = p_space_x + R_space;
+    const spaceUv_min_y = p_space_y - R_space;
+    const spaceUv_max_y = p_space_y + R_space;
+    
+    // Two grid scales: 25.0 (main layer) and 60.0 (faint layer)
+    const scales = [25.0, 60.0];
+    
+    scales.forEach(S => {
+      const g_min_x = Math.floor(spaceUv_min_x * S) - pad;
+      const g_max_x = Math.ceil(spaceUv_max_x * S) + pad;
+      const g_min_y = Math.floor(spaceUv_min_y * S) - pad;
+      const g_max_y = Math.ceil(spaceUv_max_y * S) + pad;
+      
+      for (let gx = g_min_x; gx <= g_max_x; gx++) {
+        const cx = gx / S;
+        const dx = cx - p_space_x;
+        if (Math.abs(dx) > R_space + 0.1) continue;
+        
+        for (let gy = g_min_y; gy <= g_max_y; gy++) {
+          const cy = gy / S;
+          const dy = cy - p_space_y;
+          if (dx * dx + dy * dy > R_space * R_space) continue;
+          
+          const r = hash3(gx, gy);
+          if (r[2] >= 0.6) { // step(0.6, r.z)
+            const offsetX = r[0] * 0.8 + 0.1;
+            const offsetY = r[1] * 0.8 + 0.1;
+            
+            const spaceUvStarX = (gx + offsetX) / S;
+            const spaceUvStarY = (gy + offsetY) / S;
+            
+            // Convert spaceUv back to vUv
+            const vUvStarX = (spaceUvStarX - 0.5) / aspect + 0.5;
+            const vUvStarY = spaceUvStarY;
+            
+            consoleStars.push({
+              vUvX: vUvStarX,
+              vUvY: vUvStarY,
+              scale: S,
+              rx: r[0],
+              ry: r[1],
+              rz: r[2]
+            });
+          }
+        }
+      }
+    });
+  }
+
+  function drawConsoleStars() {
+    if (!consoleStarsCanvas || !consoleCtx || !consoleStars.length) return;
+    
+    // We must only animate when the console is open to conserve CPU.
+    if (!consoleEl.classList.contains('active')) return;
+    
+    const rect = consoleEl.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    
+    consoleCtx.clearRect(0, 0, w, h);
+    
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    if (W === 0 || H === 0) return;
+    
+    // Get time from global simulation, fallback to Date.now() / 1000
+    const time = window.fluidSimulationTime !== undefined ? window.fluidSimulationTime : (Date.now() / 1000);
+    
+    const isLightMode = document.documentElement.classList.contains('light');
+    
+    // Choose composite operation based on theme
+    consoleCtx.globalCompositeOperation = isLightMode ? 'multiply' : 'screen';
+    
+    // Rotation pivot: middle-right of the viewport
+    const px = W * 0.75;
+    const py = H * 0.5;
+    
+    // Rotation speed: reversed direction (0.03 rad/s)
+    const rotationSpeed = 0.03;
+    const theta = time * rotationSpeed;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    
+    for (let i = 0; i < consoleStars.length; i++) {
+      const star = consoleStars[i];
+      
+      // 1. Calculate Twinkle (exact WebGL formula)
+      const twinkle = 0.2 + 0.8 * Math.sin(time * (1.5 + star.rz) + star.rx * 20.0);
+      
+      // Scale factor: 1.0 for scale 25.0, 0.5 for scale 60.0 (boosted by 2.2x for bright, crisp glow)
+      const scaleFactor = star.scale === 25.0 ? 2.2 : 1.1;
+      
+      // Calculate opacity
+      const opacity = twinkle * scaleFactor;
+      if (opacity <= 0.001) continue;
+      
+      // Star size calculation (exact WebGL formula)
+      const size = 0.008 + star.rz * 0.025;
+      const r = (size / star.scale) * H;
+      
+      // 2. Base screen position
+      const baseScreenX = star.vUvX * W;
+      const baseScreenY = (1.0 - star.vUvY) * H;
+      
+      // 3. Rotate coordinates around the pivot point px, py
+      const dx = baseScreenX - px;
+      const dy = baseScreenY - py;
+      const rotX = px + dx * cos - dy * sin;
+      const rotY = py + dx * sin + dy * cos;
+      
+      // 4. Set screenX/screenY to the rotated coordinates
+      const screenX = rotX;
+      const screenY = rotY;
+      
+      // 5. Crop check: skip stars that are far outside the console boundary
+      const localX = screenX - rect.left;
+      const localY = screenY - rect.top;
+      if (localX < -r || localX > w + r || localY < -r || localY > h + r) {
+        continue;
+      }
+      
+      // 6. Fetch local velocity from window.cpuFluid at the rotated coordinates
+      let vx = 0, vy = 0;
+      if (window.cpuFluid) {
+        const rotUvX = rotX / W;
+        const rotUvY = 1.0 - rotY / H;
+        const vel = window.cpuFluid.getVelocity(rotUvX, rotUvY);
+        vx = vel.x;
+        vy = vel.y;
+      }
+      
+      // Chromatic aberration offsets in pixels (aligned with WebGL shader factors)
+      const dxR = vx * 0.015 * W;
+      const dyR = -vy * 0.015 * H;
+      
+      const dxG = vx * 0.018 * W;
+      const dyG = -vy * 0.018 * H;
+      
+      const dxB = vx * 0.021 * W;
+      const dyB = -vy * 0.021 * H;
+      
+      // Retrieve the current accent color RGB values dynamically (fallback to default orange 232, 124, 80)
+      const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+      let rgbParts = accentRgb.split(',').map(x => parseInt(x.trim(), 10));
+      if (rgbParts.length !== 3 || rgbParts.some(isNaN)) {
+        rgbParts = [232, 124, 80];
+      }
+      const [targetR, targetG, targetB] = rgbParts;
+ 
+      if (isLightMode) {
+        // Light Mode: Subtractive Chromatic Aberration
+        const coeffR = (255 - targetR) / 255;
+        const coeffG = (255 - targetG) / 255;
+        const coeffB = (255 - targetB) / 255;
+        const baseA = opacity * 1.5;
+        
+        // 1. Red channel subtraction (Cyan color)
+        const rx = screenX + dxR - rect.left;
+        const ry = screenY + dyR - rect.top;
+        if (rx >= -r && rx <= w + r && ry >= -r && ry <= h + r) {
+          const gradR = consoleCtx.createRadialGradient(rx, ry, 0, rx, ry, r);
+          const a0 = Math.min(1.0, 2.5 * baseA * coeffR);
+          const a25 = Math.min(1.0, 0.84 * baseA * coeffR);
+          gradR.addColorStop(0, `rgba(0, 255, 255, ${a0})`);
+          gradR.addColorStop(0.25, `rgba(0, 255, 255, ${a25})`);
+          gradR.addColorStop(1, 'rgba(0, 255, 255, 0)');
+          consoleCtx.fillStyle = gradR;
+          consoleCtx.beginPath();
+          consoleCtx.arc(rx, ry, r, 0, Math.PI * 2);
+          consoleCtx.fill();
+        }
+        
+        // 2. Green channel subtraction (Magenta color)
+        const gx = screenX + dxG - rect.left;
+        const gy = screenY + dyG - rect.top;
+        if (gx >= -r && gx <= w + r && gy >= -r && gy <= h + r) {
+          const gradG = consoleCtx.createRadialGradient(gx, gy, 0, gx, gy, r);
+          const a0 = Math.min(1.0, 2.5 * baseA * coeffG);
+          const a25 = Math.min(1.0, 0.84 * baseA * coeffG);
+          gradG.addColorStop(0, `rgba(255, 0, 255, ${a0})`);
+          gradG.addColorStop(0.25, `rgba(255, 0, 255, ${a25})`);
+          gradG.addColorStop(1, 'rgba(255, 0, 255, 0)');
+          consoleCtx.fillStyle = gradG;
+          consoleCtx.beginPath();
+          consoleCtx.arc(gx, gy, r, 0, Math.PI * 2);
+          consoleCtx.fill();
+        }
+        
+        // 3. Blue channel subtraction (Yellow color)
+        const bx = screenX + dxB - rect.left;
+        const by = screenY + dyB - rect.top;
+        if (bx >= -r && bx <= w + r && by >= -r && by <= h + r) {
+          const gradB = consoleCtx.createRadialGradient(bx, by, 0, bx, by, r);
+          const a0 = Math.min(1.0, 2.5 * baseA * coeffB);
+          const a25 = Math.min(1.0, 0.84 * baseA * coeffB);
+          gradB.addColorStop(0, `rgba(255, 255, 0, ${a0})`);
+          gradB.addColorStop(0.25, `rgba(255, 255, 0, ${a25})`);
+          gradB.addColorStop(1, 'rgba(255, 255, 0, 0)');
+          consoleCtx.fillStyle = gradB;
+          consoleCtx.beginPath();
+          consoleCtx.arc(bx, by, r, 0, Math.PI * 2);
+          consoleCtx.fill();
+        }
+      } else {
+        // Dark Mode: Additive Chromatic Aberration
+        // 1. Red channel glow
+        const rx = screenX + dxR - rect.left;
+        const ry = screenY + dyR - rect.top;
+        if (rx >= -r && rx <= w + r && ry >= -r && ry <= h + r) {
+          const gradR = consoleCtx.createRadialGradient(rx, ry, 0, rx, ry, r);
+          const a0 = Math.min(1.0, 2.5 * opacity);
+          const a25 = Math.min(1.0, 0.84 * opacity);
+          gradR.addColorStop(0, `rgba(${targetR}, 0, 0, ${a0})`);
+          gradR.addColorStop(0.25, `rgba(${targetR}, 0, 0, ${a25})`);
+          gradR.addColorStop(1, `rgba(${targetR}, 0, 0, 0)`);
+          consoleCtx.fillStyle = gradR;
+          consoleCtx.beginPath();
+          consoleCtx.arc(rx, ry, r, 0, Math.PI * 2);
+          consoleCtx.fill();
+        }
+        
+        // 2. Green channel glow
+        const gx = screenX + dxG - rect.left;
+        const gy = screenY + dyG - rect.top;
+        if (gx >= -r && gx <= w + r && gy >= -r && gy <= h + r) {
+          const gradG = consoleCtx.createRadialGradient(gx, gy, 0, gx, gy, r);
+          const a0 = Math.min(1.0, 2.5 * opacity);
+          const a25 = Math.min(1.0, 0.84 * opacity);
+          gradG.addColorStop(0, `rgba(0, ${targetG}, 0, ${a0})`);
+          gradG.addColorStop(0.25, `rgba(0, ${targetG}, 0, ${a25})`);
+          gradG.addColorStop(1, `rgba(0, ${targetG}, 0, 0)`);
+          consoleCtx.fillStyle = gradG;
+          consoleCtx.beginPath();
+          consoleCtx.arc(gx, gy, r, 0, Math.PI * 2);
+          consoleCtx.fill();
+        }
+        
+        // 3. Blue channel glow
+        const bx = screenX + dxB - rect.left;
+        const by = screenY + dyB - rect.top;
+        if (bx >= -r && bx <= w + r && by >= -r && by <= h + r) {
+          const gradB = consoleCtx.createRadialGradient(bx, by, 0, bx, by, r);
+          const a0 = Math.min(1.0, 2.5 * opacity);
+          const a25 = Math.min(1.0, 0.84 * opacity);
+          gradB.addColorStop(0, `rgba(0, 0, ${targetB}, ${a0})`);
+          gradB.addColorStop(0.25, `rgba(0, 0, ${targetB}, ${a25})`);
+          gradB.addColorStop(1, `rgba(0, 0, ${targetB}, 0)`);
+          consoleCtx.fillStyle = gradB;
+          consoleCtx.beginPath();
+          consoleCtx.arc(bx, by, r, 0, Math.PI * 2);
+          consoleCtx.fill();
+        }
+      }
+    }
+  }
+
+  function updateConsoleGeometry() {
+    if (!consoleEl || !consoleStarsCanvas) return;
+    const rect = consoleEl.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    
+    consoleStarsCanvas.width = w * consoleDpr;
+    consoleStarsCanvas.height = h * consoleDpr;
+    consoleCtx.scale(consoleDpr, consoleDpr);
+    
+    initConsoleStars();
+  }
+
+  function animateConsoleStars() {
+    if (!consoleEl.classList.contains('active')) {
+      consoleStarsAnimId = null;
+      return;
+    }
+    drawConsoleStars();
+    consoleStarsAnimId = requestAnimationFrame(animateConsoleStars);
+  }
+
+  window.addEventListener('resize', () => {
+    if (consoleEl.classList.contains('active')) {
+      updateConsoleGeometry();
+    }
+  });
+
   function toggleConsole(active) {
     if (_animating) return;
     const isOpening = active !== undefined ? active : !consoleEl.classList.contains('active');
@@ -96,6 +452,9 @@ import gsap from 'gsap';
           placeholder.appendChild(logo);
           // Clear GSAP inline styles to let CSS take over positioning
           gsap.set(logo, { clearProps: 'all' });
+          
+          // Recalculate console stars geometry at final stable size/position
+          updateConsoleGeometry();
           
           _animating = false;
 
@@ -853,10 +1212,21 @@ import gsap from 'gsap';
       lastTime = performance.now();
       if (canvasAnimId) cancelAnimationFrame(canvasAnimId);
       canvasAnimId = requestAnimationFrame(animateCanvasDot);
+      
+      // Console Stars
+      updateConsoleGeometry();
+      if (consoleStarsAnimId) cancelAnimationFrame(consoleStarsAnimId);
+      consoleStarsAnimId = requestAnimationFrame(animateConsoleStars);
     } else {
       if (canvasAnimId) {
         cancelAnimationFrame(canvasAnimId);
         canvasAnimId = null;
+      }
+      
+      // Console Stars
+      if (consoleStarsAnimId) {
+        cancelAnimationFrame(consoleStarsAnimId);
+        consoleStarsAnimId = null;
       }
     }
   });

@@ -2744,3 +2744,19 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
     - **亮色模式（减法混合）**：计算对应颜色的减色系数 `(255 - target) / 255`。
     - 这样，悬停色差效果会自动混合渲染出调色盘对应的任意新主题色！
 
+---
+
+## 🛠️ Step 623: 调色盘质感升级为导航栏玻璃与外发光并集成转动星空背景 (Upgrade Color Console to Navbar Glassmorphism, Outer Glow & Rotating Stars)
+
+### 1. 需求与实现思路 (Requirements & Implementation Concept)
+- **需求**：将调色盘（控制台）的背景和边框质感完美同步为导航栏的质感（包括模糊玻璃质感、内发光、以及基于当前调色盘主色的动态外发光），同时将导航栏中转动的星空背景以 100% 物理同步的方式集成进调色盘中，实现跨区域的无缝星空流转效果。为了避免性能浪费，星空动画仅在控制台打开激活时才会运行。
+- **实现方案**：
+  1. **层级与布局调整**：在 [index.html](file:///c:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中 `#colorConsole` 元素的首个子节点引入 `<canvas id="consoleStarsCanvas">` 用于星云图层渲染。同时修改 [styles.css](file:///c:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css)，将控制台头部与内容包裹层（`.color-console-header`、`.color-console-content`）设为 `position: relative; z-index: 2;`，以确保文本和交互按钮渲染在 `z-index: 1` 的背景 Canvas 星空之上。
+  2. **完美同步的星云物理公式**：在 [color-console.js](file:///c:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 中实现与导航栏完全一致的星空生成算法。其旋转轴心统一锁定在屏幕视口坐标 `(0.75, 0.5)`（右中区域），旋转速度设定为相同的 `0.03` rad/s 逆时针，配合完全一致的 `hash3` 噪声采样。通过遍历并旋转全局坐标，再映射并裁剪至控制台当前的局部卡片视口，实现两个 Canvas 物理共享同一个背景宇宙的流畅视感。
+  3. **生命周期休眠机制**：在 `MutationObserver` 监测到 `#colorConsole` 的 `.active` 状态变化时，动态控制 `requestAnimationFrame` 循环。仅在控制台被唤醒呈现在屏幕上时开启 Canvas 绘制；关闭时自动释放并销毁动画帧，确保性能消耗在平时为 0。
+  4. **多次姿态微调与重构**：控制台在展开和折叠的过程中有 GSAP 带来的尺度缩放与位移。我们在 GSAP 飞行动画的 `onComplete` 回调中以及窗口 `resize` 事件中，多次触发 `updateConsoleGeometry()` 重新拉伸 Canvas 画布像素尺寸，保证动画在不同分辨率和展开全状态下不发生拉伸失真。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 重新运行 `npx vite build` 编译打包，生产包编译正常通过且大小和速度表现稳定。
+- 经过在浏览器开发工具中的渲染分析，当调色盘面板激活展开时，星空绘制和旋转动画流畅运行在 60fps；当调色盘面板关闭时，动画自动休眠，CPU/GPU 占用完全降至 0。
+
