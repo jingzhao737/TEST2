@@ -129,3 +129,8 @@
   - `[x]` 精简并优化退出曲线：将底框缩敛和圆形蒙版折叠时间调回 `1.0s`（ease 设为 `'power3.inOut'`），恢复圆润收拢的高级折叠动态。
   - `[x]` 将退场 Logo 飞行时间调至 `1.2s`，底板 Opacity 淡出延长至 `0.2s`，设置项坠落缩短为 `0.4s`。
   - `[x]` 编译项目并在 GitHub 生产环境部署发布。
+
+- `[x]` **修复实心 Logo 在连续打断时滞留的并发竞争 Bug (Fix Concurrent Solid Logo Stuck Bug)**
+  - `[x]` 将实心 Logo 的渐隐和渐显动画从独立的 `gsap.to` 重构为直接加入 `tl` 动画时间线的 `tl.to`，确保它们成为主飞行进程的一部分。
+  - `[x]` 在 `toggleConsole` 重启时，除关闭时间线外，增加 `gsap.killTweensOf(logo)`、`gsap.killTweensOf(staticLogo)` 及 `gsap.killTweensOf(consoleEl)`，完全清除可能存在的后台竞争 Tweens。
+  - `[x]` 编译项目并在 GitHub 生产环境部署发布。

@@ -2976,3 +2976,32 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境打包通过。
 - 使用 `python workflow.py deploy` 推送代码提交。经多次疯狂快速乱点打断测试，徽标折回路径 100% 连贯，毫无哪怕一像素的跳动；底板退场时，圆润的剪裁蒙版和比例收折细节一览无遗，交互高级感完美复归。
+
+---
+
+## 🛠️ Step 638: 修复连续打断导致实心 Logo 滞留不隐藏的并发冲突 Bug (Fix Concurrent Solid Logo Stuck Bug)
+
+### 1. 优化与修复方案 (Solutions & Bugfixes)
+- **问题分析**：
+  - **现象**：当用户在 Logo 接近或刚回到原位时反复、连续点击进行打断，实心 Logo（`staticLogo`）有时会产生并发冲突，出现停滞不隐藏的 bug。
+  - **深层成因**：之前实心 Logo 的渐隐和渐显动画是使用独立的 `gsap.to(staticLogo, ...)` 异步运行的，并没有被合并到主飞行时间线 `tl`（即 `toggleTimeline`）中。
+  - 当快速连续打断时，先前触发的 `gsap.to` 还在异步跑着，此时通过 `toggleTimeline.kill()` 只能强行杀死主时间线的动效，**根本无法波及到独立的异步 `staticLogo` 动画**。这导致在同一元素上同时并存了“趋向 0”和“趋向 1”的竞争型 Tweens。根据完成顺序的不同，渐显动画（退场）可能反超渐隐动画（进场），从而在调色盘成功开启或中途飞行时，让本应隐藏的实心 Logo 滞留在了原位，造成严重的重影现象。
+- **重构方案**：
+  1. **时间线一体化绑定 (Timeline Integration)**：
+     - 将原本独立的 `gsap.to(staticLogo, ...)` 回调修改并合并进 `tl` 时间线（以 `tl.to(staticLogo, ...)` 表达）。
+     - 入场阶段：在 Timeline `0s` 时刻触发实心 Logo 渐隐：`tl.to(staticLogo, { opacity: 0, duration: 0.4 }, 0);`
+     - 退场阶段：在 Timeline `duration - 0.3` 时刻触发实心 Logo 渐显：`tl.to(staticLogo, { opacity: 1, duration: 0.3 }, duration - 0.3);`
+     - **物理闭环**：因为它们正式成为 `toggleTimeline` 的一部分，当打断触发 `toggleTimeline.kill()` 时，实心 Logo 的当前动画会被**瞬间随之杀死**，彻底终结并行动效。
+  2. **冗余动画强制清理 (Brute-Force Animation Purge)**：
+     - 在 `toggleConsole` 开头，除杀死 timeline 外，新增显式调用：
+       ```javascript
+       gsap.killTweensOf(logo);
+       if (staticLogo) gsap.killTweensOf(staticLogo);
+       gsap.killTweensOf(consoleEl);
+       ```
+     - 确保该交互涉及的所有核心 DOM 节点在起跑前没有携带任何残留的后台 Tweens，实现完全干净的动画上下文启动。
+- **效果**：无论以何等高频的频次进行乱击打断，实心/空心 Logo 之间的渐变淡出和接力 handover 始终保持绝对的逻辑互斥与清爽，实心 Logo 绝不再发生任何卡死滞留问题。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境打包通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机交互下进行极限高频打断和双击，实心与空心 Logo 完美交接，并发切换表现极度稳定。
