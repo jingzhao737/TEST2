@@ -622,6 +622,27 @@ if (!isMobileDevice) {
       }
     }
     
+     window.triggerPreviewPinchAnimation = function() {
+      if (!isPreviewActive) return;
+
+      if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
+      gsap.killTweensOf(previewAnim, 'imgZ,orangeZ');
+
+      orangeSwitchTimeline = gsap.timeline()
+        .to(previewAnim, {
+          imgZ: 18,        // Squeeze down closer to the pressed card (normally Z=52px)
+          orangeZ: -10,    // Pull up closer to the pressed card (normally Z=-25px)
+          duration: 0.08,
+          ease: 'power2.out'
+        })
+        .to(previewAnim, {
+          imgZ: 52,        // Rebound back to 52px
+          orangeZ: -25,    // Rebound back to -25px
+          duration: 0.32,
+          ease: 'back.out(2.5)' // snappy spring rebound overshoot matching the card
+        });
+    };
+
     // Start initial animation frame (will auto-sleep once settled)
     hoverLoopId = requestAnimationFrame(animateHover);
   }
