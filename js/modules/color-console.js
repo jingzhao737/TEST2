@@ -465,10 +465,14 @@ import gsap from 'gsap';
       consoleEl.offsetHeight; // Force reflow
  
       // Setup initial animated outline logo state
+      const currentX = isLogoInBody ? (parseFloat(gsap.getProperty(logo, "x")) || 0) : 0;
+      const startBaselineLeft = startRect.left - currentX;
+      const startBaselineTop = startRect.top;
+
       gsap.set(logo, {
-        left: startRect.left,
-        top: startRect.top,
-        x: 0,
+        left: startBaselineLeft,
+        top: startBaselineTop,
+        x: currentX,
         opacity: isLogoInBody ? gsap.getProperty(logo, "opacity") : 0
       });
       logo.classList.add('console-active');
@@ -499,12 +503,12 @@ import gsap from 'gsap';
           
           _animating = false;
           toggleTimeline = null;
-
+ 
           // Trigger logo landing star splash immediately upon landing
           const rect = logo.getBoundingClientRect();
           const clientX = rect.left + rect.width / 2;
           const clientY = rect.top + rect.height / 2;
-
+ 
           if (typeof window.triggerLogoStarSplash === 'function') {
             const x = clientX / window.innerWidth;
             const y = 1.0 - (clientY / window.innerHeight);
@@ -531,9 +535,9 @@ import gsap from 'gsap';
         ease: ease,
         onUpdate: function() {
           const s = animState.progress;
-          const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s);
-          const currentTop = gsap.utils.interpolate(startRect.top, toRect.top, s);
-          const xOffset = Math.sin(s * Math.PI) * maxBulge;
+          const currentLeft = gsap.utils.interpolate(startBaselineLeft, toRect.left, s);
+          const currentTop = gsap.utils.interpolate(startBaselineTop, toRect.top, s);
+          const xOffset = gsap.utils.interpolate(currentX, 0, s) + Math.sin(s * Math.PI) * maxBulge * (isLogoInBody ? 0.3 : 1);
           gsap.set(logo, {
             left: currentLeft,
             top: currentTop,
@@ -594,10 +598,14 @@ import gsap from 'gsap';
       }
       
       // Re-apply starting position inline so it doesn't jump
+      const currentX = isLogoInBody ? (parseFloat(gsap.getProperty(logo, "x")) || 0) : 0;
+      const startBaselineLeft = startRect.left - currentX;
+      const startBaselineTop = startRect.top;
+
       gsap.set(logo, {
-        left: startRect.left,
-        top: startRect.top,
-        x: 0,
+        left: startBaselineLeft,
+        top: startBaselineTop,
+        x: currentX,
         opacity: isLogoInBody ? gsap.getProperty(logo, "opacity") : 1
       });
       logo.offsetHeight; // Force reflow
@@ -663,9 +671,9 @@ import gsap from 'gsap';
         ease: ease,
         onUpdate: function() {
           const s = animState.progress;
-          const currentLeft = gsap.utils.interpolate(startRect.left, toRect.left, s); // startRect is anchorEl rect (navbar)
-          const currentTop = gsap.utils.interpolate(startRect.top, toRect.top, s);
-          const xOffset = Math.sin(s * Math.PI) * maxBulge;
+          const currentLeft = gsap.utils.interpolate(startBaselineLeft, toRect.left, s);
+          const currentTop = gsap.utils.interpolate(startBaselineTop, toRect.top, s);
+          const xOffset = gsap.utils.interpolate(currentX, 0, s) + Math.sin(s * Math.PI) * maxBulge * (isLogoInBody ? 0.3 : 1);
           gsap.set(logo, {
             left: currentLeft,
             top: currentTop,
