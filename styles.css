@@ -840,6 +840,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     padding-left:calc((100cqw - 1440px) / 2 + 32px);
     padding-right:calc((100cqw - 1440px) / 2 + 32px);
   }
+}
 .work-card:focus,.work-card:focus-visible{outline:none}
 
 /* Animated left accent line on hover */
