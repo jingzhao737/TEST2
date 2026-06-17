@@ -3319,9 +3319,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     padding: 36px 48px;
     gap: 32px;
     grid-template-columns: 80px 1fr 140px 80px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.035);
+    background: rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    /* Inset shadow simulates beveled edge reflections (light top-left highlight, dark bottom-right shadow) */
+    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.12), inset -1px -1px 0px rgba(0, 0, 0, 0.25), 0 4px 20px rgba(0, 0, 0, 0.15);
     /* No preserve-3d on cards — avoids Chromium stacking-context flattening */
     transition: background 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -3333,9 +3337,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   /* Hover state driven ONLY by .hovered class set from JS static-rect hit-testing
      NO .work-card:hover rules exist — prevents CSS native hover from causing jitter */
   .work-list .work-card.hovered {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(var(--accent-rgb), 0.45);
-    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.15), 0 20px 60px rgba(0,0,0,0.3);
+    background: rgba(255, 255, 255, 0.065);
+    border-color: rgba(var(--accent-rgb), 0.4);
+    /* Intensified top-left glow and deeper shadow to simulate card "lifting" */
+    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.28), inset -1px -1px 0px rgba(0, 0, 0, 0.2), 0 24px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(var(--accent-rgb), 0.15);
   }
 
   /* Hover line override for 3D cards */
@@ -3345,13 +3350,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
   /* Light theme overrides for 3D cards */
   :root.light .work-list .work-card {
-    border-color: rgba(0, 0, 0, 0.08);
-    background: rgba(0, 0, 0, 0.025);
+    border-color: rgba(0, 0, 0, 0.06);
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.65), inset -1px -1px 0px rgba(0, 0, 0, 0.06), 0 4px 20px rgba(0, 0, 0, 0.04);
   }
 
   :root.light .work-list .work-card.hovered {
     background: #83a39a !important;
     border-color: rgba(131, 163, 154, 0.4);
+    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.55), inset -1px -1px 0px rgba(0, 0, 0, 0.1), 0 24px 60px rgba(131, 163, 154, 0.25), 0 0 0 1px rgba(131, 163, 154, 0.15);
   }
 }
 
