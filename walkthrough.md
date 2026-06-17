@@ -3377,3 +3377,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目并进行物理层级打包。
 - 运行 `python workflow.py deploy` 推送部署上线。真机悬停卡片测试显示，大玻璃板浮起时，橙色阴影卡在玻璃后方移动，而精美的预览图悬浮在玻璃板前方探头跟随，多图层三维夹层穿插非常精致，空间层次极为震撼！
+
+
+---
+
+## 🛠️ Step 654: 作品卡片切换时底色块 3D 纵深下潜与回弹动效 (Lower Color Block Z-Axis Diving Spring Animation on Switch)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：在卡片间切换时，底部的橙色色块如果只是单纯跟着鼠标从左到右漂移，Z 轴高度保持不变，会缺乏图层间“空间穿梭”的生动趣味。
+- **3D 下潜回弹设计 (Z-Axis Diving Spring Animation)**：
+  - **独立的时间轴控制 (No Animation Glitch)**：引入模块级 timeline 变量 `orangeSwitchTimeline`。在启动下潜动画时，以及整体进入/退出预览区（`showPreviewDOM` 和 `hidePreviewDOM`）时，同步将 `orangeSwitchTimeline` 主动杀死并清理。这完全规避了并发触发带来的竞态动画重叠和卡顿。
+  - **向后深潜穿梭 (Dive Down to Z=-24px)**：
+    - 当用户把鼠标从一张作品卡片滑移到另一张卡片上时（激活 `onCardEnter`），橙色色块的 Z 轴位置 `orangeZ` 会在 **`0.16s`** 内通过 `power2.in` 快速缩小下降至 **`-24px`**。
+    - 此时由于 Z 坐标为负，色块在 3D 视界中会瞬间“掉入”所有作品卡片以及白色内阴影的最底层后方，产生极具空间感的“穿孔下潜”遮挡关系。
+  - **弹性高空弹回 (Elastic Spring Up to Z=10px)**：
+    - 触底后，立即以弹性曲线 `elastic.out(1.0, 0.6)` 在 **`0.6s`** 内将 Z 高度拉回到 **`10px`** 夹心层。色块会带有一点点轻微的高反弹过冲（Overshoot），最终稳稳停在卡片下方。
+  - **动态位移协同 (Adaptive Parallax Swing)**：
+    - 随着 `orangeZ` 从 `10` 坠落到 `-24`，随动视差公式 `(orangeZ / 10) * 18` 会自动将 X/Y 偏离距离从正向的 `18px` 拽到负向的 `-43px`。这使色块不仅在 3D 上发生了深潜，在平面上也会形成划出一道“向后拉伸 -> 极速回弹探头”的抛物折回弧线。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新打包项目，顺利通过。
+- 运行 `python workflow.py deploy` 推送部署上线。交互测试显示：当鼠标在四个卡片之间来回切换时，底部的橙色色块会像一颗果冻一样，极其灵动地往深处“扎个猛子”潜入卡片背后，再以漂亮的弹性弧线反弹探出头来，微交互动态表现力极其惊艳！
