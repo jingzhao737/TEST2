@@ -503,10 +503,12 @@ import gsap from 'gsap';
           placeholder.appendChild(logo);
           // Clear GSAP inline styles to let CSS take over positioning
           gsap.set(logo, { clearProps: 'all' });
-          if (staticLogo) {
-            staticLogo.style.removeProperty('transition');
-            staticLogo.classList.remove('no-transition');
-          }
+          requestAnimationFrame(() => {
+            if (staticLogo) {
+              staticLogo.style.removeProperty('transition');
+              staticLogo.classList.remove('no-transition');
+            }
+          });
           
           // Restore unclipped box shadow by clearing clipPath
           gsap.set(consoleEl, { clearProps: 'clipPath,webkitClipPath' });
@@ -657,16 +659,22 @@ import gsap from 'gsap';
           gsap.set(consoleEl, { clearProps: 'transform,opacity,clipPath,webkitClipPath,transformOrigin' });
           if (staticLogo) {
             gsap.set(staticLogo, { clearProps: 'opacity' });
-            staticLogo.style.removeProperty('transition');
-            staticLogo.classList.remove('no-transition');
           }
           
           // Clear internal elements inline styles as well
           gsap.set([consoleHeader, ...consoleSections, consoleActions], { clearProps: 'all' });
 
-          logo.style.removeProperty('transition');
-          logo.classList.remove('no-transition');
           logo.classList.remove('console-active');
+
+          // Defer restoring CSS transitions to the next frame to prevent browser layout reflow flickers
+          requestAnimationFrame(() => {
+            if (staticLogo) {
+              staticLogo.style.removeProperty('transition');
+              staticLogo.classList.remove('no-transition');
+            }
+            logo.style.removeProperty('transition');
+            logo.classList.remove('no-transition');
+          });
           
           // 3. Clear the transition inline override last
           consoleEl.style.transition = '';

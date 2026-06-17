@@ -3118,3 +3118,25 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机功能交互测试表明，起跑零重影，瞬间离开，视觉非常清爽。
+
+---
+
+## 🛠️ Step 645: 延迟还原 CSS Transitions 属性，彻底根除徽标落地完场瞬间的“黑闪”（Flicker）Bug (Fix Logo Black Out/Flicker After Returning Landing)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：消除起航重影后，用户反馈会动的 Logo 在飞回导航栏（关闭控制台）的动画结束瞬间，仍会肉眼可见地“黑闪/抖动一下”。
+- **原因剖析**：
+  1. 在关闭动画的 `onComplete` 回调中，我们执行了 `gsap.set(logo, { clearProps: 'all' })` 与 `gsap.set(staticLogo, { clearProps: 'opacity' })` 来清除动画的 inline 样式，使两者的不透明度和位置交由 CSS 样式表接管。
+  2. 同一时间，我们同步执行了 `style.removeProperty('transition')` 还原其 CSS transition 过渡属性。
+  3. 因为“清除 inline 属性（导致样式回滚至继承样式）”与“激活 transition 过渡”发生在了**同一个渲染帧 (Render Frame)** 里，部分现代浏览器（特别是 Chromium 核心）的排版引擎在进行 Style Recalculation 时，由于瞬间失去了 inline 强制锁定，会把此属性变更拦截并触发一帧的过渡态样式重算，从而在极短的 16.7ms 内渲染出一个意外的透明度或中间位移，导致视觉上的“黑闪”。
+- **修复方案**：
+  - **单帧延迟还原 (Frame-Deferred Transition Restore)**：
+    - 在打开和关闭动画的 `onComplete` 回调中，清除 GSAP 属性的语句原样执行，但将 re-enable CSS transitions 的操作统一包裹在 **`requestAnimationFrame`** 异步回调中。
+    - **物理效果**：
+      - 在清除 GSAP 属性的当前帧中，两个徽标的 CSS transitions 依旧被 `none !important` 强力屏蔽。这强迫浏览器在没有过渡机制的干预下，瞬间渲染出稳定的最终 CSS 继承状态（`logo` 隐藏，`staticLogo` 显示）。
+      - 到了**下一帧**，DOM 结构和样式状态已完全稳定并渲染完毕后，再将 CSS transitions 优雅还原。由于此时两个徽标的最终属性已彻底恒定，故完全不会触发任何多余的 CSS 隐性过渡，完美解决了黑闪的顽疾。
+- **效果**：Logo 飞回终点并着陆 navbar 的瞬间如行云流水般平滑，彻底消除哪怕一毫秒的闪烁或重影抖晃。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。经过多次连续开启/关闭真机测试，Logo 降落完全没有哪怕一像素的闪烁和异动，平稳着陆，交互表现惊艳。

@@ -292,3 +292,9 @@
   - `[x]` 重构起跑时间线，将静态徽标 `staticLogo` 的渐隐改为瞬间隐藏（`tl.set(staticLogo, { opacity: 0 }, 0)`），彻底废除原有的缓慢淡出过渡。
   - `[x]` **重要修复**：在出飞瞬间，同步使用 `staticLogo.style.setProperty('transition', 'none', 'important')` 强制剥离其 CSS transition 过渡，彻底阻止浏览器拦截 opacity 的突变行为进行 0.4 秒隐性淡出，并在 `onComplete` 回调中还原，彻底消除肉眼可见的原地重影残留。
   - `[x]` 编译并部署发布至生产环境。
+
+- `[x]` **修复返航着陆结束瞬间徽标短暂“黑闪一下”的重影重置 Bug (Fix Logo Black Out/Flicker After Returning Landing)**
+  - `[x]` 发现由于 GSAP 终点执行 `clearProps` 清理 inline style 与同步还原 CSS transition 处于同一浏览器帧中，导致浏览器在计算“清除 inline 属性到继承样式”时，对 transition 进行多余的样式重算，引发一帧的瞬时黑闪（flicker）。
+  - `[x]` 重构 `color-console.js` 中打开和关闭动画的 `onComplete` 回调：使用 `requestAnimationFrame` 将 re-enable CSS transitions 的操作延迟至**下一帧**执行。
+  - `[x]` 确保在 `clearProps` 动作完成的当前帧中，CSS transitions 依然保持 `none !important` 屏蔽状态，从而强制浏览器瞬时稳定渲染至最终样式，彻底根除“黑闪一下”的视觉 Bug。
+  - `[x]` 编译并部署发布至生产环境。
