@@ -1,3 +1,22 @@
+# Portfolio V3 Color Console & Palette Sync Walkthrough
+
+## 🚀 Accomplishments
+
+### 1. Brand Color Restoration Behavior
+- **Restore Default Button Fix**: Updated the click handler for `consoleResetBtn` in [color-console.js](file:///c:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) to explicitly call `applyColors('#e87c50', '#faf2e3', true)`. This guarantees that the original brand colors (Primary: `#e87c50`, Secondary: `#faf2e3`) are always forced and saved under all circumstances, rather than clearing properties to stylesheet defaults which previously caused inconsistent fallbacks (like grey/black in light mode).
+
+### 2. UI Customizations & Hide Debugger
+- **Copy Color Functionality**: Added a "Copy Colors" button to the color console that copies the currently picked primary and secondary HEX codes to the clipboard with visual feedback.
+- **Hidden Debugger Panel**: Cleaned up the color console layout by setting the temporary trajectory parameter adjustment panel to hidden.
+- **Presets Alignment**: Updated presets 3 and 4 in the color console:
+  - Preset 3: Primary: `#52ffc5`, Secondary: `#ff4747`
+  - Preset 4: Primary: `#1f5be5`, Secondary: `#e12323`
+
+### 3. Dynamic Theme Synchronization
+- Fully integrated all canvas, lasers, waveforms, poetry text glows, chromatic aberration shaders, and 3D visual panels to dynamically bind and update when presets/custom colors are adjusted.
+
+---
+
 # WebGL Works Preview & Scroll Shader Walkthrough
 
 This walkthrough outlines the technical implementation for **Stage 2 (WebGL Image Displacement, GLSL Scroll Shaders, and Liquid Transitions)**.
