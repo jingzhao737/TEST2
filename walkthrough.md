@@ -3398,3 +3398,25 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新打包项目，顺利通过。
 - 运行 `python workflow.py deploy` 推送部署上线。交互测试显示：当鼠标在四个卡片之间来回切换时，底部的橙色色块会像一颗果冻一样，极其灵动地往深处“扎个猛子”潜入卡片背后，再以漂亮的弹性弧线反弹探出头来，微交互动态表现力极其惊艳！
+
+
+---
+
+## 🛠️ Step 655: 点击卡片时三维图层“夹击压缩”触感反馈动效 (3D Pinch Compression Feedback on Card Click)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：在此前的实现中，点击卡片会触发卡片自身向后沉降并弹性回弹的立体反馈（Z 轴从 `28px` 压至 `-40px`，比例缩至 `0.95`）。但在点击瞬间，悬浮在卡片前方的预览图 (Z = 52px) 和卡片底部的影子色块 (Z = -25px) 却没有任何物理动作，破坏了整个 3D 夹层结构的力学连贯性。
+- **图层“夹击压缩”触感联动设计 (3D Pinch Feedback)**：
+  - **全局动作派发**：在 `js/modules/premium-interactions.js` 中新增并向外暴露 `window.triggerPreviewPinchAnimation` 函数。
+  - **Z 轴极速夹扁 (0.08s Compression)**：
+    - 当用户点击作品卡片时，`work-detail.js` 的 click 处理器同步调用该函数。
+    - 在 **`0.08s`** 的极短瞬间内，上层预览大图 `imgZ` 从 `52px` 极速下潜至 **`18px`**。
+    - 与此同时，下层色块影子 `orangeZ` 从 `-25px` 极速回升至 **`-10px`**。
+    - **物理体感**：这使三个图层在卡片被压下的瞬间向内“聚拢”（卡片下压、大图下沉、影子浮起），模拟出物理按钮被强力夹扁压缩的动态力学反馈。
+  - **同步弹性归位 (0.32s back.out Rebound)**：
+    - 压下动作释放后，在 **`0.32s`** 时间内，通过回弹抛物线 `back.out(2.5)` 驱动大图和色块，在空中带有一点缓冲超调，极速反弹回初始的常态高度（`52px` 和 `-25px`）。
+    - 这一反馈时值与卡片自身的回弹完全一致，呈现出浑然一体的机械按压弹性。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目。
+- 运行 `python workflow.py deploy` 推送部署上线。测试表明，点击卡片时，前方的预览图会猛然下沉，底部的橙色色块会同步向上迎合，整套 3D 夹层像一个带有强力橡胶弹簧的按键一样收缩并以漂亮的弧度反弹回去，交互手感极其爽脆高級！

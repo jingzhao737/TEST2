@@ -364,3 +364,9 @@
   - [x] 在 `onCardEnter` 检测到卡片发生切换且当前处于预览活跃状态时，触发 Z 轴下潜：先将 `orangeZ` 在 `0.16s` 内向下俯冲深潜至 **`-45px`**（避开卡片下落过渡层，彻底深潜），随后使用弹性曲线 `elastic.out` 在 `0.6s` 内回弹至安全背景深度 **`-25px`**。
   - [x] 在 `showPreviewDOM` 和 `hidePreviewDOM` 触发时，同步对 `orangeSwitchTimeline` 进行清理（kill），防范多轨道动画竞态冲突。
   - [x] 成功编译构建并发布。
+
+- [x] **点击卡片时三维图层“夹击压缩”触感反馈动效 (3D Pinch Compression Feedback on Card Click)**
+  - [x] 在 `js/modules/premium-interactions.js` 中新增并暴露 `window.triggerPreviewPinchAnimation` 全局方法。
+  - [x] 联动卡片点击下沉时间轴（`z: -40px` 与 `scale: 0.95`），使上层预览图 `imgZ` 在 `0.08s` 内快速下沉至 **`18px`**，下层底色块 `orangeZ` 快速回升至 **`-10px`**，形成三维夹压动作；随后以 `back.out(2.5)` 弹性曲线在 `0.32s` 内同步回弹复位（Z=52px 和 Z=-25px），提供高级的触觉回馈。
+  - [x] 在 `js/modules/work-detail.js` 的 `openCard` 内部，同步调用 `window.triggerPreviewPinchAnimation()` 触发视觉联结。
+  - [x] 成功编译构建并发布。
