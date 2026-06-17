@@ -461,6 +461,9 @@ import gsap from 'gsap';
         transitionTimeline = gsap.timeline({
           onComplete: () => {
             overlay.style.display = 'none';
+            // Reset translations for the next click
+            gsap.set(secBlock, { x: '0%' });
+            gsap.set(priBlock, { x: '0%' });
           }
         });
 
@@ -470,7 +473,7 @@ import gsap from 'gsap';
         // 1. Expand secondary circle
         transitionTimeline.to(circleParams, {
           secRadius: maxRadius,
-          duration: 0.75,
+          duration: 0.7,
           ease: 'power3.out',
           onUpdate: () => {
             secBlock.style.clipPath = `circle(${circleParams.secRadius}px at ${clickX}px ${clickY}px)`;
@@ -480,7 +483,7 @@ import gsap from 'gsap';
         // 2. Expand primary circle (staggered slightly for fluid liquid ripple effect)
         transitionTimeline.to(circleParams, {
           priRadius: maxRadius,
-          duration: 0.75,
+          duration: 0.7,
           ease: 'power3.out',
           onUpdate: () => {
             priBlock.style.clipPath = `circle(${circleParams.priRadius}px at ${clickX}px ${clickY}px)`;
@@ -492,13 +495,21 @@ import gsap from 'gsap';
           updateStyles(primary, secondary);
         }, null, 0.45);
 
-        // 4. Fade out overlay smoothly to reveal the newly styled page
-        transitionTimeline.to(overlay, {
-          opacity: 0,
-          duration: 0.5,
-          ease: 'power2.inOut',
-          delay: 0.25
-        });
+        // 4. Slide out split (no opacity fade!)
+        // Staggered split: primary slides right, secondary slides left
+        transitionTimeline.to(secBlock, {
+          x: '-100%',
+          duration: 0.65,
+          ease: 'power3.inOut',
+          delay: 0.15
+        }, 'reveal');
+
+        transitionTimeline.to(priBlock, {
+          x: '100%',
+          duration: 0.65,
+          ease: 'power3.inOut',
+          delay: 0.15
+        }, 'reveal');
       } else {
         // Fallback to smooth numeric fade
         const current = getCurrentColors();
