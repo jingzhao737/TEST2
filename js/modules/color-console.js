@@ -325,8 +325,60 @@ import gsap from 'gsap';
     royal: { primary: '#965AFA', secondary: '#AFEF02' }
   };
 
-  // Apply colors to document and save to state
-  function applyColors(primary, secondary, save = true) {
+  // Helper: Parses any color (hex or rgb/rgba) into {r, g, b}
+  function parseToRgbObj(colorStr) {
+    colorStr = colorStr.trim();
+    if (colorStr.startsWith('rgb')) {
+      const match = colorStr.match(/\d+/g);
+      if (match && match.length >= 3) {
+        return {
+          r: parseInt(match[0], 10),
+          g: parseInt(match[1], 10),
+          b: parseInt(match[2], 10)
+        };
+      }
+    }
+    let hex = colorStr;
+    if (!hex.startsWith('#')) {
+      hex = '#' + hex;
+    }
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 4) {
+      r = parseInt(hex[1] + hex[1], 16);
+      g = parseInt(hex[2] + hex[2], 16);
+      b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+      r = parseInt(hex.slice(1, 3), 16);
+      g = parseInt(hex.slice(3, 5), 16);
+      b = parseInt(hex.slice(5, 7), 16);
+    }
+    return { r, g, b };
+  }
+
+  // Helper: RGB Object to Hex
+  function rgbObjToHex({ r, g, b }) {
+    const clamp = x => Math.max(0, Math.min(255, Math.round(x)));
+    return `#${clamp(r).toString(16).padStart(2, '0')}${clamp(g).toString(16).padStart(2, '0')}${clamp(b).toString(16).padStart(2, '0')}`;
+  }
+
+  // Helper: Get current computed primary and secondary RGB colors
+  function getCurrentColors() {
+    const isLight = document.documentElement.classList.contains('light');
+    const currentAccentStr = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e87c50';
+    let currentSecondaryStr = '';
+    if (isLight) {
+      currentSecondaryStr = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#f5f0e8';
+    } else {
+      currentSecondaryStr = getComputedStyle(document.documentElement).getPropertyValue('--fg').trim() || '#faf2e3';
+    }
+    return {
+      primary: parseToRgbObj(currentAccentStr),
+      secondary: parseToRgbObj(currentSecondaryStr)
+    };
+  }
+
+  // Direct CSS styling updates
+  function updateStyles(primary, secondary) {
     const isLight = document.documentElement.classList.contains('light');
     const primaryRgb = hexToRgb(primary);
     const secondaryRgb = hexToRgb(secondary);
@@ -360,10 +412,41 @@ import gsap from 'gsap';
     secondaryPicker.value = secondary;
     primaryBadge.style.backgroundColor = primary;
     secondaryBadge.style.backgroundColor = secondary;
+  }
 
+  // Apply colors to document with optional GSAP transition animation and save to state
+  let colorTween = null;
+  function applyColors(primary, secondary, save = true, animate = true) {
     if (save) {
       localStorage.setItem('customPrimary', primary);
       localStorage.setItem('customSecondary', secondary);
+    }
+
+    if (colorTween) colorTween.kill();
+
+    if (animate) {
+      const current = getCurrentColors();
+      const targetP = parseToRgbObj(primary);
+      const targetS = parseToRgbObj(secondary);
+
+      const tweenState = {
+        pr: current.primary.r, pg: current.primary.g, pb: current.primary.b,
+        sr: current.secondary.r, sg: current.secondary.g, sb: current.secondary.b
+      };
+
+      colorTween = gsap.to(tweenState, {
+        pr: targetP.r, pg: targetP.g, pb: targetP.b,
+        sr: targetS.r, sg: targetS.g, sb: targetS.b,
+        duration: 0.8,
+        ease: 'power2.out',
+        onUpdate: () => {
+          const pColor = rgbObjToHex({ r: tweenState.pr, g: tweenState.pg, b: tweenState.pb });
+          const sColor = rgbObjToHex({ r: tweenState.sr, g: tweenState.sg, b: tweenState.sb });
+          updateStyles(pColor, sColor);
+        }
+      });
+    } else {
+      updateStyles(primary, secondary);
     }
   }
 
@@ -374,7 +457,7 @@ import gsap from 'gsap';
     const savedPreset = localStorage.getItem('activePreset') || 'default';
 
     if (savedPrimary && savedSecondary) {
-      applyColors(savedPrimary, savedSecondary, false);
+      applyColors(savedPrimary, savedSecondary, false, false);
       // Highlight correct preset button
       presetBtns.forEach(btn => {
         if (btn.dataset.preset === savedPreset) btn.classList.add('active');
@@ -384,7 +467,7 @@ import gsap from 'gsap';
       // Revert to default or active preset
       const themeColors = presets[savedPreset];
       if (themeColors) {
-        applyColors(themeColors.primary, themeColors.secondary, false);
+        applyColors(themeColors.primary, themeColors.secondary, false, false);
         presetBtns.forEach(btn => {
           if (btn.dataset.preset === savedPreset) btn.classList.add('active');
           else btn.classList.remove('active');
@@ -403,7 +486,7 @@ import gsap from 'gsap';
         presetBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         localStorage.setItem('activePreset', presetKey);
-        applyColors(themeColors.primary, themeColors.secondary);
+        applyColors(themeColors.primary, themeColors.secondary, true, true);
       }
     });
   });
@@ -413,13 +496,13 @@ import gsap from 'gsap';
     // Remove active state from presets when custom values are selected
     presetBtns.forEach(b => b.classList.remove('active'));
     localStorage.setItem('activePreset', 'custom');
-    applyColors(primaryPicker.value, secondaryPicker.value);
+    applyColors(primaryPicker.value, secondaryPicker.value, true, false);
   });
 
   secondaryPicker.addEventListener('input', function(e) {
     presetBtns.forEach(b => b.classList.remove('active'));
     localStorage.setItem('activePreset', 'custom');
-    applyColors(primaryPicker.value, secondaryPicker.value);
+    applyColors(primaryPicker.value, secondaryPicker.value, true, false);
   });
 
   // Bind Copy Color button
@@ -453,7 +536,7 @@ import gsap from 'gsap';
     localStorage.setItem('activePreset', 'custom');
     
     // Explicitly apply and save the original brand default colors (Primary: #e87c50, Secondary: #faf2e3)
-    applyColors('#e87c50', '#faf2e3', true);
+    applyColors('#e87c50', '#faf2e3', true, true);
   });
 
   // Hook into themeChanged event from theme.js to re-apply correctly
@@ -463,12 +546,12 @@ import gsap from 'gsap';
     const activePreset = localStorage.getItem('activePreset') || 'default';
     
     if (savedPrimary && savedSecondary) {
-      applyColors(savedPrimary, savedSecondary, false);
+      applyColors(savedPrimary, savedSecondary, false, false);
     } else {
       // Apply correct default or preset
       const themeColors = presets[activePreset];
       if (themeColors) {
-        applyColors(themeColors.primary, themeColors.secondary, false);
+        applyColors(themeColors.primary, themeColors.secondary, false, false);
       }
     }
   });
