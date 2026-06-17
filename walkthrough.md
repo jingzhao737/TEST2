@@ -2847,3 +2847,21 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 编译打包一次通过。
 - 使用 `python workflow.py deploy` 推送提交。现场多次高频率测试开启和折叠调色盘，入场圆形蒙版铺开柔和舒适，关闭缩回顺畅无暇，完全告别了闪烁现象。
+
+---
+
+## 🛠️ Step 632: 调整调色盘折叠退出回调时序，彻底根除动画收尾闪现问题 (Choreograph Resequenced onComplete Event Order to Eliminate Post-Close Flash)
+
+### 1. 痛点与实现方案 (Pain Points & Solutions)
+- **痛点**：在 Step 631 中虽然实现了行内属性的精准清除，但是由于 `consoleEl.classList.remove('active')` 依然写在 `gsap.set(consoleEl, { clearProps: ... })` 的下方，执行 `gsap.set` 时卡片上仍然携带着 `.active` 类名。这使得行内 `opacity: 0` 被清除的瞬间，卡片立刻回退到了 `.active` 对应的样式规则（`opacity: 1`），在随后的微秒级时间内再次闪现了一下。
+- **优化方案**：
+  1. **移除与清理顺序重排 (Strict Order of Operations)**：在折叠 timelines 的 `onComplete` 回调中，必须在任何清除操作之前，将 `consoleEl.classList.remove('active')` 放在首行执行。
+  2. **逻辑机制闭环**：
+     - **第一步**：执行 `classList.remove('active')`，撤销激活类名。此时底卡在 CSS 中的显示样式已变回隐藏（`opacity: 0`），但因为 GSAP 还在通过行内样式强制指定 `opacity: 0` 和 `scale(0.3)`，所以状态平稳无闪烁。
+     - **第二步**：执行 `gsap.set(consoleEl, { clearProps: 'transform,opacity,...' })`，安全抹除 GSAP 的行内属性。底卡无缝坠回 CSS 默认的不活动隐藏态（`opacity: 0`）。
+     - **第三步**：最后执行 `consoleEl.style.transition = ''`，恢复 transitions。
+  3. **效果**：经过这次严密的时序重排，折叠时底卡在收缩到终点的刹那平滑退场，没有哪怕一帧的二次复现或闪现，修复完全闭环。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 编译，生成包构建成功。
+- 使用 `python workflow.py deploy` 推送提交。高频度重复点击关闭控制台，底框完美收缩回 logo 点并隐藏，闪烁现象 100% 根除。

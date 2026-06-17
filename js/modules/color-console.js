@@ -589,7 +589,10 @@ import gsap from 'gsap';
 
       const tl = gsap.timeline({
         onComplete: () => {
-          // Clear GSAP inline styles of animated properties (leaving transition: none intact to prevent flash)
+          // 1. Remove active class first while inline styles are still forcing opacity: 0
+          consoleEl.classList.remove('active');
+
+          // 2. Clear GSAP inline styles of animated properties (leaving transition: none intact to prevent flash)
           gsap.set(logo, { clearProps: 'all' });
           gsap.set(consoleEl, { clearProps: 'transform,opacity,clipPath,webkitClipPath,transformOrigin' });
           if (staticLogo) {
@@ -606,8 +609,7 @@ import gsap from 'gsap';
           logo.classList.remove('no-transition');
           logo.classList.remove('console-active');
           
-          // Remove active class first, then restore the transition property
-          consoleEl.classList.remove('active');
+          // 3. Clear the transition inline override last
           consoleEl.style.transition = '';
           _animating = false;
         }
