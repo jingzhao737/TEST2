@@ -2681,3 +2681,40 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 重新运行 npx vite build 编译打包通过。
 - 运行 node check_console.js 验证控制台日志无错误。
 - 通过 py workflow.py deploy 成功将代码同步提交并推送（Commit c235d47）线上。
+
+---
+
+## 🛠️ Step 621: 在 YYJZ 飞行动画结束后增加星星粒子爆裂特效 (Add Post-Flight Star Particle Splash Animation)
+
+### 1. 需求与实现思路 (Requirements & Implementation Concept)
+- **需求**：在 `YYJZ` 徽标飞行动画结束 0.2 秒后，在其终点位置（控制台头部占位符处）触发类似鼠标点击时产生的水流星星爆裂特效。并且这些星星的存活时间需要比普通鼠标点击的粒子更久一些。在关闭控制台飞回时，移除该星星特效，且将返回飞行速度加快至原本的 `50%`。
+- **实现方案**：
+  1. **特效参数定制化**：在 [stars.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/stars.js) 中，重构单重水纹产生函数 `createSingleRipple`，新增可选的生命周期时长（`customDuration`）、最大扩散半径（`customMaxRadius`）以及是否跟随当前鼠标拖动（`isCurrentPress`）三个参数，并将同时活动水纹上限放宽至 15。
+  2. **多重星纹叠加 API**：在 `stars.js` 中暴露全局 API `window.triggerLogoStarSplash(x, y)`。该 API 触发 3 级渐进扩散水纹圈（分别延迟 0.0s、0.2s、0.4s 启动），单重生命周期设为 `1.5s`（远长于鼠标点击的 `0.6s`），最大扩散半径设为 `0.13`（宽于鼠标的 `0.11`），并且 `isCurrentPress` 设为 `false` 使其不随鼠标移动而偏离。
+  3. **延迟触发器与动画加速**：在 [color-console.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/color-console.js) 的展开 timeline `onComplete` 回调中，设置 `200ms` 的延迟计时器（`setTimeout`）。而在关闭动画中，将 `duration` 乘以 `0.5` 加速飞回，并完全移除 `triggerLogoStarSplash` 与 `triggerForgeBurst` 触发。
+  4. **精确坐标定位**：利用 `logo.getBoundingClientRect()` 实时获取当前徽标的屏幕像素中心坐标并转换为归一化的 WebGL 坐标系数值调用 `window.triggerLogoStarSplash`。
+
+---
+
+## 🛠️ Step 622: 重构网页硬编码橙色元素，全面适配调色盘颜色切换 (Make All Hardcoded Orange Colors Dynamic)
+
+### 1. 发现并修复的硬编码橙色点
+- **导航栏音频波纹 ([nav-waveform.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/nav-waveform.js))**：
+  - 之前波纹的 3 层渐变停效和呼吸边缘发光都是硬编码的 `rgba(232, 124, 80, ...)`。
+  - **修复**：重构为动态从 CSS 变量读取 `--accent-rgb`，使其随调色盘预设变色。
+- **交互激光火花特效 ([laser-lines.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/laser-lines.js))**：
+  - 点击可交互元素时弹出的物理火花颜色之前被写死为 `#E87C50`。
+  - **修复**：更新为动态获取 `--accent` 变量，生成匹配当前调色盘的主题色火花。
+- **磁性诗歌文字边缘霓虹发光 ([poetry.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/poetry.js))**：
+  - 诗句磁吸发光的 `glowColor` 在暗黑模式下写死了 `rgba(232, 124, 80, ...)`。
+  - **修复**：更改为动态读取并使用 `--accent-rgb` 构建阴影。
+- **太空星空 WebGL 模块中的 Section Tag 标签文字 ([stars.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/stars.js))**：
+  - 标签文字（如 WebGL 层渲染的小标签）颜色之前硬编码为 `#e87c50`。
+  - **修复**：改为动态通过 `--accent` 换色。
+- **导航栏色差模糊渲染（Chromatic Aberration）([nav.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/nav.js))**：
+  - **原物理机制**：通过叠加红、绿、蓝三个不同的偏移发光圆，并利用 Canvas 混合模式物理合成为品牌橙 `rgb(232, 124, 80)`。
+  - **修复（动态色彩合成）**：重构了这一算法，动态读取调色盘 `--accent-rgb` 的 R、G、B 分量。
+    - **暗黑模式（加法混合）**：红绿蓝三个通道直接按目标 RGB 进行强度缩放。
+    - **亮色模式（减法混合）**：计算对应颜色的减色系数 `(255 - target) / 255`。
+    - 这样，悬停色差效果会自动混合渲染出调色盘对应的任意新主题色！
+
