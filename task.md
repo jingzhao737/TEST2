@@ -123,3 +123,9 @@
   - `[x]` 修正 Outline Logo 的初始 GSAP 定位参数，设置为 `left: startBaselineLeft, x: currentX`，保证测量与呈现绝对对齐。
   - `[x]` 重构 Timeline `onUpdate` 阶段：将 `xOffset` 变更为原空中膨胀值的线性插值衰退与全新收敛正弦叠加：`gsap.utils.interpolate(currentX, 0, s) + Math.sin(s * Math.PI) * maxBulge * (isLogoInBody ? 0.3 : 1)`。
   - `[x]` 编译项目并在 GitHub 生产环境部署发布。
+
+- `[x]` **修复打断时 Logo 跳变与折收动画折叠感恢复 (Fix Interruption Jump & Restore Elegant Folding Transition)**
+  - `[x]` 在 `else` 关闭分支的首部，将 `logo.style.transform = 'none'` 设为条件执行：仅在 `!isLogoInBody` 时重置 transform，防止清除飞行中的 translate 位移引发瞬间坐标跳变。
+  - `[x]` 精简并优化退出曲线：将底框缩敛和圆形蒙版折叠时间调回 `1.0s`（ease 设为 `'power3.inOut'`），恢复圆润收拢的高级折叠动态。
+  - `[x]` 将退场 Logo 飞行时间调至 `1.2s`，底板 Opacity 淡出延长至 `0.2s`，设置项坠落缩短为 `0.4s`。
+  - `[x]` 编译项目并在 GitHub 生产环境部署发布。

@@ -2954,3 +2954,25 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境打包通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，中途折回表现得如丝般顺滑，飞行动作符合严谨的物理惯性，落点 100% 精准无误。
+
+---
+
+## 🛠️ Step 637: 修复打断时的 Logo 坐标突变跳跃，并恢复调色盘底框的“圆形蒙版折叠”退场感 (Fix Interruption Snapping & Restore Elegant Circular Folding)
+
+### 1. 优化与修复方案 (Solutions & Bugfixes)
+- **问题分析**：
+  1. **打断时的 Logo 跳跃**：在退场（关闭）分支中，为了获取未受 CSS 变形缩放污染的原始尺寸，我们在开始时无条件设置了 `logo.style.transform = 'none'` 并刷新了布局。然而，当 Logo 处于**中途飞行状态**（即已被移至 body，并且位置和 bulge 纯由 GSAP inline transform 翻译量 `translate(x, y)` 表达）时，强行设置为 `none` 会**瞬间清空当前的飞行偏移**。导致随后用 `getBoundingClientRect()` 测定的 mid-air 坐标实际上是不含 `x` 翻译的基准投影位置，引发一帧的瞬间位移突变跳跃。
+  2. **折叠动画被“误以为”只是缩放**：由于在 Step 635 中退场节奏过快（底卡缩拢仅为 `0.6` 秒），配合陡峭的 `power4.in` 缓动，底框大部分时间保持静止，最后在不到 `0.2` 秒的时间内骤缩，使人无法用肉眼捕捉到圆形蒙版合拢的细节；同时因为 `scale` 缩放过于紧凑，视觉上呈现出一种干瘪的普通 scale-down 效果，缺乏高级的“折叠退场”感。
+- **重构方案**：
+  1. **条件式重置 (Conditional Transform Reset)**：
+     - 在关闭分支的开头，只有当 Logo **不在飞行状态**（`!isLogoInBody`，即还在 console header 的 placeholder 内部时）才允许设置 `logo.style.transform = 'none'`；如果它已在 body 中进行飞行，则保持其 inline transform 完整，以允许 `getBoundingClientRect()` 精准读取当前真实的 mid-air 视口总坐标，从而彻底杜绝了折返一瞬间的 Logo 跳字抖动。
+  2. **打磨折叠（Unfolding/Folding）退场曲线**：
+     - 将底框收缩和圆形蒙版折叠的持续时间重新优化到温和的 `1.0` 秒（原本为 `0.6s`）。
+     - 将缓动从过于极端的 `'power4.in'` 调整为柔和、自然的 **`'power3.inOut'`**。
+     - **视觉效果**：在 `1.0s` 的缓和周期和 symmetric `'power3.inOut'` 曲线下，圆形 mask 能够从容、优雅地由外向内徐徐收拢。配合同等周期的 `scale` 缩微，使退场过程表现出与入场水波展开完美的逆向圆滑剪裁，极富高级的 Awwwards 级“菜单收折”艺术质感。
+  3. **时间线和谐微调 (Timeline Balancing)**：
+     - 对应地，将 Logo 飞行时间调至 `1.2` 秒（ease 升级为 `'power3.inOut'`），底板 Opacity 淡出延长至 `0.2s`（延迟 `0.85s` 启动），子项 Staggered 坠退时长调整为 `0.4s`（stagger 间距改为 `0.05s`）。整个退出不仅响应迅捷，且细节纤毫毕现，表现极度丝滑。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境打包通过。
+- 使用 `python workflow.py deploy` 推送代码提交。经多次疯狂快速乱点打断测试，徽标折回路径 100% 连贯，毫无哪怕一像素的跳动；底板退场时，圆润的剪裁蒙版和比例收折细节一览无遗，交互高级感完美复归。
