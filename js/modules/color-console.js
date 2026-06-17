@@ -179,7 +179,7 @@ import gsap from 'gsap';
       
       _animating = true;
       const maxBulge = window.__logoBulge !== undefined ? window.__logoBulge : (window.innerWidth > 768 ? 36 : 28);
-      const duration = window.__logoDuration !== undefined ? window.__logoDuration : 2.7;
+      const duration = (window.__logoDuration !== undefined ? window.__logoDuration : 2.7) * 0.5;
       const ease = window.__logoEase !== undefined ? window.__logoEase : 'power4.inOut';
       const animState = { progress: 0 };
 
@@ -202,21 +202,6 @@ import gsap from 'gsap';
           consoleEl.style.transition = '';
           consoleEl.classList.remove('active');
           _animating = false;
-
-          // Trigger logo landing star splash on return flight immediately upon landing
-          const targetEl = staticLogo || logo;
-          const rect = targetEl.getBoundingClientRect();
-          const clientX = rect.left + rect.width / 2;
-          const clientY = rect.top + rect.height / 2;
-
-          if (typeof window.triggerLogoStarSplash === 'function') {
-            const x = clientX / window.innerWidth;
-            const y = 1.0 - (clientY / window.innerHeight);
-            window.triggerLogoStarSplash(x, y);
-          }
-          if (typeof window.triggerForgeBurst === 'function') {
-            window.triggerForgeBurst(clientX, clientY);
-          }
         }
       });
 
