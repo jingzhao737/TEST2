@@ -1844,6 +1844,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   background: #000;
   z-index: -1;
   opacity: 0;
+  pointer-events: none; /* only enabled when .open — prevents blocking card clicks during fade-out */
+}
+.work-detail.open .work-detail-bg {
   pointer-events: auto;
 }
 :root.light .work-detail-bg {
