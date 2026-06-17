@@ -579,7 +579,7 @@ import gsap from 'gsap';
       
       _animating = true;
       const maxBulge = window.innerWidth > 768 ? 36 : 28;
-      const duration = 2.7;
+      const duration = 1.4;
       const ease = 'power4.inOut';
       const animState = { progress: 0 };
 
@@ -619,11 +619,11 @@ import gsap from 'gsap';
 
       // Smoothly fade the solid logo back in as outline approaches the navbar
       if (staticLogo) {
-        gsap.to(staticLogo, { opacity: 1, duration: 0.5, ease: 'power2.inOut', delay: duration - 0.5 });
+        gsap.to(staticLogo, { opacity: 1, duration: 0.4, ease: 'power2.inOut', delay: duration - 0.4 });
       }
 
       // Smoothly fade out outline logo as it lands to morph back into solid logo
-      tl.to(logo, { opacity: 0, duration: 0.4, ease: 'power2.inOut' }, duration - 0.4);
+      tl.to(logo, { opacity: 0, duration: 0.3, ease: 'power2.inOut' }, duration - 0.3);
 
       // Parametric return tween: keeps path geometric shape perfect
       tl.to(animState, {
@@ -647,10 +647,10 @@ import gsap from 'gsap';
       tl.to([consoleHeader, ...consoleSections, consoleActions], {
         y: 15,
         opacity: 0,
-        duration: 0.8,
-        ease: 'power3.in',
-        stagger: { each: 0.1, from: 'end' }
-      }, 0.15);
+        duration: 0.5,
+        ease: 'power2.in',
+        stagger: { each: 0.06, from: 'end' }
+      }, 0);
 
       // Card scale and clip-path shrink (origin: 60px 30px)
       tl.fromTo(consoleEl, 
@@ -665,17 +665,17 @@ import gsap from 'gsap';
           clipPath: "circle(0% at 60px 30px)",
           webkitClipPath: "circle(0% at 60px 30px)",
           transformOrigin: "60px 30px",
-          duration: 1.8,
+          duration: 0.9,
           ease: 'power4.in'
         }, 
-        0.15
+        0.05
       );
 
       // Card opacity fade out (delayed slightly to keep the circular mask shrink visible)
       tl.to(consoleEl, {
         opacity: 0,
-        duration: 0.2
-      }, 1.75);
+        duration: 0.15
+      }, 0.8);
     }
   }
 
