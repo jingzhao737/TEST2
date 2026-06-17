@@ -3319,13 +3319,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     padding: 36px 48px;
     gap: 32px;
     grid-template-columns: 80px 1fr 140px 80px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.055);
+    background: rgba(255, 255, 255, 0.09);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     /* Inset shadow simulates beveled edge reflections and white inner glow */
-    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.22), inset 0 0 16px rgba(255, 255, 255, 0.06), inset -1px -1px 0px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25);
+    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.35), inset 0 0 24px rgba(255, 255, 255, 0.12), inset -1px -1px 0px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.3);
     /* No preserve-3d on cards — avoids Chromium stacking-context flattening */
     transition: background 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -3337,10 +3337,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   /* Hover state driven ONLY by .hovered class set from JS static-rect hit-testing
      NO .work-card:hover rules exist — prevents CSS native hover from causing jitter */
   .work-list .work-card.hovered {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(var(--accent-rgb), 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(var(--accent-rgb), 0.85);
     /* Intensified top-left glow, accent inner glow and deeper shadow to simulate card "lifting" */
-    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.38), inset 0 0 24px rgba(var(--accent-rgb), 0.15), inset -1px -1px 0px rgba(0, 0, 0, 0.25), 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(var(--accent-rgb), 0.25);
+    box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.55), inset 0 0 32px rgba(var(--accent-rgb), 0.28), inset -1px -1px 0px rgba(0, 0, 0, 0.3), 0 32px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(var(--accent-rgb), 0.35);
   }
 
   /* Hover line override for 3D cards */
