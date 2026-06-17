@@ -2886,3 +2886,20 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境打包完美通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，调色盘的打开与关闭动效在时长、速度、剪切方式及物理缩放上完全对称呼应，转场逻辑非常合理、优雅，给整站的交互体验带来了极大的提升。
+
+---
+
+## 🛠️ Step 634: 优化加速调色盘退场过渡与徽标返航动画 (Accelerate Color Console Exit & Logo Return Flight)
+
+### 1. 优化方案 (Solutions)
+- **目标**：满足用户关于“退场动画可以快一些，然后 logo 的回去的动画一样也快一些”的体验优化要求，在保证 Awwwards-style 圆形剪裁收敛及卡片缩小视觉细节的同时，大幅提升退场响应速度。
+- **调整细节**：
+  1. **徽标返航飞行加速**：将 Logo 返回导航栏的整体飞行时长从 `2.7` 秒压缩至 `1.4` 秒，采用 `'power4.inOut'` 缓动，实现更加迅捷而极富动感的返航体验。导航栏 solid logo 的淡入时长缩短为 `0.4s`（延迟 `1.0s`），outline logo 的淡出时长缩短为 `0.3s`（延迟 `1.1s`）。
+  2. **底卡缩敛加速**：将卡片圆形剪裁蒙版收拢及 Scale 缩小的持续时长从 `1.8` 秒压缩至 `0.9` 秒（`ease: 'power4.in'`，延迟 `0.05s` 启动，于 `0.95s` 时优雅完成），创造更爽快干净的收缩反馈。
+  3. **底板淡出加速**：Opacity 淡出时长缩短为 `0.15s`，精确延时至 `0.8s` 触发，对齐蒙版和尺寸缩至最小的终点时刻。
+  4. **子级元素收起加速**：Presets、Custom Picker 和动作按钮的 Staggered 坠落隐退时长缩短为 `0.5s`（`ease: 'power2.in'`，`stagger` 间距缩短至 `0.06s`，`0s` 起跑），确保它们在底板收敛时能以极速优雅地滑落消失。
+- **效果**：用户点击关闭后，调色盘选项在瞬间（0.5s内）收回，底板以高频物理质感在 0.95s 内圆形回缩归零，随后徽标在 1.4s 时流畅利落地归巢并转为实色，交互干脆利落，毫不拖泥带水。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，加速后的退场过渡节奏极佳，既具备圆形水波收缩的视觉质感，又极其迅速敏捷，体验无可挑剔。

@@ -100,3 +100,10 @@
   - `[x]` 将内部设置子项 Staggered 退场动画时间从 `0.4s` 延长至 `0.8s`，缓动改为 `'power3.in'`，stagger 间距调整为 `0.1s`。
   - `[x]` 修复 `consoleHeader`, `consoleSections`, `consoleActions` 变量在退场代码块中的作用域 bug，将其提至 `else` 顶部进行共享定义。
   - `[x]` 执行本地打包校验，确认生产环境构建 100% 通过且无编译报错。
+
+- `[x]` **调色盘退场与徽标返航动画加速优化 (Accelerate Color Console Exit & Logo Return Transitions)**
+  - `[x]` 将退场 Logo 飞行时间缩短至 `1.4s`（原为 `2.7s`），对齐 solid/outline logo 的淡入淡出时序。
+  - `[x]` 将底卡剪裁蒙版收拢及 Scale 缩小时间缩短为 `0.9s`，延迟调整为 `0.05s`。
+  - `[x]` 将底板 Opacity 渐隐时间缩短为 `0.15s`，延迟调整为 `0.8s`，确保与缩敛终点合拍。
+  - `[x]` 将子级元素 stagger 坠退时间缩短为 `0.5s`，stagger 间距改为 `0.06s`，`0s` 即时起跑。
+  - `[x]` 编译项目生产环境构建包并推送部署到 GitHub 线上。
