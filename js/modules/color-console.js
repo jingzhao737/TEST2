@@ -607,7 +607,7 @@ import gsap from 'gsap';
       logo.offsetHeight; // Force reflow
       
       const startRect = logo.getBoundingClientRect();
-      const toRect = anchorEl.getBoundingClientRect();
+      const currentTargetRect_at_start = anchorEl.getBoundingClientRect();
       
       // DOM Handover: move logo back to body for flight if not already there
       if (!isLogoInBody) {
@@ -618,6 +618,9 @@ import gsap from 'gsap';
       const currentX = isLogoInBody ? (parseFloat(gsap.getProperty(logo, "x")) || 0) : 0;
       const startBaselineLeft = startRect.left - currentX;
       const startBaselineTop = startRect.top;
+
+      const initialOffsetLeft = startBaselineLeft - currentTargetRect_at_start.left;
+      const initialOffsetTop = startBaselineTop - currentTargetRect_at_start.top;
 
       gsap.set(logo, {
         left: startBaselineLeft,
@@ -692,15 +695,18 @@ import gsap from 'gsap';
       }
       tl.set(logo, { opacity: 0 }, duration);
 
-      // Parametric return tween: keeps path geometric shape perfect
+      // Parametric return tween: keeps path geometric shape perfect, dynamically tracking the target navbar logo
       tl.to(animState, {
         progress: 1,
         duration: duration,
         ease: ease,
         onUpdate: function() {
           const s = animState.progress;
-          const currentLeft = gsap.utils.interpolate(startBaselineLeft, toRect.left, s);
-          const currentTop = gsap.utils.interpolate(startBaselineTop, toRect.top, s);
+          const currentTargetRect = anchorEl.getBoundingClientRect();
+          const currentOffsetLeft = gsap.utils.interpolate(initialOffsetLeft, 0, s);
+          const currentOffsetTop = gsap.utils.interpolate(initialOffsetTop, 0, s);
+          const currentLeft = currentTargetRect.left + currentOffsetLeft;
+          const currentTop = currentTargetRect.top + currentOffsetTop;
           const xOffset = gsap.utils.interpolate(currentX, 0, s) + Math.sin(s * Math.PI) * maxBulge * (isLogoInBody ? 0.3 : 1);
           gsap.set(logo, {
             left: currentLeft,
