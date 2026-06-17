@@ -430,86 +430,86 @@ import gsap from 'gsap';
 
     if (animate) {
       const overlay = document.getElementById('colorTransitionOverlay');
-      const secBlock = overlay ? overlay.querySelector('.secondary-block') : null;
-      const priBlock = overlay ? overlay.querySelector('.primary-block') : null;
+      const secPath = overlay ? overlay.querySelector('.secondary-path') : null;
+      const priPath = overlay ? overlay.querySelector('.primary-path') : null;
 
-      if (overlay && secBlock && priBlock) {
-        // Extract click coordinates or use center of viewport
-        let clickX = window.innerWidth / 2;
-        let clickY = window.innerHeight / 2;
+      if (overlay && secPath && priPath) {
+        // Set target colors
+        secPath.setAttribute('fill', secondary);
+        priPath.setAttribute('fill', primary);
 
-        if (animateOrEvent && animateOrEvent.clientX !== undefined && animateOrEvent.clientY !== undefined) {
-          clickX = animateOrEvent.clientX;
-          clickY = animateOrEvent.clientY;
-        }
+        // Reset starting position (bottom flat flat)
+        secPath.setAttribute('d', 'M 0 100 Q 50 100 100 100 L 100 100 L 0 100 Z');
+        priPath.setAttribute('d', 'M 0 100 Q 50 100 100 100 L 100 100 L 0 100 Z');
+        overlay.style.display = 'block';
 
-        // Set colors
-        secBlock.style.backgroundColor = secondary;
-        priBlock.style.backgroundColor = primary;
-
-        // Reset starting position to circle(0px) at coordinates
-        gsap.set(secBlock, { clipPath: `circle(0px at ${clickX}px ${clickY}px)` });
-        gsap.set(priBlock, { clipPath: `circle(0px at ${clickX}px ${clickY}px)` });
-        gsap.set(overlay, { opacity: 1, display: 'block' });
-
-        // Calculate max radius needed to fully cover screen from click coordinates
-        const dx = Math.max(clickX, window.innerWidth - clickX);
-        const dy = Math.max(clickY, window.innerHeight - clickY);
-        const maxRadius = Math.ceil(Math.sqrt(dx * dx + dy * dy)) + 20;
-
-        // Animate overlay blocks
+        // Animate overlay blocks using liquid morphing paths
         transitionTimeline = gsap.timeline({
           onComplete: () => {
             overlay.style.display = 'none';
-            // Reset translations for the next click
-            gsap.set(secBlock, { x: '0%' });
-            gsap.set(priBlock, { x: '0%' });
+            // Reset paths for next transition
+            secPath.setAttribute('d', 'M 0 100 Q 50 100 100 100 L 100 100 L 0 100 Z');
+            priPath.setAttribute('d', 'M 0 100 Q 50 100 100 100 L 100 100 L 0 100 Z');
           }
         });
 
-        // Use custom wrapper object for GSAP to animate numeric values smoothly
-        const circleParams = { secRadius: 0, priRadius: 0 };
+        const secWave = { left: 100, ctrl: 100, right: 100 };
+        const priWave = { left: 100, ctrl: 100, right: 100 };
+        const secReveal = { left: 100, ctrl: 100, right: 100 };
+        const priReveal = { left: 100, ctrl: 100, right: 100 };
 
-        // 1. Expand secondary circle
-        transitionTimeline.to(circleParams, {
-          secRadius: maxRadius,
+        // 1. Secondary wave rises from bottom to top
+        transitionTimeline.to(secWave, {
+          left: 0,
+          right: 0,
+          ctrl: -25, // shoots above top for curved stretch
           duration: 0.7,
-          ease: 'power3.out',
+          ease: 'power3.inOut',
           onUpdate: () => {
-            secBlock.style.clipPath = `circle(${circleParams.secRadius}px at ${clickX}px ${clickY}px)`;
+            secPath.setAttribute('d', `M 0 ${secWave.left} Q 50 ${secWave.ctrl} 100 ${secWave.right} L 100 100 L 0 100 Z`);
           }
         }, 0);
 
-        // 2. Expand primary circle (staggered slightly for fluid liquid ripple effect)
-        transitionTimeline.to(circleParams, {
-          priRadius: maxRadius,
+        // 2. Primary wave rises from bottom to top (staggered for liquid layers)
+        transitionTimeline.to(priWave, {
+          left: 0,
+          right: 0,
+          ctrl: -25,
           duration: 0.7,
-          ease: 'power3.out',
+          ease: 'power3.inOut',
           onUpdate: () => {
-            priBlock.style.clipPath = `circle(${circleParams.priRadius}px at ${clickX}px ${clickY}px)`;
+            priPath.setAttribute('d', `M 0 ${priWave.left} Q 50 ${priWave.ctrl} 100 ${priWave.right} L 100 100 L 0 100 Z`);
           }
         }, 0.12);
 
-        // 3. Midway: Apply colors to the page instantly behind the scenes
+        // 3. Midway: Apply colors instantly under the cover of the liquid
         transitionTimeline.call(() => {
           updateStyles(primary, secondary);
-        }, null, 0.45);
+        }, null, 0.58);
 
-        // 4. Slide out split (no opacity fade!)
-        // Staggered split: primary slides right, secondary slides left
-        transitionTimeline.to(secBlock, {
-          x: '-100%',
-          duration: 0.65,
+        // 4. Secondary wave pulls up to reveal
+        transitionTimeline.to(secReveal, {
+          left: 0,
+          right: 0,
+          ctrl: -25, // center pulls up faster creating an arch
+          duration: 0.7,
           ease: 'power3.inOut',
-          delay: 0.15
-        }, 'reveal');
+          onUpdate: () => {
+            secPath.setAttribute('d', `M 0 0 L 100 0 L 100 ${secReveal.right} Q 50 ${secReveal.ctrl} 0 ${secReveal.left} Z`);
+          }
+        }, 0.85);
 
-        transitionTimeline.to(priBlock, {
-          x: '100%',
-          duration: 0.65,
+        // 5. Primary wave pulls up to reveal (staggered)
+        transitionTimeline.to(priReveal, {
+          left: 0,
+          right: 0,
+          ctrl: -25,
+          duration: 0.7,
           ease: 'power3.inOut',
-          delay: 0.15
-        }, 'reveal');
+          onUpdate: () => {
+            priPath.setAttribute('d', `M 0 0 L 100 0 L 100 ${priReveal.right} Q 50 ${priReveal.ctrl} 0 ${priReveal.left} Z`);
+          }
+        }, 0.97);
       } else {
         // Fallback to smooth numeric fade
         const current = getCurrentColors();

@@ -3691,21 +3691,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   display: none;
 }
 
-.color-block {
-  position: absolute;
-  width: 100vw;
-  height: 100vh;
-  transition: none;
+.transition-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.secondary-block {
-  top: 0;
-  left: 0;
-  clip-path: circle(0px at 50% 50%);
+.secondary-path {
+  fill: var(--bg);
 }
 
-.primary-block {
-  top: 0;
-  left: 0;
-  clip-path: circle(0px at 50% 50%);
+.primary-path {
+  fill: var(--accent);
 }

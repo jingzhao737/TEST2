@@ -718,8 +718,10 @@
   </div>
 </div>
 <div id="colorTransitionOverlay" class="color-transition-overlay">
-  <div class="color-block secondary-block"></div>
-  <div class="color-block primary-block"></div>
+  <svg class="transition-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <path class="secondary-block secondary-path" d="M 0 100 Q 50 100 100 100 L 100 100 L 0 100 Z" />
+    <path class="primary-block primary-path" d="M 0 100 Q 50 100 100 100 L 100 100 L 0 100 Z" />
+  </svg>
 </div>
 <script>
 // ServiceWorker disabled during development
