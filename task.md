@@ -355,12 +355,12 @@
 - [x] **作品卡片与双层预览图 3D 三维“夹心”层级设计 (Works Cards 3D Layered Sandwich Layout)**
   - [x] 在 `js/modules/premium-interactions.js` 中调整 hover 激活状态下的 3D Z 坐标高度。
   - [x] 将预览图容器 `imgContainer` 的 `imgZ` 从 `15` 提高到 `52`（浮于悬停卡片 Z=28 之上，相差 24px）。
-  - [x] 将底色块 `orangeLayer` 的 `orangeZ` 从 `5` 提高到 `10`（藏于悬停卡片 Z=28 之下，相差 18px）。
-  - [x] 按比例将橙色层跟随位移计算公式的分母由 `5` 改为 `10`，乘数增至 `18`（最大位移从 12px 扩宽至 18px），保证拖拽时的立体视差滑行更加柔顺宽阔。
+  - [x] 将底色块 `orangeLayer` 的 `orangeZ` 调整为 **`-25px`**（确保哪怕在最大倾斜时，边缘最大回升高度 Z=-3px 也彻底处于所有未悬浮卡片 Z=0 之下，根治任何穿模剪切）。
+  - [x] 引入 `Math.abs` 保证负 Z 高度下位移偏移方向依旧为正向拖拽，按比例将位移计算公式的分母由 `5` 改为 `25`，乘数增至 `18`（最大位移保持 `18px`）。
   - [x] 成功打包编译并部署发布。
 
 - [x] **作品卡片切换时底色块 3D 纵深下潜与回弹动效 (Lower Color Block Z-Axis Diving Spring Animation on Switch)**
   - [x] 在 `js/modules/premium-interactions.js` 中引入 `orangeSwitchTimeline` 以避免切换动画与主展示动画冲突。
-  - [x] 在 `onCardEnter` 检测到卡片发生切换且当前处于预览活跃状态时，触发 Z 轴下潜：先将 `orangeZ` 在 `0.16s` 内向下俯冲下潜至 **`-36px`**（避开卡片和阴影层，彻底潜入作品列表后方），随后使用弹性曲线 `elastic.out` 在 `0.6s` 内回弹至夹层高度 **`10px`**。
+  - [x] 在 `onCardEnter` 检测到卡片发生切换且当前处于预览活跃状态时，触发 Z 轴下潜：先将 `orangeZ` 在 `0.16s` 内向下俯冲深潜至 **`-45px`**（避开卡片下落过渡层，彻底深潜），随后使用弹性曲线 `elastic.out` 在 `0.6s` 内回弹至安全背景深度 **`-25px`**。
   - [x] 在 `showPreviewDOM` 和 `hidePreviewDOM` 触发时，同步对 `orangeSwitchTimeline` 进行清理（kill），防范多轨道动画竞态冲突。
   - [x] 成功编译构建并发布。

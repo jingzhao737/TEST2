@@ -2602,7 +2602,7 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
     - **手机端 (<= 768px)**：左右内边距由 `28px` 进一步提升至 `38px`。
     - **小屏手机 (<= 480px)**：左右内边距由 `24px` 进一步提升至 `32px`。
   - **大标题整体下移 (Hero Title Downward Shift)**：
-    - **桌面端 (Desktop)**：将 `.hero` 的底部内边距 `padding-bottom` 从 `110px` 缩减为 `85px`。由于大标题依靠 `align-items: flex-end` 底部定位，这会使其整体向视口下边缘贴近 `25px`。
+    - **桌面端 (Desktop)**：将 `.hero` 的底部内边距 `padding-bottom` 从 `1-25px` 缩减为 `85px`。由于大标题依靠 `align-items: flex-end` 底部定位，这会使其整体向视口下边缘贴近 `25px`。
     - **平板端 (<= 1024px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `150px` 增加为 `180px`，向下推挤内容。
     - **手机端 (<= 768px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `calc(56px + 8%)` 增加为 `calc(56px + 12%)`。
     - **小屏手机 (<= 480px)**：将 `.hero` 的顶部内边距 `padding-top` 从 `calc(48px + 8%)` 增加为 `calc(48px + 12%)`。
@@ -2621,7 +2621,7 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **问题反馈**：上述大标题下移和导航栏内收只应该应用于手机端（小屏），桌面端和平板端的布局需要恢复为原先的设计状态。
 - **解决方案与恢复**：
   - **恢复桌面端 (Desktop Restore)**：
-    - 将 `.hero` 的底部 padding-bottom 从 `85px` 恢复为 `110px`。
+    - 将 `.hero` 的底部 padding-bottom 从 `85px` 恢复为 `1-25px`。
   - **恢复平板端 (Tablet Restore, max-width: 1024px)**：
     - 将 `.nav` 的 padding 左右内边距从 `42px` 恢复为原版的 `24px`。
     - 将 `.hero` 的顶部 padding-top 从 `180px` 恢复为原版的 `150px`。
@@ -3369,9 +3369,9 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
   - **三维重叠排序**：
     1. **Hover 卡片（中间夹心，Z = 28px）**：卡片在悬浮时通过 CSS 物理飘起 Z = 28px。
     2. **预览大图（绝对上层，Z = 52px）**：在 `js/modules/premium-interactions.js` 中，将 `imgContainer` 在激活时的 `imgZ` 目标值由 `15` 大幅拉升至 **`52`**，实现**浮于悬停卡片上方 24 像素**的裸眼 3D 层叠效果，内容永不被遮挡。
-    3. **橙色影子底块（绝对下层，Z = 10px）**：将底板 `orangeLayer` 的 `orangeZ` 由 `5` 提升至 **`10`**。由于 `10 < 28`，它恰好**压在悬浮厚玻璃卡片下方 18 像素**的纵深处，同时又浮于未悬停卡片（Z = 0）上方。
+    3. **橙色影子底块（绝对下层，Z = -25px）**：将底板 `orangeLayer` 的 `orangeZ` 由 `5` 提升至 **`10`**。由于 `10 < 28`，它恰好**压在悬浮厚玻璃卡片下方 18 像素**的纵深处，同时又浮于未悬停卡片（Z = 0）上方。
   - **视差偏移校准**：
-    - 将橙色层跟随鼠标移动的延迟视差滑动公式由 `(orangeZ / 5) * 12` 校准为 `(orangeZ / 10) * 18`。
+    - 将橙色层跟随鼠标移动的延迟视差滑动公式由 `(Math.abs(orangeZ) / 25) * 18` 校准为 `(Math.abs(orangeZ) / 25) * 18`。
     - 使得橙色色块在 Z 轴升起 10 像素的过程中，斜向最大拉开间距自适应扩宽至 **`18px`**。用户在拖拽鼠标时，能看到大图和橙色底块分别在卡片的前方和后方以不同的速率滑行，三维穿插感极其惊艳！
 
 ### 2. 部署与验证 (Deployment & Verification)
@@ -3387,13 +3387,13 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **痛点**：在卡片间切换时，底部的橙色色块如果只是单纯跟着鼠标从左到右漂移，Z 轴高度保持不变，会缺乏图层间“空间穿梭”的生动趣味。
 - **3D 下潜回弹设计 (Z-Axis Diving Spring Animation)**：
   - **独立的时间轴控制 (No Animation Glitch)**：引入模块级 timeline 变量 `orangeSwitchTimeline`。在启动下潜动画时，以及整体进入/退出预览区（`showPreviewDOM` 和 `hidePreviewDOM`）时，同步将 `orangeSwitchTimeline` 主动杀死并清理。这完全规避了并发触发带来的竞态动画重叠和卡顿。
-  - **向后深潜穿梭 (Dive Down to Z=-36px)**：
+  - **向后深潜穿梭 (Dive Down to Z=-45px)**：
     - 当用户把鼠标从一张作品卡片滑移到另一张卡片上时（激活 `onCardEnter`），橙色色块的 Z 轴位置 `orangeZ` 会在 **`0.16s`** 内通过 `power2.in` 快速缩小下降至 **`-36px`**。
     - 此时由于 Z 坐标为负，色块在 3D 视界中会瞬间“掉入”所有作品卡片以及白色内阴影的最底层后方，产生极具空间感的“穿孔下潜”遮挡关系。
-  - **弹性高空弹回 (Elastic Spring Up to Z=10px)**：
-    - 触底后，立即以弹性曲线 `elastic.out(1.0, 0.6)` 在 **`0.6s`** 内将 Z 高度拉回到 **`10px`** 夹心层。色块会带有一点点轻微的高反弹过冲（Overshoot），最终稳稳停在卡片下方。
+  - **弹性高空弹回 (Elastic Spring Up to Z=-25px)**：
+    - 触底后，立即以弹性曲线 `elastic.out(1.0, 0.6)` 在 **`0.6s`** 内将 Z 高度拉回到 **`-25px`** 夹心层。色块会带有一点点轻微的高反弹过冲（Overshoot），最终稳稳停在卡片下方。
   - **动态位移协同 (Adaptive Parallax Swing)**：
-    - 随着 `orangeZ` 从 `10` 坠落到 `-24`，随动视差公式 `(orangeZ / 10) * 18` 会自动将 X/Y 偏离距离从正向的 `18px` 拽到负向的 `-43px`。这使色块不仅在 3D 上发生了深潜，在平面上也会形成划出一道“向后拉伸 -> 极速回弹探头”的抛物折回弧线。
+    - 随着 `orangeZ` 从 `10` 坠落到 `-24`，随动视差公式 `(Math.abs(orangeZ) / 25) * 18` 会自动将 X/Y 偏离距离从正向的 `18px` 拽到负向的 `-43px`。这使色块不仅在 3D 上发生了深潜，在平面上也会形成划出一道“向后拉伸 -> 极速回弹探头”的抛物折回弧线。
 
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新打包项目，顺利通过。
