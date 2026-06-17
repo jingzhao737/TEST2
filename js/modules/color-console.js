@@ -625,6 +625,9 @@ import gsap from 'gsap';
         x: currentX,
         opacity: isLogoInBody ? gsap.getProperty(logo, "opacity") : 1
       });
+      if (staticLogo) {
+        gsap.set(staticLogo, { opacity: 0 });
+      }
       logo.offsetHeight; // Force reflow
       
       if (!isLogoInBody) {
@@ -683,13 +686,11 @@ import gsap from 'gsap';
         }
       });
 
-      // Smoothly fade the solid logo back in as outline approaches the navbar
+      // Instantly swap staticLogo and logo at the exact end of flight (duration) to prevent any opacity dip/dimming
       if (staticLogo) {
-        tl.to(staticLogo, { opacity: 1, duration: 0.3, ease: 'power2.inOut' }, duration - 0.3);
+        tl.set(staticLogo, { opacity: 1 }, duration);
       }
-
-      // Smoothly fade out outline logo as it lands to morph back into solid logo
-      tl.to(logo, { opacity: 0, duration: 0.25, ease: 'power2.inOut' }, duration - 0.25);
+      tl.set(logo, { opacity: 0 }, duration);
 
       // Parametric return tween: keeps path geometric shape perfect
       tl.to(animState, {

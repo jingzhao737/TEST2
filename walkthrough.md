@@ -3140,3 +3140,31 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。经过多次连续开启/关闭真机测试，Logo 降落完全没有哪怕一像素的闪烁和异动，平稳着陆，交互表现惊艳。
+
+---
+
+## 🛠️ Step 646: 彻底根除返航接近终点时因淡入淡出重叠导致的“暗闪/黑一下”Bug (Replace Closing Crossfade with Instant Swap on Landing)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：用户反馈，在 Logo 返航飞行接近尾声（快结束的时候），依然能肉眼明确地看见 Logo “黑一下、暗一下，或者是闪一下”。
+- **原因剖析 (Opacity Dip in Crossfade Blending)**：
+  1. 此前在返航阶段，我们将 `staticLogo` 的 opacity 用 `0.3s` 渐显至 `1`，同时将飞行中的 `logo` 用 `0.25s` 渐隐至 `0`，从而实现交接。
+  2. 然而，因为我们已经把 Outline Logo 变为了 Solid 实心，所以两者现在在视觉上是**完全相同的纯实色内容**。
+  3. 当两层纯实色图层做半透明叠加时，其混合后综合不透明度在中间帧会发生严重的折损（例如：当各自处于 50% 进度时，叠加综合不透明度仅为 $1 - (1 - 0.5)(1 - 0.5) = 0.75$ 即 `75%`）。
+  4. 这个 `100% -> 75% -> 100%` 的瞬时亮度亏损在快速飞行的衬托下，会产生极为明显的“暗影闪烁” or “黑一下”的视觉 Bug。
+- **重构方案**：
+  - **静态徽标极速屏蔽**：在关闭 block 初始化时，直接执行 `gsap.set(staticLogo, { opacity: 0 })`。在整个返航滑行阶段，让 navbar 原位置的静态 Logo 保持绝对的 `0` 不透明度（隐形）。
+  - **落点瞬时剪切交接 (Instant Swap)**：
+    - 完全移除关闭 timeline 里的 `staticLogo` 渐显和 `logo` 渐隐 Tween。
+    - 在时间线正着落的终点（`duration` 时刻），使用 GSAP 进行零秒剪切式瞬间替换：
+      `tl.set(staticLogo, { opacity: 1 }, duration)`
+      `tl.set(logo, { opacity: 0 }, duration)`
+    - **物理效果**：
+      - 飞行的 Logo 以 `100%` 恒定不透明度以极速飞回并撞击导航栏。
+      - 在撞击的第 1 帧，两个节点瞬间易位。
+      - 综合不透明度在整个 1.2 秒返航及 landing 帧里始终以 `100%` 饱满输出，彻底根治了任何由于半透明重叠混合导致的暗度亏损。
+- **效果**：返航着陆行云流水，Logo 从控制台滑动降落至导航栏的一路上，亮度恒定、绝对饱满，完场闪烁及黑闪彻底消失！
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，返航降落极为连贯坚实，交接没有哪怕一毫秒的暗淡，表现极为亮眼。

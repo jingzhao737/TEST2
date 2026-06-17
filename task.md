@@ -296,5 +296,12 @@
 - `[x]` **修复返航着陆结束瞬间徽标短暂“黑闪一下”的重影重置 Bug (Fix Logo Black Out/Flicker After Returning Landing)**
   - `[x]` 发现由于 GSAP 终点执行 `clearProps` 清理 inline style 与同步还原 CSS transition 处于同一浏览器帧中，导致浏览器在计算“清除 inline 属性到继承样式”时，对 transition 进行多余的样式重算，引发一帧的瞬时黑闪（flicker）。
   - `[x]` 重构 `color-console.js` 中打开和关闭动画的 `onComplete` 回调：使用 `requestAnimationFrame` 将 re-enable CSS transitions 的操作延迟至**下一帧**执行。
-  - `[x]` 确保在 `clearProps` 动作完成的当前帧中，CSS transitions 依然保持 `none !important` 屏蔽状态，从而强制浏览器瞬时稳定渲染至最终样式，彻底根除“黑闪一下”的视觉 Bug。
+  - `[x]` 确保在 `clearProps` 动作完成 the 当前帧中，CSS transitions 依然保持 `none !important` 屏蔽状态，从而强制浏览器瞬时稳定渲染至最终样式，彻底根除“黑闪一下”的视觉 Bug。
   - `[x]` 编译并部署发布至生产环境。
+
+- `[x]` **彻底根除返航接近终点时因淡入淡出重叠导致的“暗闪/黑一下”Bug (Replace Closing Crossfade with Instant Swap on Landing)**
+  - `[x]` 发现因为飞行的 Outline Logo 与静态的 Solid Logo 均已重构为纯实心展示，当采用原有的渐变交接（0.3s/0.25s 渐显渐隐）时，两层不透明度半透明叠加（例如各 0.5 叠加仅为 0.75 综合不透明度）会导致中途亮度发生物理变暗，产生肉眼可见的“暗闪/黑一下”。
+  - `[x]` 移除返航降落时的 `opacity` 渐变动画。在关闭 block 初始化时设定 `staticLogo` 的 `opacity` 为 `0`，让其在飞行中彻底不可见。
+  - `[x]` 在返航时间线的终点（`duration` 帧）插入瞬间替换节点 `tl.set(staticLogo, { opacity: 1 }, duration)` 与 `tl.set(logo, { opacity: 0 }, duration)`。
+  - `[x]` 确保徽标不透明度始终保持 100% 恒定，完全消除交接时任何中间态的亮度损失，彻底解决暗闪。
+  - `[x]` 编译打包并发布部署。
