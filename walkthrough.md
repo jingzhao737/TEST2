@@ -3298,3 +3298,30 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译生成静态包，确保所有 CSS 完美压缩构建。
 - 运行 `python workflow.py deploy` 推送部署上线。测试表明卡片的面、边及内侧磨砂发光质感极为强烈夺目，在星空的衬托下宛如一束束悬浮的不规则水晶厚玻璃，立体感拉满！
+
+
+---
+
+## 🛠️ Step 651: 修复浏览器缩放导致作品卡片消失的 Bug (Fix Works Cards Disappearing on Resize)
+
+### 1. 问题分析 (Problem Analysis)
+- **原因剖析**：
+  1. 在 `js/modules/works-entrance.js` 中，为了在各种窗口大小下精准绘制抛物线飞入轨迹，`measureCards` 会在 `load` 和 `resize` 时被触发，用来动态测算卡片在文档中的绝对坐标和宽高。
+  2. 为了排除动画进行中的三维缩放、平移干扰，`measureCards` 会先调用 `clearProps: 'transform,opacity,filter'` 还原卡片到干净的自然布局以读出绝对宽高和坐标。
+  3. 测量结束后，为了防止卡片在初次滚动进入前在页面闪现，原代码强行执行了 `gsap.set(card, { opacity: 0 })` 将卡片隐藏。
+  4. **Bug 触发点**：当动画播放完毕或正在播放时，只要用户拉伸或缩放浏览器窗口（触发 `resize`），`measureCards` 就会将卡片重新设为 `opacity: 0`。而由于飞入动画的 ScrollTrigger 已经被激活过（设置了 `play none none none`），动画绝不会再次重放，导致卡片永久性消失。
+
+### 2. 修复方案 (Animation State Preservation)
+- **引入动画状态标识**：在作用域顶部声明 `animationStarted` 和 `animationCompleted`。
+- **备份并恢复实时动画样式**：
+  - 在 `measureCards` 中测量前，备份卡片当前的 GSAP 动画样式（`transform`、`opacity`、`filter`）。
+  - 测算结束后，**即时复原**卡片当前的样式，确保哪怕是在飞入过程中进行缩放，动画也能无缝延续，不发生突变。
+- **条件化重置**：
+  - 仅在动画**尚未开始**时（`!animationStarted`），才在测量后应用 `opacity: 0` 进行隐藏。如果动画已经开始或已结束，则不强行归零。
+- **解绑事件提升性能**：
+  - 在 Timeline 的 `onComplete` 回调中（所有卡片飞入全部落地），将 `animationCompleted` 置为 `true`，并**主动卸载** `window` 上的 `load` 和 `resize` 监听器。
+  - 这不仅从源头上免除了后续对样式的干扰，还释放了多余的 CPU 计算开销，确保后续页面滚动与缩放零负担。
+
+### 3. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新打包项目，确认正常通过。
+- 运行 `python workflow.py deploy` 推送部署上线。经真机反复拉伸、缩放及最大化浏览器测试，作品卡片始终保持精美的磨砂玻璃发光样式，不再发生缩放卡片消失的 Bug。

@@ -336,3 +336,9 @@
   - [x] 修改 `styles.css` 的 `.work-list .work-card` 类，大幅提升背景（`9%`）、边框（`28%`）以及白色内发光（`24px / 0.12`）和高光切面（`0.35`）。
   - [x] 修改 `styles.css` 的 `.work-list .work-card.hovered` 类，提升背景（`15%`）、边框（`85%`）以及主题色内发光（`32px / 0.28`）和高光切面（`0.55`）。
   - [x] 运行 `npx vite build` 重新编译项目并发布。
+
+- [x] **修复浏览器缩放导致作品卡片消失的 Bug (Fix Works Cards Disappearing on Resize)**
+  - [x] 在 `js/modules/works-entrance.js` 中引入 `animationStarted` 和 `animationCompleted` 状态。
+  - [x] 优化 `measureCards` 以临时备份并恢复卡片当前的 GSAP 动画样式，仅在未播放过动画时才将 opacity 强制设为 0。
+  - [x] 动画完成（`onComplete`）后解绑 window 上的 resize / load 事件监听，避免多余计算并防范隐式样式覆盖。
+  - [x] 重新打包编译生产环境包并完成部署。
