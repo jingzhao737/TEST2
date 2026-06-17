@@ -318,7 +318,7 @@ import gsap from 'gsap';
 
   // Preset definitions
   const presets = {
-    default: { primary: '#e87c50', secondary: '#faf2e3' },
+    default: { primary: '#D6FF3E', secondary: '#1756FD' },
     cyberpunk: { primary: '#ff007f', secondary: '#00f3ff' },
     forest: { primary: '#52ffc5', secondary: '#ff4747' },
     ocean: { primary: '#1f5be5', secondary: '#e12323' },
@@ -384,12 +384,11 @@ import gsap from 'gsap';
       // Revert to default or active preset
       const themeColors = presets[savedPreset];
       if (themeColors) {
-        let sec = themeColors.secondary;
-        if (savedPreset === 'default') {
-          const isLight = document.documentElement.classList.contains('light');
-          sec = isLight ? '#f5f0e8' : '#faf2e3';
-        }
-        applyColors(themeColors.primary, sec, false);
+        applyColors(themeColors.primary, themeColors.secondary, false);
+        presetBtns.forEach(btn => {
+          if (btn.dataset.preset === savedPreset) btn.classList.add('active');
+          else btn.classList.remove('active');
+        });
       }
     }
   }
@@ -413,13 +412,13 @@ import gsap from 'gsap';
   primaryPicker.addEventListener('input', function(e) {
     // Remove active state from presets when custom values are selected
     presetBtns.forEach(b => b.classList.remove('active'));
-    localStorage.removeItem('activePreset');
+    localStorage.setItem('activePreset', 'custom');
     applyColors(primaryPicker.value, secondaryPicker.value);
   });
 
   secondaryPicker.addEventListener('input', function(e) {
     presetBtns.forEach(b => b.classList.remove('active'));
-    localStorage.removeItem('activePreset');
+    localStorage.setItem('activePreset', 'custom');
     applyColors(primaryPicker.value, secondaryPicker.value);
   });
 
@@ -451,11 +450,7 @@ import gsap from 'gsap';
   resetBtn.addEventListener('click', function(e) {
     e.preventDefault();
     presetBtns.forEach(b => b.classList.remove('active'));
-    const defaultBtn = document.querySelector('[data-preset="default"]');
-    if (defaultBtn) {
-      defaultBtn.classList.add('active');
-    }
-    localStorage.setItem('activePreset', 'default');
+    localStorage.setItem('activePreset', 'custom');
     
     // Explicitly apply and save the original brand default colors (Primary: #e87c50, Secondary: #faf2e3)
     applyColors('#e87c50', '#faf2e3', true);
@@ -473,12 +468,7 @@ import gsap from 'gsap';
       // Apply correct default or preset
       const themeColors = presets[activePreset];
       if (themeColors) {
-        let sec = themeColors.secondary;
-        if (activePreset === 'default') {
-          const isLight = document.documentElement.classList.contains('light');
-          sec = isLight ? '#f5f0e8' : '#faf2e3';
-        }
-        applyColors(themeColors.primary, sec, false);
+        applyColors(themeColors.primary, themeColors.secondary, false);
       }
     }
   });
