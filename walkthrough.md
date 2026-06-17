@@ -3387,8 +3387,8 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - **痛点**：在卡片间切换时，底部的橙色色块如果只是单纯跟着鼠标从左到右漂移，Z 轴高度保持不变，会缺乏图层间“空间穿梭”的生动趣味。
 - **3D 下潜回弹设计 (Z-Axis Diving Spring Animation)**：
   - **独立的时间轴控制 (No Animation Glitch)**：引入模块级 timeline 变量 `orangeSwitchTimeline`。在启动下潜动画时，以及整体进入/退出预览区（`showPreviewDOM` 和 `hidePreviewDOM`）时，同步将 `orangeSwitchTimeline` 主动杀死并清理。这完全规避了并发触发带来的竞态动画重叠和卡顿。
-  - **向后深潜穿梭 (Dive Down to Z=-24px)**：
-    - 当用户把鼠标从一张作品卡片滑移到另一张卡片上时（激活 `onCardEnter`），橙色色块的 Z 轴位置 `orangeZ` 会在 **`0.16s`** 内通过 `power2.in` 快速缩小下降至 **`-24px`**。
+  - **向后深潜穿梭 (Dive Down to Z=-36px)**：
+    - 当用户把鼠标从一张作品卡片滑移到另一张卡片上时（激活 `onCardEnter`），橙色色块的 Z 轴位置 `orangeZ` 会在 **`0.16s`** 内通过 `power2.in` 快速缩小下降至 **`-36px`**。
     - 此时由于 Z 坐标为负，色块在 3D 视界中会瞬间“掉入”所有作品卡片以及白色内阴影的最底层后方，产生极具空间感的“穿孔下潜”遮挡关系。
   - **弹性高空弹回 (Elastic Spring Up to Z=10px)**：
     - 触底后，立即以弹性曲线 `elastic.out(1.0, 0.6)` 在 **`0.6s`** 内将 Z 高度拉回到 **`10px`** 夹心层。色块会带有一点点轻微的高反弹过冲（Overshoot），最终稳稳停在卡片下方。

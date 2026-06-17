@@ -361,6 +361,6 @@
 
 - [x] **作品卡片切换时底色块 3D 纵深下潜与回弹动效 (Lower Color Block Z-Axis Diving Spring Animation on Switch)**
   - [x] 在 `js/modules/premium-interactions.js` 中引入 `orangeSwitchTimeline` 以避免切换动画与主展示动画冲突。
-  - [x] 在 `onCardEnter` 检测到卡片发生切换且当前处于预览活跃状态时，触发 Z 轴下潜：先将 `orangeZ` 在 `0.16s` 内向下俯冲下潜至 **`-24px`**（避开卡片和阴影层，彻底潜入作品列表后方），随后使用弹性曲线 `elastic.out` 在 `0.6s` 内回弹至夹层高度 **`10px`**。
+  - [x] 在 `onCardEnter` 检测到卡片发生切换且当前处于预览活跃状态时，触发 Z 轴下潜：先将 `orangeZ` 在 `0.16s` 内向下俯冲下潜至 **`-36px`**（避开卡片和阴影层，彻底潜入作品列表后方），随后使用弹性曲线 `elastic.out` 在 `0.6s` 内回弹至夹层高度 **`10px`**。
   - [x] 在 `showPreviewDOM` 和 `hidePreviewDOM` 触发时，同步对 `orangeSwitchTimeline` 进行清理（kill），防范多轨道动画竞态冲突。
   - [x] 成功编译构建并发布。
