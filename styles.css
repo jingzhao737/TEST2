@@ -3699,13 +3699,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 .secondary-block {
-  top: -100vh;
-  left: -100vw;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
+  top: 0;
+  left: 0;
+  clip-path: circle(0px at 50% 50%);
 }
 
 .primary-block {
-  bottom: -100vh;
-  right: -100vw;
-  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  top: 0;
+  left: 0;
+  clip-path: circle(0px at 50% 50%);
 }

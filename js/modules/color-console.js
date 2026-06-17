@@ -417,7 +417,7 @@ import gsap from 'gsap';
   // Apply colors to document with optional GSAP transition animation and save to state
   let colorTween = null;
   let transitionTimeline = null;
-  function applyColors(primary, secondary, save = true, animate = true) {
+  function applyColors(primary, secondary, save = true, animateOrEvent = true) {
     if (save) {
       localStorage.setItem('customPrimary', primary);
       localStorage.setItem('customSecondary', secondary);
@@ -426,20 +426,36 @@ import gsap from 'gsap';
     if (colorTween) colorTween.kill();
     if (transitionTimeline) transitionTimeline.kill();
 
+    const animate = !!animateOrEvent;
+
     if (animate) {
       const overlay = document.getElementById('colorTransitionOverlay');
       const secBlock = overlay ? overlay.querySelector('.secondary-block') : null;
       const priBlock = overlay ? overlay.querySelector('.primary-block') : null;
 
       if (overlay && secBlock && priBlock) {
-        // Set target colors
+        // Extract click coordinates or use center of viewport
+        let clickX = window.innerWidth / 2;
+        let clickY = window.innerHeight / 2;
+
+        if (animateOrEvent && animateOrEvent.clientX !== undefined && animateOrEvent.clientY !== undefined) {
+          clickX = animateOrEvent.clientX;
+          clickY = animateOrEvent.clientY;
+        }
+
+        // Set colors
         secBlock.style.backgroundColor = secondary;
         priBlock.style.backgroundColor = primary;
 
-        // Reset starting position off-screen
-        gsap.set(secBlock, { top: '-100vh', left: '-100vw' });
-        gsap.set(priBlock, { bottom: '-100vh', right: '-100vw' });
-        overlay.style.display = 'block';
+        // Reset starting position to circle(0px) at coordinates
+        gsap.set(secBlock, { clipPath: `circle(0px at ${clickX}px ${clickY}px)` });
+        gsap.set(priBlock, { clipPath: `circle(0px at ${clickX}px ${clickY}px)` });
+        gsap.set(overlay, { opacity: 1, display: 'block' });
+
+        // Calculate max radius needed to fully cover screen from click coordinates
+        const dx = Math.max(clickX, window.innerWidth - clickX);
+        const dy = Math.max(clickY, window.innerHeight - clickY);
+        const maxRadius = Math.ceil(Math.sqrt(dx * dx + dy * dy)) + 20;
 
         // Animate overlay blocks
         transitionTimeline = gsap.timeline({
@@ -448,18 +464,41 @@ import gsap from 'gsap';
           }
         });
 
-        // 1. Slide in to meet at the center (covering the entire screen)
-        transitionTimeline.to(secBlock, { top: '0vh', left: '0vw', duration: 0.6, ease: 'power3.inOut' }, 0);
-        transitionTimeline.to(priBlock, { bottom: '0vh', right: '0vw', duration: 0.6, ease: 'power3.inOut' }, 0);
+        // Use custom wrapper object for GSAP to animate numeric values smoothly
+        const circleParams = { secRadius: 0, priRadius: 0 };
 
-        // 2. Midway: Apply colors to the page instantly behind the scenes
+        // 1. Expand secondary circle
+        transitionTimeline.to(circleParams, {
+          secRadius: maxRadius,
+          duration: 0.75,
+          ease: 'power3.out',
+          onUpdate: () => {
+            secBlock.style.clipPath = `circle(${circleParams.secRadius}px at ${clickX}px ${clickY}px)`;
+          }
+        }, 0);
+
+        // 2. Expand primary circle (staggered slightly for fluid liquid ripple effect)
+        transitionTimeline.to(circleParams, {
+          priRadius: maxRadius,
+          duration: 0.75,
+          ease: 'power3.out',
+          onUpdate: () => {
+            priBlock.style.clipPath = `circle(${circleParams.priRadius}px at ${clickX}px ${clickY}px)`;
+          }
+        }, 0.12);
+
+        // 3. Midway: Apply colors to the page instantly behind the scenes
         transitionTimeline.call(() => {
           updateStyles(primary, secondary);
-        }, null, 0.45); // Run slightly before completing slide-in to feel responsive
+        }, null, 0.45);
 
-        // 3. Slide out sweeping off-screen (revealing the newly styled page)
-        transitionTimeline.to(secBlock, { top: '100vh', left: '100vw', duration: 0.6, ease: 'power3.inOut', delay: 0.15 });
-        transitionTimeline.to(priBlock, { bottom: '100vh', right: '100vw', duration: 0.6, ease: 'power3.inOut', delay: 0.15 });
+        // 4. Fade out overlay smoothly to reveal the newly styled page
+        transitionTimeline.to(overlay, {
+          opacity: 0,
+          duration: 0.5,
+          ease: 'power2.inOut',
+          delay: 0.25
+        });
       } else {
         // Fallback to smooth numeric fade
         const current = getCurrentColors();
@@ -524,7 +563,7 @@ import gsap from 'gsap';
         presetBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         localStorage.setItem('activePreset', presetKey);
-        applyColors(themeColors.primary, themeColors.secondary, true, true);
+        applyColors(themeColors.primary, themeColors.secondary, true, e);
       }
     });
   });
@@ -574,7 +613,7 @@ import gsap from 'gsap';
     localStorage.setItem('activePreset', 'custom');
     
     // Explicitly apply and save the original brand default colors (Primary: #e87c50, Secondary: #faf2e3)
-    applyColors('#e87c50', '#faf2e3', true, true);
+    applyColors('#e87c50', '#faf2e3', true, e);
   });
 
   // Hook into themeChanged event from theme.js to re-apply correctly
