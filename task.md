@@ -134,9 +134,3 @@
   - `[x]` 将实心 Logo 的渐隐和渐显动画从独立的 `gsap.to` 重构为直接加入 `tl` 动画时间线的 `tl.to`，确保它们成为主飞行进程的一部分。
   - `[x]` 在 `toggleConsole` 重启时，除关闭时间线外，增加 `gsap.killTweensOf(logo)`、`gsap.killTweensOf(staticLogo)` 及 `gsap.killTweensOf(consoleEl)`，完全清除可能存在的后台竞争 Tweens。
   - `[x]` 编译项目并在 GitHub 生产环境部署发布。
-- [x] **修复退场动画不同步与折叠效果不明显问题 (Fix Exit Animation Desync & Invisible Folding Effect)**
-  - [x] 修改 `js/modules/color-console.js` 中 `isOpening` 和 `else` 两个分支的 Logo 起始坐标计算逻辑，在 `isLogoInBody` 为 `true`（空中打断）时，直接读取 `parseFloat(logo.style.left)` 和 `parseFloat(logo.style.top)` 的 inline 属性，保证反向计算无任何视口/Reflow偏差。
-  - [x] 移除控制台退场动画的 `tl.fromTo`，改为先使用 `gsap.set` 写入初始状态并执行 `offsetHeight` 强制重绘，然后再执行 `tl.to` 动画，保证与入场逻辑结构完全一致且属性计算稳定。
-  - [x] 将控制台缩放与剪切折叠（clip-path）的缓动曲线（ease）从 `'power3.inOut'` 修改为 `'power3.out'`，使折叠在退场开始的瞬间就以极快的响应度显现，完美还原“出场即开始折叠”的动态质感。
-  - [x] 将控制台淡出（opacity）延迟的起始时间优化为从 `0.45s` 开始，持续 `0.6s`，以实现与折叠动画（持续 `1.0s`，起始于 `0.05s`）在末尾 60% 阶段的完美融合，保证折叠到极小圆圈后平滑消散。
-  - [x] 重新编译项目并验证各项打断与退场折叠效果完全丝滑顺畅。
