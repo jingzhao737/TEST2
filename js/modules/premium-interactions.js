@@ -110,7 +110,7 @@ if (!isMobileDevice) {
       activeTimeline.to(previewAnim, {
         imgOpacity: 1,
         imgScale: 1.0,
-        imgZ: 15,
+        imgZ: 52, // Float 24px ABOVE the hovered card (Z=28px)
         duration: 0.8,
         ease: 'elastic.out(1.1, 0.55)' // Elegant, fluid overshoot and single gentle bounce-back
       }, 0);
@@ -119,7 +119,7 @@ if (!isMobileDevice) {
       activeTimeline.to(previewAnim, {
         orangeOpacity: 1,
         orangeScale: 1.0,
-        orangeZ: 5,
+        orangeZ: 10, // Float 18px BELOW the hovered card (Z=28px)
         duration: 0.7,
         ease: 'elastic.out(1.0, 0.6)'
       }, 0.08); // Staggered by 0.08s for a tight, high-end feel
@@ -505,7 +505,7 @@ if (!isMobileDevice) {
       // ── STEP 4: Animate preview thumbnail follow and scale ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
         if (firstMove) {
-          const initOffset = (previewAnim.orangeZ / 5) * 12;
+          const initOffset = (previewAnim.orangeZ / 10) * 18;
           currentX = targetX;
           currentY = targetY;
           currentOrangeX = targetX + initOffset;
@@ -526,7 +526,7 @@ if (!isMobileDevice) {
         currentY += dy * 0.055;
 
         // 2. LERP orange layer (more delay: 0.035 LERP factor, dynamic offset proportional to orange layer elevation)
-        const currentOffset = (previewAnim.orangeZ / 5) * 12;
+        const currentOffset = (previewAnim.orangeZ / 10) * 18;
         const targetOrangeX = targetX + currentOffset;
         const targetOrangeY = targetY + currentOffset;
         const dxOrange = targetOrangeX - currentOrangeX;
