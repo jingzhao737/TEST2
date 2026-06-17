@@ -3546,3 +3546,20 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目。
 - 运行 `python workflow.py deploy` 推送部署上线。测试表明，刷新页面后滚动到作品区，卡片飞入落地后，鼠标悬浮在卡片上能够瞬间展现 3D 偏转和双层图片预览，完美解决了不 resize 就不生效的 Layout 静态缓存 Bug！
+
+
+---
+
+## 🛠️ Step 662: 修改作品卡片大标题字体为 Climate Crisis (Change Works Card Title Font to Climate Crisis)
+
+### 1. 优化方案 (Solutions)
+- **需求**：将作品列表中每一张卡片上的大字部分（例如 "JingZhao737" 等项目名称）字体改为与主页面大标题一致的创意大字体。
+- **字体样式替换**：
+  - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中，定位到作品卡片项目名称样式类 `.work-name`。
+  - 将其 `font-family` 属性由 `'Google Sans', sans-serif` 修改为 **`'Climate Crisis', sans-serif`**。
+  - 将字重 `font-weight` 从 `600` 调整为 **`700`**，且将默认字间距 `letter-spacing` 调整为 **`0.02em`**。
+  - **视觉提升**：`Climate Crisis` 是一种极具视觉张力和科技艺术感的厚重标题字形，此次修改使得卡片大字能够与页面大标题（“VISION”及底部的 CTA 标题等）在视觉语言上高度统一，三维卡片浮空时呈现出的画面艺术冲击力得到了极大跃升。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目。
+- 运行 `python workflow.py deploy` 推送部署上线。测试表明，卡片上的大字已完美渲染为极具张力的 Climate Crisis 大标题字体，整体排版厚重得体，极具视觉冲击力！

@@ -403,3 +403,7 @@
   - [x] 在 `js/modules/premium-interactions.js` 中将私有的 `updateFlatPageCoordinates` 方法向外暴露为全局方法 `window.__recalculateWorksCoordinates`。
   - [x] 在 `js/modules/works-entrance.js` 中，卡片飞入动画的单张卡片 `onComplete` 回调与主时间轴的 `onComplete` 回调里，同步触发全局方法进行坐标重算。
   - [x] 成功编译构建并推送部署。
+
+- [x] **修改作品卡片大标题字体为 Climate Crisis (Change Works Card Title Font to Climate Crisis)**
+  - [x] 修改 `styles.css` 中 `.work-name` 属性，将字体由 `Google Sans` 变更为与主页大标题一致的 `Climate Crisis` 字体，并将字重改为 `700`，字间距微调至 `0.02em` 以获得最佳排版质感。
+  - [x] 成功编译构建并推送部署上线。
