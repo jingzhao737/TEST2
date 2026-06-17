@@ -117,3 +117,9 @@
   - `[x]` 将底卡缩回与蒙版折叠时间缩短为 `0.6s`（延时 `0.05s`），底卡 Opacity 渐隐缩短为 `0.1s`（延时 `0.55s`）。
   - `[x]` 将子项 Staggered 坠退时长压缩至 `0.3s`，stagger 间距改为 `0.04s`。
   - `[x]` 编译项目并在 GitHub 生产环境部署发布。
+
+- `[x]` **修复打断折返时 Logo 晃动与二次膨胀问题 (Fix Logo Interrupted Double-Bulge Shaking Bug)**
+  - `[x]` 在 `isOpening` 与 `else` 关闭块测量 `startRect` 时，反向提取 Logo 当前的 `x` 翻译值并计算出 `startBaselineLeft = startRect.left - currentX`。
+  - `[x]` 修正 Outline Logo 的初始 GSAP 定位参数，设置为 `left: startBaselineLeft, x: currentX`，保证测量与呈现绝对对齐。
+  - `[x]` 重构 Timeline `onUpdate` 阶段：将 `xOffset` 变更为原空中膨胀值的线性插值衰退与全新收敛正弦叠加：`gsap.utils.interpolate(currentX, 0, s) + Math.sin(s * Math.PI) * maxBulge * (isLogoInBody ? 0.3 : 1)`。
+  - `[x]` 编译项目并在 GitHub 生产环境部署发布。

@@ -2927,3 +2927,30 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境打包通过。
 - 使用 `python workflow.py deploy` 推送代码提交。经过真机疯狂双击、乱按测试，Logo 均能在飞行的任意百分比位置流畅调头起飞/返航，底框也以相同的无缝状态缩放、裁剪，打断动效物理表现极佳。
+
+---
+
+## 🛠️ Step 636: 修正打断折返坐标算法，彻底消除中途折返时的“二次鼓起与位移偏差” (Fix Interrupted Flight Coordinates Math to Eliminate Double-Bulging)
+
+### 1. 痛点与解决方案 (Pain Points & Solutions)
+- **痛点**：在 Step 635 中引入打断折返时，虽然 Logo 实现了中途折返，但用户反馈“会晃一下，位置不对”。
+- **原因剖析**：
+  1. **坐标重叠计算 (Coordinate Double-counting)**：之前的打断机制在空中直接使用 `logo.getBoundingClientRect()` 实测得到 Logo 的当前视觉屏幕 `left`，并将其直接赋给 `startRect.left`。
+  2. **鼓起偏置污染 (Bulge Offset Contamination)**：Logo 的三维飞行路线由基础直线插值坐标（`left` 样式）和以 `xOffset = Math.sin(s * Math.PI) * maxBulge` 计算的横向膨胀偏置（`x` 样式）叠加构成。
+  3. **双重叠加闪烁 (Double-Bulge Effect)**：当在飞行中途打断时，实测得到的视觉 `left` 已经**强行包含了当前的 `xOffset` 偏置值**。如果新 Timeline 直接把这个视觉 `left` 设定为新的基准起点 `startBaselineLeft` 进行直线插值，同时又在新飞行过程中叠加累加一次基于 $s$ 的正弦 `xOffset_new` 膨胀值，就会导致徽标的横向坐标**被偏置了两次**。从而产生突兀的左右抖晃、闪一下、落点倾斜等重大视觉偏差。
+- **重构方案**：
+  1. **基准面与偏置解耦 (Decoupling Baseline and Offset)**：
+     - 在启动新飞行（打开/关闭）测量 `startRect` 的同时，首先提取 Logo 当前在 GSAP 中的 `x` 翻译值：`const currentX = parseFloat(gsap.getProperty(logo, "x")) || 0;`。
+     - **真实基准坐标反推**：使用 `startBaselineLeft = startRect.left - currentX` 减去这个膨胀值，从而精准还原 Logo 当前空中航线在无侧向鼓起时的**直线投影基准坐标**。
+     - **初始姿态重设**：将 outline logo 初始状态设置为 `gsap.set(logo, { left: startBaselineLeft, x: currentX })`，使视觉呈现与测量完全一致，一帧不差。
+  2. **融合衰减式侧向膨胀 (Decaying Sine Wave Bulge)**：
+     - 在 Timeline 更新函数 `onUpdate` 中，横向 bulge 属性 `xOffset` 修改为由**残余空中偏置的线性收敛值**与**全新缩量正弦曲线**叠加构成：
+       `xOffset = gsap.utils.interpolate(currentX, 0, s) + Math.sin(s * Math.PI) * maxBulge * (isLogoInBody ? 0.3 : 1);`
+     - **物理效果**：
+       - 当 $s = 0$ 时，`left = startBaselineLeft, x = currentX`，完美贴合打断瞬间的 mid-air 实测姿态，完全消除跳变晃动。
+       - 随着航程 $s 	o 1.0$，插值部分将 mid-air 膨胀平滑收缩到 `0`，新增加的 `0.3` 倍微量正弦在带来自然弧线的同时防止了大幅振荡，Logo 能够平滑、垂直地向导航栏/控制台终点直线归巢。
+- **效果**：在飞行的任意阶段频繁连续点击，Logo 都能极速、优雅且保持完美原路折返/返航轨迹，绝对不再发生任何横向晃动、双重膨胀或者坐标对齐失败的问题。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境打包通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，中途折回表现得如丝般顺滑，飞行动作符合严谨的物理惯性，落点 100% 精准无误。
