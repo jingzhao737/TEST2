@@ -3494,3 +3494,19 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目。
 - 运行 `python workflow.py deploy` 推送部署上线。测试表明，当鼠标移入控制面板时，系统原生的白色鼠标箭头/手指会瞬间浮现，非常清晰易用；移出控制面板到卡片区域时，原生光标立刻消失并交回给自定义飞机光标，两套光标系统切换丝滑，彻底解决了隐形无法点击的问题！
+
+
+---
+
+## 🛠️ Step 659: 修改作品卡片飞入动画默认速度曲线为科技感软弹簧 (Set Default Works Entrance Ease to Elastic Out - Tech)
+
+### 1. 优化方案 (Solutions)
+- **痛点与需求**：原本的默认卡片飞入动画使用了 `expo.out` 曲线。用户经过在调试控制面板上的直观对比测试，更偏爱 **“🧬 Elastic Out - Tech (科技感软弹簧)”** 的动态质感，需要将其设置为默认的速度曲线。
+- **默认速度曲线重构**：
+  - 将 [works-entrance.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/works-entrance.js) 中初始 ScrollTrigger 卡片飞入时间轴的缓动曲线修改为 **`elastic.out(1, 0.75)`**。
+  - 此缓动在以极高初始速度飞入的同时，在落地终点处会带有一种高科技的阻尼物理弹簧振荡效果（Springy Settle），配合 `1.6s` 的动画时长能将最后弹簧微微颤动并优雅吸附稳定的姿态渲染得极为精致。
+  - **同步调试舱默认选项**：在调试操控台的选择下拉框中，将 “🧬 Elastic Out - Tech (科技感软弹簧)” 移动到第一位，确保调试面板初始化时的默认选项与代码中运行的实际动画曲线一致。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目。
+- 运行 `python workflow.py deploy` 推送部署上线。测试表明，页面载入且滚动到 Works 区块时，4 张卡片自带极强的科技弹力，在空中划出精美弧线后以极其动感、微颤的软弹簧质感在终点回弹并安稳落地，极富科技交互感！

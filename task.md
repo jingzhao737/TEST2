@@ -388,3 +388,8 @@
   - [x] 在 `js/modules/works-entrance.js` 的调试面板 `#entrance-preview-panel` 样式中加入 `cursor: default !important;`。
   - [x] 为面板内部的选择下拉框、滑块、按钮以及隐藏后的悬浮 Badge 注入 `cursor: pointer !important;`，强制浏览器在悬浮这些元素时显示原生的系统光标。
   - [x] 成功编译构建并推送部署上线。
+
+- [x] **修改作品卡片飞入动画默认速度曲线为科技感软弹簧 (Set Default Works Entrance Ease to Elastic Out - Tech)**
+  - [x] 修改 `js/modules/works-entrance.js`，将卡片弧线飞入动画的默认 `ease` 缓动由 `expo.out` 变更为 `elastic.out(1, 0.75)` (科技感软弹簧)。
+  - [x] 在调试控制面板的预设速度曲线列表中，将 `elastic.out(1, 0.75)` 移动到第一位，使其成为默认选中项，与实际默认动效一致。
+  - [x] 成功编译构建并推送部署上线。

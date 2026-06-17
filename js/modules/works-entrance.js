@@ -92,7 +92,7 @@ if (cards.length && section) {
     tl.to(animState, {
       progress: 1,
       duration: 1.6,
-      ease: 'expo.out',
+      ease: 'elastic.out(1, 0.75)',
       onStart: () => {
         // Ensure card is visible at start of tween
         gsap.set(card, { opacity: 0.01 });
@@ -274,13 +274,13 @@ if (cards.length && section) {
     `;
 
     const eases = [
+      { name: '🧬 Elastic Out - Tech (科技感软弹簧)', value: 'elastic.out(1, 0.75)' },
       { name: '✨ Expo Out (极速切入后慢吸附)', value: 'expo.out' },
       { name: '🚀 Power4 Out (迅猛自如缓动)', value: 'power4.out' },
       { name: '⚡ Power3 Out (均衡舒适缓动)', value: 'power3.out' },
       { name: '⚪ Circ Out (高敏急刹减速)', value: 'circ.out' },
       { name: '↩️ Back Out - Soft (轻微回弹落地)', value: 'back.out(1.2)' },
       { name: '🪃 Back Out - Hard (动感深回弹落地)', value: 'back.out(2.5)' },
-      { name: '🧬 Elastic Out - Tech (科技感软弹簧)', value: 'elastic.out(1, 0.75)' },
       { name: '🎯 Elastic Out - Spring (超强果冻回弹)', value: 'elastic.out(1.2, 0.4)' },
       { name: '🎭 Expo InOut (慢速起跑快冲慢收)', value: 'expo.inOut' },
       { name: '💥 Bounce Out (物理弹跳落地)', value: 'bounce.out' }
