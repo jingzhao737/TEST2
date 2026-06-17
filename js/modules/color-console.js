@@ -383,6 +383,11 @@ import gsap from 'gsap';
       toggleTimeline.kill();
       toggleTimeline = null;
     }
+    gsap.killTweensOf(logo);
+    if (staticLogo) {
+      gsap.killTweensOf(staticLogo);
+    }
+    gsap.killTweensOf(consoleEl);
 
     // 1. Disable CSS transitions instantly to avoid race condition/jitter
     logo.style.setProperty('transition', 'none', 'important');
@@ -522,7 +527,7 @@ import gsap from 'gsap';
  
       // Smoothly fade out the solid logo in the navbar
       if (staticLogo) {
-        gsap.to(staticLogo, { opacity: 0, duration: 0.4, ease: 'power2.out' });
+        tl.to(staticLogo, { opacity: 0, duration: 0.4, ease: 'power2.out' }, 0);
       }
  
       // Smoothly fade in the outline logo at the start of flight
@@ -662,7 +667,7 @@ import gsap from 'gsap';
 
       // Smoothly fade the solid logo back in as outline approaches the navbar
       if (staticLogo) {
-        gsap.to(staticLogo, { opacity: 1, duration: 0.3, ease: 'power2.inOut', delay: duration - 0.3 });
+        tl.to(staticLogo, { opacity: 1, duration: 0.3, ease: 'power2.inOut' }, duration - 0.3);
       }
 
       // Smoothly fade out outline logo as it lands to morph back into solid logo
