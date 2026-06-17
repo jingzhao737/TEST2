@@ -518,34 +518,35 @@ import gsap from 'gsap';
         }
       }, 0);
 
-      // Quick opacity fade-in
+      // Quick opacity fade-in (starts almost immediately for high responsiveness)
       tl.to(consoleEl, {
         opacity: 1,
         duration: 0.2
-      }, 0.8);
+      }, 0.15);
 
       // Scale expansion
       tl.to(consoleEl, {
         scale: 1,
-        duration: 1.4,
+        duration: 1.8,
         ease: 'power4.out'
-      }, 0.8);
+      }, 0.15);
 
       // Circle clip-path expansion (Awwwards mask-reveal)
       tl.to(consoleEl, {
         clipPath: "circle(150% at 60px 30px)",
         webkitClipPath: "circle(150% at 60px 30px)",
-        duration: 1.4,
+        duration: 1.8,
         ease: 'power4.out'
-      }, 0.8);
+      }, 0.15);
 
+      // Staggered contents fade-in (sliding up after card starts unfolding)
       tl.to([consoleHeader, ...consoleSections, consoleActions], {
         y: 0,
         opacity: 1,
         duration: 0.8,
         ease: 'power3.out',
-        stagger: 0.12
-      }, 1.2);
+        stagger: 0.1
+      }, 0.6);
 
     } else {
       // --- CLOSING ---
