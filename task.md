@@ -305,3 +305,8 @@
   - `[x]` 在返航时间线的终点（`duration` 帧）插入瞬间替换节点 `tl.set(staticLogo, { opacity: 1 }, duration)` 与 `tl.set(logo, { opacity: 0 }, duration)`。
   - `[x]` 确保徽标不透明度始终保持 100% 恒定，完全消除交接时任何中间态的亮度损失，彻底解决暗闪。
   - `[x]` 编译打包并发布部署。
+
+- [x] **优化返航徽标自适应动态追踪，解决滚动“位移闪现” Bug (Dynamic Target Offset Tracking on Return Flight)**
+  - [x] 在 `color-console.js` 关闭分支中，于动画开启前同步测算起点坐标与目标静态徽标的初始坐标差 `initialOffsetLeft` 和 `initialOffsetTop`。
+  - [x] 将绝对插值重构为相对偏差插值（`currentOffset = interpolate(initialOffset, 0, s)`），然后结合实时获取的 `currentTargetRect` 叠加输出绝对物理位置。
+  - [x] 成功编译构建并发布（Commit `b8444ef`），实现不论导航栏因滚动如何位移，Logo 返回均能自适应贴合，零闪现跳变。

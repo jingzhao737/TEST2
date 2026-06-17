@@ -3168,3 +3168,36 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，返航降落极为连贯坚实，交接没有哪怕一毫秒的暗淡，表现极为亮眼。
+
+
+---
+
+## 🛠️ Step 647: 优化返航徽标自适应动态追踪，解决滚动触发导航栏收缩导致的“位移闪现” Bug (Dynamic Target Offset Tracking on Return Flight)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：在返航飞行（控制台关闭动画）进行期间，如果用户滚动页面触发了导航栏的位置变化（例如，由未滚动时的 `top: 24px` 变为已滚动时的 `top: 12px`），那么在动画结束时，Logo 会突兀地瞬间闪现（位移跳变）到新的正确位置。
+- **原因剖析**：
+  1. 此前，我们虽然在 `onUpdate` 中动态读取了 `anchorEl.getBoundingClientRect()` 作为目标位置，但是插值公式仍然是：
+     `currentTop = gsap.utils.interpolate(startBaselineTop, currentTargetRect.top, s)`
+  2. 这个插值公式使用的是绝对坐标系的起点 `startBaselineTop`。当目标位置在飞行过程中发生 `dT` 的位移（如导航栏收缩了 `12px`），在当前帧计算出的 `currentTop` 会发生 `s * dT` 的突变。
+  3. 当 `s` 接近 `1.0`（即将降落）时，只要导航栏稍微变动，计算出的 `currentTop` 就会发生接近 `12px` 的跳跃闪烁。这种跳跃会产生明显的闪现感。
+- **修复方案 (Offset-based Relative Tracking)**：
+  - **基于相对偏差的坐标插值**：
+    - 不再插值绝对视口坐标，而是插值飞行 Logo 相对导航栏静止位置的**相对偏差 (Offsets)**：
+      - 在起飞前，分别测量 Logo 的初始起点坐标与导航栏目标静态徽标的初始坐标：
+        `initialOffsetLeft = startBaselineLeft - currentTargetRect_at_start.left`
+        `initialOffsetTop = startBaselineTop - currentTargetRect_at_start.top`
+      - 在 `onUpdate` 执行 of 每一帧中，只对相对偏差进行衰减插值，使相对偏差 `currentOffset` 在 `s = 0` 时为 `initialOffset`，在 `s = 1.0` 时收敛为 `0`：
+        `currentOffsetLeft = gsap.utils.interpolate(initialOffsetLeft, 0, s)`
+        `currentOffsetTop = gsap.utils.interpolate(initialOffsetTop, 0, s)`
+      - 然后将实时读取的 `currentTargetRect` 加上当前的相对偏差，计算出飞行的实际坐标：
+        `currentLeft = currentTargetRect.left + currentOffsetLeft`
+        `currentTop = currentTargetRect.top + currentOffsetTop`
+    - **物理效果**：
+      - 相当于飞行 Logo 此时绑定在了**以导航栏为基准的相对运动坐标系**下。
+      - 即使导航栏由于页面滚动产生了任何瞬时位移（`dT`），因为公式中直接相加了 `currentTargetRect`，飞行 Logo 也会在每一帧与导航栏同向、同幅度地无缝联动移位，同时优雅地完成从起点向终点的迈进。
+      - 当 `s = 1.0`（着陆）时，相对偏差彻底衰减到 `0`，飞行 Logo 的最终物理位置与导航栏静止位置完全合二为一，完美实现自适应无闪现着陆！
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，返航飞行中无论是上下滚动还是导航栏频繁收缩展开，Logo 返回过程始终如丝般顺滑依附在对应的位置，无任何闪跳！
