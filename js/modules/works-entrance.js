@@ -157,13 +157,10 @@ if (cards.length && section) {
   let activeTimeline = null;
   let loopTimeout = null;
   let isLooping = false;
-  let virtualCursorEl = null;
-  let autopilotTimeline = null;
 
   function runFlightAnimation(selectedEase, selectedDuration, selectedStagger) {
     if (activeTimeline) activeTimeline.kill();
     if (loopTimeout) clearTimeout(loopTimeout);
-    destroyVirtualCursor();
 
     // Reset cards
     cards.forEach(card => {
@@ -245,244 +242,6 @@ if (cards.length && section) {
     });
   }
 
-  function destroyVirtualCursor() {
-    if (virtualCursorEl) {
-      virtualCursorEl.remove();
-      virtualCursorEl = null;
-    }
-    if (autopilotTimeline) {
-      autopilotTimeline.kill();
-      autopilotTimeline = null;
-    }
-    
-    // Restore mouse events to clean state
-    const leaveEvent = new MouseEvent('mouseleave', { bubbles: true });
-    const workList = document.querySelector('.work-list');
-    if (workList) {
-      workList.classList.remove('simulated-hover');
-      workList.dispatchEvent(leaveEvent);
-    }
-
-    const btnAutopilot = document.getElementById('btn-autopilot');
-    if (btnAutopilot) {
-      btnAutopilot.textContent = '✈️ 自动导航演示';
-      btnAutopilot.style.background = 'rgba(255,255,255,0.08)';
-    }
-  }
-
-  function startAutopilot() {
-    destroyVirtualCursor();
-
-    virtualCursorEl = document.createElement('div');
-    virtualCursorEl.id = 'virtual-debug-cursor';
-    virtualCursorEl.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 24px;
-      height: 24px;
-      border: 2px solid #ff7e5f;
-      background: rgba(255, 126, 95, 0.4);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999999;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 15px #ff7e5f;
-      transition: width 0.1s, height 0.1s, background 0.1s;
-    `;
-
-    const innerDot = document.createElement('div');
-    innerDot.style.cssText = `
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 6px;
-      height: 6px;
-      background: #ff7e5f;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-    `;
-    virtualCursorEl.appendChild(innerDot);
-    document.body.appendChild(virtualCursorEl);
-
-    // Initial position: start at bottom right
-    const state = {
-      x: window.innerWidth - 100,
-      y: window.innerHeight - 100
-    };
-
-    gsap.set(virtualCursorEl, { x: state.x, y: state.y });
-
-    function dispatchSimulatedMouse(clickType = null) {
-      gsap.set(virtualCursorEl, { x: state.x, y: state.y });
-
-      const e = new MouseEvent('mousemove', {
-        clientX: state.x,
-        clientY: state.y,
-        bubbles: true,
-        cancelable: true
-      });
-      window.dispatchEvent(e);
-      document.dispatchEvent(e);
-
-      const workList = document.querySelector('.work-list');
-      if (workList) {
-        const rect = workList.getBoundingClientRect();
-        const insideList = (
-          state.x >= rect.left && state.x <= rect.right &&
-          state.y >= rect.top && state.y <= rect.bottom
-        );
-        
-        if (insideList && !workList.classList.contains('simulated-hover')) {
-          workList.classList.add('simulated-hover');
-          const enterEvent = new MouseEvent('mouseenter', { bubbles: true });
-          workList.dispatchEvent(enterEvent);
-        } else if (!insideList && workList.classList.contains('simulated-hover')) {
-          workList.classList.remove('simulated-hover');
-          const leaveEvent = new MouseEvent('mouseleave', { bubbles: true });
-          workList.dispatchEvent(leaveEvent);
-        }
-      }
-
-      if (clickType === 'mousedown') {
-        virtualCursorEl.style.width = '16px';
-        virtualCursorEl.style.height = '16px';
-        virtualCursorEl.style.background = 'rgba(255, 126, 95, 0.8)';
-        
-        const target = document.elementFromPoint(state.x, state.y);
-        if (target) {
-          const downEvent = new MouseEvent('mousedown', {
-            clientX: state.x,
-            clientY: state.y,
-            bubbles: true,
-            cancelable: true
-          });
-          target.dispatchEvent(downEvent);
-        }
-      } else if (clickType === 'mouseup') {
-        virtualCursorEl.style.width = '24px';
-        virtualCursorEl.style.height = '24px';
-        virtualCursorEl.style.background = 'rgba(255, 126, 95, 0.4)';
-
-        const target = document.elementFromPoint(state.x, state.y);
-        if (target) {
-          const upEvent = new MouseEvent('mouseup', {
-            clientX: state.x,
-            clientY: state.y,
-            bubbles: true,
-            cancelable: true
-          });
-          target.dispatchEvent(upEvent);
-          const clickEvent = new MouseEvent('click', {
-            clientX: state.x,
-            clientY: state.y,
-            bubbles: true,
-            cancelable: true
-          });
-          target.dispatchEvent(clickEvent);
-        }
-      }
-    }
-
-    const worksSection = document.querySelector('#work');
-    if (worksSection) {
-      worksSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    const workCards = document.querySelectorAll('.work-card');
-    if (workCards.length === 0) return;
-
-    // Reset card states to clean hover
-    cards.forEach(card => {
-      gsap.killTweensOf(card);
-      gsap.set(card, { clearProps: 'all' });
-    });
-
-    autopilotTimeline = gsap.timeline({
-      onUpdate: () => dispatchSimulatedMouse(),
-      onComplete: () => {
-        setTimeout(() => {
-          destroyVirtualCursor();
-        }, 1000);
-      }
-    });
-
-    autopilotTimeline.to({}, { duration: 0.8 });
-
-    // Move to Card 0 center
-    const getRect0 = () => workCards[0].getBoundingClientRect();
-    autopilotTimeline.to(state, {
-      x: () => getRect0().left + getRect0().width / 2,
-      y: () => getRect0().top + getRect0().height / 2,
-      duration: 1.5,
-      ease: 'power3.inOut'
-    });
-
-    // Hover Card 0
-    autopilotTimeline.to({}, { duration: 1.2 });
-
-    // Move to Card 1 center
-    if (workCards[1]) {
-      const getRect1 = () => workCards[1].getBoundingClientRect();
-      autopilotTimeline.to(state, {
-        x: () => getRect1().left + getRect1().width / 2,
-        y: () => getRect1().top + getRect1().height / 2,
-        duration: 1.2,
-        ease: 'power2.inOut'
-      });
-      // Hover Card 1
-      autopilotTimeline.to({}, { duration: 1.2 });
-    }
-
-    // Move to Card 2 center and click!
-    if (workCards[2]) {
-      const getRect2 = () => workCards[2].getBoundingClientRect();
-      autopilotTimeline.to(state, {
-        x: () => getRect2().left + getRect2().width / 2,
-        y: () => getRect2().top + getRect2().height / 2,
-        duration: 1.2,
-        ease: 'power2.inOut'
-      });
-      autopilotTimeline.to({}, { duration: 0.5 });
-      
-      autopilotTimeline.call(() => dispatchSimulatedMouse('mousedown'));
-      autopilotTimeline.to({}, { duration: 0.15 });
-      autopilotTimeline.call(() => dispatchSimulatedMouse('mouseup'));
-      
-      autopilotTimeline.to({}, { duration: 1.5 });
-
-      autopilotTimeline.call(() => {
-        const closeBtn = document.querySelector('.detail-close');
-        if (closeBtn) {
-          const cRect = closeBtn.getBoundingClientRect();
-          gsap.to(state, {
-            x: cRect.left + cRect.width / 2,
-            y: cRect.top + cRect.height / 2,
-            duration: 1.2,
-            ease: 'power2.inOut',
-            onUpdate: () => dispatchSimulatedMouse()
-          });
-        }
-      });
-      
-      autopilotTimeline.to({}, { duration: 1.3 });
-
-      autopilotTimeline.call(() => dispatchSimulatedMouse('mousedown'));
-      autopilotTimeline.to({}, { duration: 0.15 });
-      autopilotTimeline.call(() => dispatchSimulatedMouse('mouseup'));
-
-      autopilotTimeline.to({}, { duration: 1.0 });
-    }
-
-    // Move back to bottom right
-    autopilotTimeline.to(state, {
-      x: window.innerWidth - 100,
-      y: window.innerHeight - 100,
-      duration: 1.5,
-      ease: 'power2.inOut'
-    });
-  }
-
   function createControlPanel() {
     if (document.getElementById('entrance-preview-panel')) return;
 
@@ -511,6 +270,7 @@ if (cards.length && section) {
       opacity: 0;
       transform: translateY(20px);
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default !important;
     `;
 
     const eases = [
@@ -565,12 +325,9 @@ if (cards.length && section) {
         </label>
       </div>
 
-      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+      <div style="display: flex; gap: 8px;">
         <button id="btn-play-preview" style="flex: 1; background: linear-gradient(135deg, #ff7e5f, #feb47b); border: none; border-radius: 8px; color: #fff; padding: 10px; font-weight: 600; cursor: pointer; transition: transform 0.2s, opacity 0.2s; font-size: 12px; box-shadow: 0 4px 15px rgba(255, 126, 95, 0.2);">▶ 播放动画</button>
         <button id="btn-scroll-to-works" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 10px 12px; font-size: 12px; cursor: pointer; transition: background 0.2s;">📌 视口对齐</button>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button id="btn-autopilot" style="flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 10px; font-size: 12px; cursor: pointer; transition: background 0.2s;">✈️ 自动导航演示</button>
       </div>
     `;
 
@@ -579,6 +336,18 @@ if (cards.length && section) {
     const styleEl = document.createElement('style');
     styleEl.id = 'entrance-preview-styles';
     styleEl.innerHTML = `
+      #entrance-preview-panel,
+      #entrance-preview-panel * {
+        cursor: default !important;
+      }
+      #entrance-preview-panel select,
+      #entrance-preview-panel select option,
+      #entrance-preview-panel input,
+      #entrance-preview-panel button,
+      #entrance-preview-panel #close-preview-panel,
+      #entrance-preview-panel .slider {
+        cursor: pointer !important;
+      }
       #entrance-preview-panel input:checked + .slider {
         background-color: #ff7e5f !important;
       }
@@ -624,7 +393,6 @@ if (cards.length && section) {
     const btnPlay = panel.querySelector('#btn-play-preview');
     const btnScroll = panel.querySelector('#btn-scroll-to-works');
     const btnClose = panel.querySelector('#close-preview-panel');
-    const btnAutopilot = panel.querySelector('#btn-autopilot');
 
     inputDuration.addEventListener('input', (e) => {
       valDuration.textContent = parseFloat(e.target.value).toFixed(1) + 's';
@@ -661,21 +429,6 @@ if (cards.length && section) {
       }
     });
 
-    btnAutopilot.addEventListener('click', () => {
-      if (autopilotTimeline && autopilotTimeline.isActive()) {
-        destroyVirtualCursor();
-      } else {
-        btnAutopilot.textContent = '⏹ 停止自动导航';
-        btnAutopilot.style.background = '#d9534f';
-        if (inputLoop.checked) {
-          inputLoop.checked = false;
-          isLooping = false;
-          if (loopTimeout) clearTimeout(loopTimeout);
-        }
-        startAutopilot();
-      }
-    });
-
     btnClose.addEventListener('click', () => {
       panel.style.opacity = '0';
       panel.style.transform = 'translateY(20px)';
@@ -687,7 +440,6 @@ if (cards.length && section) {
       isLooping = false;
       if (loopTimeout) clearTimeout(loopTimeout);
       if (activeTimeline) activeTimeline.kill();
-      destroyVirtualCursor();
 
       cards.forEach(card => {
         gsap.killTweensOf(card);
@@ -722,7 +474,7 @@ if (cards.length && section) {
       font-family: system-ui, -apple-system, sans-serif;
       font-size: 12px;
       font-weight: 600;
-      cursor: pointer;
+      cursor: pointer !important;
       box-shadow: 0 10px 25px rgba(255, 126, 95, 0.4);
       z-index: 999999;
       opacity: 0;
@@ -753,3 +505,4 @@ if (cards.length && section) {
     window.addEventListener('load', createControlPanel);
   }
 }
+

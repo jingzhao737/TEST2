@@ -383,8 +383,8 @@
   - [x] 实现当控制面板关闭时，将面板以平滑缩放淡出并在右下角常驻展示一个精美的渐变色 “🛸 调试飞入入场” 悬浮徽标，支持重新唤醒调试面板。
   - [x] 重新编译打包项目并推送部署。
 
-- [x] **飞入动画调试舱新增虚拟鼠标自动演示模式 (Add Virtual Mouse Autopilot to Debug HUD)**
-  - [x] 在 `js/modules/works-entrance.js` 的调试舱中集成 “✈️ 自动导航演示” 选项。
-  - [x] 实现可互动的虚拟鼠标指针元素（橙色带呼吸感发光圆圈 + 内芯），使用 GSAP 驱动其在 viewport 空间内自动运行预设的交互路径（移动、悬停、点击、关闭）。
-  - [x] 实时向 `window` 与 `document` 派发真实的 `mousemove`、`mouseenter`、`mousedown` 和 `mouseup` 鼠标事件，使页面元素（如 3D 卡片、自定义光标）被虚拟鼠标的操作精准触发并回馈。
+- [x] **修复调试控制面板由于高层级覆盖导致鼠标光标消失的问题 (Restore Native Browser Cursor over Debug Panel)**
+  - [x] 回滚之前一步的虚拟鼠标自动导航演示代码，保持调试舱功能纯净。
+  - [x] 在 `js/modules/works-entrance.js` 的调试面板 `#entrance-preview-panel` 样式中加入 `cursor: default !important;`。
+  - [x] 为面板内部的选择下拉框、滑块、按钮以及隐藏后的悬浮 Badge 注入 `cursor: pointer !important;`，强制浏览器在悬浮这些元素时显示原生的系统光标。
   - [x] 成功编译构建并推送部署上线。

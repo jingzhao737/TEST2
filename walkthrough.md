@@ -3479,26 +3479,18 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 ---
 
-## 🛠️ Step 658: 飞入动画调试舱新增虚拟鼠标自动演示模式 (Add Virtual Mouse Autopilot to Debug HUD)
+## 🛠️ Step 658: 修复调试控制面板由于高层级覆盖导致鼠标光标消失的问题 (Restore Native Browser Cursor over Debug Panel)
 
 ### 1. 优化方案 (Solutions)
-- **痛点**：由于没有实际的鼠标，触控屏设备（如手机、平板）无法触发卡片的 3D 悬停倾斜、Parallax 位移及图片预览叠加等核心鼠标交互效果；在开发调试阶段，也需要一套全自动录制宏来演示整套交互。
-- **虚拟鼠标自动导航演示 (Virtual Mouse Autopilot)**：
-  - **视觉模拟指针 (Glowing Visual Cursor)**：
-    - 新建并向页面动态追加一个包含发光霓虹橙圈 (`#ff7e5f`) 及高亮内芯的虚拟指针元素，层级设为最顶层。
-  - **程序化鼠标事件派发 (Programmatic Event Dispatching)**：
-    - 使用 GSAP 时间轴平滑驱动虚拟鼠标的 `(x, y)` 屏幕空间坐标。
-    - 在每一帧动画中，程序化创建并派发包含正确 `clientX/clientY` 视口坐标的 `mousemove` 事件到 `window` 和 `document`，完美欺骗原生的 `cursor.js` 与 `premium-interactions.js` 的坐标检测。
-    - 当虚拟鼠标与列表容器交叉时，自动追加/移除 `mouseenter` 和 `mouseleave` 状态事件，无缝唤醒及关闭悬停动画循环。
-  - **自动演示交互流 (Interaction Macro Script)**：
-    1. 自动将视口滚动对齐至 Works 区块，预留 `0.8s` 等待滚动结束。
-    2. 虚拟鼠标以 `power3.inOut` 轨迹滑行至 **作品卡片 1** 的中心并悬停 `1.2s`，触发卡片倾斜、夹层展开及预览图堆叠。
-    3. 滑行至 **作品卡片 2** 并悬停 `1.2s`，展示底部色块切换时的下潜回弹。
-    4. 滑行至 **作品卡片 3**，停留 `0.5s` 后，模拟 `mousedown` + `mouseup` 物理点击过程（指针瞬间收缩变实，触发夹击反馈）。
-    5. 详情页展开后，虚拟鼠标自动精准飞行寻路至详情页的 **关闭按钮 (Close Button)** 处并悬停，利用系统的磁吸算法将原本的飞航光标牢牢吸附在关闭按钮上。
-    6. 点击关闭按钮并等待详情页关闭后，虚拟鼠标平滑返回至右下角并自动销毁，恢复玩家鼠标控制。
-  - **健全性保护**：支持随时点击 “⏹ 停止自动导航” 中途打断并销毁虚拟指针；关闭调试舱时会自动清理所有相关垃圾。
+- **痛点**：网站整体采用了隐藏浏览器原生光标 (`cursor: none`) 并使用自定义 GSAP 3D 飞机光标 (`#cursorDot` 和 `#cursorTrail1`) 的设计。由于调试控制面板 `#entrance-preview-panel` 的 `z-index` 高达 `999999`，高出了自定义光标的层级，这导致当用户的鼠标移入控制面板时，自定义光标被遮挡在面板下方。由于原生光标又是被隐藏的，这导致鼠标在控制面板上完全“隐形”，用户无法看见并精准操作滑块和按钮。
+- **回滚与系统光标恢复设计 (Browser Cursor Fallback)**：
+  - **精简回滚**：应用户要求，完全回退并撤销了上一步的自动演示虚拟鼠标代码，保持调试舱的功能精简与纯净。
+  - **原生光标强制展示**：
+    - 在控制面板容器样式中显式添加 `cursor: default !important;`。
+    - 在控制面板的内部选择器中，为 `select`、`input`、`button`、`.slider` 以及关闭按钮配置 `cursor: pointer !important;`。
+    - 为隐藏后的悬浮 Badge (`#entrance-preview-badge`) 配置 `cursor: pointer !important;`。
+    - **原理**：即使 body 设定了 `cursor: none`，由于 CSS 特异性与层级匹配，当光标移入这些具有特定 cursor 属性的高优先级元素时，浏览器会强制在这些元素上方渲染系统默认的原生箭头/手指光标。这使得用户可以极其方便、流畅地进行滑块拖拽和选项切换，移出面板时又会自动无缝隐去，恢复网站原本的酷炫自定义飞机光标。
 
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目。
-- 运行 `python workflow.py deploy` 推送部署上线。测试表明，开启后虚拟鼠标能以平滑且富有物理感的弧线在作品卡片间飞行穿梭，完美激活所有 3D 浮动、双层夹心、星星火花和按压压缩，并在点击进入详情页后准确飞往关闭按钮进行点击关闭，整套动态交互一气呵成，极富视觉冲击力！
+- 运行 `python workflow.py deploy` 推送部署上线。测试表明，当鼠标移入控制面板时，系统原生的白色鼠标箭头/手指会瞬间浮现，非常清晰易用；移出控制面板到卡片区域时，原生光标立刻消失并交回给自定义飞机光标，两套光标系统切换丝滑，彻底解决了隐形无法点击的问题！
