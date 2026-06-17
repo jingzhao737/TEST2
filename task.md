@@ -351,3 +351,10 @@
   - [x] 将背景填充升级为斜向镜面渐变 (`linear-gradient(135deg)`)，折射出反光镜面质感。
   - [x] 为 Hover 悬停状态注入物理 3D 浮空高度 (`transform: translate3d(0, 0, 28px) scale(1.02)`)，搭配高悬空超大超软双层投影（`0 35px 80px rgba(0,0,0,0.65)`），让卡片在三维空间浮空突起，玻璃厚度感瞬间拉满。
   - [x] 重新构建并成功推送到生产环境。
+
+- [x] **作品卡片与双层预览图 3D 三维“夹心”层级设计 (Works Cards 3D Layered Sandwich Layout)**
+  - [x] 在 `js/modules/premium-interactions.js` 中调整 hover 激活状态下的 3D Z 坐标高度。
+  - [x] 将预览图容器 `imgContainer` 的 `imgZ` 从 `15` 提高到 `52`（浮于悬停卡片 Z=28 之上，相差 24px）。
+  - [x] 将底色块 `orangeLayer` 的 `orangeZ` 从 `5` 提高到 `10`（藏于悬停卡片 Z=28 之下，相差 18px）。
+  - [x] 按比例将橙色层跟随位移计算公式的分母由 `5` 改为 `10`，乘数增至 `18`（最大位移从 12px 扩宽至 18px），保证拖拽时的立体视差滑行更加柔顺宽阔。
+  - [x] 成功打包编译并部署发布。

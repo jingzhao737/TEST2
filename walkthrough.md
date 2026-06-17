@@ -3356,3 +3356,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新打包项目，确认通过。
 - 运行 `python workflow.py deploy` 推送部署上线。测试表明，卡片在悬停时如同真正的厚水晶玻璃板一般，向上浮起、立体高光侧面闪烁、底部投影深沉而巨大，大厚玻璃质感极其抓眼，实现了顶级的视觉沉浸！
+
+
+---
+
+## 🛠️ Step 653: 作品卡片与双层预览图 3D 三维“夹心”层级设计 (Works Cards 3D Layered Sandwich Layout)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：在 Step 652 中，我们将悬停卡片在 3D 轴向上物理抬高了 Z=28px。但这导致原本浮空高度仅为 Z=15px 的预览大图和 Z=5px 的橙色层底块，直接被抬升的厚玻璃卡片盖在身下，导致预览内容无法显现。
+- **3D 夹心夹层设计 (3D Sandwich Layout)**：
+  - **同一 3D 视口融合**：作品列表 `.work-list` 开启了 `preserve-3d`，所有的 `.work-card` 与预览图 `.work-preview-wrapper`（已被 JS 重构为 `absolute` 与 `preserve-3d`）成为共享真实 Z 轴深度的同级 3D 渲染兄弟。
+  - **三维重叠排序**：
+    1. **Hover 卡片（中间夹心，Z = 28px）**：卡片在悬浮时通过 CSS 物理飘起 Z = 28px。
+    2. **预览大图（绝对上层，Z = 52px）**：在 `js/modules/premium-interactions.js` 中，将 `imgContainer` 在激活时的 `imgZ` 目标值由 `15` 大幅拉升至 **`52`**，实现**浮于悬停卡片上方 24 像素**的裸眼 3D 层叠效果，内容永不被遮挡。
+    3. **橙色影子底块（绝对下层，Z = 10px）**：将底板 `orangeLayer` 的 `orangeZ` 由 `5` 提升至 **`10`**。由于 `10 < 28`，它恰好**压在悬浮厚玻璃卡片下方 18 像素**的纵深处，同时又浮于未悬停卡片（Z = 0）上方。
+  - **视差偏移校准**：
+    - 将橙色层跟随鼠标移动的延迟视差滑动公式由 `(orangeZ / 5) * 12` 校准为 `(orangeZ / 10) * 18`。
+    - 使得橙色色块在 Z 轴升起 10 像素的过程中，斜向最大拉开间距自适应扩宽至 **`18px`**。用户在拖拽鼠标时，能看到大图和橙色底块分别在卡片的前方和后方以不同的速率滑行，三维穿插感极其惊艳！
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目并进行物理层级打包。
+- 运行 `python workflow.py deploy` 推送部署上线。真机悬停卡片测试显示，大玻璃板浮起时，橙色阴影卡在玻璃后方移动，而精美的预览图悬浮在玻璃板前方探头跟随，多图层三维夹层穿插非常精致，空间层次极为震撼！
