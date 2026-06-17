@@ -2776,4 +2776,20 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 - 运行 `powershell -ExecutionPolicy Bypass -Command "npx vite build"`，生产包零报错构建成功。
 - 使用 `python workflow.py deploy` 推送提交。经审查，各元素的动画进入和退出时间序列分毫不差，效果丝滑。
 
+---
+
+## 🛠️ Step 625: 调色盘框入场改为锚定徽标落点的中心向外缩放展开 (Console Box Scaling Out from Logo Center Destination Point)
+
+### 1. 痛点与实现方案 (Pain Points & Solutions)
+- **痛点**：此前的底框入场动画使用的是稍带左上位移的渐现（从 `scale: 0.93` 到 `1.0`），给人的视觉感依然是简单的“透明度变化与轻微缩放”，缺乏物理从一个极小点“吹气般膨胀展开”的动感 and 视觉冲击力。
+- **优化方案**：
+  1. **定位极小起点与极细锚点 (Micro Scale & Transform Origin)**：我们将控制台卡片入场时的初始尺寸从 `scale: 0.93` 极限缩小至 `scale: 0.05`。为了使展开动作跟 outline 徽标落地契合，我们将 `transformOrigin` 统一设置为 `60px 30px`。该坐标精确对应底框左上角 Header 内 `navLogo` 终点占位符的几何中心。
+  2. **从徽标终点中心吹胀展开 (Explosion-style Unfolding)**：在 `0.8s` 起跑的展开 timeline 中，卡片不再伴随 x/y 的整体漂移，而是以 `transformOrigin: "60px 30px"` 为原点，以 `scale: 0.05` -> `1.0` 且 `opacity: 0` -> `1.0` 的巨大膨胀反差，配合 `power4.out` 长缓动射出。视觉上就像是底部的玻璃底框以飞行的徽标目标点为轴心，呈圆形水泡状在半空中丝滑绽放并平滑降落。
+  3. **完美的对称性退出折叠 (Symmetrical Exit Collapse)**：在点击关闭控制台时，底框同样以相同的 `transformOrigin: "60px 30px"` 轴心折叠。在 `0.5s` 的时间内以 `power3.in` 的速度由 `1.0` 迅速收缩至 `scale: 0.05` 伴随淡出，完美重现了“底框吸卷回徽标中并随之归巢飞回”的对称闭环体验。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `powershell -ExecutionPolicy Bypass -Command "npx vite build"`，生产包零报错构建成功。
+- 使用 `python workflow.py deploy` 推送提交。现场点击效果流畅，在放大到 1.0 的过程中，Canvas 星空也等比例展开，粒子无任何抖动和拉伸，玻璃底框和外发光以极强的物理包裹感由中心徽标向四周铺开，视觉质感极佳。
+
+
 

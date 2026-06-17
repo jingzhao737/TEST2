@@ -424,7 +424,7 @@ import gsap from 'gsap';
       };
       
       // Setup consoleEl starting animation state inline (reversing the y:0 scale:1 set above)
-      gsap.set(consoleEl, { x: -30, y: -20, scale: 0.93, opacity: 0 }); 
+      gsap.set(consoleEl, { x: 0, y: 0, scale: 0.05, transformOrigin: "60px 30px", opacity: 0 }); 
       
       // Select internal elements for staggered entry
       const consoleHeader = consoleEl.querySelector('.color-console-header');
@@ -509,8 +509,6 @@ import gsap from 'gsap';
 
       tl.to(consoleEl, {
         opacity: 1,
-        x: 0,
-        y: 0,
         scale: 1,
         duration: 1.4,
         ease: 'power4.out'
@@ -615,9 +613,8 @@ import gsap from 'gsap';
 
       tl.to(consoleEl, {
         opacity: 0,
-        x: -30,
-        y: -20,
-        scale: 0.93,
+        scale: 0.05,
+        transformOrigin: "60px 30px",
         duration: 0.5,
         ease: 'power3.in'
       }, 0);
