@@ -327,7 +327,7 @@
   - [x] 调整 `styles.css` 中的 light theme 对抗样式，使其在亮色模式下依然拥有剔透的白玻璃切边质感。
   - [x] 运行 `npx vite build` 重新编译项目并发布。
 
-- [ ] **作品卡片内发光与亮度强化 (Works Cards Glass Glow & Brightness Boost)**
-  - [ ] 修改 `styles.css` 的 `.work-list .work-card` 类，提升背景与边框的亮透明度，并叠加白色软磨砂内发光（`inset 0 0 16px white`）。
-  - [ ] 修改 `styles.css` 的 `.work-list .work-card.hovered` 类，在 hover 状态下叠加主题色（`accent`）内反射发光（`inset 0 0 20px accent`）并增亮外描边。
-  - [ ] 运行 `npx vite build` 重新编译项目并发布。
+- [x] **作品卡片内发光与亮度强化 (Works Cards Glass Glow & Brightness Boost)**
+  - [x] 修改 `styles.css` 的 `.work-list .work-card` 类，提升背景与边框的亮透明度，并叠加白色软磨砂内发光（`inset 0 0 16px white`）。
+  - [x] 修改 `styles.css` 的 `.work-list .work-card.hovered` 类，在 hover 状态下叠加主题色（`accent`）内反射发光（`inset 0 0 20px accent`）并增亮外描边。
+  - [x] 运行 `npx vite build` 重新编译项目并发布。

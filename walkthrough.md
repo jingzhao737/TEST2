@@ -3252,3 +3252,27 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
 - 使用 `python workflow.py deploy` 推送代码提交并发布。真机交互测试表明，卡片犹如极具分量的工艺水晶切片，侧边折光锐利，背景磨砂质感高级，极具三维立体厚度！
+
+
+---
+
+## 🛠️ Step 650: 强化作品卡片玻璃面板高反光背景、高亮外边框与双色磨砂内发光效果 (Works Cards Glass Glow & Brightness Boost)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：用户反馈玻璃质感不够明显，难以明确感知到厚度。
+- **重构方案 (Frosted Glass Glow & Contrast Boost)**：
+  - **亮底色升级（Frosted Panel Boost）**：
+    将暗色模式下的默认背景不透明度从 `2.5%` 提升至 `5.5%`（`rgba(255, 255, 255, 0.055)`），悬浮态提升至 `10%`，使玻璃卡片本身的磨砂实体轮廓极为清晰。
+  - **白磨砂内发光（White Inset Glow）**：
+    在默认状态下为卡片注入 `inset 0 0 16px rgba(255, 255, 255, 0.06)` 的白色软磨砂漫反射发光，使玻璃卡片内部呈现出柔和的玉石/白玻璃透光感。
+  - **主题色内反射发光（Accent Full-Reflection Glow）**：
+    在卡片悬浮（`.hovered`）状态下，叠加上色温强烈的 `inset 0 0 24px rgba(var(--accent-rgb), 0.15)` 主题色光晕，模拟光线在卡片玻璃内部发生全反射（Total Internal Reflection）而产生的冰晶边缘霓虹效果。
+  - **反光切边与描边提亮（Brightened Bevels & Borders）**：
+    - 将默认外边框从 `8%` 提亮至 `16%` 的半透明白描边，悬浮态描边提亮至 `60%` 的主题色亮边。
+    - 将左上角折光高光微调提亮，暗色模式下默认 `0.22` 强度，悬浮态 `0.38` 强度，光感更强。
+  - **亮色模式同步提亮**：
+    亮色模式下默认底色升至 `60%` 透明度（`rgba(255, 255, 255, 0.6)`），并配以 `0.85` 的高强度白边缘反光和 `12px` 的白色软内发光，极具冷冰川剔透感。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交并发布。真机实际体验显示，在深色星空下，卡片轮廓非常分明，折射切角反光耀眼；当鼠标悬浮在其上时，整块卡片宛如注入了流光般的主题色霓虹内发光，玻璃的“厚度”和“莹润感”极其显著！
