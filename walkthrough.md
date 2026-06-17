@@ -3441,3 +3441,37 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目。
 - 运行 `python workflow.py deploy` 部署发布。实际效果极其惊艳：卡片自屏外以闪电般的速度席卷而来，随即便如同进入了慢动作时间般，以极其优雅、磁吸浮空的软着陆轨迹慢慢贴合落地，速度落差的动态对比极强，充满高级美感！
+
+
+---
+
+## 🛠️ Step 657: 新增作品飞入动画临时控制面板与循环预览功能 (Add Works Cards Flight Entrance Debug HUD & Loop Preview)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：要手动感受不同的卡片飞入速度和曲线效果，以往需要反复修改代码并重新编译部署，效率极低，也不便直观对比各种高级缓动曲线的动态质感。
+- **飞入动画调试舱与循环预览设计 (Debug Control Panel HUD)**：
+  - **10 种顶级速度曲线预设 (10 Premium Easing Presets)**：
+    1. `expo.out` — 极速切入后慢吸附（Exponential Out）
+    2. `power4.out` — 迅猛自如缓动（Quartic Out）
+    3. `power3.out` — 均衡舒适缓动（Cubic Out）
+    4. `circ.out` — 高敏急刹减速（Circular Out）
+    5. `back.out(1.2)` — 轻微回弹落地（Soft Back Out）
+    6. `back.out(2.5)` — 动感深回弹落地（Hard Back Out）
+    7. `elastic.out(1, 0.75)` — 科技感软弹簧（Tech Elastic）
+    8. `elastic.out(1.2, 0.4)` — 超强果冻回弹（Springy Jelly）
+    9. `expo.inOut` — 电影级慢起跑快冲慢收（Exponential InOut）
+    10. `bounce.out` — 物理弹性弹跳落地（Bounce Out）
+  - **多维度参数调试 (Dynamic Slider Controls)**：
+    - **动画时长 (Duration)**：滑块支持 `0.5s ~ 4.0s` 范围微调，并实时显示数值。
+    - **卡片间隔延迟 (Stagger)**：滑块支持 `0.0s ~ 0.5s` stagger 间隔，精准控制每张卡片起跑的交接紧凑感。
+  - **自动循环播放 (Auto Loop Preview)**：
+    - 带有“循环自动播测试”开关，启用时在动画完成 `1.5s` 后自动复位卡片，并自动重复该飞入动效，方便反复观察。
+    - 独立的播放（▶ 播放动画）及视口对齐（📌 视口对齐，自动定位至 Works 卡片区块）物理按钮。
+  - **智能打断与无缝折叠 (Interrupt & Minimalist Badge)**：
+    - 当调试舱激活时，自动 kill 掉原 ScrollTrigger 的入场时间线并释放其监听，防止产生多轨道时间线冲突。
+    - 调试舱关闭时，所有 inline 动画样式均会被 `clearProps` 干净擦除，恢复完全交互。
+    - 在屏幕右下角自动展示一个精致的圆角渐变色 **“🛸 调试飞入入场”** 悬浮 Badge，点击即可随时重新唤醒调试舱，完全不影响主页面其他区域的调试。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目。
+- 运行 `python workflow.py deploy` 推送部署上线。测试表明，该控制面板在页面加载时自动弹出并滑动视口至 Works 位置，实时切换 10 种曲线表现极为灵敏且弹性逼真，折叠与重开过程丝滑流畅，彻底解决了微调飞入动效的痛点，调试体验极佳！

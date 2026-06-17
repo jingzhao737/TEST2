@@ -376,3 +376,9 @@
   - [x] 将动画时长 `duration` 从 `1.3s` 稍微延长至 `1.6s`，以配合 `expo.out` 极陡的初始加速与平滑极缓的微漂降落尾端，产生更强烈的速度感与软着陆质感。
   - [x] 运行 `cmd.exe /c "npx vite build"` 重新编译打包项目。
   - [x] 运行 `python workflow.py deploy` 推送部署上线。
+
+- [x] **新增作品飞入动画临时控制面板与循环预览功能 (Add Works Cards Flight Entrance Debug HUD & Loop Preview)**
+  - [x] 在 `js/modules/works-entrance.js` 中新增可折叠的玻璃拟态悬浮控制面板 DOM，包含 10 种顶级速度曲线下拉选项、Duration 长度滑块、Stagger 间隔延迟滑块，以及自动循环播放和视口对齐等调试功能。
+  - [x] 整合控制面板激活时对默认 ScrollTrigger 的物理打断和垃圾回收机制（销毁默认 ScrollTrigger 与 timeline）。
+  - [x] 实现当控制面板关闭时，将面板以平滑缩放淡出并在右下角常驻展示一个精美的渐变色 “🛸 调试飞入入场” 悬浮徽标，支持重新唤醒调试面板。
+  - [x] 重新编译打包项目并推送部署。
