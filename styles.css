@@ -3698,9 +3698,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 .secondary-path {
-  fill: var(--bg);
+  /* Dynamic style set by JS */
 }
 
 .primary-path {
-  fill: var(--accent);
+  /* Dynamic style set by JS */
 }

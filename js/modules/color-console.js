@@ -434,9 +434,9 @@ import gsap from 'gsap';
       const priPath = overlay ? overlay.querySelector('.primary-path') : null;
 
       if (overlay && secPath && priPath) {
-        // Set target colors
-        secPath.setAttribute('fill', secondary);
-        priPath.setAttribute('fill', primary);
+        // Set target colors using style.fill to override stylesheet declarations completely
+        secPath.style.fill = secondary;
+        priPath.style.fill = primary;
 
         // Reset starting position (bottom flat flat)
         secPath.setAttribute('d', 'M 0 100 Q 50 100 100 100 L 100 100 L 0 100 Z');
@@ -482,10 +482,10 @@ import gsap from 'gsap';
           }
         }, 0.12);
 
-        // 3. Midway: Apply colors instantly under the cover of the liquid
+        // 3. Midway: Apply colors instantly under the cover of the liquid (at t = 0.82s when priPath is fully covered)
         transitionTimeline.call(() => {
           updateStyles(primary, secondary);
-        }, null, 0.58);
+        }, null, 0.82);
 
         // 4. Secondary wave pulls up to reveal
         transitionTimeline.to(secReveal, {
