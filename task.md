@@ -382,3 +382,9 @@
   - [x] 整合控制面板激活时对默认 ScrollTrigger 的物理打断和垃圾回收机制（销毁默认 ScrollTrigger 与 timeline）。
   - [x] 实现当控制面板关闭时，将面板以平滑缩放淡出并在右下角常驻展示一个精美的渐变色 “🛸 调试飞入入场” 悬浮徽标，支持重新唤醒调试面板。
   - [x] 重新编译打包项目并推送部署。
+
+- [x] **飞入动画调试舱新增虚拟鼠标自动演示模式 (Add Virtual Mouse Autopilot to Debug HUD)**
+  - [x] 在 `js/modules/works-entrance.js` 的调试舱中集成 “✈️ 自动导航演示” 选项。
+  - [x] 实现可互动的虚拟鼠标指针元素（橙色带呼吸感发光圆圈 + 内芯），使用 GSAP 驱动其在 viewport 空间内自动运行预设的交互路径（移动、悬停、点击、关闭）。
+  - [x] 实时向 `window` 与 `document` 派发真实的 `mousemove`、`mouseenter`、`mousedown` 和 `mouseup` 鼠标事件，使页面元素（如 3D 卡片、自定义光标）被虚拟鼠标的操作精准触发并回馈。
+  - [x] 成功编译构建并推送部署上线。
