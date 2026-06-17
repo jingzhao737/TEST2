@@ -2865,3 +2865,24 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 编译，生成包构建成功。
 - 使用 `python workflow.py deploy` 推送提交。高频度重复点击关闭控制台，底框完美收缩回 logo 点并隐藏，闪烁现象 100% 根除。
+
+---
+
+## 🛠️ Step 633: 将调色盘退场动画重构为对称的 Awwwards 圆形蒙版折叠与缩回动效 (Symmetric Exit Transition for Color Console)
+
+### 1. 痛点与实现方案 (Pain Points & Solutions)
+- **痛点**：此前的调色盘退场动画比较简单、仓促（时长仅 0.7 秒，ease 为 `power3.in`），这与入场时极具高级感、徐徐展开的 Awwwards 级别圆形蒙版水波展开动效（1.8 秒，ease 为 `power4.out`）在视觉上显得不对称、不协调，缺乏高阶交互的流畅美感。
+- **优化方案**：
+  1. **构建对称飞行与收缩时间线**：
+     - 将退场时 Logo 飞回导航栏的总时长从 1.35 秒延长至与入场一致的 `2.7` 秒，并采用对称的 `power4.inOut` 缓动，实现极具分量感的几何返航曲线。
+     - 将卡片底板的圆形蒙版折叠和 Scale 缩回（`scale: 1.0` -> `0.3`）的持续时间从 0.7 秒大幅增加至 `1.8` 秒，完美匹配入场底卡膨胀时长；缓动重构为 `power4.in`（入场 `power4.out` 的完美数学逆向），让底框在徽标返航起飞的瞬间（`0.15s` 延迟）同步开始缓缓向内收敛，随后平稳加速收缩至徽标在控制台 header 中的物理锚点（`60px 30px`）。
+     - 将底卡淡出（`opacity: 1` -> `0`）时长微调为 `0.2` 秒，精确设置在 `1.75s` 延迟启动，在 `1.95s` 时随着底框正好完全收缩至 `scale(0.3)` 和蒙版归零的瞬间无缝淡出隐藏，实现了极其细腻、天衣无缝的退场收尾。
+  2. **顺延子级退场**：
+     - 将内部 Presets、Custom Picker 及动作按钮这 4 组组件的 Staggered 退场（自下而上滑落并淡出，`y: 0` -> `15`，`opacity: 1` -> `0`）的持续时间从 0.4 秒延长至 `0.8` 秒（配合 `power3.in` 缓动与 `0.1s` staggered 间隔），使其在底框收缩的初始阶段柔和而利落地先行退场。
+  3. **修复变量作用域 Bug**：
+     - 修复了此前在退场动画中，清除内部组件 inline styles 的 `consoleHeader`, `consoleSections`, `consoleActions` 变量因被错误定义在 onComplete 回调作用域中而在外部 Timeline 配置时引起 `ReferenceError` 的潜在报错隐患，将它们的查询语句提至 `else` 分支的首部以共享上下文。
+  4. **效果**：关闭控制台时，设置项组件从下往上轻缓坠落并隐去，底框同时像被吸入返航徽标一般以圆形蒙版逆向收缩折叠，最终干净优雅地退场。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境打包完美通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机交互测试表明，调色盘的打开与关闭动效在时长、速度、剪切方式及物理缩放上完全对称呼应，转场逻辑非常合理、优雅，给整站的交互体验带来了极大的提升。

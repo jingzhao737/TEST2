@@ -579,9 +579,14 @@ import gsap from 'gsap';
       
       _animating = true;
       const maxBulge = window.innerWidth > 768 ? 36 : 28;
-      const duration = 2.7 * 0.5;
+      const duration = 2.7;
       const ease = 'power4.inOut';
       const animState = { progress: 0 };
+
+      // Query internal elements for staggered fade out and clearance
+      const consoleHeader = consoleEl.querySelector('.color-console-header');
+      const consoleSections = consoleEl.querySelectorAll('.console-section');
+      const consoleActions = consoleEl.querySelector('.console-actions-row');
 
       // Ensure logo is visible at the start of closing animation
       gsap.set(logo, { opacity: 1 });
@@ -600,9 +605,6 @@ import gsap from 'gsap';
           }
           
           // Clear internal elements inline styles as well
-          const consoleHeader = consoleEl.querySelector('.color-console-header');
-          const consoleSections = consoleEl.querySelectorAll('.console-section');
-          const consoleActions = consoleEl.querySelector('.console-actions-row');
           gsap.set([consoleHeader, ...consoleSections, consoleActions], { clearProps: 'all' });
 
           logo.style.removeProperty('transition');
@@ -641,15 +643,30 @@ import gsap from 'gsap';
         }
       }, 0);
 
-      tl.to(consoleEl, {
+      // Staggered internal elements fade out (bottom to top, mirroring the entrance)
+      tl.to([consoleHeader, ...consoleSections, consoleActions], {
+        y: 15,
         opacity: 0,
+        duration: 0.8,
+        ease: 'power3.in',
+        stagger: { each: 0.1, from: 'end' }
+      }, 0.15);
+
+      // Card scale and clip-path shrink (origin: 60px 30px)
+      tl.to(consoleEl, {
         scale: 0.3,
         clipPath: "circle(0% at 60px 30px)",
         webkitClipPath: "circle(0% at 60px 30px)",
         transformOrigin: "60px 30px",
-        duration: 0.5,
-        ease: 'power3.in'
-      }, 0);
+        duration: 1.8,
+        ease: 'power4.in'
+      }, 0.15);
+
+      // Card opacity fade out (delayed slightly to keep the circular mask shrink visible)
+      tl.to(consoleEl, {
+        opacity: 0,
+        duration: 0.2
+      }, 1.75);
     }
   }
 

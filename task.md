@@ -92,3 +92,11 @@
 
 
 
+
+- `[x]` **调色盘退场与入场对称动画优化 (Symmetric Entrance/Exit Transitions for Color Console)**
+  - `[x]` 将退场 Logo 返航飞行动画的时长从 `1.35s` 延长至 `2.7s`，以对齐入场时长。
+  - `[x]` 将退场底板的缩回与圆形剪裁蒙版折叠时间从 `0.7s` 延长至 `1.8s`，缓动改为 `'power4.in'`，起始延时设置为 `0.15s`。
+  - `[x]` 将退场底板 Opacity 渐隐时间微调为 `0.2s`，起始延时设置为 `1.75s`，精确对齐蒙版完全闭合瞬间。
+  - `[x]` 将内部设置子项 Staggered 退场动画时间从 `0.4s` 延长至 `0.8s`，缓动改为 `'power3.in'`，stagger 间距调整为 `0.1s`。
+  - `[x]` 修复 `consoleHeader`, `consoleSections`, `consoleActions` 变量在退场代码块中的作用域 bug，将其提至 `else` 顶部进行共享定义。
+  - `[x]` 执行本地打包校验，确认生产环境构建 100% 通过且无编译报错。
