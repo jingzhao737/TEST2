@@ -451,28 +451,14 @@ import gsap from 'gsap';
   resetBtn.addEventListener('click', function(e) {
     e.preventDefault();
     presetBtns.forEach(b => b.classList.remove('active'));
-    document.querySelector('[data-preset="default"]').classList.add('active');
+    const defaultBtn = document.querySelector('[data-preset="default"]');
+    if (defaultBtn) {
+      defaultBtn.classList.add('active');
+    }
     localStorage.setItem('activePreset', 'default');
-    localStorage.removeItem('customPrimary');
-    localStorage.removeItem('customSecondary');
     
-    // Clear all inline overrides to restore CSS defaults
-    document.documentElement.style.removeProperty('--accent');
-    document.documentElement.style.removeProperty('--accent-rgb');
-    document.documentElement.style.removeProperty('--accent-glow');
-    document.documentElement.style.removeProperty('--accent-soft');
-    document.documentElement.style.removeProperty('--accent-hover');
-    document.documentElement.style.removeProperty('--fg');
-    document.documentElement.style.removeProperty('--fg-rgb');
-    document.documentElement.style.removeProperty('--bg');
-    document.documentElement.style.removeProperty('--crescent-color');
-    
-    // Reset canvas variables
-    window.__accentRGB = undefined;
-    window.__accentShadowRGB = undefined;
-
-    // Trigger re-load
-    initLoad();
+    // Explicitly apply and save the original brand default colors (Primary: #e87c50, Secondary: #faf2e3)
+    applyColors('#e87c50', '#faf2e3', true);
   });
 
   // Hook into themeChanged event from theme.js to re-apply correctly
