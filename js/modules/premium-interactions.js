@@ -121,7 +121,7 @@ if (!isMobileDevice) {
       activeTimeline.to(previewAnim, {
         orangeOpacity: 1,
         orangeScale: 1.0,
-        orangeZ: 10, // Float 18px BELOW the hovered card (Z=28px)
+        orangeZ: -25, // Float safely BEHIND all cards (Z=-25px, max tilt edge Z is -3px)
         duration: 0.7,
         ease: 'elastic.out(1.0, 0.6)'
       }, 0.08); // Staggered by 0.08s for a tight, high-end feel
@@ -294,12 +294,12 @@ if (!isMobileDevice) {
         gsap.killTweensOf(previewAnim, 'orangeZ');
         orangeSwitchTimeline = gsap.timeline()
           .to(previewAnim, {
-            orangeZ: -36, // Dive down deep behind the glass card (Z=-36) to avoid 3D plane clipping
+            orangeZ: -45, // Dive down deep behind the glass card (Z=-45) to completely clear sinking cards
             duration: 0.16,
             ease: 'power2.in'
           })
           .to(previewAnim, {
-            orangeZ: 10, // Spring back up to the sandwich layer height (Z=10)
+            orangeZ: -25, // Spring back up to the active background depth (Z=-25)
             duration: 0.6,
             ease: 'elastic.out(1.0, 0.6)'
           });
@@ -526,7 +526,7 @@ if (!isMobileDevice) {
       // ── STEP 4: Animate preview thumbnail follow and scale ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
         if (firstMove) {
-          const initOffset = (previewAnim.orangeZ / 10) * 18;
+          const initOffset = (Math.abs(previewAnim.orangeZ) / 25) * 18;
           currentX = targetX;
           currentY = targetY;
           currentOrangeX = targetX + initOffset;
@@ -547,7 +547,7 @@ if (!isMobileDevice) {
         currentY += dy * 0.055;
 
         // 2. LERP orange layer (more delay: 0.035 LERP factor, dynamic offset proportional to orange layer elevation)
-        const currentOffset = (previewAnim.orangeZ / 10) * 18;
+        const currentOffset = (Math.abs(previewAnim.orangeZ) / 25) * 18;
         const targetOrangeX = targetX + currentOffset;
         const targetOrangeY = targetY + currentOffset;
         const dxOrange = targetOrangeX - currentOrangeX;
