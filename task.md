@@ -342,3 +342,12 @@
   - [x] 优化 `measureCards` 以临时备份并恢复卡片当前的 GSAP 动画样式，仅在未播放过动画时才将 opacity 强制设为 0。
   - [x] 动画完成（`onComplete`）后解绑 window 上的 resize / load 事件监听，避免多余计算并防范隐式样式覆盖。
   - [x] 重新打包编译生产环境包并完成部署。
+
+- [x] **作品卡片大厚玻璃质感极限增强 (Works Cards Real Thick 3D Glass Slab)**
+  - [x] 在 `styles.css` 中为 `.work-list .work-card` 引入 3D 转换空间 (`transform: translate3d(0,0,0)`流动状态) 并开启 `transform 0.5s` 平滑过渡。
+  - [x] 引入双重斜切内发光（`inset 1px 1px` 与 `inset 2px 2px` 白色高光，`inset -1px -1px` 与 `inset -2px -2px` 黑色暗影），模拟物理厚倒角（chamfered bevels）。
+  - [x] 引入双层折射描边，叠加 inner refraction border (`inset 0 0 0 1px`) 与 outer border (`border: 1.5px solid`)。
+  - [x] 大幅增强玻璃折射模糊，从 `blur(16px)` 提升至 `blur(28px)`，实现逼真的超厚磨砂玻璃折射效果。
+  - [x] 将背景填充升级为斜向镜面渐变 (`linear-gradient(135deg)`)，折射出反光镜面质感。
+  - [x] 为 Hover 悬停状态注入物理 3D 浮空高度 (`transform: translate3d(0, 0, 28px) scale(1.02)`)，搭配高悬空超大超软双层投影（`0 35px 80px rgba(0,0,0,0.65)`），让卡片在三维空间浮空突起，玻璃厚度感瞬间拉满。
+  - [x] 重新构建并成功推送到生产环境。
