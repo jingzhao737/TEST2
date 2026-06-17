@@ -487,7 +487,7 @@ import gsap from 'gsap';
  
       const maxBulge = window.innerWidth > 768 ? 36 : 28;
       const duration = 2.7;
-      const ease = 'power4.inOut';
+      const ease = 'power4.out';
       const animState = { progress: 0 };
  
       // Force browser reflow to apply the transition removal and initial position immediately
