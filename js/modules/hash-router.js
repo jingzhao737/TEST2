@@ -415,14 +415,18 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         resetDetailState();
+
+        // Clear flags BEFORE dispatchWakeupEvents so that onListEnter's guard
+        // (checks __isRouteTransitioning && __isDetailClosing) passes and the
+        // hover loop wakes up correctly when the mouse is already over a card.
+        window.__isDetailClosing = false;
+        isRouteTransitioning = false;
+
         dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-
-        window.__isDetailClosing = false;
-        isRouteTransitioning = false;
       }
     });
   }
