@@ -2832,3 +2832,18 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 编译，生产包大小稳定且一次通过。
 - 使用 `python workflow.py deploy` 推送提交。经过多机测试，点击控制台展开响应极其轻快迅捷，视觉过渡丝滑，没有任何物理割裂或等待感。
+
+---
+
+## 🛠️ Step 631: 修复调色盘折叠退出时产生的瞬间闪烁(Double-Fade Flash)问题 (Fix Color Console Close Transition Flash Bug)
+
+### 1. 痛点与实现方案 (Pain Points & Solutions)
+- **痛点**：关闭调色盘卡片时，在 GSAP 动画把卡片淡出至 `opacity: 0` 和 `scale: 0.3` 并触发 `onComplete` 的那一瞬间，底框会突然突兀地闪现回 100% 完整显示状态，紧接着再次执行一次淡出。这是由于 GSAP `clearProps: 'all'` 在清除行内样式的同时清空了临时写入的 `transition: none`，从而让仍在生效的 `.active` 样式（`opacity: 1`）瞬间覆盖上去并再次触发了 CSS 的过渡淡出动画，构成了“双重淡出闪烁”的经典冲突。
+- **优化方案**：
+  1. **精确清除 GSAP 行内属性 (Selective Property Clearing)**：将 `consoleEl` 上的属性擦除命令从广义的 `clearProps: 'all'` 重构为精准控制的 `clearProps: 'transform,opacity,clipPath,webkitClipPath,transformOrigin'`。这使得底卡展开期间为了盖过 CSS 过渡而写在行内的 `transition: none` 保护样式没有在清除时丢失，依然保持为 `none`。
+  2. **时序微调 (Execution Order Resequencing)**：在 `onComplete` 回调中，先执行 `consoleEl.classList.remove('active')` 撤除激活类名，使底卡的样式完全坠回默认的不可见隐藏态（`opacity: 0`）。之后再执行 `consoleEl.style.transition = ''` 擦除行内的 `none` 属性，恢复 CSS 过渡以备未来下一次使用。
+  3. **效果**：关闭动画结束的瞬间卡片直接无缝销毁隐藏，绝对不会再产生任何突兀的复现闪一下的问题，转场质量达到完美。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 编译打包一次通过。
+- 使用 `python workflow.py deploy` 推送提交。现场多次高频率测试开启和折叠调色盘，入场圆形蒙版铺开柔和舒适，关闭缩回顺畅无暇，完全告别了闪烁现象。

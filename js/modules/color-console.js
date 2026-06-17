@@ -589,9 +589,9 @@ import gsap from 'gsap';
 
       const tl = gsap.timeline({
         onComplete: () => {
-          // Clear GSAP inline styles while transitions are still disabled to prevent snapping transitions
+          // Clear GSAP inline styles of animated properties (leaving transition: none intact to prevent flash)
           gsap.set(logo, { clearProps: 'all' });
-          gsap.set(consoleEl, { clearProps: 'all' });
+          gsap.set(consoleEl, { clearProps: 'transform,opacity,clipPath,webkitClipPath,transformOrigin' });
           if (staticLogo) {
             gsap.set(staticLogo, { clearProps: 'opacity' });
           }
@@ -605,8 +605,10 @@ import gsap from 'gsap';
           logo.style.removeProperty('transition');
           logo.classList.remove('no-transition');
           logo.classList.remove('console-active');
-          consoleEl.style.transition = '';
+          
+          // Remove active class first, then restore the transition property
           consoleEl.classList.remove('active');
+          consoleEl.style.transition = '';
           _animating = false;
         }
       });
