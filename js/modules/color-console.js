@@ -7,6 +7,7 @@ import gsap from 'gsap';
   const consoleEl = document.getElementById('colorConsole');
   const closeBtn = document.getElementById('consoleCloseBtn');
   const resetBtn = document.getElementById('consoleResetBtn');
+  const copyColorBtn = document.getElementById('consoleCopyColorBtn');
   const primaryPicker = document.getElementById('primaryPicker');
   const secondaryPicker = document.getElementById('secondaryPicker');
   const primaryBadge = document.getElementById('primaryBadge');
@@ -421,6 +422,30 @@ import gsap from 'gsap';
     localStorage.removeItem('activePreset');
     applyColors(primaryPicker.value, secondaryPicker.value);
   });
+
+  // Bind Copy Color button
+  if (copyColorBtn) {
+    copyColorBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const primaryColor = primaryPicker.value;
+      const secondaryColor = secondaryPicker.value;
+      const textToCopy = `Primary: ${primaryColor}\nSecondary: ${secondaryColor}`;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const originalText = copyColorBtn.textContent;
+        copyColorBtn.textContent = 'COPIED!';
+        copyColorBtn.style.borderColor = 'var(--accent)';
+        copyColorBtn.style.color = 'var(--accent)';
+        setTimeout(() => {
+          copyColorBtn.textContent = originalText;
+          copyColorBtn.style.borderColor = '';
+          copyColorBtn.style.color = '';
+        }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy colors: ', err);
+      });
+    });
+  }
 
   // Bind Reset button
   resetBtn.addEventListener('click', function(e) {
