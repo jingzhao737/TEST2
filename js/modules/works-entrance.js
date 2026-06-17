@@ -8,12 +8,23 @@ const section = document.querySelector('.works');
 
 if (cards.length && section) {
   const cardData = [];
+  let animationStarted = false;
+  let animationCompleted = false;
 
   // Measure static coordinates relative to the document
   function measureCards() {
+    if (animationCompleted) return;
+
     // Save current scroll to restore later (so we can measure clean positions)
     const currentScrollX = window.scrollX;
     const currentScrollY = window.scrollY;
+
+    // Save current transform/opacity/filter inline values to restore after measurement
+    const originalStyles = cards.map(card => ({
+      transform: card.style.transform,
+      opacity: card.style.opacity,
+      filter: card.style.filter
+    }));
 
     // Temporarily clear inline GSAP transform/opacity styles to read natural layout
     cards.forEach(card => {
@@ -31,10 +42,22 @@ if (cards.length && section) {
       };
     });
 
-    // Re-hide cards after measurement so they don't flash in their static layout
-    cards.forEach(card => {
-      gsap.set(card, { opacity: 0 });
+    // Restore original styles
+    cards.forEach((card, idx) => {
+      const styles = originalStyles[idx];
+      gsap.set(card, {
+        transform: styles.transform,
+        opacity: styles.opacity,
+        filter: styles.filter
+      });
     });
+
+    // Re-hide cards after measurement ONLY if the animation hasn't started yet
+    if (!animationStarted) {
+      cards.forEach(card => {
+        gsap.set(card, { opacity: 0 });
+      });
+    }
   }
 
   // Initial measurement
@@ -50,6 +73,14 @@ if (cards.length && section) {
       trigger: '#work',
       start: 'top 85%', // Plays when the top of `#work` enters 85% of viewport height
       toggleActions: 'play none none none' // Play once and stay revealed
+    },
+    onStart: () => {
+      animationStarted = true;
+    },
+    onComplete: () => {
+      animationCompleted = true;
+      window.removeEventListener('load', measureCards);
+      window.removeEventListener('resize', measureCards);
     }
   });
 
