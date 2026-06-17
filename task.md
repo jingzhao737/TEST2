@@ -131,6 +131,13 @@
   - `[x]` 编译项目并在 GitHub 生产环境部署发布。
 
 - `[x]` **修复实心 Logo 在连续打断时滞留的并发竞争 Bug (Fix Concurrent Solid Logo Stuck Bug)**
-  - `[x]` 将实心 Logo 的渐隐和渐显动画从独立的 `gsap.to` 重构为直接加入 `tl` 动画时间线的 `tl.to`，确保它们成为主飞行进程的一部分。
+  - `[x]` 将实心 Logo 的渐隐 and 渐显动画从独立的 `gsap.to` 重构为直接加入 `tl` 动画时间线的 `tl.to`，确保它们成为主飞行进程的一部分。
   - `[x]` 在 `toggleConsole` 重启时，除关闭时间线外，增加 `gsap.killTweensOf(logo)`、`gsap.killTweensOf(staticLogo)` 及 `gsap.killTweensOf(consoleEl)`，完全清除可能存在的后台竞争 Tweens。
   - `[x]` 编译项目并在 GitHub 生产环境部署发布。
+
+- `[x]` **修复调色盘退场剪裁蒙版折叠感视觉差异 (Fix Color Console Exit Folding Animation Easing & Timing)**
+  - `[x]` 使用 `gsap.set` 初始化退出状态，确保剪裁蒙版和缩放无缝衔接，无任何跳闪。
+  - `[x]` 将底板折缩和圆形蒙版收拢的 Ease 曲线从 `'power3.inOut'` 变更为 `'power3.out'`，实现与入场对称的高敏捷即时折叠视觉回馈。
+  - `[x]` 重构底板 Opacity 渐隐逻辑，重叠在 `0.45s~1.05s` 阶段，确保收尾处剪裁蒙版折叠的视觉连续性。
+  - `[x]` 确保不修改任何 Logo 返航的飞行坐标及插值计算，彻底规避打断时 Logo 移位与跳变 Bug。
+  - `[x]` 编译生产包并通过 `python workflow.py deploy` 部署发布。

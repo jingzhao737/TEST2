@@ -3005,3 +3005,20 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 ### 2. 部署与验证 (Deployment & Verification)
 - 运行 `npx vite build` 重新编译项目，生产环境打包通过。
 - 使用 `python workflow.py deploy` 推送代码提交。真机交互下进行极限高频打断和双击，实心与空心 Logo 完美交接，并发切换表现极度稳定。
+
+---
+
+## 🛠️ Step 639: 优化调色盘退场折叠动效 Ease 曲线与 Opacity 时序，恢复纯粹的“蒙版收起展开”质感 (Optimize Color Console Exit Folding Animation Easing & Timing)
+
+### 1. 优化方案 (Solutions)
+- **痛点**：在 Step 637 中，调色盘退场剪裁蒙版折叠时间调回了 `1.0` 秒，但其 Ease 曲线采用了 `'power3.inOut'`。这导致收折动画在开始的前 200~300ms 速度极慢，且因为 scale 和 clip-path 无法瞬间作出响应，退场蒙版收折的视觉反馈被严重弱化，看起来更像普通的缩放消失，与进场极速展开（`power4.out`）的折叠感缺乏逻辑对应。
+- **重构方案**：
+  1. **状态瞬间初始化设定 (Immediate Setup)**：在退场 timeline 启动前，显式调用 `gsap.set` 初始化底框的 `scale`、`clipPath` 等视觉状态并强制刷新布局（`consoleEl.offsetHeight`），彻底免除任何属性跳闪。
+  2. **高灵敏剪裁收敛 (Responsive Mask-Reveal)**：将底框缩敛和圆形蒙版收拢的 Ease 曲线变更为 **`'power3.out'`**，使圆形 mask 在退场触发的瞬间能够**极其敏捷、快速地自边缘向圆心收缩**，完美还原了与入场相反的“折收”动作。
+  3. **重合式淡出时序 (Overlapping Opacity Fade-out)**：将底卡 Opacity 的渐隐逻辑由原本的 `0.85s`（突变淡出）重构为重叠在 **`0.45s ~ 1.05s` 阶段的平滑渐消**（时长 `0.6s`，`ease: 'power2.out'`）。使得卡片在高速缩拢、裁剪蒙版聚拢的同时，以渐进融化的方式完美消失在视线中，极富视觉连续性。
+  4. **保持飞行坐标稳定**：对 Logo 返航的直线和膨胀轨迹进行 100% 保持，未触碰任何坐标算法，确保无级打断折返功能依然无缝平稳。
+- **效果**：调色盘退场动作极其利落且具备了清晰的圆形收折细节。点击关闭时，蒙版水波迅速向徽标聚拢，同时底板由内而外融化淡出，视觉张力与入场完全契合。
+
+### 2. 部署与验证 (Deployment & Verification)
+- 运行 `npx vite build` 重新编译项目，生产环境构建完全通过。
+- 使用 `python workflow.py deploy` 推送代码提交。真机交互下退场折叠连贯自然，收拢视觉效果一流。
