@@ -3323,9 +3323,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     grid-template-columns: 80px 1fr 140px 80px;
     border: 1.5px solid rgba(255, 255, 255, 0.32);
     border-radius: 12px;
-    background: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E"),
+    background-image: 
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.09'/%3E%3C/svg%3E"),
       linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
     backdrop-filter: blur(36px);
     -webkit-backdrop-filter: blur(36px);
     /* Multi-layered box-shadow to simulate double-sided chamfered edge reflections and glass thickness */
@@ -3352,9 +3354,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   /* Hover state driven ONLY by .hovered class set from JS static-rect hit-testing
      NO .work-card:hover rules exist — prevents CSS native hover from causing jitter */
   .work-list .work-card.hovered {
-    background: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E"),
+    background-image: 
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.09'/%3E%3C/svg%3E"),
       linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.09) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
     border-color: rgba(var(--accent-rgb), 0.85);
     /* High-contrast double bevel, theme-colored inner glow, and deep soft shadow simulating elevation */
     box-shadow: 
@@ -3378,9 +3382,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   /* Light theme overrides for 3D cards */
   :root.light .work-list .work-card {
     border-color: rgba(0, 0, 0, 0.1);
-    background: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E"),
+    background-image: 
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E"),
       linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
     backdrop-filter: blur(36px);
     -webkit-backdrop-filter: blur(36px);
     box-shadow: 
@@ -3394,9 +3400,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
 
   :root.light .work-list .work-card.hovered {
-    background: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"),
-      #83a39a !important;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E") !important;
+    background-color: #83a39a !important;
+    background-repeat: repeat !important;
+    background-size: auto !important;
     border-color: rgba(131, 163, 154, 0.65);
     box-shadow: 
       inset 1px 1px 0px rgba(255, 255, 255, 0.65),
