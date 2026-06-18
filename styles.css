@@ -882,13 +882,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   letter-spacing:0.02em;
   line-height:1.2;
   font-weight:700;
-  color:var(--fg);
+  color:var(--accent);
   transition:letter-spacing 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin:right center;
 }
 .work-card.hovered .work-name{
   letter-spacing:.02em;
-  color:var(--accent);
+  color:var(--fg);
   transform:scale(1.02);
   transition-delay: 0.05s;
 }
@@ -2824,7 +2824,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 :root.light .nav-menu-btn:hover{border-color:var(--accent)}
 :root.light .scroll-hint-line{background:rgba(0,0,0,.1)}
 :root.light .scroll-hint-text{color:rgba(0,0,0,.25)}
-:root.light .work-name{color:var(--accent)}
+:root.light .work-name{color:var(--fg)}
 :root.light .work-card{border-color:rgba(0, 0, 0, 0.12)}
 :root.light .work-card.hovered{background:#83a39a}
 :root.light .work-card.hovered::after{background:#83a39a}
