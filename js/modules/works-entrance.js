@@ -74,6 +74,12 @@ if (cards.length && section) {
     // Re-measure at the moment of trigger (since layout is final now)
     measureCards();
 
+    const config = window.__motionDebuggerConfig?.worksCards || {
+      duration: 1.6,
+      stagger: 0.16,
+      ease: 'elastic.out(1, 0.75)'
+    };
+
     const tl = gsap.timeline({
       onComplete: () => {
         animationCompleted = true;
@@ -94,8 +100,8 @@ if (cards.length && section) {
 
       tl.to(animState, {
         progress: 1,
-        duration: 1.6,
-        ease: 'elastic.out(1, 0.75)',
+        duration: config.duration,
+        ease: config.ease,
 
         onStart() {
           gsap.set(card, { opacity: 0.01 });
@@ -141,9 +147,15 @@ if (cards.length && section) {
             window.__recalculateWorksCoordinates();
           }
         },
-      }, idx * 0.16); // stagger cards
+      }, idx * config.stagger);
     });
+
+    // Expose timeline globally for debugging
+    window.__activeEntranceTimeline = tl;
   }
+
+  // Expose start function globally
+  window.__startEntranceAnimation = startEntranceAnimation;
 
   // ── Trigger setup: Event-driven on desktop, ScrollTrigger-driven on mobile ──
   if (window.innerWidth > 768) {
