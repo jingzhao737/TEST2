@@ -3408,7 +3408,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     margin: 0 auto;
     transform-style: preserve-3d;
     transition: none;
-    transform: translateX(-40px) translateY(100px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
+    transform: translateX(-40px) translateY(100px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg) scaleY(0.92);
   }
 
   .work-list .work-card {
