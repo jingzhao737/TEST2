@@ -91,7 +91,7 @@ if (!isMobileDevice) {
     gsap.set(wrapper, { autoAlpha: 0 });
 
     // Apply initial 3D tilt transform to workList so it aligns with starting coordinates on load
-    workList.style.transform = `translateX(-180px) translateY(140px) rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
+    workList.style.transform = `translateX(-80px) translateY(140px) rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
     let activeImages = []; // Array to keep track of active image items in the stack
 
@@ -440,7 +440,7 @@ if (!isMobileDevice) {
         currentWorkListY += diffY * 0.06;
         currentWorkListX += diffX * 0.06;
         currentWorkListZ += diffZ * 0.06;
-        workList.style.transform = `translateX(-180px) translateY(140px) rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg)`;
+        workList.style.transform = `translateX(-80px) translateY(140px) rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg)`;
       }
 
       // ── STEP 3: Hit test page-relative coordinates against 3D projected rects ──
