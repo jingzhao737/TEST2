@@ -156,10 +156,45 @@ if (!isMobileDevice) {
       });
     }
 
-    // Page-relative flat coordinates for the cards and sections (avoid layout reflows on scroll/RAF)
+    // Page-relative flat coordinates for the cards and sections
     let wPageRect = { left: 0, top: 0, width: 0, height: 0 };
     let pPageRect = { left: 0, top: 0, width: 0, height: 0 };
     let cardPageRects = [];
+
+    // Cache local card coordinates relative to workList, and workList relative to worksEl
+    let cardLocalRects = [];
+    let workListLocalLeft = 0;
+    let workListLocalTop = 0;
+
+    function recalculateCurrentCoordinates() {
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      const pRect = worksEl.getBoundingClientRect();
+
+      const currentPerspPageX = pRect.left + scrollX;
+      const currentPerspPageY = pRect.top + scrollY;
+
+      pPageRect = {
+        left: currentPerspPageX,
+        top: currentPerspPageY,
+        width: pRect.width,
+        height: pRect.height
+      };
+
+      wPageRect.left = currentPerspPageX + workListLocalLeft;
+      wPageRect.top = currentPerspPageY + workListLocalTop;
+
+      cardPageRects = cardLocalRects.map(r => {
+        return {
+          left: wPageRect.left + r.left,
+          right: wPageRect.left + r.right,
+          top: wPageRect.top + r.top,
+          bottom: wPageRect.top + r.bottom,
+          width: r.width,
+          height: r.height
+        };
+      });
+    }
 
     function updateFlatPageCoordinates() {
       // Temporarily flatten the list to get 100% accurate flat client rects
@@ -168,30 +203,21 @@ if (!isMobileDevice) {
 
       const wRect = workList.getBoundingClientRect();
       const pRect = worksEl.getBoundingClientRect();
-      const scrollX = window.scrollX;
-      const scrollY = window.scrollY;
 
-      wPageRect = {
-        left: wRect.left + scrollX,
-        top: wRect.top + scrollY,
-        width: wRect.width,
-        height: wRect.height
-      };
+      wPageRect.width = wRect.width;
+      wPageRect.height = wRect.height;
 
-      pPageRect = {
-        left: pRect.left + scrollX,
-        top: pRect.top + scrollY,
-        width: pRect.width,
-        height: pRect.height
-      };
+      // Cache flat offset offsets relative to worksEl
+      workListLocalLeft = wRect.left - pRect.left;
+      workListLocalTop = wRect.top - pRect.top;
 
-      cardPageRects = Array.from(cards).map(card => {
+      cardLocalRects = Array.from(cards).map(card => {
         const rect = card.getBoundingClientRect();
         return {
-          left: rect.left + scrollX,
-          right: rect.right + scrollX,
-          top: rect.top + scrollY,
-          bottom: rect.bottom + scrollY,
+          left: rect.left - wRect.left,
+          right: rect.right - wRect.left,
+          top: rect.top - wRect.top,
+          bottom: rect.bottom - wRect.top,
           width: rect.width,
           height: rect.height
         };
@@ -199,6 +225,9 @@ if (!isMobileDevice) {
 
       // Restore the 3D transform
       workList.style.transform = oldTransform;
+
+      // Force instant dynamic recalculation of page coordinates
+      recalculateCurrentCoordinates();
     }
 
     // Expose globally so that works-entrance.js can trigger it once card flight animations complete
@@ -211,6 +240,7 @@ if (!isMobileDevice) {
 
     function onListEnter(e) {
       if (window.__isRouteTransitioning || window.__isDetailClosing) return;
+      recalculateCurrentCoordinates();
       isVisible = true;
       firstMove = true;
       
@@ -356,6 +386,7 @@ if (!isMobileDevice) {
     }
 
     window.addEventListener('mousemove', (e) => {
+      recalculateCurrentCoordinates();
       rawMouseX = e.clientX;
       rawMouseY = e.clientY;
 
@@ -431,6 +462,7 @@ if (!isMobileDevice) {
     let hoverLoopId = null;
 
     function animateHover() {
+      recalculateCurrentCoordinates();
       // ── STEP 1: Update 3D list tilt target from mouse position ──
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
