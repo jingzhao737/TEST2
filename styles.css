@@ -3381,7 +3381,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     width: 100%;
     max-width: 100%;
     padding: 0 64px;
-    height: 115vh;
+    height: 120vh;
     box-sizing: border-box;
     perspective: 1750px;
     overflow: visible;
@@ -3406,14 +3406,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     margin: 0 auto;
     transform-style: preserve-3d;
     transition: none;
-    transform: translateX(-100px) translateY(120px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
+    transform: translateX(-100px) translateY(140px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
   }
 
   .work-list .work-card {
     margin-left: 0;
     margin-right: 0;
-    margin-bottom: 12px;
-    padding: 26px 40px;
+    margin-bottom: 24px;
+    padding: 50px 64px;
     gap: 32px;
     grid-template-columns: 80px 1fr 140px 80px;
     border: 1.5px solid rgba(255, 255, 255, 0.45);

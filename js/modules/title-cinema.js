@@ -70,7 +70,7 @@ function setupWorksCinema() {
   ScrollTrigger.create({
     trigger: section,
     start: 'top top',
-    end: '+=900', // Pin duration
+    end: '+=1600', // Pin duration
     pin: true,
     pinSpacing: true,
     onEnter() {
