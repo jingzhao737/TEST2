@@ -3538,7 +3538,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     width: 700px;
     height: 560px;
     top: 50%;
-    left: 50%;         /* Centred in the exact middle of the works section */
+    left: 54%;         /* Shifted slightly to the right for better visual alignment */
     transform: translate(-50%, -50%);
     z-index: 0;
     pointer-events: none;

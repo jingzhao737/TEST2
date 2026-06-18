@@ -71,6 +71,17 @@ function setupWorksCinema() {
     });
 
     let cardsAnimated = false;
+    let titleAnimationCompleted = false;
+    let sectionPinned = false;
+
+    function checkAndTriggerCards() {
+      if (sectionPinned && titleAnimationCompleted) {
+        if (!cardsAnimated) {
+          cardsAnimated = true;
+          window.dispatchEvent(new CustomEvent('works-cinema-complete'));
+        }
+      }
+    }
 
     // Timeline 1: Chroma blob scroll fade-in and scale expansion (Siri style)
     if (chromaWrapper) {
@@ -97,6 +108,10 @@ function setupWorksCinema() {
       opacity: 1,
       duration: config.duration,
       ease: config.ease,
+      onComplete() {
+        titleAnimationCompleted = true;
+        checkAndTriggerCards();
+      }
     }, config.delay || 0);
 
     const triggerPercent = config.triggerStart !== undefined ? config.triggerStart : 25;
@@ -109,6 +124,7 @@ function setupWorksCinema() {
         tl.play();
       },
       onLeaveBack() {
+        titleAnimationCompleted = false;
         tl.reverse();
       }
     });
@@ -121,13 +137,12 @@ function setupWorksCinema() {
       pin: true,
       pinSpacing: true,
       onEnter() {
-        if (!cardsAnimated) {
-          cardsAnimated = true;
-          // Dispatch immediately on enter to let the cards fly in way earlier
-          window.dispatchEvent(new CustomEvent('works-cinema-complete'));
-        }
+        sectionPinned = true;
+        checkAndTriggerCards();
       },
       onLeaveBack() {
+        sectionPinned = false;
+        titleAnimationCompleted = false;
         if (cardsAnimated) {
           cardsAnimated = false;
           // Dispatch reset event so works-entrance.js resets internal flags and re-hides cards
