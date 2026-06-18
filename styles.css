@@ -771,7 +771,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .section-tag::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:36px;height:1px;background:var(--accent);opacity:.5}
 .section-heading{font-family:'Climate Crisis',sans-serif;font-size:clamp(3.2rem,6vw,5.6rem);letter-spacing:.03em;line-height:.96;color:var(--fg);font-weight:700;position:relative;padding-top:8px}
 @media(min-width: 769px) {
-  #work > .works-big-title {
+  #work > .works-big-title,
+  #work > .works-chroma-wrapper {
     opacity: 0;
   }
   .works {
@@ -3405,7 +3406,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     margin: 0 auto;
     transform-style: preserve-3d;
     transition: none;
-    transform: rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
+    transform: translateX(-100px) translateY(140px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
   }
 
   .work-list .work-card {
@@ -3511,6 +3512,19 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
       0 0 0 1px rgba(131, 163, 154, 0.25) !important;
   }
 
+  .works-chroma-wrapper {
+    display: block;
+    position: absolute;
+    width: 700px;
+    height: 560px;
+    top: 50%;
+    left: 50%;         /* Centred in the exact middle of the works section */
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+
   /* ── Chromatic noise blob — organic light source behind glass cards ──
      Three overlapping radial-gradient channels (white core, red left, cyan right)
      fused with filter:blur create a soft prismatic orb. Sitting at z-index:0
@@ -3519,10 +3533,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .works-chroma-blob {
     display: block;
     position: absolute;
-    width: 700px;
-    height: 560px;
+    width: 100%;
+    height: 100%;
     top: 50%;
-    left: 60%;         /* centred over the card column (340px header + 80px gap = 420px in) */
+    left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%;
     background:

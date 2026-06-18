@@ -18,10 +18,16 @@ function setupWorksCinema() {
   const title = section.querySelector('.works-big-title');
   if (!title) return;
 
+  const chromaWrapper = section.querySelector('.works-chroma-wrapper');
   const cards = gsap.utils.toArray('.work-card');
 
   // Cards start hidden — works-entrance.js will reveal them
   gsap.set(cards, { opacity: 0, immediateRender: true });
+
+  // Hide the chromatic blob wrapper initially
+  if (chromaWrapper) {
+    gsap.set(chromaWrapper, { opacity: 0, immediateRender: true });
+  }
 
   // Title starts below viewport, opacity 0
   gsap.set(title, {
@@ -33,14 +39,23 @@ function setupWorksCinema() {
 
   let cardsAnimated = false;
 
-  // Timeline 1: title rises from 80vh to 0 (its natural DOM position)
+  // Timeline 1: Chroma blob fades in first, then title rises
   const tl = gsap.timeline({ paused: true });
+
+  if (chromaWrapper) {
+    tl.to(chromaWrapper, {
+      opacity: 1,
+      duration: 0.4,
+      ease: 'power1.inOut',
+    });
+  }
 
   tl.to(title, {
     y: 0,
     opacity: 1,
+    duration: 0.6,
     ease: 'power2.out',
-  });
+  }, '>-0.05');
 
   // ScrollTrigger 1: Animates the title rising as the section scrolls up into view
   ScrollTrigger.create({
@@ -61,8 +76,8 @@ function setupWorksCinema() {
     onEnter() {
       if (!cardsAnimated) {
         cardsAnimated = true;
-        // Small delay to let the pinning settle before initiating card fly-in
-        gsap.delayedCall(0.15, () => {
+        // Pause for a beat (~0.8s) before the works cards fly in
+        gsap.delayedCall(0.8, () => {
           window.dispatchEvent(new CustomEvent('works-cinema-complete'));
         });
       }
