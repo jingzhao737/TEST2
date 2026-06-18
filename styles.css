@@ -881,7 +881,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   font-weight:700;
   color:var(--fg);
   transition:letter-spacing 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin:left center;
+  transform-origin:right center;
 }
 .work-card.hovered .work-name{
   letter-spacing:.02em;
