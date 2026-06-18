@@ -3404,20 +3404,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     grid-area: stack;
     z-index: 2;
     width: 100%;
-    max-width: 800px;
+    max-width: 720px;
     margin: 0 auto;
     transform-style: preserve-3d;
     transition: none;
-    transform: translateX(-30vw) translateY(140px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
+    transform: translateX(-180px) translateY(140px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
   }
 
   .work-list .work-card {
     margin-left: 0;
     margin-right: 0;
-    margin-bottom: 14px;
-    padding: 28px 40px;
+    margin-bottom: 10px;
+    padding: 22px 32px;
     gap: 32px;
-    grid-template-columns: 60px 1fr 110px 60px;
+    grid-template-columns: 50px 1fr 90px 50px;
     border: 1.5px solid rgba(255, 255, 255, 0.45);
     border-radius: 12px;
     background-image: 
