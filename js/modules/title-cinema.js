@@ -53,8 +53,8 @@ function setupWorksCinema() {
   tl.to(title, {
     y: 0,
     opacity: 1,
-    duration: 0.6,
-    ease: 'power2.out',
+    duration: 0.85,
+    ease: 'power3.inOut',
   }, '>-0.05');
 
   // ScrollTrigger 1: Animates the title rising as the section scrolls up into view
