@@ -774,6 +774,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   #work > .works-big-title {
     opacity: 0;
   }
+  .works {
+    height: 100vh;
+    padding: 0 64px;
+    box-sizing: border-box;
+  }
   #ice .section-tag,
   #ice .section-heading,
   #showcase .section-tag,
@@ -3364,7 +3369,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     grid-template-areas: "stack";
     align-items: center;
     justify-items: center;
-    padding: 240px 64px 220px;
+    padding: 0 64px;
+    height: 100vh;
+    box-sizing: border-box;
     perspective: 1750px;
     overflow: visible;
   }
@@ -3386,7 +3393,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     margin: 0 auto;
     transform-style: preserve-3d;
     transition: none;
-    transform: rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
+    transform: translateX(-80px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
   }
 
   .work-list .work-card {
