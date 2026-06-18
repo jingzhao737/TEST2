@@ -764,7 +764,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 @keyframes scrollDot{0%{transform:translateY(-100%)}45%{transform:translateY(260%)}55%{transform:translateY(260%)}100%{transform:translateY(-100%)}}
 
 /* 鈺愨晲鈺愨晲鈺愨晲锟?SECTIONS 鈺愨晲鈺愨晲鈺愨晲锟?*/
-.section{padding:240px 64px;max-width:1440px;margin:0 auto;background:transparent;position:relative;z-index:1}
+.section{padding:160px 64px;max-width:1440px;margin:0 auto;background:transparent;position:relative;z-index:1}
 .section::after{content:"";position:absolute;top:10%;right:-18%;width:65%;height:70%;border:1px solid var(--border);border-radius:50%;pointer-events:none;z-index:0;opacity:.35}
 /* SECTION HEADER SYSTEM */
 .section-tag{font-family:'Google Sans',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:.32em;text-transform:uppercase;color:var(--accent);margin-bottom:32px;position:relative;padding-left:48px}
@@ -795,7 +795,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .section-divider{width:40px;height:2px;background:var(--accent);opacity:.3;margin:0 0 20px 0}
 
 /* 鈺愨晲鈺愨晲鈺愨晲鈺?WORK LIST 鈺愨晲鈺愨晲鈺愨晲鈺?*/
-.works{padding:300px 64px 220px;max-width:1440px;margin:0 auto;background:transparent;position:relative;z-index:1}
+.works{padding:240px 64px 160px;max-width:1440px;margin:0 auto;background:transparent;position:relative;z-index:1}
 .works::after{content:"";position:absolute;top:10%;right:-20%;width:60%;height:80%;border:1px solid var(--border);border-radius:50%;pointer-events:none;z-index:0;opacity:.4}
 .works-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:120px}
 .works-count{font-family:'Google Sans',sans-serif;font-size:.75rem;color:var(--muted);letter-spacing:.15em;font-weight:500;text-transform:uppercase}
@@ -882,13 +882,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   letter-spacing:0.02em;
   line-height:1.2;
   font-weight:700;
-  color:var(--accent);
+  color:var(--fg);
   transition:letter-spacing 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin:right center;
 }
 .work-card.hovered .work-name{
   letter-spacing:.02em;
-  color:var(--fg);
+  color:var(--accent);
   transform:scale(1.02);
   transition-delay: 0.05s;
 }
@@ -955,7 +955,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .work-preview.visible{opacity:1;transform:scale(1);filter:blur(0);border-radius:3px}
 
 /* 鈺愨晲鈺愨晲鈺愨晲锟?3D ICE CRYSTAL 鈺愨晲鈺愨晲鈺愨晲锟?*/
-.ice-section{padding:200px 64px 80px;max-width:1440px;margin:0 auto;position:relative;z-index:1}
+.ice-section{padding:160px 64px 160px;max-width:1440px;margin:0 auto;position:relative;z-index:1}
 .ice-section::after{content:"";position:absolute;bottom:0;left:-10%;width:50%;height:70%;border:1px solid var(--border);border-radius:50%;pointer-events:none;z-index:0;opacity:.4}
 .ice-header{margin-bottom:60px}
 .ice-header .section-heading{margin-bottom:0}
@@ -1042,7 +1042,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   width: 100vw;
   height: auto !important;
   max-width: none !important;
-  padding: 240px 0 0 0 !important; /* Expose ample padding-top to keep title alignment and breathing room */
+  padding: 160px 0 0 0 !important; /* Uniform section rhythm: 160px top, showcase items provide bottom spacing */
   margin: 0;
   background: transparent;
   overflow: visible !important; /* Allow sticky positioning to work */
@@ -1324,7 +1324,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 /* 鈺愨晲鈺愨晲鈺愨晲?MOTION VIDEO CAROUSEL 鈺愨晲鈺愨晲鈺愨晲?*/
-.motion-section{padding:240px 64px 360px;max-width:1440px;margin:0 auto;position:relative;z-index:10}
+.motion-section{padding:160px 64px 160px;max-width:1440px;margin:0 auto;position:relative;z-index:10}
 .motion-section::before{content:"";position:absolute;top:0;bottom:0;left:-50vw;right:-50vw;background:transparent;z-index:-1}
 .motion-section::after{content:"";position:absolute;top:0;right:-15%;width:55%;height:100%;border:1px solid var(--border);border-radius:50%;pointer-events:none;z-index:0;opacity:.4}
 
@@ -1553,7 +1553,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 /* 鈺愨晲鈺愨晲鈺愨晲鈺?POETRY SECTION 鈺愨晲鈺愨晲鈺愨晲鈺?*/
 .poetry-section {
-  padding: 200px 64px 220px;
+  padding: 160px 64px 160px;
   max-width: 1440px;
   margin: 0 auto;
   position: relative;
@@ -1811,7 +1811,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .back-to-top:hover .btt-label, .back-to-top.magnet-hover .btt-label{color:var(--bg)}
 
 /* 鈺愨晲鈺愨晲鈺愨晲锟?FOOTER 鈺愨晲鈺愨晲鈺愨晲锟?*/
-.footer{padding:220px 64px 56px;max-width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1}
+.footer{padding:160px 64px 56px;max-width:1440px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1}
 .footer-cta{font-family:'Climate Crisis',sans-serif;font-size:clamp(3.1rem,5.5vw,4.6rem);letter-spacing:.02em;line-height:1.1;font-weight:700;transition:letter-spacing .6s var(--ease-out-expo)}
 .footer-cta:hover{letter-spacing:.06em}
 .ft-word{display:inline-block;overflow:hidden;vertical-align:bottom}
@@ -2457,8 +2457,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .hero{padding:150px 40px 80px; align-items: flex-start;}
   .hero-content{width: calc(100% - 8px); max-width: 100%; margin-left: 8px;}
   .hero-title{margin-left:0}
-  .section{padding:140px 40px}
-  .works{padding:140px 40px 130px}
+  .section{padding:120px 40px}
+  .works{padding:160px 40px 120px}
   .works-header{margin-bottom:72px;flex-direction:column;align-items:flex-start;gap:12px}
   .works-count{align-self:flex-end}
   .work-card{
@@ -2486,11 +2486,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .work-name{font-size:1.6rem}
   .work-idx{font-size:0.6rem}
-  .showcase{padding:160px 0 0 0 !important;height:auto !important;justify-content:flex-start}
+  .showcase{padding:120px 0 0 0 !important;height:auto !important;justify-content:flex-start}
   .showcase-header{padding:0 40px;margin-bottom:56px}
   .showcase-item{height:55vh;padding:48px 40px;border-radius:12px;margin-bottom:3px}
   .showcase-grid{padding:0 40px}
-  .motion-section{padding:140px 40px 240px}
+  .motion-section{padding:120px 40px 120px}
   .motion-header{margin-bottom:32px}
   .about-grid{gap:64px}
   .about-stats{gap:48px}
@@ -2591,11 +2591,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .hero-subtitle{font-size:.82rem;max-width:320px;line-height:1.55}
   .scroll-hint{right:32px;bottom:32px}
   .scroll-hint-line{height:48px}
-  .section{padding:130px 32px}
+  .section{padding:100px 32px}
   .section-tag{font-size:.52rem;letter-spacing:.26em;margin-bottom:26px;padding-left:40px}
   .section-tag::before{width:30px}
   .section-heading{font-size:clamp(2.4rem,8.5vw,3.6rem);letter-spacing:.02em}
-  .works{padding:180px 32px 110px}
+  .works{padding:140px 32px 100px}
   .works-header{margin-bottom:48px}
   .work-card{
     display:flex;
@@ -2664,18 +2664,18 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   :root.light .nav .theme-toggle { border-color: rgba(255,255,255,.35) !important; background: rgba(0,0,0,.6) !important; }
   :root.light .nav .theme-toggle-icon::before { background: #fafaf7 !important; }
   :root.light .nav-menu-btn{border-color:rgba(255,255,255,.2)}
-  .ice-section{padding:140px 40px 60px}
+  .ice-section{padding:100px 40px 100px}
   .ice-header{margin-bottom:40px}
   .ice-container{aspect-ratio:4/3;max-height:65vh}
   .ice-hint{font-size:.65rem;bottom:24px;gap:14px}
   .hero-content{z-index:1}
-  .showcase{padding:120px 0 0 0 !important;height:auto !important;justify-content:flex-start}
+  .showcase{padding:100px 0 0 0 !important;height:auto !important;justify-content:flex-start}
   .showcase-header{padding:0 32px;margin-bottom:40px}
   .showcase-item{padding:40px 32px;margin:0 16px 12px;border-radius:16px}
   .showcase-info h3{font-size:1.7rem}
   .showcase-info .section-tag{font-size:.78rem}
   .showcase-info p{font-size:.78rem;line-height:1.6;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-  .motion-section{padding:60px 32px 140px}
+  .motion-section{padding:100px 32px 100px}
   .motion-specs {
     margin-top: 60px;
     padding: 24px;
@@ -2696,11 +2696,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px}
   .stat-num{font-size:2.2rem}
   .stat-lbl{font-size:.6rem;letter-spacing:.1em;margin-top:8px}
-  .marquee-section{padding:100px 0}
+  .marquee-section{padding:80px 0}
   .marquee-item{font-size:2.2rem;gap:14px}
   .marquee-item::after{width:14px;height:1.5px}
   .marquee-track{gap:36px;animation-duration:18s}
-  .footer{padding:120px 32px 48px;flex-direction:column;gap:36px;align-items:flex-start}
+  .footer{padding:100px 32px 48px;flex-direction:column;gap:36px;align-items:flex-start}
   .footer-cta{font-size:clamp(1.8rem,8vw,2.8rem)}
   .footer-right{text-align:left}
   .footer-copy{margin-top:12px}
@@ -2747,8 +2747,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .divider-meta{font-size:0.5rem; letter-spacing:0.12em;}
   .hero-subtitle{font-size:.75rem;max-width:100%;line-height:1.55}
   .scroll-hint{right:28px}
-  .section{padding:130px 28px 80px}
-  .works{padding:130px 28px 100px}
+  .section{padding:90px 28px 80px}
+  .works{padding:120px 28px 90px}
   .section-tag{font-size:.48rem;letter-spacing:.22em;margin-bottom:22px;padding-left:34px}
   .section-tag::before{width:26px}
   .section-heading{font-size:clamp(1.8rem,9vw,2.6rem);letter-spacing:.01em}
@@ -2761,12 +2761,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     height: 116px !important;
   }
   .work-name{font-size:1.2rem}
-  .showcase{padding:100px 0 0 0 !important;height:auto !important;justify-content:flex-start}
+  .showcase{padding:80px 0 0 0 !important;height:auto !important;justify-content:flex-start}
   .showcase-header{padding:0 28px}
   .showcase-item{padding:24px 20px;margin:0 12px 10px;border-radius:12px}
   .showcase-info h3{font-size:1.45rem}
   .showcase-info .section-tag{font-size:.7rem}
-  .motion-section{padding:40px 28px 120px}
+  .motion-section{padding:80px 28px 80px}
   .motion-specs {
     margin-top: 45px;
     padding: 20px;
@@ -2777,7 +2777,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
   .motion-header{margin-bottom:20px}
 
-  .poetry-section{padding:110px 20px}
+  .poetry-section{padding:80px 20px}
   .poetry-sidebar{padding-bottom:24px;margin-bottom:40px}
   .poetry-title-vertical{font-size:clamp(1.5rem, 8.5vw, 1.9rem);gap:6px 12px}
   .poetry-meta{padding-top:12px;gap:12px}
@@ -2788,13 +2788,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .stat-num{font-size:1.8rem}
   .marquee-item{font-size:1.7rem}
   .marquee-track{gap:24px}
-  .marquee-section{padding:80px 0}
-  .ice-section{padding:100px 28px 40px}
+  .marquee-section{padding:60px 0}
+  .ice-section{padding:80px 28px 80px}
   .ice-header{margin-bottom:32px}
   .ice-container{aspect-ratio:3/4;max-height:55vh}
   .ice-hint{font-size:.6rem;bottom:24px;gap:10px;flex-direction:column}
   .ice-hint-sep{display:none}
-  .footer{padding:100px 28px 48px}
+  .footer{padding:80px 28px 48px}
   .footer-cta{font-size:clamp(1.4rem,8vw,2.0rem)}
   .detail-close{top:28px;right:28px}
   .detail-hero-content{padding:0 28px}
@@ -2829,7 +2829,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 :root.light .work-card.hovered{background:#83a39a}
 :root.light .work-card.hovered::after{background:#83a39a}
 :root.light .work-card.hovered .work-idx,
-:root.light .work-card.hovered .work-name{color:#fafaf7}
+:root.light .work-card.hovered .work-name{color:var(--accent)}
 :root.light .work-card.hovered .work-medium,
 :root.light .work-card.hovered .work-year{color:rgba(250,250,247,.7)}
 :root.light .tag{background:rgba(0,0,0,.04);color:var(--card-txt-muted);border:1px solid rgba(0,0,0,.08)}
