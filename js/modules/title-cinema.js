@@ -43,7 +43,7 @@ function setupWorksCinema() {
       ease: 'power4.inOut',
       y: '100vh',
       delay: 0,
-      triggerStart: 25
+      triggerStart: 10
     };
 
     const chromaConfig = window.__motionDebuggerConfig?.chromaBlob || {
@@ -54,7 +54,14 @@ function setupWorksCinema() {
     // Reset initial states
     gsap.set(cards, { opacity: 0, immediateRender: true });
     if (chromaWrapper) {
-      gsap.set(chromaWrapper, { opacity: 0, immediateRender: true });
+      gsap.set(chromaWrapper, {
+        opacity: 0,
+        scale: 0,
+        xPercent: -50,
+        yPercent: -50,
+        transformOrigin: 'center center',
+        immediateRender: true
+      });
     }
     gsap.set(title, {
       y: config.y,
@@ -65,7 +72,7 @@ function setupWorksCinema() {
 
     let cardsAnimated = false;
 
-    // Timeline 1: Chroma blob scroll fade-in (Scrubbed)
+    // Timeline 1: Chroma blob scroll fade-in and scale expansion (Siri style)
     if (chromaWrapper) {
       worksScrollTriggerChroma = ScrollTrigger.create({
         trigger: section,
@@ -74,6 +81,7 @@ function setupWorksCinema() {
         scrub: 1.0,
         animation: gsap.to(chromaWrapper, {
           opacity: 1,
+          scale: 1,
           ease: chromaConfig.ease
         })
       });

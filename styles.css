@@ -3560,14 +3560,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     transform: translate(-50%, -50%);
     border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%;
     background:
-      /* Left white light source — solid core */
-      radial-gradient(ellipse at 28% 50%, rgba(255, 255, 255, 0.78) 0%, transparent 54%),
+      /* White light source — solid core */
+      radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.78) 0%, transparent 54%),
       /* Upper Blue channel (Y = 45%) */
       radial-gradient(ellipse at 50% 45%, rgba(0, 80, 255, 0.32) 0%, transparent 54%),
       /* Lower Blue channel (Y = 55%) */
       radial-gradient(ellipse at 50% 55%, rgba(0, 80, 255, 0.32) 0%, transparent 54%),
-      /* White core transition — offset left-center */
-      radial-gradient(ellipse at 38% 48%, rgba(255, 255, 255, 0.55) 0%, transparent 42%);
+      /* White core transition */
+      radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.55) 0%, transparent 42%);
     filter: blur(56px);
     mix-blend-mode: screen;
     z-index: 0;
@@ -3581,14 +3581,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
   :root.light .works-chroma-blob {
     background:
-      /* Left shadow source — solid core */
-      radial-gradient(ellipse at 28% 50%, rgba(100, 100, 140, 0.32) 0%, transparent 54%),
+      /* Shadow source — solid core */
+      radial-gradient(ellipse at 50% 50%, rgba(100, 100, 140, 0.32) 0%, transparent 54%),
       /* Upper Blue channel (Y = 45%) */
       radial-gradient(ellipse at 50% 45%, rgba(0, 40, 200, 0.15) 0%, transparent 54%),
       /* Lower Blue channel (Y = 55%) */
       radial-gradient(ellipse at 50% 55%, rgba(0, 40, 200, 0.15) 0%, transparent 54%),
-      /* Core transition — offset left-center */
-      radial-gradient(ellipse at 38% 48%, rgba(130, 130, 180, 0.22) 0%, transparent 42%);
+      /* Core transition */
+      radial-gradient(ellipse at 50% 50%, rgba(130, 130, 180, 0.22) 0%, transparent 42%);
     mix-blend-mode: multiply;
   }
 }
