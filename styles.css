@@ -898,7 +898,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .work-idx{
   font-family:'Google Sans',sans-serif;
-  font-size:.68rem;
+  font-size:.6rem;
   color:var(--card-txt-muted);
   letter-spacing:.2em;
   font-weight:600;
@@ -921,7 +921,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .work-name{
   font-family:'Google Sans',sans-serif;
-  font-size:clamp(1.8rem,2.5vw,2.4rem);
+  font-size:clamp(1.5rem,2.2vw,2.0rem);
   letter-spacing:0.02em;
   line-height:1.2;
   font-weight:700;
@@ -938,7 +938,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .work-medium{
   font-family:'Google Sans',sans-serif;
-  font-size:.65rem;
+  font-size:.58rem;
   color:var(--card-txt-muted);
   font-weight:400;
   letter-spacing:.2em;
@@ -961,7 +961,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .tag{
   font-family:'Google Sans',sans-serif;
-  font-size:.58rem;
+  font-size:.52rem;
   font-weight:600;
   letter-spacing:.15em;
   text-transform:uppercase;
@@ -984,7 +984,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
 .work-year{
   font-family:'Google Sans',sans-serif;
-  font-size:.8rem;
+  font-size:.72rem;
   color:var(--card-txt-muted);
   font-weight:500;
   letter-spacing:.1em;
@@ -2662,13 +2662,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     -webkit-tap-highlight-color:transparent;
   }
   .work-card:active{background:var(--card-bg)}
-  .work-idx{font-size:0.62rem;letter-spacing:0.15em;opacity:0.7;transform:none !important}
+  .work-idx{font-size:0.55rem;letter-spacing:0.15em;opacity:0.7;transform:none !important}
   .work-meta{transform:none !important;width:100%}
-  .work-name{font-size:1.35rem;transform:none !important}
-  .work-medium{font-size:0.68rem;margin-top:4px;display:block;opacity:0.75}
+  .work-name{font-size:1.15rem;transform:none !important}
+  .work-medium{font-size:0.6rem;margin-top:4px;display:block;opacity:0.75}
   .work-tags{display:flex !important;gap:6px;flex-wrap:wrap;transform:none !important;margin-top:4px}
-  .tag{font-size:0.52rem;padding:4px 12px;letter-spacing:0.1em}
-  .work-year{display:block !important;position:absolute;top:24px;right:24px;font-size:0.65rem;letter-spacing:0.1em;font-weight:500;color:var(--card-txt-muted);transition:color 0.4s ease, opacity 0.4s ease}
+  .tag{font-size:0.46rem;padding:3px 10px;letter-spacing:0.1em}
+  .work-year{display:block !important;position:absolute;top:24px;right:24px;font-size:0.58rem;letter-spacing:0.1em;font-weight:500;color:var(--card-txt-muted);transition:color 0.4s ease, opacity 0.4s ease}
   .work-preview{display:none}
   .work-preview-wrapper.mobile-preview {
     left: auto !important;
@@ -2803,7 +2803,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     width: 170px !important;
     height: 116px !important;
   }
-  .work-name{font-size:1.2rem}
+  .work-name{font-size:1.05rem}
   .showcase{padding:80px 0 0 0 !important;height:auto !important;justify-content:flex-start}
   .showcase-header{padding:0 28px}
   .showcase-item{padding:24px 20px;margin:0 12px 10px;border-radius:12px}
@@ -3445,25 +3445,25 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   }
 
   .work-list .work-card .work-name {
-    font-size: 1.45rem;
+    font-size: 1.28rem;
   }
 
   .work-list .work-card .work-idx {
-    font-size: 0.62rem;
+    font-size: 0.55rem;
   }
 
   .work-list .work-card .work-medium {
-    font-size: 0.6rem;
-    margin-top: 8px;
+    font-size: 0.54rem;
+    margin-top: 6px;
   }
 
   .work-list .work-card .work-year {
-    font-size: 0.72rem;
+    font-size: 0.65rem;
   }
 
   .work-list .work-card .tag {
-    font-size: 0.52rem;
-    padding: 5px 12px;
+    font-size: 0.48rem;
+    padding: 4px 10px;
   }
 
   .work-list .work-card:last-child {
