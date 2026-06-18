@@ -102,8 +102,66 @@ window.__motionDebuggerConfig = {
     duration: 0.4,
     ease: 'power1.inOut'
   },
-  scrollLength: 900
+  scrollLength: 900,
+  customElements: {} // To store configurations of other animated elements dynamically
 };
+
+// Helper to check if an element has animations
+function isAnimatedElement(el) {
+  if (!el || el === document.body || el === document.documentElement) return false;
+  
+  // Explicit classes we know represent animated components
+  if (el.matches('.works-big-title, .work-card, .works-chroma-blob, .works-chroma-wrapper, .hero-title, .hero-char, .hero-eyebrow, .hero-subtitle, .scroll-hint, .anim-up, #footerCta, .back-to-top, .motion-slide, .poetry-line, .poetry-stanza, .theme-toggle, .nav-logo, .nav-links li, .hdr-ring')) {
+    return true;
+  }
+  
+  // Dynamic CSS transition/animation check
+  const style = window.getComputedStyle(el);
+  const hasTransition = style.transitionProperty && style.transitionProperty !== 'none' && parseFloat(style.transitionDuration) > 0;
+  const hasAnimation = style.animationName && style.animationName !== 'none' && parseFloat(style.animationDuration) > 0;
+  
+  if (hasTransition || hasAnimation) {
+    return true;
+  }
+  
+  return false;
+}
+
+// Helper to generate a unique selector path for any element
+function getUniqueSelector(el) {
+  if (el.id) return `#${el.id}`;
+  let path = [];
+  let current = el;
+  while (current && current.nodeType === Node.ELEMENT_NODE) {
+    let selector = current.nodeName.toLowerCase();
+    if (current.id) {
+      selector += `#${current.id}`;
+      path.unshift(selector);
+      break; // Unique enough
+    } else if (current.className) {
+      const classes = Array.from(current.classList).filter(c => c !== 'motion-inspect-hover' && c !== 'anim-done');
+      if (classes.length) {
+        selector += '.' + classes.join('.');
+      }
+    }
+    
+    // Add child index relative to siblings if not unique
+    let sibling = current.previousElementSibling;
+    let nth = 1;
+    while (sibling) {
+      if (sibling.nodeName.toLowerCase() === current.nodeName.toLowerCase()) {
+        nth++;
+      }
+      sibling = sibling.previousElementSibling;
+    }
+    if (nth > 1 || current.nextElementSibling) {
+      selector += `:nth-of-type(${nth})`;
+    }
+    path.unshift(selector);
+    current = current.parentNode;
+  }
+  return path.join(' > ');
+}
 
 // ── INJECT HTML & CSS FOR THE DEBUGGER ──
 (function initDebuggerUI() {
@@ -516,6 +574,83 @@ window.__motionDebuggerConfig = {
     </div>
     <div class="debugger-panel-body">
       
+      <!-- 自定义选中元素动画 (动态插入显示) -->
+      <div class="debugger-accordion-item" data-section="customElement" id="sec-custom-element" style="display: none;">
+        <div class="debugger-section-title" id="custom-element-title">选中元素动画 (Custom Element)</div>
+        
+        <div class="debugger-control-group">
+          <div class="debugger-control-label">
+            <span>过渡时长 (秒)</span>
+            <span class="val" id="val-custom-duration">0.75</span>
+          </div>
+          <div class="debugger-slider-wrapper">
+            <input type="range" class="debugger-slider" id="slide-custom-duration" min="0.0" max="5.0" step="0.05" value="0.75">
+          </div>
+        </div>
+        
+        <div class="debugger-control-group">
+          <div class="debugger-control-label">
+            <span>延迟时间 (秒)</span>
+            <span class="val" id="val-custom-delay">0.00</span>
+          </div>
+          <div class="debugger-slider-wrapper">
+            <input type="range" class="debugger-slider" id="slide-custom-delay" min="0.0" max="3.0" step="0.05" value="0.00">
+          </div>
+        </div>
+        
+        <div class="debugger-control-group">
+          <div class="debugger-control-label">
+            <span>缓动曲线</span>
+          </div>
+          <select class="debugger-select" id="select-custom-ease">
+            <option value="cubic-bezier(0.19, 1, 0.22, 1)">Expo.out (极速减速)</option>
+            <option value="cubic-bezier(0.9, 0, 0.1, 1)">经典的慢快慢</option>
+            <option value="cubic-bezier(0.25, 0.1, 0.25, 1)">Ease (标准)</option>
+            <option value="cubic-bezier(0.42, 0, 1, 1)">Ease-in (渐快)</option>
+            <option value="cubic-bezier(0, 0, 0.58, 1)">Ease-out (渐慢)</option>
+            <option value="cubic-bezier(0.42, 0, 0.58, 1)">Ease-in-out (渐入渐出)</option>
+            <option value="linear">Linear (线性匀速)</option>
+            <option value="custom">自定义贝塞尔曲线 (Custom Bezier)</option>
+          </select>
+          
+          <!-- Custom Bezier Sliders -->
+          <div class="bezier-sliders" id="custom-bezier-container" style="display: none;">
+            <div class="debugger-control-group">
+              <div class="debugger-control-label">
+                <span>x1</span>
+                <span class="val" id="val-custom-x1">0.19</span>
+              </div>
+              <input type="range" class="debugger-slider" id="slide-custom-x1" min="0" max="1" step="0.01" value="0.19">
+            </div>
+            <div class="debugger-control-group">
+              <div class="debugger-control-label">
+                <span>y1</span>
+                <span class="val" id="val-custom-y1">1.00</span>
+              </div>
+              <input type="range" class="debugger-slider" id="slide-custom-y1" min="0" max="1" step="0.01" value="1">
+            </div>
+            <div class="debugger-control-group">
+              <div class="debugger-control-label">
+                <span>x2</span>
+                <span class="val" id="val-custom-x2">0.22</span>
+              </div>
+              <input type="range" class="debugger-slider" id="slide-custom-x2" min="0" max="1" step="0.01" value="0.22">
+            </div>
+            <div class="debugger-control-group">
+              <div class="debugger-control-label">
+                <span>y2</span>
+                <span class="val" id="val-custom-y2">1.00</span>
+              </div>
+              <input type="range" class="debugger-slider" id="slide-custom-y2" min="0" max="1" step="0.01" value="1">
+            </div>
+          </div>
+        </div>
+        
+        <div class="debugger-control-group" style="margin-top: 14px;">
+          <button class="debugger-btn-primary" id="btn-replay-custom" style="width: 100%; font-size: 12px; padding: 8px 12px;">重置并重新播放该元素动画</button>
+        </div>
+      </div>
+
       <!-- 大标题动画 -->
       <div class="debugger-accordion-item" data-section="worksTitle">
         <div class="debugger-section-title">大标题入场动画 (Works Title)</div>
@@ -678,7 +813,7 @@ window.__motionDebuggerConfig = {
       
     </div>
     <div class="debugger-panel-footer">
-      <button class="debugger-btn-primary" id="btn-replay-animation">播放/预览当前动画</button>
+      <button class="debugger-btn-primary" id="btn-replay-animation">播放整个作品动画</button>
       <button class="debugger-btn-copy" id="btn-copy-parameters">copy参数</button>
       <div class="debugger-toast" id="debugger-copy-toast">参数已复制!</div>
     </div>
@@ -696,8 +831,29 @@ window.__motionDebuggerConfig = {
   const copyBtn = document.getElementById('btn-copy-parameters');
   const toast = document.getElementById('debugger-copy-toast');
 
+  // Custom element elements
+  const secCustomElement = document.getElementById('sec-custom-element');
+  const customElementTitle = document.getElementById('custom-element-title');
+  const slideCustomDuration = document.getElementById('slide-custom-duration');
+  const valCustomDuration = document.getElementById('val-custom-duration');
+  const slideCustomDelay = document.getElementById('slide-custom-delay');
+  const valCustomDelay = document.getElementById('val-custom-delay');
+  const selectCustomEase = document.getElementById('select-custom-ease');
+  const customBezierContainer = document.getElementById('custom-bezier-container');
+  const btnReplayCustom = document.getElementById('btn-replay-custom');
+
+  const slideCustomX1 = document.getElementById('slide-custom-x1');
+  const valCustomX1 = document.getElementById('val-custom-x1');
+  const slideCustomY1 = document.getElementById('slide-custom-y1');
+  const valCustomY1 = document.getElementById('val-custom-y1');
+  const slideCustomX2 = document.getElementById('slide-custom-x2');
+  const valCustomX2 = document.getElementById('val-custom-x2');
+  const slideCustomY2 = document.getElementById('slide-custom-y2');
+  const valCustomY2 = document.getElementById('val-custom-y2');
+
   let isInspectMode = false;
   let inspectedElement = null;
+  let currentCustomElement = null;
 
   if (!btn || !cursor || !panel) return;
 
@@ -748,16 +904,26 @@ window.__motionDebuggerConfig = {
     cursor.style.top = e.clientY + 'px';
   });
 
-  // Highlight elements on Hover
+  // Highlight elements on Hover (Walks up ancestors to find inspectable animated target)
   document.addEventListener('mouseover', (e) => {
     if (!isInspectMode) return;
 
-    const target = e.target.closest('.works-big-title, .work-card, .works-chroma-blob, .works-chroma-wrapper');
-    if (target) {
-      if (inspectedElement && inspectedElement !== target) {
+    let target = e.target;
+    let animatedTarget = null;
+
+    while (target && target !== document.body) {
+      if (isAnimatedElement(target)) {
+        animatedTarget = target;
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (animatedTarget) {
+      if (inspectedElement && inspectedElement !== animatedTarget) {
         inspectedElement.classList.remove('motion-inspect-hover');
       }
-      inspectedElement = target;
+      inspectedElement = animatedTarget;
       inspectedElement.classList.add('motion-inspect-hover');
 
       // Expand custom cursor reticle
@@ -774,8 +940,17 @@ window.__motionDebuggerConfig = {
   document.addEventListener('mouseout', (e) => {
     if (!isInspectMode) return;
 
-    const target = e.target.closest('.works-big-title, .work-card, .works-chroma-blob, .works-chroma-wrapper');
-    if (target && inspectedElement === target) {
+    let target = e.target;
+    let animatedTarget = null;
+    while (target && target !== document.body) {
+      if (isAnimatedElement(target)) {
+        animatedTarget = target;
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (animatedTarget && inspectedElement === animatedTarget) {
       inspectedElement.classList.remove('motion-inspect-hover');
       inspectedElement = null;
 
@@ -794,12 +969,21 @@ window.__motionDebuggerConfig = {
   document.addEventListener('click', (e) => {
     if (!isInspectMode) return;
 
-    const target = e.target.closest('.works-big-title, .work-card, .works-chroma-blob, .works-chroma-wrapper');
-    if (target) {
+    let target = e.target;
+    let animatedTarget = null;
+    while (target && target !== document.body) {
+      if (isAnimatedElement(target)) {
+        animatedTarget = target;
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (animatedTarget) {
       e.preventDefault();
       e.stopPropagation();
 
-      showDebuggerPanel(target);
+      showDebuggerPanel(animatedTarget);
     }
   }, true); // Capture phase to prevent default actions (like launching overlays)
 
@@ -813,12 +997,25 @@ window.__motionDebuggerConfig = {
     accordionItems.forEach(item => item.classList.remove('active'));
 
     let activeSection = 'worksTitle';
+    let isPreset = true;
+
     if (element.classList.contains('work-card')) {
       activeSection = 'worksCards';
     } else if (element.classList.contains('works-chroma-blob') || element.classList.contains('works-chroma-wrapper')) {
       activeSection = 'chromaBlob';
     } else if (element.classList.contains('works-big-title')) {
       activeSection = 'worksTitle';
+    } else {
+      isPreset = false;
+      activeSection = 'customElement';
+    }
+
+    if (!isPreset) {
+      secCustomElement.style.display = 'block';
+      loadCustomElementConfig(element);
+    } else {
+      secCustomElement.style.display = 'none';
+      currentCustomElement = null;
     }
 
     const targetItem = panel.querySelector(`.debugger-accordion-item[data-section="${activeSection}"]`);
@@ -829,6 +1026,184 @@ window.__motionDebuggerConfig = {
       }, 100);
     }
   }
+
+  // Load Transition Configuration of Custom Elements
+  function loadCustomElementConfig(element) {
+    currentCustomElement = element;
+    
+    // Build selector name
+    let tag = element.tagName.toLowerCase();
+    let name = tag;
+    if (element.id) {
+      name += '#' + element.id;
+    } else if (element.className) {
+      const classes = Array.from(element.classList).filter(c => c !== 'motion-inspect-hover' && c !== 'anim-done');
+      if (classes.length) {
+        name += '.' + classes[0];
+      }
+    }
+    customElementTitle.textContent = `选中元素动画 (${name.toUpperCase()})`;
+
+    const selector = getUniqueSelector(element);
+    let duration = 0.75;
+    let delay = 0.0;
+    let ease = 'cubic-bezier(0.19, 1, 0.22, 1)'; // default ease-out-expo
+
+    const saved = config.customElements[selector];
+    if (saved) {
+      duration = saved.duration;
+      delay = saved.delay;
+      ease = saved.ease;
+    } else {
+      // Read computed styling from browser
+      const style = window.getComputedStyle(element);
+      const computedDur = style.transitionDuration;
+      if (computedDur && computedDur !== '0s') {
+        duration = parseFloat(computedDur.split(',')[0]) || 0.75;
+      }
+      const computedDelay = style.transitionDelay;
+      if (computedDelay && computedDelay !== '0s') {
+        delay = parseFloat(computedDelay.split(',')[0]) || 0.0;
+      }
+      const computedEase = style.transitionTimingFunction;
+      if (computedEase && computedEase !== 'ease') {
+        ease = computedEase.split(',')[0].trim();
+      }
+    }
+
+    // Sync sliders
+    slideCustomDuration.value = duration;
+    valCustomDuration.textContent = duration.toFixed(2);
+    
+    slideCustomDelay.value = delay;
+    valCustomDelay.textContent = delay.toFixed(2);
+
+    // Sync ease selector
+    let foundPreset = false;
+    const options = selectCustomEase.options;
+    for (let i = 0; i < options.length; i++) {
+      const optVal = options[i].value.replace(/\s+/g, '');
+      const normEase = ease.replace(/\s+/g, '');
+      if (optVal === normEase) {
+        selectCustomEase.selectedIndex = i;
+        foundPreset = true;
+        break;
+      }
+    }
+
+    if (foundPreset) {
+      customBezierContainer.style.display = 'none';
+    } else {
+      const match = ease.match(/cubic-bezier\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)/);
+      if (match) {
+        selectCustomEase.value = 'custom';
+        customBezierContainer.style.display = 'block';
+        
+        slideCustomX1.value = parseFloat(match[1]);
+        valCustomX1.textContent = parseFloat(match[1]).toFixed(2);
+        
+        slideCustomY1.value = parseFloat(match[2]);
+        valCustomY1.textContent = parseFloat(match[2]).toFixed(2);
+        
+        slideCustomX2.value = parseFloat(match[3]);
+        valCustomX2.textContent = parseFloat(match[3]).toFixed(2);
+        
+        slideCustomY2.value = parseFloat(match[4]);
+        valCustomY2.textContent = parseFloat(match[4]).toFixed(2);
+      } else {
+        selectCustomEase.selectedIndex = 0;
+        customBezierContainer.style.display = 'none';
+      }
+    }
+  }
+
+  // Apply tuned values dynamically to selected Custom Element
+  function applyCustomElementStyles() {
+    if (!currentCustomElement) return;
+
+    const duration = parseFloat(slideCustomDuration.value);
+    const delay = parseFloat(slideCustomDelay.value);
+    
+    let ease = selectCustomEase.value;
+    if (ease === 'custom') {
+      const x1 = parseFloat(slideCustomX1.value);
+      const y1 = parseFloat(slideCustomY1.value);
+      const x2 = parseFloat(slideCustomX2.value);
+      const y2 = parseFloat(slideCustomY2.value);
+      
+      valCustomX1.textContent = x1.toFixed(2);
+      valCustomY1.textContent = y1.toFixed(2);
+      valCustomX2.textContent = x2.toFixed(2);
+      valCustomY2.textContent = y2.toFixed(2);
+      
+      ease = `cubic-bezier(${x1}, ${y1}, ${x2}, ${y2})`;
+    }
+
+    valCustomDuration.textContent = duration.toFixed(2);
+    valCustomDelay.textContent = delay.toFixed(2);
+
+    // Override element transitions with inline styles
+    currentCustomElement.style.transitionDuration = duration + 's';
+    currentCustomElement.style.transitionDelay = delay + 's';
+    currentCustomElement.style.transitionTimingFunction = ease;
+
+    // Save to configuration
+    const selector = getUniqueSelector(currentCustomElement);
+    config.customElements[selector] = {
+      duration: duration,
+      delay: delay,
+      ease: ease
+    };
+  }
+
+  [slideCustomDuration, slideCustomDelay].forEach(slider => {
+    slider.addEventListener('input', applyCustomElementStyles);
+  });
+
+  selectCustomEase.addEventListener('change', (e) => {
+    if (e.target.value === 'custom') {
+      customBezierContainer.style.display = 'block';
+    } else {
+      customBezierContainer.style.display = 'none';
+    }
+    applyCustomElementStyles();
+  });
+
+  [slideCustomX1, slideCustomY1, slideCustomX2, slideCustomY2].forEach(slider => {
+    slider.addEventListener('input', applyCustomElementStyles);
+  });
+
+  // Replay Custom Element CSS transition
+  btnReplayCustom.addEventListener('click', () => {
+    if (!currentCustomElement) return;
+
+    currentCustomElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Handle scroll reveal elements
+    if (currentCustomElement.classList.contains('anim-up')) {
+      currentCustomElement.classList.remove('anim-done');
+      void currentCustomElement.offsetHeight; // Force reflow
+      currentCustomElement.classList.add('anim-done');
+    } else if (currentCustomElement.id === 'footerCta') {
+      currentCustomElement.classList.remove('revealed');
+      void currentCustomElement.offsetHeight;
+      currentCustomElement.classList.add('revealed');
+    } else {
+      // Toggle transition state temporarily to replay transition animations
+      const oldTransition = currentCustomElement.style.transition;
+      currentCustomElement.style.transition = 'none';
+      const oldOpacity = currentCustomElement.style.opacity;
+      const oldTransform = currentCustomElement.style.transform;
+      
+      currentCustomElement.style.opacity = '0';
+      currentCustomElement.style.transform = 'translateY(15px)';
+      void currentCustomElement.offsetHeight; // trigger reflow
+      
+      currentCustomElement.style.transition = oldTransition;
+      currentCustomElement.style.opacity = oldOpacity;
+      currentCustomElement.style.transform = oldTransform;
+    }
+  });
 
   // ── BIND SLIDERS AND CONTROLS TO CONFIG OBJECT ──
   const config = window.__motionDebuggerConfig;
@@ -1028,6 +1403,11 @@ window.__motionDebuggerConfig = {
       },
       "固定滚动长度 (scrollLength)": config.scrollLength
     };
+
+    // Include custom elements if adjusted
+    if (config.customElements && Object.keys(config.customElements).length > 0) {
+      outputData["自定义网页元素动画 (customElements)"] = config.customElements;
+    }
 
     const commentText = 
 `// Crescent Portfolio 动画调试参数结果
