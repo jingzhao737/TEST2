@@ -3570,12 +3570,12 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
 
 ### 1. 优化方案 (Solutions)
 - **痛点与需求**：
-  1. **作品卡片位移与纵向长版布局**：用户希望 Works 卡片的位置能够“再往左点往下多一点”。由于原本 `.works` 高度为 `100vh`，且卡片栈自身高度达 750px，若直接通过 `translateY(140px)` 下移会造成卡片底端严重挤压或超出屏幕边缘被剪裁。
-     * **解决方案**：将 `.works` 板块的高度由 `100vh` 增高至 **`115vh`**，使整个作品区域更修长。同时微调卡片内边距 `padding` 至 `26px 40px`（原为 `36px 48px`），下边距 `margin-bottom` 减至 `12px`（原为 `16px`），将卡片栈总高度缩减至 640px，并在 3D 平移中设置 `translateY(120px)` 与 `translateX(-100px)`。这令卡片能非常精致地整体“沉到下方”，且底端与视口边缘仍保有完美的呼吸空白。
-  2. **蓝白噪波背景居中**：背景 of 蓝白 chromatic 渐变噪波应固定在整个 Works 区域的最中心位置，形成强烈的向心发散光斑背景。
+  1. **作品卡片位移与纵向长版布局**：用户希望 Works 卡片的位置能够“再往左点往下多一点”，以增加整体版面的错落感与三维视角的拉伸跨度。
+     * **解决方案**：为了增加**视觉上的长度**（即卡片自身和卡片堆叠的纵向空间延展感，而非滚动的行程长度），我们将 `.works` 板块的高度由原先的 `100vh` 增高至 **`120vh`**，使整个作品区更修长舒展。同时，我们将卡片 `.work-card` 的内边距从 `36px 48px` 大幅度扩大至 **`50px 64px`**，卡片底边距 `margin-bottom` 增至 **`24px`**。此举将整套卡片栈在视觉上的高度拉长至 **`916px`**，在 3D 转换中设置 `translateY(140px)` 与 `translateX(-100px)`。这令四张大卡片呈现出极为宽敞、疏朗的高端奢侈视觉质感，且在视口中以极佳的比例自然下沉展布。
+  2. **蓝白噪波背景居中**：背景的蓝白 chromatic 渐变噪波应固定在整个 Works 区域的最中心位置，形成强烈的向心发散光斑背景。
   3. **分层渐进滚动节奏**：定制滚动入场的精细时序——当页面滚动至 Works 板块时，首先浮现蓝白渐变噪波，随后大标题 “RECENT PIECES” 从下方升起并淡入；当大标题完全就位且页面锁死固定（pinning）后，停顿片刻（约 0.8s 呼吸时间），作品卡片才执行飞入动画。
 - **具体重构实施**：
-  - **3D 错落与长版移位**：在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中，将 `.works` 的 `height` 改为 `115vh`，并为 tilted 的 `.work-list` 样式添加 3D 平移量，在原有 3D 旋转基础上加入 `translateX(-100px) translateY(120px)`。
+  - **3D 错落与长版移位**：在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中，将 `.works` 的 `height` 改为 `120vh`，并为 tilted 的 `.work-list` 样式添加 3D 平移量，在原有 3D 旋转基础上加入 `translateX(-100px) translateY(140px)`。
   - **噪波容器物理隔离与居中**：
     - 在 [index.html](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/index.html) 中，添加一个不透明度控制层 `.works-chroma-wrapper`，将原有的 `.works-chroma-blob` 包裹其内。
     - 在 [styles.css](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/styles.css) 中，将 `.works-chroma-wrapper` 精确绝对定位在 `#work` 板块的死中心：`left: 50%; top: 50%; transform: translate(-50%, -50%);`。这样可以保证无论如何变形漂移，噪波总是在 works 容器的水平/垂直双重中心线上，且通过 wrapper 控制不透明度成功隔离了 blob 身上复杂的 CSS 关键帧漂移/形变（`blobDrift`/`blobMorphNoise`）动画，消除了 GSAP 操纵 `opacity` 时的任何竞争冲突。同时彻底清除了 [premium-interactions.js](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v3/js/modules/premium-interactions.js) 中的 `syncChromaBlobPosition` 手动像素计算坐标覆盖，完全交由 CSS 机制实现中心锚定。
@@ -3589,4 +3589,4 @@ We have upgraded the custom cursor hover (pointer) state animations from a simpl
   - 滚动页面进入作品页时，首先看到深邃的蓝白色有机噪波缓缓浮现。
   - 接着庞大居中的 “RECENT PIECES” 水印文字迅速崛起淡入，大噪波完美衬托在其正后方。
   - 页面锁定停顿，产生极其舒适的戏剧性呼吸节拍，随后四张科技磨砂玻璃卡片优雅飞出、软弹簧减速归位。
-  - 归位后的卡片位置明显比原先靠左、靠下，且由于 Works 区域纵向拉长（`115vh`）以及卡片尺寸微缩，整个卡片栈在低位（`translateY(120px)`）非常匀称地落在视口中，底部留有 `105px` 的完美呼吸空白，消除了任何底端溢出或挤压的局促感！
+  - 归位后的卡片位置明显比原先靠左、靠下，且由于 Works 区域纵向拉长（`120vh`）以及卡片尺寸扩充（高至 916px），整个卡片栈在低位（`translateY(140px)`）极其舒展和宏大，视觉长度大幅拉长，呈现出高端奢侈的主题质感！

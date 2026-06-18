@@ -409,11 +409,11 @@
   - [x] 成功编译构建并推送部署上线。
 
 - [x] **优化 Works 卡片位置、蓝白噪波居中与滚动入场节奏 (Optimize Works Spacing, Blob Centering & Animation Rhythm)**
-  - [x] **移位卡片容器与纵向加长 Works 区域**：在 `styles.css` 中将 `.works` 的高度从 `100vh` 增高至 **`115vh`**，使整个作品板块更加修长舒展。同时调整 `.work-list` 的 3D 平移至 `translateX(-100px) translateY(120px)`，并微调 `.work-card` 的内边距（`padding: 26px 40px`）和底部外边距（`margin-bottom: 12px`）。这使得卡片高度从 750px 降至 640px，能够完美地“往下移”且非常匀称地落在视口中，底部留有极佳的呼吸空白，不会溢出被裁剪。
-  - [x] **居中蓝白噪波 blob**：在 `index.html` 中引入 `.works-chroma-wrapper` 对 `.works-chroma-blob` 进行包裹，在 `styles.css` 中将 wrapper 精确水平/垂直居中对齐在 works 区域最中心（`left: 50%; top: 50%;`），并让 blob 在其内部按比例填满。同时，清除 `js/modules/premium-interactions.js` 中遗留的 `syncChromaBlobPosition` 手动像素计算坐标覆盖，完全交由 CSS 机制实现中心锚定。
+  - [x] **移位卡片容器与纵向加长 Works 区域**：在 `styles.css` 中将 `.works` 的高度从 `100vh` 增高至 **`120vh`**，使整个作品板块更加修长舒展。同时调整 `.work-list` 的 3D 平移至 `translateX(-100px) translateY(140px)`，并将 `.work-card` 的内边距扩大至 **`50px 64px`**，底部外边距扩大至 **`24px`**。这使得卡片本身在视觉上非常修长、开阔且富有呼吸感，卡片栈总高度拉伸至 916px，整体“往下移”呈现在页面中，显得极为舒展和高端。
+  - [x] **居中蓝白噪波 blob**：在 `index.html` 中引入 `.works-chroma-wrapper` 对 `.works-chroma-blob` 进行包裹，在 `styles.css` 中将 wrapper 精确水平/垂直居中对齐在 works 区域最中心（`left: 50%; top: 50%;`），并让 blob 在其内部按比例填满。同时，清除 `js/modules/premium-interactions.js` 中遗留 of `syncChromaBlobPosition` 手动像素计算坐标覆盖，完全交由 CSS 机制实现中心锚定。
   - [x] **定制分层渐进滚动入场节奏**：
     - 在 `js/modules/title-cinema.js` 的 `setupWorksCinema` 滚动 timeline 中，先让蓝白噪波 `.works-chroma-wrapper` 的不透明度（`opacity`）从 `0` 渐变显现为 `1`。
     - 紧随其后（延迟 overlapping），让大标题 `.works-big-title` 沿着 Y 轴上浮并淡入显示。
     - 在 ScrollTrigger 到达顶部锁定（pinning）后，设置 `0.8s` 明显的停顿呼吸延迟，随后才触发卡片飞入动画，创造完美的“先现噪波 -> 再现标题 -> 驻留片刻 -> 飞入卡片”的滚动节奏。
-  - [x] 成功通过 Playwright 网页渲染测定验证中心坐标（centerX: 957px 完美合拢，且卡片底端完美融入视口），打包编译并部署发布。
+  - [x] 成功通过 Playwright 网页渲染测定验证中心坐标（centerX: 957px 完美合拢，卡片总高 916px 充满页面且符合视觉比例），打包编译并部署发布。
 
