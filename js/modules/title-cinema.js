@@ -86,9 +86,8 @@ function setupWorksCinema() {
     onLeaveBack() {
       if (cardsAnimated) {
         cardsAnimated = false;
-        // Reset cards (works-entrance.js re-hides them)
-        gsap.killTweensOf(cards);
-        cards.forEach(card => gsap.set(card, { clearProps: 'all', opacity: 0 }));
+        // Dispatch reset event so works-entrance.js resets internal flags and re-hides cards
+        window.dispatchEvent(new CustomEvent('works-cinema-reset'));
       }
     },
   });
