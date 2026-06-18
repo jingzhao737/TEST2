@@ -57,13 +57,16 @@ function setupWorksCinema() {
     ease: 'power3.inOut',
   }, '>-0.05');
 
-  // ScrollTrigger 1: Animates the title rising as the section scrolls up into view
+  // ScrollTrigger 1: Triggers the title rising animation when the section enters viewport
   ScrollTrigger.create({
     trigger: section,
     start: 'top 95%', // Starts when the section top enters the bottom 5% of viewport
-    end: 'top top',   // Ends when the section top reaches the top of viewport
-    scrub: 1.2,
-    animation: tl,
+    onEnter() {
+      tl.play();
+    },
+    onLeaveBack() {
+      tl.reverse();
+    }
   });
 
   // ScrollTrigger 2: Pins the section at the top and triggers the cards fly-in
