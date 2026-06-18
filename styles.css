@@ -3366,16 +3366,13 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     padding: 36px 48px;
     gap: 32px;
     grid-template-columns: 80px 1fr 140px 80px;
-    border: 1.5px solid transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.45);
     border-radius: 12px;
     background-image: 
       url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.14'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.12) 100%),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.05) 100%);
-    background-repeat: repeat, no-repeat, no-repeat;
-    background-size: auto, cover, cover;
-    background-clip: padding-box, padding-box, border-box;
-    background-origin: padding-box, padding-box, border-box;
+      linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.12) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
     /* High-contrast double bevel with 1.5px transparent gradient border */
@@ -3404,13 +3401,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   .work-list .work-card.hovered {
     background-image: 
       url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.14'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.16) 100%),
-      linear-gradient(135deg, rgba(var(--accent-rgb), 0.85) 0%, rgba(var(--accent-rgb), 0.3) 40%, rgba(var(--accent-rgb), 0.05) 70%, rgba(var(--accent-rgb), 0.4) 100%);
-    background-repeat: repeat, no-repeat, no-repeat;
-    background-size: auto, cover, cover;
-    background-clip: padding-box, padding-box, border-box;
-    background-origin: padding-box, padding-box, border-box;
-    border-color: transparent;
+      linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.16) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
+    border-color: rgba(var(--accent-rgb), 0.85);
     /* High-contrast double bevel with theme-colored inner glow and gradient border on hover */
     box-shadow: 
       inset 1px 1px 0px rgba(255, 255, 255, 0.65),
@@ -3432,15 +3426,12 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
   /* Light theme overrides for 3D cards */
   :root.light .work-list .work-card {
-    border-color: transparent;
+    border-color: rgba(0, 0, 0, 0.1);
     background-image: 
       url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.35) 50%, rgba(0, 0, 0, 0.08) 100%);
-    background-repeat: repeat, no-repeat, no-repeat;
-    background-size: auto, cover, cover;
-    background-clip: padding-box, padding-box, border-box;
-    background-origin: padding-box, padding-box, border-box;
+      linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%);
+    background-repeat: repeat, no-repeat;
+    background-size: auto, cover;
     backdrop-filter: blur(36px);
     -webkit-backdrop-filter: blur(36px);
     box-shadow: 
@@ -3455,15 +3446,11 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 
   :root.light .work-list .work-card.hovered {
     background-image: 
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E"),
-      linear-gradient(135deg, #83a39a 0%, #6f8d84 100%),
-      linear-gradient(135deg, rgba(131, 163, 154, 0.85) 0%, rgba(131, 163, 154, 0.3) 50%, rgba(131, 163, 154, 0.1) 100%) !important;
-    background-repeat: repeat, no-repeat, no-repeat;
-    background-size: auto, cover, cover;
-    background-clip: padding-box, padding-box, border-box !important;
-    background-origin: padding-box, padding-box, border-box !important;
-    background-color: transparent !important;
-    border-color: transparent !important;
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E") !important;
+    background-color: #83a39a !important;
+    background-repeat: repeat !important;
+    background-size: auto !important;
+    border-color: rgba(131, 163, 154, 0.65);
     box-shadow: 
       inset 1px 1px 0px rgba(255, 255, 255, 0.65),
       inset 2px 2px 0px rgba(255, 255, 255, 0.35),
