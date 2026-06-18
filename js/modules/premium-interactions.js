@@ -228,11 +228,15 @@ if (!isMobileDevice) {
         const offsetX = 30;
         const offsetY = 120; // Comfortable constant gap above the cursor
 
+        // Translation offsets of workList container
+        const tx = -40;
+        const ty = 140;
+
         // Page-relative mouse coordinates
         const pageMouseX = rawMouseX + window.scrollX;
 
-        // Local flat X position inside work-list
-        const localX = pageMouseX - wPageRect.left;
+        // Local flat X position inside work-list (adjusted for translation)
+        const localX = pageMouseX - wPageRect.left - tx;
 
         if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
           targetX = localX - previewWidth - offsetX;
@@ -242,7 +246,7 @@ if (!isMobileDevice) {
 
         // Keep targetY clamped relative to visible viewport bounds
         const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - offsetY);
-        const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top;
+        const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top - ty;
 
         // Apply 3D perspective projection compensation to keep vertical visual gap perfectly uniform
         const xLocal = localX - wPageRect.width / 2;
@@ -360,11 +364,15 @@ if (!isMobileDevice) {
       const offsetX = 30;
       const offsetY = 120; // Comfortable constant gap above the cursor
 
+      // Translation offsets of workList container
+      const tx = -40;
+      const ty = 140;
+
       // Page-relative mouse coordinates
       const pageMouseX = rawMouseX + window.scrollX;
 
-      // Local flat X position inside work-list
-      const localX = pageMouseX - wPageRect.left;
+      // Local flat X position inside work-list (adjusted for translation)
+      const localX = pageMouseX - wPageRect.left - tx;
 
       if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
         targetX = localX - previewWidth - offsetX;
@@ -374,7 +382,7 @@ if (!isMobileDevice) {
 
       // Keep targetY clamped relative to visible viewport bounds
       const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - offsetY);
-      const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top;
+      const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top - ty;
 
       // Apply 3D perspective projection compensation to keep vertical visual gap perfectly uniform
       const xLocal = localX - wPageRect.width / 2;
@@ -472,9 +480,13 @@ if (!isMobileDevice) {
           const x3 = x1 * cosY + z2 * sinY;
           const z3 = -x1 * sinY + z2 * cosY;
 
-          // Perspective
-          const dx = x3 + originX - perspX;
-          const dy = y2 + originY - perspY;
+          // Translation offsets of workList container
+          const tx = -40;
+          const ty = 140;
+
+          // Perspective (adjusted for translation offset)
+          const dx = x3 + originX + tx - perspX;
+          const dy = y2 + originY + ty - perspY;
           const dz = z3;
 
           const scale = d / (d - dz);
