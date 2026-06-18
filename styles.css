@@ -920,7 +920,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 }
 
 .work-name{
-  font-family:'Climate Crisis',sans-serif;
+  font-family:'Google Sans',sans-serif;
   font-size:clamp(1.8rem,2.5vw,2.4rem);
   letter-spacing:0.02em;
   line-height:1.2;
