@@ -70,14 +70,14 @@ function setupWorksCinema() {
   ScrollTrigger.create({
     trigger: section,
     start: 'top top',
-    end: '+=1200', // Pin duration
+    end: '+=900', // Pin duration
     pin: true,
     pinSpacing: true,
     onEnter() {
       if (!cardsAnimated) {
         cardsAnimated = true;
-        // Pause for a beat (~0.8s) before the works cards fly in
-        gsap.delayedCall(0.8, () => {
+        // Pause for a beat (~0.4s) before the works cards fly in
+        gsap.delayedCall(0.4, () => {
           window.dispatchEvent(new CustomEvent('works-cinema-complete'));
         });
       }
