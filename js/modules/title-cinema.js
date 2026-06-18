@@ -76,10 +76,8 @@ function setupWorksCinema() {
     onEnter() {
       if (!cardsAnimated) {
         cardsAnimated = true;
-        // Pause for a beat (~0.4s) before the works cards fly in
-        gsap.delayedCall(0.4, () => {
-          window.dispatchEvent(new CustomEvent('works-cinema-complete'));
-        });
+        // Dispatch immediately on enter to let the cards fly in way earlier
+        window.dispatchEvent(new CustomEvent('works-cinema-complete'));
       }
     },
     onLeaveBack() {
