@@ -199,21 +199,6 @@ if (!isMobileDevice) {
 
       // Restore the 3D transform
       workList.style.transform = oldTransform;
-
-      // Sync the chroma blob position to match exactly where it originally was (top: 50%, left: 60% of .works)
-      syncChromaBlobPosition();
-    }
-
-    const chromaBlob = document.querySelector('.works-chroma-blob');
-    function syncChromaBlobPosition() {
-      if (!chromaBlob || !worksEl) return;
-      const scrollX = window.scrollX;
-      const scrollY = window.scrollY;
-      const pRect = worksEl.getBoundingClientRect();
-      const left = pRect.left + scrollX + pRect.width * 0.6;
-      const top = pRect.top + scrollY + pRect.height * 0.5;
-      chromaBlob.style.left = left + 'px';
-      chromaBlob.style.top = top + 'px';
     }
 
     // Expose globally so that works-entrance.js can trigger it once card flight animations complete

@@ -407,3 +407,13 @@
 - [x] **修改作品卡片大标题字体为 Climate Crisis (Change Works Card Title Font to Climate Crisis)**
   - [x] 修改 `styles.css` 中 `.work-name` 属性，将字体由 `Google Sans` 变更为与主页大标题一致的 `Climate Crisis` 字体，并将字重改为 `700`，字间距微调至 `0.02em` 以获得最佳排版质感。
   - [x] 成功编译构建并推送部署上线。
+
+- [x] **优化 Works 卡片位置、蓝白噪波居中与滚动入场节奏 (Optimize Works Spacing, Blob Centering & Animation Rhythm)**
+  - [x] **移位卡片容器**：在 `styles.css` 中为 `.work-list` 引入 3D 偏移：`transform: translateX(-100px) translateY(140px) ...`，将其向左挪动并向下挪动，获得更加丰满的视觉层次与构图。
+  - [x] **居中蓝白噪波 blob**：在 `index.html` 中引入 `.works-chroma-wrapper` 对 `.works-chroma-blob` 进行包裹，在 `styles.css` 中将 wrapper 精确水平/垂直居中对齐在 works 区域最中心（`left: 50%; top: 50%;`），并让 blob 在其内部按比例填满。
+  - [x] **定制分层渐进滚动入场节奏**：
+    - 在 `js/modules/title-cinema.js` 的 `setupWorksCinema` 滚动 timeline 中，先让蓝白噪波 `.works-chroma-wrapper` 的不透明度（`opacity`）从 `0` 渐变显现为 `1`。
+    - 紧随其后（延迟 overlapping），让大标题 `.works-big-title` 沿着 Y 轴上浮并淡入显示。
+    - 在 ScrollTrigger 到达顶部锁定（pinning）后，设置 `0.8s` 明显的停顿呼吸延迟，随后才触发卡片飞入动画，创造完美的“先现噪波 -> 再现标题 -> 驻留片刻 -> 飞入卡片”的滚动节奏。
+  - [x] 成功打包编译并部署发布。
+
