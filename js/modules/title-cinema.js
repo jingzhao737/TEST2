@@ -11,7 +11,8 @@ if (window.innerWidth > 768) {
 }
 
 let worksTitleTimeline = null;
-let worksScrollTrigger1 = null;
+let worksScrollTriggerChroma = null;
+let worksScrollTriggerTitle = null;
 let worksScrollTrigger2 = null;
 
 // ── WORKS: Big title rises from bottom, stays big, then cards fly in ──
@@ -33,14 +34,16 @@ function setupWorksCinema() {
   function buildTimelineAndTriggers() {
     // Kill old ones if exist
     if (worksTitleTimeline) worksTitleTimeline.kill();
-    if (worksScrollTrigger1) worksScrollTrigger1.kill();
+    if (worksScrollTriggerChroma) worksScrollTriggerChroma.kill();
+    if (worksScrollTriggerTitle) worksScrollTriggerTitle.kill();
     if (worksScrollTrigger2) worksScrollTrigger2.kill();
 
     const config = window.__motionDebuggerConfig?.worksTitle || {
       duration: 2.55,
       ease: 'power4.inOut',
       y: '100vh',
-      delay: 0
+      delay: 0,
+      triggerStart: 25
     };
 
     const chromaConfig = window.__motionDebuggerConfig?.chromaBlob || {
@@ -62,30 +65,38 @@ function setupWorksCinema() {
 
     let cardsAnimated = false;
 
-    // Timeline 1: Chroma blob fades in first, then title rises
+    // Timeline 1: Chroma blob scroll fade-in (Scrubbed)
+    if (chromaWrapper) {
+      worksScrollTriggerChroma = ScrollTrigger.create({
+        trigger: section,
+        start: 'top 95%',
+        end: 'top 75%',
+        scrub: 1.0,
+        animation: gsap.to(chromaWrapper, {
+          opacity: 1,
+          ease: chromaConfig.ease
+        })
+      });
+    }
+
+    // Timeline 2: Title rises dynamically on time
     const tl = gsap.timeline({ paused: true });
     worksTitleTimeline = tl;
     window.__worksTitleTimeline = tl; // Expose
-
-    if (chromaWrapper) {
-      tl.to(chromaWrapper, {
-        opacity: 1,
-        duration: chromaConfig.duration,
-        ease: chromaConfig.ease,
-      });
-    }
 
     tl.to(title, {
       y: 0,
       opacity: 1,
       duration: config.duration,
       ease: config.ease,
-    }, `>${config.delay}`);
+    }, config.delay || 0);
 
-    // ScrollTrigger 1: Triggers the title rising animation when the section enters viewport
-    worksScrollTrigger1 = ScrollTrigger.create({
+    const triggerPercent = config.triggerStart !== undefined ? config.triggerStart : 25;
+
+    // ScrollTrigger 1: Triggers the title rising animation when the section reaches triggerPercent of viewport
+    worksScrollTriggerTitle = ScrollTrigger.create({
       trigger: section,
-      start: 'top 50%', // Starts when the section top reaches the middle of viewport
+      start: `top ${triggerPercent}%`,
       onEnter() {
         tl.play();
       },

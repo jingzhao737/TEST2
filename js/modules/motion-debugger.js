@@ -91,7 +91,8 @@ window.__motionDebuggerConfig = {
     duration: 2.55,
     ease: 'power4.inOut',
     y: '100vh',
-    delay: 0
+    delay: 0,
+    triggerStart: 25
   },
   worksCards: {
     duration: 1.6,
@@ -700,6 +701,16 @@ function getUniqueSelector(el) {
         
         <div class="debugger-control-group">
           <div class="debugger-control-label">
+            <span>入场触发高度 (窗口百分比)</span>
+            <span class="val" id="val-title-trigger-start">25%</span>
+          </div>
+          <div class="debugger-slider-wrapper">
+            <input type="range" class="debugger-slider" id="slide-title-trigger-start" min="10" max="90" step="5" value="25">
+          </div>
+        </div>
+        
+        <div class="debugger-control-group">
+          <div class="debugger-control-label">
             <span>缓动曲线类型</span>
           </div>
           <select class="debugger-select" id="select-title-ease">
@@ -1248,6 +1259,19 @@ function getUniqueSelector(el) {
     config.worksTitle.y = v + 'vh';
   });
 
+  const slideTitleTriggerStart = document.getElementById('slide-title-trigger-start');
+  const valTitleTriggerStart = document.getElementById('val-title-trigger-start');
+  slideTitleTriggerStart.addEventListener('input', (e) => {
+    const v = parseInt(e.target.value, 10);
+    valTitleTriggerStart.textContent = v + '%';
+    config.worksTitle.triggerStart = v;
+
+    // Rebuild ScrollTrigger to apply the new start trigger position!
+    if (typeof window.__rebuildWorksCinema === 'function') {
+      window.__rebuildWorksCinema();
+    }
+  });
+
   const selectTitleEase = document.getElementById('select-title-ease');
   const titleBezierContainer = document.getElementById('title-bezier-container');
   const slideX1 = document.getElementById('slide-title-x1');
@@ -1405,7 +1429,8 @@ function getUniqueSelector(el) {
         "持续时间 (duration)": config.worksTitle.duration,
         "延迟时间 (delay)": config.worksTitle.delay,
         "起始位移 (y)": config.worksTitle.y,
-        "缓动曲线 (ease)": config.worksTitle.ease
+        "缓动曲线 (ease)": config.worksTitle.ease,
+        "入场触发高度 (triggerStart)": config.worksTitle.triggerStart
       },
       "作品卡片动画 (worksCards)": {
         "持续时间 (duration)": config.worksCards.duration,
