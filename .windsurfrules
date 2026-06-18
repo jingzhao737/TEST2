@@ -1,17 +1,18 @@
-# Windsurf Rules — Portfolio v2
+# Windsurf Rules — Portfolio v3
 
 Read the following files before doing ANY work:
-1. `AGENTS.md` — Workflow rules, backup commands, and behavioral guidelines
+1. `AGENTS.md` — Workflow rules, backup commands, token 节省规则, and behavioral guidelines
 2. `PROJECT.md` — Full project architecture, design decisions, and user preferences
 
-# ✦ Active State Checkpoint ✦
-- Current Backup Step: **step_109** (Completed poetry page sidebar & divider line adjustments)
-- Latest Walkthrough: [walkthrough.md](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v2/walkthrough.md)
-- Task Tracker: [task.md](file:///C:/Users/jackchen/lobsterai/project/Project-C/portfolio-v2/task.md)
+# ✦ Token 节省规则（核心） ✦
 
-# ✦ Token-Saving Context Guidelines ✦
-1. **Never read entire files from memory.** ONLY view_file the specific lines needed for code edits (limit range to 20-50 lines).
-2. **Refer to walkthrough.md for historical context.** Do not ask the user for past conversation details.
-3. **Avoid running commands that output large logs** (e.g. use clean filters, suppress npm verbose output).
-4. **Use Subagents for research.** Delegate heavy searching tasks to `research` subagent to isolate context window usage.
+1. **精确读取文件。** `view_file` 必须指定 StartLine/EndLine，每次限 20-50 行。禁止一次读 200+ 行。先用 `findstr` 或 `grep_search` 定位行号再读取。
+2. **简单任务直接做。** 改颜色、改数值、修 bug 等 ≤3 文件的改动不需要写 plan/task/walkthrough，直接编辑+回复总结即可。
+3. **Git 搜索要节制。** 用 `--oneline` 而非 `-p`。需要看具体 diff 时用 `git show <hash> -- <file>` 限定单文件。
+4. **不维护冗余文档。** `task.md`、`walkthrough.md`、`implementation_plan.md` 只在复杂任务中创建。简单任务完成后回复中总结即可。
+5. **重型搜索交给 subagent。** 需要大量 grep/阅读多文件的调研任务委派给 `research` subagent。
+6. **命令输出要精简。** 避免不加 `-n` 的 `git log`、不加 filter 的大日志命令。
 
+# ✦ 语言规则 ✦
+1. 与用户沟通统一使用中文。
+2. 代码注释可以用英文。

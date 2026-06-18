@@ -209,22 +209,22 @@
         }
         let avgVolume = sum / dataArray.length;
         // Dynamically scale wave amplitude based on volume (spikes and pulses to the beat)
-        // Target an intermediate sweet spot between massive overflow and too flat
-        targetAmp = 0.38 + (avgVolume / 255.0) * 1.6;
+        // Significantly boost the amplitude factor for prominent waves at high volume
+        targetAmp = 0.62 + (avgVolume / 255.0) * 4.15;
       } else {
-        targetAmp = 1.3;
+        targetAmp = 2.4;
       }
     }
-    // Dampen amplitude with master volume coefficient
-    targetAmp *= window.__globalVolume * 1.3;
+    // Dampen amplitude with non-linear scaling for extra prominence at high volumes
+    targetAmp *= Math.pow(window.__globalVolume, 1.12) * 2.35;
 
     window.__waveAmp += (targetAmp - window.__waveAmp) * 0.08;
     
     // SAFETY CLIP: Clamp ampScale to 1.32 to keep waveforms visually prominent but inside boundary safety margins
     let ampScale = Math.min(1.32, window.__waveAmp);
 
-    // Get accent color dynamically from document.documentElement style or fallback to default orange (232, 124, 80)
-    let accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+    // Get accent color dynamically from document.documentElement style or fallback to default orange (243, 131, 76)
+    let accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '243, 131, 76';
 
     // Gradient 1: Accent Color for Main Wave
     let grad1 = ctx.createLinearGradient(0, 0, waveW, 0);
@@ -255,12 +255,12 @@
 
     // Wave 3: Deep Background wave - dynamic thickness and amplitude
     ctx.strokeStyle = grad3;
-    ctx.lineWidth = 0.8 + window.__globalVolume * 0.7;
+    ctx.lineWidth = 0.8 + window.__globalVolume * 1.5;
     ctx.beginPath();
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.022 + time * 1.1) * 9.5 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.022 + time * 1.1) * 20 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -268,13 +268,13 @@
 
     // Wave 2: Secondary White Wave - dynamic thickness and amplitude
     ctx.strokeStyle = grad2;
-    ctx.lineWidth = 0.9 + window.__globalVolume * 0.9;
+    ctx.lineWidth = 1.0 + window.__globalVolume * 1.8;
     ctx.beginPath();
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.075 - time * 3.3) * 6.0 * envelope * ampScale
-                + Math.sin(x * 0.038 + time * 1.4) * 4.0 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.075 - time * 3.3) * 11 * envelope * ampScale
+                + Math.sin(x * 0.038 + time * 1.4) * 8 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -282,13 +282,13 @@
 
     // Wave 1: Main Orange Wave - dynamic thickness and amplitude
     ctx.strokeStyle = grad1;
-    ctx.lineWidth = 1.3 + window.__globalVolume * 1.2;
+    ctx.lineWidth = 1.5 + window.__globalVolume * 2.5;
     ctx.beginPath();
     for (let x = 0; x <= waveW; x += 1.5) {
       let progress = x / waveW;
       let envelope = Math.sin(progress * Math.PI);
-      let y = mid + Math.sin(x * 0.045 + time * 2.2) * 8.8 * envelope * ampScale
-                + Math.sin(x * 0.11 - time * 4.1) * 2.8 * envelope * ampScale;
+      let y = mid + Math.sin(x * 0.045 + time * 2.2) * 18 * envelope * ampScale
+                + Math.sin(x * 0.11 - time * 4.1) * 6.5 * envelope * ampScale;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
@@ -329,7 +329,7 @@
         }
         ctx.clip(); // Ensure all sub-drawings conform to the rounded corners, rounding the right edge
 
-        let accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+        let accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '243, 131, 76';
         ctx.fillStyle = 'rgba(' + accentRgb + ', ' + (0.13 * opacity) + ')';
         ctx.fill();
 

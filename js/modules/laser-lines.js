@@ -124,7 +124,7 @@
 
   // Generate laser spark burst on click
   function createBurst(x, y, isOrange = false, customLife = null, customNumSparks = null) {
-    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e87c50';
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#F3834C';
     const burstColor = isOrange ? accentColor : '#ffffff'; // Monochromatic: all dynamic accent on interactive elements, all white on general background
     const isIronSpark = (customLife !== null);
     

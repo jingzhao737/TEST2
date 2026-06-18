@@ -271,11 +271,11 @@ document.querySelectorAll('a[data-link]').forEach(function(a) {
       const dxB = vx * 0.021 * W;
       const dyB = -vy * 0.021 * H;
       
-      // Retrieve the current accent color RGB values dynamically (fallback to default orange 232, 124, 80)
-      const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+      // Retrieve the current accent color RGB values dynamically (fallback to default orange 243, 131, 76)
+      const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '243, 131, 76';
       let rgbParts = accentRgb.split(',').map(x => parseInt(x.trim(), 10));
       if (rgbParts.length !== 3 || rgbParts.some(isNaN)) {
-        rgbParts = [232, 124, 80];
+        rgbParts = [243, 131, 76];
       }
       const [targetR, targetG, targetB] = rgbParts;
 

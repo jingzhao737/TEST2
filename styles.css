@@ -7,10 +7,10 @@
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 :focus:not(:focus-visible){outline:none}
 :root{
-  --bg:#000000;--fg:#FAF2E3;--accent:#E87C50;--crescent-color:var(--fg);
-  --accent-rgb:232,124,80;
+  --bg:#000000;--fg:#FAF2E3;--accent:#F3834C;--crescent-color:var(--fg);
+  --accent-rgb:243,131,76;
   --accent-glow:rgba(var(--accent-rgb),.11);--accent-soft:rgba(var(--accent-rgb),.04);
-  --accent-hover:#F09568;
+  --accent-hover:#F59C70;
   --muted:#6e6c66;--border:rgba(255,255,255,.05);--card-bg:#161616;--card-txt-muted:rgba(255,255,255,.7);
   --detail-card-border: rgba(255, 255, 255, 0.15);
   --nav-bg:rgba(0,0,0,.35);--nav-bg-scrolled:rgba(0,0,0,.55);
@@ -24,7 +24,7 @@
   --spring:cubic-bezier(.22,.61,.36,1);
   /* scrollbar */
   --scroll-accent:#206759;--scroll-accent-rgb:32,103,89;
-  --scroll-bubble-bg:var(--accent);--scroll-bubble-hover-bg:#F09568;
+  --scroll-bubble-bg:var(--accent);--scroll-bubble-hover-bg:#F59C70;
   /* menu */
   --menu-panel-bg:#fafaf7;
   /* skeleton */
@@ -3289,7 +3289,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   height: 600px;
   border-radius: 50%;
   /* Increased color glow intensity for visual presence */
-  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.25) 0%, rgba(32, 103, 89, 0.12) 40%, rgba(32, 103, 89, 0.02) 65%, transparent 80%);
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.35) 0%, rgba(32, 103, 89, 0.16) 45%, rgba(32, 103, 89, 0.03) 70%, transparent 85%);
   pointer-events: none;
   z-index: 0; /* Placed at the very bottom */
   transform: translate3d(-50%, -50%, 0);

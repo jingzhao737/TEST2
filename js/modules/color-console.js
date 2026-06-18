@@ -232,11 +232,11 @@ import gsap from 'gsap';
       const dxB = vx * 0.021 * W;
       const dyB = -vy * 0.021 * H;
       
-      // Retrieve the current accent color RGB values dynamically (fallback to default orange 232, 124, 80)
-      const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '232, 124, 80';
+      // Retrieve the current accent color RGB values dynamically (fallback to default orange 243, 131, 76)
+      const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '243, 131, 76';
       let rgbParts = accentRgb.split(',').map(x => parseInt(x.trim(), 10));
       if (rgbParts.length !== 3 || rgbParts.some(isNaN)) {
-        rgbParts = [232, 124, 80];
+        rgbParts = [243, 131, 76];
       }
       const [targetR, targetG, targetB] = rgbParts;
  
@@ -883,7 +883,7 @@ import gsap from 'gsap';
   // Helper: Get current computed primary and secondary RGB colors
   function getCurrentColors() {
     const isLight = document.documentElement.classList.contains('light');
-    const currentAccentStr = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e87c50';
+    const currentAccentStr = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#F3834C';
     let currentSecondaryStr = '';
     if (isLight) {
       currentSecondaryStr = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#f5f0e8';
@@ -1142,8 +1142,8 @@ import gsap from 'gsap';
     presetBtns.forEach(b => b.classList.remove('active'));
     localStorage.setItem('activePreset', 'custom');
     
-    // Explicitly apply and save the original brand default colors (Primary: #e87c50, Secondary: #faf2e3)
-    applyColors('#e87c50', '#faf2e3', true, e);
+    // Explicitly apply and save the original brand default colors (Primary: #F3834C, Secondary: #faf2e3)
+    applyColors('#F3834C', '#faf2e3', true, e);
   });
 
   // Hook into themeChanged event from theme.js to re-apply correctly

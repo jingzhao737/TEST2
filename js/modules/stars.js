@@ -1104,7 +1104,7 @@ import * as THREE from 'three';
               textCtx.textAlign = item.textAlign;
               textCtx.textBaseline = 'middle';
 
-              const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e87c50';
+              const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#F3834C';
               let color = item.color;
               if (isLight) {
                 if (item.isSectionTag) {

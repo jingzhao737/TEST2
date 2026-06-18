@@ -115,7 +115,7 @@ import * as THREE from 'three';
     // Inner shadow ring overlay on cover image for depth
     const shadowGrad = ctx.createRadialGradient(256, 256, 140, 256, 256, 168);
     shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.15)'); // Softened from 0.45 to 0.15 for a much brighter, cleaner edge
     ctx.fillStyle = shadowGrad;
     ctx.beginPath();
     ctx.arc(256, 256, 168, 0, Math.PI * 2);
@@ -616,7 +616,7 @@ import * as THREE from 'three';
         const labelMat = new THREE.MeshPhysicalMaterial({
           map: ringTextures[i] || null,
           emissiveMap: ringTextures[i] || null,
-          emissive: 0x777777,
+          emissive: 0xbbbbbb, // Brightened from 0x777777 to 0xbbbbbb so thumbnails look vivid and clear
           roughness: 0.55,
           metalness: 0.02,
           clearcoat: 0.12,
@@ -1105,7 +1105,7 @@ import * as THREE from 'three';
       ctx.shadowOffsetY = 3.5;
 
       pathHalfLoop(ctx, i);
-      let mainColor = window.__accentRGB || '232, 124, 80';
+      let mainColor = window.__accentRGB || '243, 131, 76';
       ctx.strokeStyle = 'rgba(' + mainColor + ', 0.95)';
       ctx.lineWidth = baseLineWidth;
       ctx.stroke();
@@ -1123,6 +1123,40 @@ import * as THREE from 'three';
     if (t.y + t.dispH < -20) return;
 
     let r = t.dispW / 2;
+    let ha = t.hoverAlpha || 0;
+    let eased = 1 - Math.pow(1 - ha, 3);
+    
+    let pulse = 0;
+    if (idx === latchedIdx) {
+      let t_sec = Date.now() / 1000;
+      pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
+    }
+    
+    // Constant slight outer glow (white ambient halo)
+    let softGlow = ctx.createRadialGradient(t.x, t.y, r * 0.8, t.x, t.y, r * 1.8);
+    let baseAlpha = 0.08 + pulse * 0.4;
+    softGlow.addColorStop(0, `rgba(255, 255, 255, ${baseAlpha})`);
+    softGlow.addColorStop(0.5, `rgba(255, 255, 255, ${baseAlpha * 0.35})`);
+    softGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.save();
+    ctx.fillStyle = softGlow;
+    ctx.fillRect(t.x - r * 3, t.y - r * 3, r * 6, r * 6);
+    ctx.restore();
+
+    // Hover or Latched enhanced outer glow (stronger white halo)
+    if (ha > 0.01 || pulse > 0) {
+      let glowR = r * 3;
+      let grad = ctx.createRadialGradient(t.x, t.y, r * 0.3, t.x, t.y, glowR);
+      let strongAlpha = (eased * 0.22) + (pulse * 0.55);
+      grad.addColorStop(0, `rgba(255, 255, 255, ${strongAlpha})`);
+      grad.addColorStop(0.5, `rgba(255, 255, 255, ${strongAlpha * 0.3})`);
+      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.save();
+      ctx.fillStyle = grad;
+      ctx.fillRect(t.x - glowR, t.y - glowR, glowR * 2, glowR * 2);
+      ctx.restore();
+    }
+
     // Draw rope from anchor, stopping short of disc edge
     let rdx = t.x - t.anchorX, rdy = t.y - t.anchorY;
     let rDist = Math.sqrt(rdx * rdx + rdy * rdy);
