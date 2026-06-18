@@ -53,9 +53,9 @@ function setupWorksCinema() {
   tl.to(title, {
     y: 0,
     opacity: 1,
-    duration: 1.4,
-    ease: 'cubic-bezier(0.85, 0, 0.15, 1)',
-  }, '>-0.05');
+    duration: 1.2,
+    ease: 'cubic-bezier(0.95, 0, 0.05, 1)',
+  }, '>0.25');
 
   // ScrollTrigger 1: Triggers the title rising animation when the section enters viewport
   ScrollTrigger.create({
