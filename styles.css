@@ -3320,6 +3320,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 @media(min-width: 1025px) {
   /* 3D tilted works section — perspective on parent, preserve-3d on list */
   .works {
+    position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: 340px 1fr;
     gap: 80px;
