@@ -43,7 +43,7 @@ function setupWorksCinema() {
       ease: 'power4.inOut',
       y: '100vh',
       delay: 0,
-      triggerStart: 10
+      triggerStart: 5
     };
 
     const chromaConfig = window.__motionDebuggerConfig?.chromaBlob || {

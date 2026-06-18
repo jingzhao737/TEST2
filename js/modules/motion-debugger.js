@@ -92,7 +92,7 @@ window.__motionDebuggerConfig = {
     ease: 'power4.inOut',
     y: '100vh',
     delay: 0,
-    triggerStart: 10
+    triggerStart: 5
   },
   worksCards: {
     duration: 1.6,
@@ -702,10 +702,10 @@ function getUniqueSelector(el) {
         <div class="debugger-control-group">
           <div class="debugger-control-label">
             <span>入场触发高度 (窗口百分比)</span>
-            <span class="val" id="val-title-trigger-start">10%</span>
+            <span class="val" id="val-title-trigger-start">5%</span>
           </div>
           <div class="debugger-slider-wrapper">
-            <input type="range" class="debugger-slider" id="slide-title-trigger-start" min="10" max="90" step="5" value="10">
+            <input type="range" class="debugger-slider" id="slide-title-trigger-start" min="0" max="90" step="5" value="5">
           </div>
         </div>
         
