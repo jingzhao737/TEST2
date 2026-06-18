@@ -3395,6 +3395,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     line-height: .82;
     margin-bottom: 0;
     text-align: center;
+    align-self: start;
+    margin-top: 10vh;
   }
 
   /* JS drives the rotation — transform-style needed for 3D children */
@@ -3406,7 +3408,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     margin: 0 auto;
     transform-style: preserve-3d;
     transition: none;
-    transform: translateX(-100px) translateY(140px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
+    transform: translateX(-15vw) translateY(140px) rotateY(-34deg) rotateX(17deg) rotateZ(2deg);
   }
 
   .work-list .work-card {
