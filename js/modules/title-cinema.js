@@ -60,7 +60,7 @@ function setupWorksCinema() {
   // ScrollTrigger 1: Triggers the title rising animation when the section enters viewport
   ScrollTrigger.create({
     trigger: section,
-    start: 'top 95%', // Starts when the section top enters the bottom 5% of viewport
+    start: 'top 50%', // Starts when the section top reaches the middle of viewport
     onEnter() {
       tl.play();
     },
