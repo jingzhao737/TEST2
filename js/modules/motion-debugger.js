@@ -547,6 +547,19 @@ function getUniqueSelector(el) {
       background: var(--accent);
       color: #fff;
     }
+
+    /* Pointer overrides during active inspection */
+    .motion-inspect-active .works-big-title {
+      pointer-events: auto !important;
+      z-index: 999 !important;
+    }
+    .motion-inspect-active .works-chroma-wrapper {
+      pointer-events: auto !important;
+      z-index: 998 !important;
+    }
+    .motion-inspect-active .works-chroma-blob {
+      pointer-events: auto !important;
+    }
   `;
   document.head.appendChild(styleEl);
 
@@ -861,6 +874,7 @@ function getUniqueSelector(el) {
   btn.addEventListener('click', () => {
     isInspectMode = !isInspectMode;
     if (isInspectMode) {
+      document.body.classList.add('motion-inspect-active');
       btn.classList.add('active');
       btn.querySelector('.btn-text').textContent = '退出调试';
       cursor.style.display = 'block';
@@ -876,6 +890,7 @@ function getUniqueSelector(el) {
 
   function exitInspectMode() {
     isInspectMode = false;
+    document.body.classList.remove('motion-inspect-active');
     btn.classList.remove('active');
     btn.querySelector('.btn-text').textContent = '调试动效';
     cursor.style.display = 'none';
