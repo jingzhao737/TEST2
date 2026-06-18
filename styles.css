@@ -1,5 +1,5 @@
 /* PORTFOLIO - DARK / LIGHT THEME . ART DIRECTION */
-@font-face{font-family:'Google Sans';src:url("Font/static/JosefinSans-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Google Sans';src:url("Font/Google_Sans/GoogleSans-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:'Climate Crisis';src:url("Font/Font2/ClimateCrisis-Regular-VariableFont_YEAR.ttf") format("truetype");font-display:swap}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
