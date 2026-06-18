@@ -88,10 +88,10 @@ gsap.registerEase(defaultTitleEase, cubicBezier(0.9, 0, 0.1, 1));
 // ── INITIALIZE CONFIG GLOBALLY ──
 window.__motionDebuggerConfig = {
   worksTitle: {
-    duration: 1.6,
-    ease: defaultTitleEase,
-    y: '80vh',
-    delay: 0.25
+    duration: 2.55,
+    ease: 'power4.inOut',
+    y: '100vh',
+    delay: 0
   },
   worksCards: {
     duration: 1.6,
@@ -671,30 +671,30 @@ function getUniqueSelector(el) {
         <div class="debugger-control-group">
           <div class="debugger-control-label">
             <span>进入动画时长 (秒)</span>
-            <span class="val" id="val-title-duration">1.6</span>
+            <span class="val" id="val-title-duration">2.55</span>
           </div>
           <div class="debugger-slider-wrapper">
-            <input type="range" class="debugger-slider" id="slide-title-duration" min="0.1" max="5.0" step="0.05" value="1.6">
+            <input type="range" class="debugger-slider" id="slide-title-duration" min="0.1" max="5.0" step="0.05" value="2.55">
           </div>
         </div>
         
         <div class="debugger-control-group">
           <div class="debugger-control-label">
             <span>进入延迟时间 (秒)</span>
-            <span class="val" id="val-title-delay">0.25</span>
+            <span class="val" id="val-title-delay">0.00</span>
           </div>
           <div class="debugger-slider-wrapper">
-            <input type="range" class="debugger-slider" id="slide-title-delay" min="0.0" max="3.0" step="0.05" value="0.25">
+            <input type="range" class="debugger-slider" id="slide-title-delay" min="0.0" max="3.0" step="0.05" value="0">
           </div>
         </div>
         
         <div class="debugger-control-group">
           <div class="debugger-control-label">
             <span>起始Y轴位移 (vh)</span>
-            <span class="val" id="val-title-y">80</span>
+            <span class="val" id="val-title-y">100</span>
           </div>
           <div class="debugger-slider-wrapper">
-            <input type="range" class="debugger-slider" id="slide-title-y" min="0" max="100" step="1" value="80">
+            <input type="range" class="debugger-slider" id="slide-title-y" min="0" max="100" step="1" value="100">
           </div>
         </div>
         
@@ -706,7 +706,7 @@ function getUniqueSelector(el) {
             <option value="cubic-bezier(0.9, 0, 0.1, 1)">经典的慢快慢 (cubic-bezier(0.9, 0, 0.1, 1))</option>
             <option value="cubic-bezier(0.95, 0.05, 0.05, 0.95)">极慢快极慢 (cubic-bezier(0.95, 0.05, 0.05, 0.95))</option>
             <option value="power3.inOut">Power3.inOut (平滑过渡)</option>
-            <option value="power4.inOut">Power4.inOut (强力双向缓动)</option>
+            <option value="power4.inOut" selected>Power4.inOut (强力双向缓动)</option>
             <option value="elastic.out(1, 0.75)">Elastic.out (回弹落入)</option>
             <option value="custom">自定义贝塞尔曲线 (Custom Bezier)</option>
           </select>

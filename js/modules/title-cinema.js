@@ -37,10 +37,10 @@ function setupWorksCinema() {
     if (worksScrollTrigger2) worksScrollTrigger2.kill();
 
     const config = window.__motionDebuggerConfig?.worksTitle || {
-      duration: 1.6,
-      ease: 'cubic-bezier(0.9, 0, 0.1, 1)',
-      y: '80vh',
-      delay: 0.25
+      duration: 2.55,
+      ease: 'power4.inOut',
+      y: '100vh',
+      delay: 0
     };
 
     const chromaConfig = window.__motionDebuggerConfig?.chromaBlob || {
