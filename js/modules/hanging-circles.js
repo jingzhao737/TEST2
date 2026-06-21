@@ -31,6 +31,59 @@ import * as THREE from 'three';
   let ringLoaded = [false, false, false, false];
   const textureLoader = new THREE.TextureLoader();
 
+  // Web Audio API Synthesizer for record collisions (soft plastic clack)
+  let collisionCtx = null;
+  function playCollisionSound(intensity) {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      if (!collisionCtx) {
+        collisionCtx = window.__audioCtx || (window.__audioCtx = new AudioContextClass());
+      }
+      if (collisionCtx.state === 'suspended') {
+        collisionCtx.resume();
+      }
+
+      const now = collisionCtx.currentTime;
+      // Volume scales with impulse intensity, capped for comfort
+      const volume = Math.min(0.26, intensity * 0.045);
+      if (volume < 0.005) return; // ignore tiny grazes
+
+      // 1. Hollow body pop resonance (Sine wave pitch slide 260Hz -> 85Hz, 60ms decay)
+      const osc = collisionCtx.createOscillator();
+      const gainNode = collisionCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.exponentialRampToValueAtTime(85, now + 0.06);
+
+      gainNode.gain.setValueAtTime(volume, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+      osc.connect(gainNode);
+      gainNode.connect(collisionCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.06);
+
+      // 2. High-frequency plastic click transient (Triangle wave pitch slide 1100Hz -> 350Hz, 12ms decay)
+      const clickOsc = collisionCtx.createOscillator();
+      const clickGain = collisionCtx.createGain();
+      clickOsc.type = 'triangle';
+      clickOsc.frequency.setValueAtTime(1100, now);
+      clickOsc.frequency.exponentialRampToValueAtTime(350, now + 0.012);
+
+      clickGain.gain.setValueAtTime(volume * 0.75, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.012);
+
+      clickOsc.connect(clickGain);
+      clickGain.connect(collisionCtx.destination);
+      clickOsc.start(now);
+      clickOsc.stop(now + 0.012);
+
+    } catch (e) {
+      console.warn("Failed to play collision sound:", e);
+    }
+  }
+
   function drawArchText(ctx, text, centerX, centerY, radius, startAngle, isUpward) {
     ctx.save();
     ctx.translate(centerX, centerY);
@@ -954,14 +1007,16 @@ import * as THREE from 'three';
             let invM2 = (isDragged2 || isLatched2) ? 0 : 1;
             
             if (invM1 + invM2 > 0) {
-              // Positional correction: push them apart along normal
+              // Positional correction: push them apart along normal (Baumgarte correction to prevent instant snap jitters)
               let ratio1 = invM1 / (invM1 + invM2);
               let ratio2 = invM2 / (invM1 + invM2);
+              let percent = 0.85;
+              let correction = overlap * percent;
               
-              t1.x -= nx * overlap * ratio1;
-              t1.y -= ny * overlap * ratio1;
-              t2.x += nx * overlap * ratio2;
-              t2.y += ny * overlap * ratio2;
+              t1.x -= nx * correction * ratio1;
+              t1.y -= ny * correction * ratio1;
+              t2.x += nx * correction * ratio2;
+              t2.y += ny * correction * ratio2;
               
               // Velocity reflection (elastic impulse response)
               let rvx = t2.vx - t1.vx;
@@ -969,7 +1024,7 @@ import * as THREE from 'three';
               let velAlongNormal = rvx * nx + rvy * ny;
               
               if (velAlongNormal < 0) {
-                let restitution = 0.55; // springy vinyl bounce bounciness
+                let restitution = 0.32; // pvc plastic vinyl records have lower restitution (0.32 instead of 0.55) to feel heavy and real
                 let impulse = -(1 + restitution) * velAlongNormal / (invM1 + invM2);
                 
                 t1.vx -= nx * impulse * invM1;
@@ -980,6 +1035,15 @@ import * as THREE from 'three';
                 // Add physical reaction sway to rope curve
                 if (invM1 > 0) t1._swayV += (Math.random() - 0.5) * 0.06;
                 if (invM2 > 0) t2._swayV += (Math.random() - 0.5) * 0.06;
+
+                // Add 3D rotation wobble/vibration on collision
+                t1.wobbleX = (t1.wobbleX || 0) + (Math.random() - 0.5) * impulse * 0.055;
+                t1.wobbleY = (t1.wobbleY || 0) + (Math.random() - 0.5) * impulse * 0.055;
+                t2.wobbleX = (t2.wobbleX || 0) + (Math.random() - 0.5) * impulse * 0.055;
+                t2.wobbleY = (t2.wobbleY || 0) + (Math.random() - 0.5) * impulse * 0.055;
+
+                // Play collision clack sound based on impulse force
+                playCollisionSound(impulse);
               }
             }
           }
@@ -1248,9 +1312,24 @@ import * as THREE from 'three';
         t.tiltY = t.tiltY || 0;
         t.tiltX += (targetTiltX - t.tiltX) * 0.08;
         t.tiltY += (targetTiltY - t.tiltY) * 0.08;
+
+        // Wobble physics (damped spring towards 0, simulating pvc vibration/wobble on impact)
+        t.wobbleX = t.wobbleX || 0;
+        t.wobbleY = t.wobbleY || 0;
+        t.wobbleXV = t.wobbleXV || 0;
+        t.wobbleYV = t.wobbleYV || 0;
+
+        let springK = 0.35; // spring constant
+        let dampingConstant = 0.88; // decay
+        t.wobbleXV += -t.wobbleX * springK;
+        t.wobbleYV += -t.wobbleY * springK;
+        t.wobbleXV *= dampingConstant;
+        t.wobbleYV *= dampingConstant;
+        t.wobbleX += t.wobbleXV;
+        t.wobbleY += t.wobbleYV;
         
-        d.group.rotation.x = t.tiltX;
-        d.group.rotation.y = t.tiltY;
+        d.group.rotation.x = t.tiltX + t.wobbleX;
+        d.group.rotation.y = t.tiltY + t.wobbleY;
         
         // Spin the child meshes
         if (i === latchedIdx && window.__audioPlaying === true) {
