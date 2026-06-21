@@ -3538,7 +3538,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     width: 700px;
     height: 560px;
     top: 50%;
-    left: 52%;         /* Shifted slightly to the right of center to balance 3D perspective */
+    left: 51%;         /* Shifted slightly to the right of center to balance 3D perspective */
     transform: translate(-50%, -50%);
     z-index: 0;
     pointer-events: none;
