@@ -973,7 +973,7 @@ import * as THREE from 'three';
     }
 
     // 2. Multi-body physics solver iterations (resolves circle-circle collisions and rope length constraints)
-    for (let iter = 0; iter < 3; iter++) {
+    for (let iter = 0; iter < 8; iter++) { // Increased iterations to 8 to completely resolve constraints and prevent overlapping clumping
       // A. Circle-circle collisions
       for (let i = 0; i < thumbs.length; i++) {
         let t1 = thumbs[i];
@@ -1024,7 +1024,7 @@ import * as THREE from 'three';
               let velAlongNormal = rvx * nx + rvy * ny;
               
               if (velAlongNormal < 0) {
-                let restitution = 0.32; // pvc plastic vinyl records have lower restitution (0.32 instead of 0.55) to feel heavy and real
+                let restitution = 0.90; // Highly elastic collisions (restitution 0.90) to conserve momentum and enable clean Newton's Cradle swing propagates
                 let impulse = -(1 + restitution) * velAlongNormal / (invM1 + invM2);
                 
                 t1.vx -= nx * impulse * invM1;
