@@ -91,7 +91,7 @@ if (!isMobileDevice) {
     gsap.set(wrapper, { autoAlpha: 0 });
 
     // Apply initial 3D tilt transform to workList so it aligns with starting coordinates on load
-    workList.style.transform = `translateX(-40px) translateY(100px) rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg) scaleY(0.92)`;
+    workList.style.transform = `rotateY(${baseY}deg) rotateX(${baseX}deg) rotateZ(${baseZ}deg)`;
     let isPreviewActive = false; // Track if the preview wrapper is physically faded in
     let activeImages = []; // Array to keep track of active image items in the stack
 
@@ -156,45 +156,10 @@ if (!isMobileDevice) {
       });
     }
 
-    // Page-relative flat coordinates for the cards and sections
+    // Page-relative flat coordinates for the cards and sections (avoid layout reflows on scroll/RAF)
     let wPageRect = { left: 0, top: 0, width: 0, height: 0 };
     let pPageRect = { left: 0, top: 0, width: 0, height: 0 };
     let cardPageRects = [];
-
-    // Cache local card coordinates relative to workList, and workList relative to worksEl
-    let cardLocalRects = [];
-    let workListLocalLeft = 0;
-    let workListLocalTop = 0;
-
-    function recalculateCurrentCoordinates() {
-      const scrollX = window.scrollX;
-      const scrollY = window.scrollY;
-      const pRect = worksEl.getBoundingClientRect();
-
-      const currentPerspPageX = pRect.left + scrollX;
-      const currentPerspPageY = pRect.top + scrollY;
-
-      pPageRect = {
-        left: currentPerspPageX,
-        top: currentPerspPageY,
-        width: pRect.width,
-        height: pRect.height
-      };
-
-      wPageRect.left = currentPerspPageX + workListLocalLeft;
-      wPageRect.top = currentPerspPageY + workListLocalTop;
-
-      cardPageRects = cardLocalRects.map(r => {
-        return {
-          left: wPageRect.left + r.left,
-          right: wPageRect.left + r.right,
-          top: wPageRect.top + r.top,
-          bottom: wPageRect.top + r.bottom,
-          width: r.width,
-          height: r.height
-        };
-      });
-    }
 
     function updateFlatPageCoordinates() {
       // Temporarily flatten the list to get 100% accurate flat client rects
@@ -203,21 +168,30 @@ if (!isMobileDevice) {
 
       const wRect = workList.getBoundingClientRect();
       const pRect = worksEl.getBoundingClientRect();
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
 
-      wPageRect.width = wRect.width;
-      wPageRect.height = wRect.height;
+      wPageRect = {
+        left: wRect.left + scrollX,
+        top: wRect.top + scrollY,
+        width: wRect.width,
+        height: wRect.height
+      };
 
-      // Cache flat offset offsets relative to worksEl
-      workListLocalLeft = wRect.left - pRect.left;
-      workListLocalTop = wRect.top - pRect.top;
+      pPageRect = {
+        left: pRect.left + scrollX,
+        top: pRect.top + scrollY,
+        width: pRect.width,
+        height: pRect.height
+      };
 
-      cardLocalRects = Array.from(cards).map(card => {
+      cardPageRects = Array.from(cards).map(card => {
         const rect = card.getBoundingClientRect();
         return {
-          left: rect.left - wRect.left,
-          right: rect.right - wRect.left,
-          top: rect.top - wRect.top,
-          bottom: rect.bottom - wRect.top,
+          left: rect.left + scrollX,
+          right: rect.right + scrollX,
+          top: rect.top + scrollY,
+          bottom: rect.bottom + scrollY,
           width: rect.width,
           height: rect.height
         };
@@ -226,8 +200,20 @@ if (!isMobileDevice) {
       // Restore the 3D transform
       workList.style.transform = oldTransform;
 
-      // Force instant dynamic recalculation of page coordinates
-      recalculateCurrentCoordinates();
+      // Sync the chroma blob position to match exactly where it originally was (top: 50%, left: 60% of .works)
+      syncChromaBlobPosition();
+    }
+
+    const chromaBlob = document.querySelector('.works-chroma-blob');
+    function syncChromaBlobPosition() {
+      if (!chromaBlob || !worksEl) return;
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      const pRect = worksEl.getBoundingClientRect();
+      const left = pRect.left + scrollX + pRect.width * 0.6;
+      const top = pRect.top + scrollY + pRect.height * 0.5;
+      chromaBlob.style.left = left + 'px';
+      chromaBlob.style.top = top + 'px';
     }
 
     // Expose globally so that works-entrance.js can trigger it once card flight animations complete
@@ -240,7 +226,6 @@ if (!isMobileDevice) {
 
     function onListEnter(e) {
       if (window.__isRouteTransitioning || window.__isDetailClosing) return;
-      recalculateCurrentCoordinates();
       isVisible = true;
       firstMove = true;
       
@@ -258,15 +243,11 @@ if (!isMobileDevice) {
         const offsetX = 30;
         const offsetY = 120; // Comfortable constant gap above the cursor
 
-        // Translation offsets of workList container
-        const tx = -40;
-        const ty = 100;
-
         // Page-relative mouse coordinates
         const pageMouseX = rawMouseX + window.scrollX;
 
-        // Local flat X position inside work-list (adjusted for translation)
-        const localX = pageMouseX - wPageRect.left - tx;
+        // Local flat X position inside work-list
+        const localX = pageMouseX - wPageRect.left;
 
         if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
           targetX = localX - previewWidth - offsetX;
@@ -276,7 +257,7 @@ if (!isMobileDevice) {
 
         // Keep targetY clamped relative to visible viewport bounds
         const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - offsetY);
-        const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top - ty;
+        const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top;
 
         // Apply 3D perspective projection compensation to keep vertical visual gap perfectly uniform
         const xLocal = localX - wPageRect.width / 2;
@@ -386,7 +367,6 @@ if (!isMobileDevice) {
     }
 
     window.addEventListener('mousemove', (e) => {
-      recalculateCurrentCoordinates();
       rawMouseX = e.clientX;
       rawMouseY = e.clientY;
 
@@ -395,15 +375,11 @@ if (!isMobileDevice) {
       const offsetX = 30;
       const offsetY = 120; // Comfortable constant gap above the cursor
 
-      // Translation offsets of workList container
-      const tx = -40;
-      const ty = 100;
-
       // Page-relative mouse coordinates
       const pageMouseX = rawMouseX + window.scrollX;
 
-      // Local flat X position inside work-list (adjusted for translation)
-      const localX = pageMouseX - wPageRect.left - tx;
+      // Local flat X position inside work-list
+      const localX = pageMouseX - wPageRect.left;
 
       if (window.innerWidth - rawMouseX < previewWidth + offsetX + 20) {
         targetX = localX - previewWidth - offsetX;
@@ -413,7 +389,7 @@ if (!isMobileDevice) {
 
       // Keep targetY clamped relative to visible viewport bounds
       const clampedViewportY = gsap.utils.clamp(20, window.innerHeight - previewHeight - 35, rawMouseY - offsetY);
-      const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top - ty;
+      const targetYFlat = clampedViewportY + window.scrollY - wPageRect.top;
 
       // Apply 3D perspective projection compensation to keep vertical visual gap perfectly uniform
       const xLocal = localX - wPageRect.width / 2;
@@ -462,7 +438,6 @@ if (!isMobileDevice) {
     let hoverLoopId = null;
 
     function animateHover() {
-      recalculateCurrentCoordinates();
       // ── STEP 1: Update 3D list tilt target from mouse position ──
       if (isVisible) {
         mousePercentX = (rawMouseX - window.innerWidth / 2) / (window.innerWidth / 2);
@@ -480,7 +455,7 @@ if (!isMobileDevice) {
         currentWorkListY += diffY * 0.06;
         currentWorkListX += diffX * 0.06;
         currentWorkListZ += diffZ * 0.06;
-        workList.style.transform = `translateX(-40px) translateY(100px) rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg) scaleY(0.92)`;
+        workList.style.transform = `rotateY(${currentWorkListY}deg) rotateX(${currentWorkListX}deg) rotateZ(${currentWorkListZ}deg)`;
       }
 
       // ── STEP 3: Hit test page-relative coordinates against 3D projected rects ──
@@ -512,13 +487,9 @@ if (!isMobileDevice) {
           const x3 = x1 * cosY + z2 * sinY;
           const z3 = -x1 * sinY + z2 * cosY;
 
-          // Translation offsets of workList container
-          const tx = -40;
-          const ty = 100;
-
-          // Perspective (adjusted for translation offset)
-          const dx = x3 + originX + tx - perspX;
-          const dy = y2 + originY + ty - perspY;
+          // Perspective
+          const dx = x3 + originX - perspX;
+          const dy = y2 + originY - perspY;
           const dz = z3;
 
           const scale = d / (d - dz);

@@ -67,112 +67,105 @@ if (cards.length && section) {
   window.addEventListener('load', measureCards);
   window.addEventListener('resize', measureCards);
 
-  function startEntranceAnimation() {
-    if (animationStarted) return;
-    animationStarted = true;
+  // Create GSAP ScrollTrigger timeline
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#work',
+      start: 'top 85%', // Plays when the top of `#work` enters 85% of viewport height
+      toggleActions: 'play none none none', // Play once and stay revealed
+      onEnter: () => {
+        // Sync the works-header reveal with the card entrance animation.
+        // In the 3D desktop layout the header may be below the IntersectionObserver
+        // threshold when the ScrollTrigger fires (due to the 240px top padding),
+        // causing anim-done to be added late and the header to "flash" into position
+        // only after the fly-in finishes. Triggering it here eliminates the race.
+        const header = document.querySelector('.works-header');
+        if (header) header.classList.add('anim-done');
+      }
+    },
+    onStart: () => {
+      animationStarted = true;
+    },
+    onComplete: () => {
+      animationCompleted = true;
+      window.removeEventListener('load', measureCards);
+      window.removeEventListener('resize', measureCards);
 
-    // Re-measure at the moment of trigger (since layout is final now)
-    measureCards();
+      // Recalculate coordinates for premium-interactions once all cards land
+      if (typeof window.__recalculateWorksCoordinates === 'function') {
+        window.__recalculateWorksCoordinates();
+      }
+    }
+  });
 
-    const config = window.__motionDebuggerConfig?.worksCards || {
+  // Setup flight parameters for each card
+  cards.forEach((card, idx) => {
+    const animState = { progress: 0 };
+
+    tl.to(animState, {
+      progress: 1,
       duration: 1.6,
-      stagger: 0.16,
-      ease: 'elastic.out(1, 0.75)'
-    };
+      ease: 'elastic.out(1, 0.75)',
+      onStart: () => {
+        // Ensure card is visible at start of tween
+        gsap.set(card, { opacity: 0.01 });
+      },
+      onUpdate: () => {
+        const data = cardData[idx];
+        if (!data) return;
 
-    const tl = gsap.timeline({
+        const p = animState.progress;
+
+        // Dynamic starting offset relative to current scroll position
+        const startX = window.scrollX - data.pageLeft - data.width * 2.0;
+        const startY = window.scrollY - data.pageTop - data.height * 2.0;
+
+        // Direction vector from start to destination (0, 0)
+        const dx = -startX;
+        const dy = -startY;
+        const dist = Math.hypot(dx, dy) || 1;
+
+        // Perpendicular vector for the curve (bulge) direction
+        // Bending downwards and leftwards for a nice sweeping arc
+        const px = -dy / dist;
+        const py = dx / dist;
+
+        // Exaggerated curve distance
+        const maxBulge = window.innerWidth > 768 ? 320 : 120;
+
+        // Calculate current offsets
+        const baseX = gsap.utils.interpolate(startX, 0, p);
+        const baseY = gsap.utils.interpolate(startY, 0, p);
+        const bulge = Math.sin(p * Math.PI) * maxBulge;
+
+        const currentX = baseX + px * bulge;
+        const currentY = baseY + py * bulge;
+
+        // Interpolate scale, rotation, blur, and opacity
+        const scale = gsap.utils.interpolate(4.5, 1.0, p);
+        const rotate = gsap.utils.interpolate(-60, 0, p);
+        const opacity = gsap.utils.interpolate(0, 1, p);
+        const blur = gsap.utils.interpolate(15, 0, p);
+
+        gsap.set(card, {
+          x: currentX,
+          y: currentY,
+          scale: scale,
+          rotation: rotate,
+          opacity: opacity,
+          filter: `blur(${blur}px)`,
+          pointerEvents: p > 0.82 ? 'auto' : 'none' // Enable clicks/hover near completion
+        });
+      },
       onComplete: () => {
-        animationCompleted = true;
-        window.removeEventListener('load',   measureCards);
-        window.removeEventListener('resize', measureCards);
+        // Clear GSAP inline styles to hand over styling back to CSS (hover effects, etc.)
+        gsap.set(card, { clearProps: 'all' });
 
-        // Clear inline GSAP styles — hand back to CSS (hover effects, 3D transform, etc.)
-        cards.forEach(card => gsap.set(card, { clearProps: 'all' }));
-
+        // Recalculate coordinates for premium-interactions
         if (typeof window.__recalculateWorksCoordinates === 'function') {
           window.__recalculateWorksCoordinates();
         }
       }
-    });
-
-    cards.forEach((card, idx) => {
-      const animState = { progress: 0 };
-
-      tl.to(animState, {
-        progress: 1,
-        duration: config.duration,
-        ease: config.ease,
-
-        onStart() {
-          gsap.set(card, { opacity: 0.01 });
-        },
-
-        onUpdate() {
-          const data = cardData[idx];
-          if (!data) return;
-
-          const p = animState.progress;
-
-          // Dynamic starting offset from off-screen
-          const startX = window.scrollX - data.pageLeft - data.width  * 2.0;
-          const startY = window.scrollY - data.pageTop  - data.height * 2.0;
-
-          // Arc: perpendicular vector for sweeping curve
-          const dx   = -startX;
-          const dy   = -startY;
-          const dist = Math.hypot(dx, dy) || 1;
-          const px   = -dy / dist;
-          const py   =  dx / dist;
-
-          const maxBulge = window.innerWidth > 768 ? 320 : 120;
-
-          const baseX = gsap.utils.interpolate(startX, 0, p);
-          const baseY = gsap.utils.interpolate(startY, 0, p);
-          const bulge = Math.sin(p * Math.PI) * maxBulge;
-
-          gsap.set(card, {
-            x:            baseX + px * bulge,
-            y:            baseY + py * bulge,
-            scale:        gsap.utils.interpolate(4.5, 1.0, p),
-            rotation:     gsap.utils.interpolate(-60, 0, p),
-            opacity:      gsap.utils.interpolate(0, 1, p),
-            filter:       `blur(${gsap.utils.interpolate(15, 0, p)}px)`,
-            pointerEvents: p > 0.82 ? 'auto' : 'none',
-          });
-        },
-
-        onComplete() {
-          gsap.set(card, { clearProps: 'all' });
-          if (typeof window.__recalculateWorksCoordinates === 'function') {
-            window.__recalculateWorksCoordinates();
-          }
-        },
-      }, idx * config.stagger);
-    });
-
-    // Expose timeline globally for debugging
-    window.__activeEntranceTimeline = tl;
-  }
-
-  // Expose start function globally
-  window.__startEntranceAnimation = startEntranceAnimation;
-
-  // ── Trigger setup: Event-driven on desktop, ScrollTrigger-driven on mobile ──
-  if (window.innerWidth > 768) {
-    window.addEventListener('works-cinema-complete', startEntranceAnimation);
-    window.addEventListener('works-cinema-reset', () => {
-      animationStarted = false;
-      animationCompleted = false;
-      gsap.killTweensOf(cards);
-      cards.forEach(card => gsap.set(card, { clearProps: 'all', opacity: 0 }));
-    });
-  } else {
-    // Mobile fallback: trigger immediately on scroll
-    ScrollTrigger.create({
-      trigger: '#work',
-      start: 'top 85%',
-      toggleActions: 'play none none none',
-      onEnter: startEntranceAnimation
-    });
-  }
+    }, idx * 0.16); // Stagger cards by 0.16s
+  });
 }
