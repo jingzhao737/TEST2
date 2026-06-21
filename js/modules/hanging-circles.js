@@ -31,9 +31,9 @@ import * as THREE from 'three';
   let ringLoaded = [false, false, false, false];
   const textureLoader = new THREE.TextureLoader();
 
-  // Web Audio API Synthesizer for record collisions (soft plastic clack)
+  // Web Audio API Synthesizer for record collisions (soft plastic clack) with physical variation
   let collisionCtx = null;
-  function playCollisionSound(intensity) {
+  function playCollisionSound(intensity, idx1 = 0, idx2 = 1) {
     try {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) return;
@@ -45,39 +45,48 @@ import * as THREE from 'three';
       }
 
       const now = collisionCtx.currentTime;
-      // Volume scales with impulse intensity, capped for comfort
-      const volume = Math.min(0.26, intensity * 0.045);
-      if (volume < 0.005) return; // ignore tiny grazes
+      // Increased overall volume factor (intensity * 0.08, capped at 0.38 for comfort)
+      const volume = Math.min(0.38, intensity * 0.08);
+      if (volume < 0.012) return; // ignore tiny touches
 
-      // 1. Hollow body pop resonance (Sine wave pitch slide 260Hz -> 85Hz, 60ms decay)
+      // Pitch variation: index-based variation + micro random variation on each collision
+      let indexPitch = 1.0 + (idx1 + idx2 - 3) * 0.08; // left-most records lower pitch, right-most higher
+      let randPitch = 0.94 + Math.random() * 0.12;     // micro-random variation (no two hits sound identical)
+      let pitch = indexPitch * randPitch;
+
+      // Durations randomizer
+      let popDuration = 0.06 * (0.9 + Math.random() * 0.2);
+      let clickDuration = 0.012 * (0.9 + Math.random() * 0.2);
+
+      // 1. Hollow body pop resonance (Sine wave pitch slide 250Hz -> 80Hz)
       const osc = collisionCtx.createOscillator();
       const gainNode = collisionCtx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(260, now);
-      osc.frequency.exponentialRampToValueAtTime(85, now + 0.06);
+      osc.frequency.setValueAtTime(250 * pitch, now);
+      osc.frequency.exponentialRampToValueAtTime(80 * pitch, now + popDuration);
 
       gainNode.gain.setValueAtTime(volume, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + popDuration);
 
       osc.connect(gainNode);
       gainNode.connect(collisionCtx.destination);
       osc.start(now);
-      osc.stop(now + 0.06);
+      osc.stop(now + popDuration);
 
-      // 2. High-frequency plastic click transient (Triangle wave pitch slide 1100Hz -> 350Hz, 12ms decay)
+      // 2. High-frequency plastic click transient (Triangle wave pitch slide 1100Hz -> 350Hz)
       const clickOsc = collisionCtx.createOscillator();
       const clickGain = collisionCtx.createGain();
       clickOsc.type = 'triangle';
-      clickOsc.frequency.setValueAtTime(1100, now);
-      clickOsc.frequency.exponentialRampToValueAtTime(350, now + 0.012);
+      clickOsc.frequency.setValueAtTime(1100 * pitch, now);
+      clickOsc.frequency.exponentialRampToValueAtTime(350 * pitch, now + clickDuration);
 
-      clickGain.gain.setValueAtTime(volume * 0.75, now);
-      clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.012);
+      clickGain.gain.setValueAtTime(volume * 0.78, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + clickDuration);
 
       clickOsc.connect(clickGain);
       clickGain.connect(collisionCtx.destination);
       clickOsc.start(now);
-      clickOsc.stop(now + 0.012);
+      clickOsc.stop(now + clickDuration);
 
     } catch (e) {
       console.warn("Failed to play collision sound:", e);
@@ -1042,8 +1051,8 @@ import * as THREE from 'three';
                 t2.wobbleX = (t2.wobbleX || 0) + (Math.random() - 0.5) * impulse * 0.055;
                 t2.wobbleY = (t2.wobbleY || 0) + (Math.random() - 0.5) * impulse * 0.055;
 
-                // Play collision clack sound based on impulse force
-                playCollisionSound(impulse);
+                // Play collision clack sound based on impulse force and indices
+                playCollisionSound(impulse, i, j);
               }
             }
           }
