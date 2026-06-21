@@ -14,10 +14,6 @@
   }, { threshold: 0 }).observe(hero);
 
   btn.addEventListener('click', function() {
-    if (window.__smoothScroll && window.__smoothScroll.active) {
-      window.__smoothScroll.scrollTo(0);
-      return;
-    }
     // Smooth scroll with custom easing via requestAnimationFrame
     let start = window.scrollY;
     let startTime = null;
@@ -141,12 +137,6 @@
       let totalH = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       let targetTop = el.getBoundingClientRect().top + document.documentElement.scrollTop - document.documentElement.clientHeight * 0.1;
       targetScroll = Math.max(0, Math.min(totalH, targetTop));
-
-      if (window.__smoothScroll && window.__smoothScroll.active) {
-        window.__smoothScroll.scrollTo(targetScroll);
-        return;
-      }
-
       bubbleLerpStartScroll = document.documentElement.scrollTop;
       // Duration based on distance: min 600ms, max 1800ms
       let scrollDist = Math.abs(targetScroll - bubbleLerpStartScroll);
@@ -357,12 +347,6 @@
     let totalH = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     let targetTop = el.getBoundingClientRect().top + document.documentElement.scrollTop - document.documentElement.clientHeight * 0.1;
     targetScroll = Math.max(0, Math.min(totalH, targetTop));
-
-    if (window.__smoothScroll && window.__smoothScroll.active) {
-      window.__smoothScroll.scrollTo(targetScroll);
-      return;
-    }
-
     bubbleLerpStartScroll = document.documentElement.scrollTop;
     let scrollDist = Math.abs(targetScroll - bubbleLerpStartScroll);
     let viewH = document.documentElement.clientHeight;
@@ -421,11 +405,6 @@
           });
         }
       }
-      return;
-    }
-
-    // If smooth scroll is active, let it handle the page scroll!
-    if (window.__smoothScroll && window.__smoothScroll.active) {
       return;
     }
 
