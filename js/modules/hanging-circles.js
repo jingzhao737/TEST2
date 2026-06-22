@@ -738,22 +738,17 @@ import * as THREE from 'three';
         uv.needsUpdate = true;
 
         const vinylMat = new THREE.MeshPhysicalMaterial({
-          color: 0xffffff,
+          color: 0xe0f7fa,              // Elegant light cyan crystal base color
           transparent: true,
-          opacity: 0.15,
-          roughness: 0.05,
-          metalness: 0.1,
-          transmission: 0.95,
-          ior: 1.52,
-          thickness: 8.0,
-          attenuationColor: 0x80deea,   // High-end aqua-marine attenuation (colored edges, clear center)
-          attenuationDistance: 6.0,
-          clearcoat: 1.0,
+          opacity: 0.38,                // Semi-transparent body (prevents disc from being invisible)
+          roughness: 0.04,              // Ultra smooth glossy surface
+          metalness: 0.15,              // Mix slightly metallic highlight reflectivity
+          clearcoat: 1.0,               // Smooth clearcoat shine
           clearcoatRoughness: 0.02,
-          envMap: envMap,
-          envMapIntensity: 2.5,          // Boost the reflection strength of the virtual gradient
+          envMap: envMap,               // Custom gradient sky/horizon reflection
+          envMapIntensity: 4.5,         // Highly boosted environment reflectivity (makes reflections popping)
           bumpMap: bumpTexture,
-          bumpScale: 0.012,
+          bumpScale: 0.008,             // Extremely subtle grooving to avoid breaking specular highlights
           side: THREE.DoubleSide
         });
         const vinylMesh = new THREE.Mesh(vinylGeom, vinylMat);
