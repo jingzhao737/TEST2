@@ -674,7 +674,7 @@ import * as THREE from 'three';
         discGroup.add(shadowMesh);
         
         // 2. Create Vinyl Outer Body (Cylinder for physical thickness and edges)
-        const vinylGeom = new THREE.CylinderGeometry(t.dispW / 2, t.dispW / 2, 1.6, 64, 1, false);
+        const vinylGeom = new THREE.CylinderGeometry(t.dispW / 2, t.dispW / 2, 3.5, 64, 1, false);
         vinylGeom.rotateX(Math.PI / 2);
         
         // Convert Cap UVs to polar coordinates for circular anisotropic reflections.
@@ -717,15 +717,18 @@ import * as THREE from 'three';
         uv.needsUpdate = true;
 
         const vinylMat = new THREE.MeshPhysicalMaterial({
-          color: 0x111114,
-          roughness: 0.4,
-          metalness: 0.12,
-          anisotropy: 0.85,
-          anisotropyRotation: 0,
-          clearcoat: 0.65,
-          clearcoatRoughness: 0.22,
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.25,
+          roughness: 0.12,
+          metalness: 0.0,
+          transmission: 0.9,
+          ior: 1.52,
+          thickness: 5.0,
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.05,
           bumpMap: bumpTexture,
-          bumpScale: 0.035,
+          bumpScale: 0.015,
           side: THREE.DoubleSide
         });
         const vinylMesh = new THREE.Mesh(vinylGeom, vinylMat);
