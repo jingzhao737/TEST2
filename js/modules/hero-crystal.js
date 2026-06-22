@@ -135,7 +135,7 @@ const LensFlareShader = {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight, false);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.35;
+    renderer.toneMappingExposure = 1.10; // Recessed exposure to prevent blowout and restore glass transparency
 
     scene.add(crystalGroup);
 
@@ -156,15 +156,15 @@ const LensFlareShader = {
 
     bloomPass = new UnrealBloomPass(
       new THREE.Vector2(w, h),
-      0.35,  // strength
-      0.25,  // radius
-      0.45   // threshold
+      0.20,  // strength (recessed from 0.35 to remove foggy blur)
+      0.30,  // radius
+      0.55   // threshold (raised from 0.45 so only sharp specular points glow)
     );
     composer.addPass(bloomPass);
 
     lensFlarePass = new ShaderPass(LensFlareShader);
     lensFlarePass.uniforms['resolution'].value.set(w, h);
-    lensFlarePass.uniforms['intensity'].value = 1.4;
+    lensFlarePass.uniforms['intensity'].value = 1.1; // Moderate streak intensity
     lensFlarePass.renderToScreen = true;
     composer.addPass(lensFlarePass);
 
@@ -268,12 +268,12 @@ const LensFlareShader = {
           roughness: 0.02,              // Highly polished glass
           ior: 1.58,                    // High-refractive-index flint glass
           transmission: 0.98,           // Maximum physical transparency
-          thickness: 3.0,               // Generous physical thickness for refractive warping
+          thickness: 2.4,               // Balanced physical thickness for refractive warping
           envMap: envTexture,
-          envMapIntensity: 3.8,         // Exaggerated environment highlight
+          envMapIntensity: 0.85,         // Balanced environment highlight (down from 3.8 to prevent glowing solid look)
           specularIntensity: 1.0,
           specularColor: new THREE.Color(0xffffff),
-          dispersion: 0.85,             // Extreme Abbe chromatic dispersion (物理彩虹阿贝色散)
+          dispersion: 0.75,             // Balanced Abbe chromatic dispersion
           side: THREE.DoubleSide,
           transparent: true
         });
