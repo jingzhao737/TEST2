@@ -655,8 +655,29 @@ import * as THREE from 'three';
       }
     }
 
+    // Helper to generate a virtual gradient reflection environment map
+    function createGradientEnvMap() {
+      const size = 64;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, size);
+      grad.addColorStop(0, '#ffffff');      // Top highlight reflection
+      grad.addColorStop(0.28, '#cae0f5');   // Light blue sky reflection
+      grad.addColorStop(0.48, '#202538');   // Horizon dark band
+      grad.addColorStop(0.68, '#0b0c10');   // Ground reflection
+      grad.addColorStop(1, '#1c2230');      // Ground base tone
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, size, size);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      return texture;
+    }
+
     // Instantiate 3D meshes in Three.js on resize/first run
     if (discs.length === 0 && thumbs.length > 0) {
+      const envMap = createGradientEnvMap();
       for (let i = 0; i < 4; i++) {
         let t = thumbs[i];
         let discGroup = new THREE.Group();
@@ -719,16 +740,20 @@ import * as THREE from 'three';
         const vinylMat = new THREE.MeshPhysicalMaterial({
           color: 0xffffff,
           transparent: true,
-          opacity: 0.25,
-          roughness: 0.12,
-          metalness: 0.0,
-          transmission: 0.9,
+          opacity: 0.15,
+          roughness: 0.05,
+          metalness: 0.1,
+          transmission: 0.95,
           ior: 1.52,
-          thickness: 5.0,
+          thickness: 8.0,
+          attenuationColor: 0x80deea,   // High-end aqua-marine attenuation (colored edges, clear center)
+          attenuationDistance: 6.0,
           clearcoat: 1.0,
-          clearcoatRoughness: 0.05,
+          clearcoatRoughness: 0.02,
+          envMap: envMap,
+          envMapIntensity: 2.5,          // Boost the reflection strength of the virtual gradient
           bumpMap: bumpTexture,
-          bumpScale: 0.015,
+          bumpScale: 0.012,
           side: THREE.DoubleSide
         });
         const vinylMesh = new THREE.Mesh(vinylGeom, vinylMat);
