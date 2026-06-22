@@ -694,65 +694,37 @@ import * as THREE from 'three';
         shadowMesh.position.set(5, -10, -30);
         discGroup.add(shadowMesh);
         
-        // 2. Create Vinyl Outer Body (Cylinder for physical thickness and edges)
-        const vinylGeom = new THREE.CylinderGeometry(t.dispW / 2, t.dispW / 2, 3.5, 64, 1, false);
-        vinylGeom.rotateX(Math.PI / 2);
+        // 2. Create Vinyl Outer Body (Bevel Extrude Geometry for premium 3D bevel reflection)
+        const shape = new THREE.Shape();
+        shape.absarc(0, 0, t.dispW / 2, 0, Math.PI * 2, false);
         
-        // Convert Cap UVs to polar coordinates for circular anisotropic reflections.
-        // We use an index-based polar mapping to perfectly align the UV seam with the Cylinder's native duplicate vertices
-        // and resolve the shared center vertex problem. This completely eliminates the "fixed/inverted wedge" seam artifact!
-        let N = 64; // radialSegments
-        let uv = vinylGeom.attributes.uv;
-        
-        // Map Top Cap (Group 1): Outer vertices are indices 194 to 258, center vertices are 130 to 193
-        let topOuterStart = 3 * N + 2;
-        let topCenterStart = 2 * N + 2;
-        for (let k = 0; k <= N; k++) {
-          let outerIdx = topOuterStart + k;
-          let u = 1.0 - k / N;
-          let v = 1.0;
-          uv.setXY(outerIdx, u, v);
-        }
-        for (let k = 0; k < N; k++) {
-          let centerIdx = topCenterStart + k;
-          let u = 1.0 - (k + 0.5) / N;
-          let v = 0.0;
-          uv.setXY(centerIdx, u, v);
-        }
-        
-        // Map Bottom Cap (Group 2): Outer vertices are indices 323 to 387, center vertices are 259 to 322
-        let bottomOuterStart = 5 * N + 3;
-        let bottomCenterStart = 4 * N + 3;
-        for (let k = 0; k <= N; k++) {
-          let outerIdx = bottomOuterStart + k;
-          let u = k / N;
-          let v = 1.0;
-          uv.setXY(outerIdx, u, v);
-        }
-        for (let k = 0; k < N; k++) {
-          let centerIdx = bottomCenterStart + k;
-          let u = (k + 0.5) / N;
-          let v = 0.0;
-          uv.setXY(centerIdx, u, v);
-        }
-        uv.needsUpdate = true;
+        // Inner spindle hole
+        const hole = new THREE.Path();
+        hole.absarc(0, 0, t.dispW * 0.04, 0, Math.PI * 2, true);
+        shape.holes.push(hole);
+
+        const vinylGeom = new THREE.ExtrudeGeometry(shape, {
+          depth: 8.0,
+          bevelEnabled: true,
+          bevelSegments: 4,
+          steps: 1,
+          bevelSize: 2.0,
+          bevelThickness: 1.5,
+          curveSegments: 64
+        });
+        // Center the geometry so that Z ranges from -5.5 to +5.5 (depth 8 + 2 * bevel 1.5 = 11)
+        vinylGeom.center();
 
         const vinylMat = new THREE.MeshPhysicalMaterial({
-          color: 0xffffff,
+          color: 0xd9f1f4,              // Delicate water blue crystal tone
           transparent: true,
-          opacity: 0.08,                // Almost fully transparent body
-          roughness: 0.04,              // Sleek glossy surface
-          metalness: 0.05,
-          transmission: 0.98,           // Refractive transmission
-          ior: 1.52,                    // Refractive index for glass
-          thickness: 12.0,              // Depth thickness for refraction refraction warp
-          dispersion: 0.15,             // Spectral dispersion (Abbe color splitting)
-          clearcoat: 1.0,
-          clearcoatRoughness: 0.02,
+          opacity: 0.28,                // Solid visible crystal body
+          roughness: 0.1,               // High-end frosted matte texture
+          metalness: 0.12,              // Specular color absorption
+          clearcoat: 1.0,               // Double-layer specular highlights
+          clearcoatRoughness: 0.02,     // Ultra-sharp top glossy layer
           envMap: envMap,
-          envMapIntensity: 3.5,
-          bumpMap: bumpTexture,
-          bumpScale: 0.005,             // Minimize bump to retain clean light transmission
+          envMapIntensity: 6.5,         // Highly reflective crystal look
           side: THREE.DoubleSide
         });
         const vinylMesh = new THREE.Mesh(vinylGeom, vinylMat);
@@ -775,7 +747,7 @@ import * as THREE from 'three';
         const labelMat = new THREE.MeshPhysicalMaterial({
           map: ringTextures[i] || null,
           emissiveMap: ringTextures[i] || null,
-          emissive: 0xbbbbbb, // Brightened from 0x777777 to 0xbbbbbb so thumbnails look vivid and clear
+          emissive: 0xbbbbbb, // Vivid thumbnails
           roughness: 0.55,
           metalness: 0.02,
           clearcoat: 0.12,
@@ -783,7 +755,7 @@ import * as THREE from 'three';
           side: THREE.DoubleSide
         });
         const labelMesh = new THREE.Mesh(labelGeom, labelMat);
-        labelMesh.position.z = -1.8; // Move to the back-face of the glass disc (thickness is 3.5, so -1.8 is the back)
+        labelMesh.position.z = -5.55; // Move to the back-face of the extruded glass disc
         discGroup.add(labelMesh);
         
         // 4. Create Neon Backlight Ring behind the glass disc (slightly wider than label to peek out)
@@ -795,7 +767,7 @@ import * as THREE from 'three';
           side: THREE.DoubleSide
         });
         const ringBackMesh = new THREE.Mesh(ringBackGeom, ringBackMat);
-        ringBackMesh.position.z = -2.2; // Sit immediately behind the paper label
+        ringBackMesh.position.z = -5.7; // Sit immediately behind the paper label
         discGroup.add(ringBackMesh);
 
         scene.add(discGroup);
@@ -1423,9 +1395,33 @@ import * as THREE from 'three';
         // regardless of Z depth, preventing perspective bloating while retaining 3D tilt depth.
         d.group.scale.set(scale * pFactor, scale * pFactor, 1);
         
-        // 3D dynamic tilt based on swing velocity (capped at 0.3 rad to prevent clipping)
-        let targetTiltX = Math.max(-0.3, Math.min(0.3, -t.vy * 0.035));
-        let targetTiltY = Math.max(-0.3, Math.min(0.3, t.vx * 0.035));
+        // 3D dynamic tilt based on swing velocity, default elegant tilt, and hover parallax
+        // Default elegant tilt (breaks flat front-facing profile, exposes bevel reflections)
+        let defaultTiltX = -0.06;
+        let defaultTiltY = 0.08 + (i % 2 === 0 ? 0.04 : -0.04);
+        
+        // Mouse hover parallax tilt (tilts the record surface towards the mouse pointer)
+        let parallaxTiltX = 0;
+        let parallaxTiltY = 0;
+        let dx = mouseCanvasX - t.x;
+        let dy = mouseCanvasY - t.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        let maxDist = 300;
+        if (dist < maxDist) {
+          let factor = (1 - dist / maxDist) * 0.20; // Max tilt addition of 0.20 rad (~11.5 deg) when mouse is directly over
+          if (dist > 0.01) {
+            parallaxTiltX = -(dy / dist) * factor;
+            parallaxTiltY = (dx / dist) * factor;
+          }
+        }
+
+        // Limit the dynamic swing tilt to prevent clipping
+        let swingTiltX = Math.max(-0.25, Math.min(0.25, -t.vy * 0.035));
+        let swingTiltY = Math.max(-0.25, Math.min(0.25, t.vx * 0.035));
+
+        let targetTiltX = defaultTiltX + parallaxTiltX + swingTiltX;
+        let targetTiltY = defaultTiltY + parallaxTiltY + swingTiltY;
+        
         t.tiltX = t.tiltX || 0;
         t.tiltY = t.tiltY || 0;
         t.tiltX += (targetTiltX - t.tiltX) * 0.08;
