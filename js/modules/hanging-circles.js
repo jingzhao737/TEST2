@@ -31,18 +31,53 @@ import * as THREE from 'three';
   let ringLoaded = [false, false, false, false];
   const textureLoader = new THREE.TextureLoader();
 
+  let swordsAudioBuffer = null;
+  let isSwordsLoading = false;
+  const swordsArrayBufferPromise = fetch('sound/wu_swords.wav')
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch wu_swords.wav");
+      return res.arrayBuffer();
+    })
+    .catch(err => {
+      console.warn("Swords sound fetch error:", err);
+      return null;
+    });
+
   // Web Audio API Synthesizer for record collisions (soft plastic clack) with physical variation
   let collisionCtx = null;
-  function playCollisionSound(intensity, idx1 = 0, idx2 = 1) {
-    try {
+
+  function initCollisionCtxAndDecodeSwords() {
+    if (!collisionCtx) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) return;
-      if (!collisionCtx) {
+      if (AudioContextClass) {
         collisionCtx = window.__audioCtx || (window.__audioCtx = new AudioContextClass());
       }
-      if (collisionCtx.state === 'suspended') {
-        collisionCtx.resume();
-      }
+    }
+    if (collisionCtx && collisionCtx.state === 'suspended') {
+      collisionCtx.resume();
+    }
+    if (collisionCtx && !swordsAudioBuffer && !isSwordsLoading && swordsArrayBufferPromise) {
+      isSwordsLoading = true;
+      swordsArrayBufferPromise.then(arrayBuffer => {
+        if (!arrayBuffer) {
+          isSwordsLoading = false;
+          return;
+        }
+        collisionCtx.decodeAudioData(arrayBuffer.slice(0), (decoded) => {
+          swordsAudioBuffer = decoded;
+          isSwordsLoading = false;
+        }, (err) => {
+          console.error("decodeAudioData error for swords:", err);
+          isSwordsLoading = false;
+        });
+      });
+    }
+  }
+
+  function playCollisionSound(intensity, idx1 = 0, idx2 = 1) {
+    try {
+      initCollisionCtxAndDecodeSwords();
+      if (!collisionCtx) return;
 
       const now = collisionCtx.currentTime;
       // Increased overall volume factor (intensity * 0.08, capped at 0.38 for comfort)
@@ -87,6 +122,41 @@ import * as THREE from 'three';
       clickGain.connect(collisionCtx.destination);
       clickOsc.start(now);
       clickOsc.stop(now + clickDuration);
+
+      // 3. Play a slice of the cloned swords wav file
+      if (swordsAudioBuffer) {
+        // Calculate collision slice duration based on collision intensity (e.g. 150ms ~ 300ms) with random variation
+        const playDuration = Math.max(0.15, Math.min(0.30, 0.12 + intensity * 0.06)) * (0.9 + Math.random() * 0.2);
+        
+        // Random start time offset in the audio buffer
+        const maxOffset = Math.max(0, swordsAudioBuffer.duration - playDuration);
+        const offset = Math.random() * maxOffset;
+
+        const swordsSource = collisionCtx.createBufferSource();
+        swordsSource.buffer = swordsAudioBuffer;
+
+        // Apply a small playback rate variation to make each sword hit sound unique
+        const swordsPitch = 0.94 + Math.random() * 0.12;
+        swordsSource.playbackRate.setValueAtTime(swordsPitch, now);
+
+        const swordsGain = collisionCtx.createGain();
+        const swordsVol = Math.min(0.24, intensity * 0.05); // Balance swords volume (capped at 0.24)
+        
+        // Fade-in envelope (20ms) and Fade-out envelope (80ms)
+        const fadeIn = 0.02;
+        const fadeOut = 0.08;
+        
+        swordsGain.gain.setValueAtTime(0, now);
+        swordsGain.gain.linearRampToValueAtTime(swordsVol, now + fadeIn);
+        swordsGain.gain.setValueAtTime(swordsVol, now + playDuration - fadeOut);
+        swordsGain.gain.linearRampToValueAtTime(0.001, now + playDuration);
+
+        swordsSource.connect(swordsGain);
+        swordsGain.connect(collisionCtx.destination);
+
+        swordsSource.start(now, offset, playDuration);
+        swordsSource.stop(now + playDuration);
+      }
 
     } catch (e) {
       console.warn("Failed to play collision sound:", e);
@@ -1391,6 +1461,9 @@ import * as THREE from 'three';
   }
 
   canvas.addEventListener('mousedown', function(e) {
+    // Proactively initialize AudioContext and decode swords sound on first interaction
+    initCollisionCtxAndDecodeSwords();
+
     let rect = canvas.getBoundingClientRect();
     let mx = e.clientX - rect.left;
     let my = e.clientY - rect.top;

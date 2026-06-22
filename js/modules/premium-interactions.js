@@ -303,6 +303,9 @@ if (!isMobileDevice) {
       });
       card.classList.add('hovered');
 
+      // Play hover sound for card selection
+      if (window.__playCardHoverSound) window.__playCardHoverSound();
+
       const src = card.dataset.image;
       if (!src || index === activeCardIndex) return;
 
@@ -724,6 +727,10 @@ if (!isMobileDevice) {
         const src = closestCard.dataset.image;
         if (src && src !== activeSrc) {
           activeSrc = src;
+          
+          // Play hover sound when scrolling to a new active card in mobile view
+          if (window.__playCardHoverSound) window.__playCardHoverSound();
+
           const newImg = document.createElement('img');
           newImg.className = 'work-preview-img';
           newImg.src = src;
