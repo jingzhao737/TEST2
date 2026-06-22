@@ -655,29 +655,8 @@ import * as THREE from 'three';
       }
     }
 
-    // Helper to generate a virtual gradient reflection environment map
-    function createGradientEnvMap() {
-      const size = 64;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      const grad = ctx.createLinearGradient(0, 0, 0, size);
-      grad.addColorStop(0, '#ffffff');      // Top highlight reflection
-      grad.addColorStop(0.28, '#cae0f5');   // Light blue sky reflection
-      grad.addColorStop(0.48, '#202538');   // Horizon dark band
-      grad.addColorStop(0.68, '#0b0c10');   // Ground reflection
-      grad.addColorStop(1, '#1c2230');      // Ground base tone
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, size, size);
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      return texture;
-    }
-
     // Instantiate 3D meshes in Three.js on resize/first run
     if (discs.length === 0 && thumbs.length > 0) {
-      const envMap = createGradientEnvMap();
       for (let i = 0; i < 4; i++) {
         let t = thumbs[i];
         let discGroup = new THREE.Group();
@@ -694,37 +673,59 @@ import * as THREE from 'three';
         shadowMesh.position.set(5, -10, -30);
         discGroup.add(shadowMesh);
         
-        // 2. Create Vinyl Outer Body (Bevel Extrude Geometry for premium 3D bevel reflection)
-        const shape = new THREE.Shape();
-        shape.absarc(0, 0, t.dispW / 2, 0, Math.PI * 2, false);
+        // 2. Create Vinyl Outer Body (Cylinder for physical thickness and edges)
+        const vinylGeom = new THREE.CylinderGeometry(t.dispW / 2, t.dispW / 2, 1.6, 64, 1, false);
+        vinylGeom.rotateX(Math.PI / 2);
         
-        // Inner spindle hole
-        const hole = new THREE.Path();
-        hole.absarc(0, 0, t.dispW * 0.04, 0, Math.PI * 2, true);
-        shape.holes.push(hole);
-
-        const vinylGeom = new THREE.ExtrudeGeometry(shape, {
-          depth: 8.0,
-          bevelEnabled: true,
-          bevelSegments: 4,
-          steps: 1,
-          bevelSize: 2.0,
-          bevelThickness: 1.5,
-          curveSegments: 64
-        });
-        // Center the geometry so that Z ranges from -5.5 to +5.5 (depth 8 + 2 * bevel 1.5 = 11)
-        vinylGeom.center();
+        // Convert Cap UVs to polar coordinates for circular anisotropic reflections.
+        // We use an index-based polar mapping to perfectly align the UV seam with the Cylinder's native duplicate vertices
+        // and resolve the shared center vertex problem. This completely eliminates the "fixed/inverted wedge" seam artifact!
+        let N = 64; // radialSegments
+        let uv = vinylGeom.attributes.uv;
+        
+        // Map Top Cap (Group 1): Outer vertices are indices 194 to 258, center vertices are 130 to 193
+        let topOuterStart = 3 * N + 2;
+        let topCenterStart = 2 * N + 2;
+        for (let k = 0; k <= N; k++) {
+          let outerIdx = topOuterStart + k;
+          let u = 1.0 - k / N;
+          let v = 1.0;
+          uv.setXY(outerIdx, u, v);
+        }
+        for (let k = 0; k < N; k++) {
+          let centerIdx = topCenterStart + k;
+          let u = 1.0 - (k + 0.5) / N;
+          let v = 0.0;
+          uv.setXY(centerIdx, u, v);
+        }
+        
+        // Map Bottom Cap (Group 2): Outer vertices are indices 323 to 387, center vertices are 259 to 322
+        let bottomOuterStart = 5 * N + 3;
+        let bottomCenterStart = 4 * N + 3;
+        for (let k = 0; k <= N; k++) {
+          let outerIdx = bottomOuterStart + k;
+          let u = k / N;
+          let v = 1.0;
+          uv.setXY(outerIdx, u, v);
+        }
+        for (let k = 0; k < N; k++) {
+          let centerIdx = bottomCenterStart + k;
+          let u = (k + 0.5) / N;
+          let v = 0.0;
+          uv.setXY(centerIdx, u, v);
+        }
+        uv.needsUpdate = true;
 
         const vinylMat = new THREE.MeshPhysicalMaterial({
-          color: 0xd9f1f4,              // Delicate water blue crystal tone
-          transparent: true,
-          opacity: 0.28,                // Solid visible crystal body
-          roughness: 0.1,               // High-end frosted matte texture
-          metalness: 0.12,              // Specular color absorption
-          clearcoat: 1.0,               // Double-layer specular highlights
-          clearcoatRoughness: 0.02,     // Ultra-sharp top glossy layer
-          envMap: envMap,
-          envMapIntensity: 6.5,         // Highly reflective crystal look
+          color: 0x111114,
+          roughness: 0.4,
+          metalness: 0.12,
+          anisotropy: 0.85,
+          anisotropyRotation: 0,
+          clearcoat: 0.65,
+          clearcoatRoughness: 0.22,
+          bumpMap: bumpTexture,
+          bumpScale: 0.035,
           side: THREE.DoubleSide
         });
         const vinylMesh = new THREE.Mesh(vinylGeom, vinylMat);
@@ -747,7 +748,7 @@ import * as THREE from 'three';
         const labelMat = new THREE.MeshPhysicalMaterial({
           map: ringTextures[i] || null,
           emissiveMap: ringTextures[i] || null,
-          emissive: 0xbbbbbb, // Vivid thumbnails
+          emissive: 0xbbbbbb, // Brightened from 0x777777 to 0xbbbbbb so thumbnails look vivid and clear
           roughness: 0.55,
           metalness: 0.02,
           clearcoat: 0.12,
@@ -755,21 +756,9 @@ import * as THREE from 'three';
           side: THREE.DoubleSide
         });
         const labelMesh = new THREE.Mesh(labelGeom, labelMat);
-        labelMesh.position.z = -5.55; // Move to the back-face of the extruded glass disc
+        labelMesh.position.z = 0.9; // sit slightly in front
         discGroup.add(labelMesh);
         
-        // 4. Create Neon Backlight Ring behind the glass disc (slightly wider than label to peek out)
-        const ringBackGeom = new THREE.RingGeometry(t.dispW * 0.28, t.dispW * 0.38, 48, 1);
-        const ringBackMat = new THREE.MeshBasicMaterial({
-          color: knobColors[i],        // Match the disc's individual theme color
-          transparent: true,
-          opacity: 0.65,
-          side: THREE.DoubleSide
-        });
-        const ringBackMesh = new THREE.Mesh(ringBackGeom, ringBackMat);
-        ringBackMesh.position.z = -5.7; // Sit immediately behind the paper label
-        discGroup.add(ringBackMesh);
-
         scene.add(discGroup);
         discs.push({
           group: discGroup,
@@ -1395,33 +1384,9 @@ import * as THREE from 'three';
         // regardless of Z depth, preventing perspective bloating while retaining 3D tilt depth.
         d.group.scale.set(scale * pFactor, scale * pFactor, 1);
         
-        // 3D dynamic tilt based on swing velocity, default elegant tilt, and hover parallax
-        // Default elegant tilt (breaks flat front-facing profile, exposes bevel reflections)
-        let defaultTiltX = -0.06;
-        let defaultTiltY = 0.08 + (i % 2 === 0 ? 0.04 : -0.04);
-        
-        // Mouse hover parallax tilt (tilts the record surface towards the mouse pointer)
-        let parallaxTiltX = 0;
-        let parallaxTiltY = 0;
-        let dx = mouseCanvasX - t.x;
-        let dy = mouseCanvasY - t.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
-        let maxDist = 300;
-        if (dist < maxDist) {
-          let factor = (1 - dist / maxDist) * 0.20; // Max tilt addition of 0.20 rad (~11.5 deg) when mouse is directly over
-          if (dist > 0.01) {
-            parallaxTiltX = -(dy / dist) * factor;
-            parallaxTiltY = (dx / dist) * factor;
-          }
-        }
-
-        // Limit the dynamic swing tilt to prevent clipping
-        let swingTiltX = Math.max(-0.25, Math.min(0.25, -t.vy * 0.035));
-        let swingTiltY = Math.max(-0.25, Math.min(0.25, t.vx * 0.035));
-
-        let targetTiltX = defaultTiltX + parallaxTiltX + swingTiltX;
-        let targetTiltY = defaultTiltY + parallaxTiltY + swingTiltY;
-        
+        // 3D dynamic tilt based on swing velocity (capped at 0.3 rad to prevent clipping)
+        let targetTiltX = Math.max(-0.3, Math.min(0.3, -t.vy * 0.035));
+        let targetTiltY = Math.max(-0.3, Math.min(0.3, t.vx * 0.035));
         t.tiltX = t.tiltX || 0;
         t.tiltY = t.tiltY || 0;
         t.tiltX += (targetTiltX - t.tiltX) * 0.08;

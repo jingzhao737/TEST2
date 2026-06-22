@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
   });
 
   try {
-    await page.goto('http://localhost:8000', { waitUntil: 'load', timeout: 5000 });
+    await page.goto('http://localhost:5173', { waitUntil: 'load', timeout: 5000 });
     // Wait a bit to let the animation start
     await page.waitForTimeout(2000);
   } catch (e) {
