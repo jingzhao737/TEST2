@@ -134,8 +134,9 @@ const LensFlareShader = {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight, false);
+    renderer.setClearColor(0xffffff, 0); // Clear to transparent white to remove dead grey refraction shadow
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.10; // Recessed exposure to prevent blowout and restore glass transparency
+    renderer.toneMappingExposure = 1.28; // Restored exposure for bright highlights
 
     scene.add(crystalGroup);
 
@@ -156,15 +157,15 @@ const LensFlareShader = {
 
     bloomPass = new UnrealBloomPass(
       new THREE.Vector2(w, h),
-      0.20,  // strength (recessed from 0.35 to remove foggy blur)
-      0.30,  // radius
-      0.55   // threshold (raised from 0.45 so only sharp specular points glow)
+      0.32,  // Restored strength for high specular glow
+      0.28,  // radius
+      0.48   // threshold
     );
     composer.addPass(bloomPass);
 
     lensFlarePass = new ShaderPass(LensFlareShader);
     lensFlarePass.uniforms['resolution'].value.set(w, h);
-    lensFlarePass.uniforms['intensity'].value = 1.1; // Moderate streak intensity
+    lensFlarePass.uniforms['intensity'].value = 1.35; // Restored anamorphic streak intensity
     lensFlarePass.renderToScreen = true;
     composer.addPass(lensFlarePass);
 
@@ -267,15 +268,16 @@ const LensFlareShader = {
           metalness: 0.02,
           roughness: 0.02,              // Highly polished glass
           ior: 1.58,                    // High-refractive-index flint glass
-          transmission: 0.98,           // Maximum physical transparency
+          transmission: 0.62,           // Balanced transmission to prevent alpha lock and allow HTML to show through
           thickness: 2.4,               // Balanced physical thickness for refractive warping
           envMap: envTexture,
-          envMapIntensity: 0.85,         // Balanced environment highlight (down from 3.8 to prevent glowing solid look)
+          envMapIntensity: 2.8,         // Restored environment highlight for high-end reflections
           specularIntensity: 1.0,
           specularColor: new THREE.Color(0xffffff),
-          dispersion: 0.75,             // Balanced Abbe chromatic dispersion
+          dispersion: 0.92,             // Exaggerated dispersion to compensate for lowered transmission
           side: THREE.DoubleSide,
-          transparent: true
+          transparent: true,
+          opacity: 0.18                 // Extremely thin, clean base for glass transparency
         });
 
         const mesh = new THREE.Mesh(child.geometry, mat);
