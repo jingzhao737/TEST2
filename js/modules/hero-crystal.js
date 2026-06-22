@@ -1,5 +1,106 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+
+// ═══ Anamorphic Streak & Lens Flare Shader ═══
+const LensFlareShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    tBloom:   { value: null },
+    resolution: { value: new THREE.Vector2(1, 1) },
+    intensity:  { value: 1.2 },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform vec2 resolution;
+    uniform float intensity;
+    varying vec2 vUv;
+
+    void main() {
+      vec4 color = texture2D(tDiffuse, vUv);
+      vec2 uv = vUv;
+      vec2 center = vec2(0.5, 0.5);
+      vec2 dir = normalize(uv - center);
+
+      // ── Ghost artifacts ──
+      vec4 flare = vec4(0.0);
+      float ghostCount = 6.0;
+
+      for (float i = 1.0; i <= 6.0; i += 1.0) {
+        float offset = i / ghostCount;
+        float falloff = pow(1.0 - offset, 3.0);
+        vec2 ghostUv = uv - dir * offset * 0.35;
+
+        if (ghostUv.x < 0.0 || ghostUv.x > 1.0 ||
+            ghostUv.y < 0.0 || ghostUv.y > 1.0) continue;
+
+        vec4 ghost = texture2D(tDiffuse, ghostUv);
+        float ghostBright = dot(ghost.rgb, vec3(0.2126, 0.7152, 0.0722));
+
+        // Prismatic color shift
+        vec3 tint = vec3(1.0);
+        if (i == 1.0) tint = vec3(0.9, 0.3, 0.1);
+        if (i == 2.0) tint = vec3(0.2, 0.5, 0.9);
+        if (i == 3.0) tint = vec3(0.3, 0.9, 0.2);
+        if (i == 4.0) tint = vec3(0.9, 0.2, 0.7);
+        if (i == 5.0) tint = vec3(0.7, 0.5, 0.2);
+        if (i == 6.0) tint = vec3(1.0, 0.8, 0.4);
+
+        float sizeFalloff = 1.0 - offset * 0.5;
+        float ghostWeight = ghostBright * falloff * 0.25 * sizeFalloff;
+        flare.rgb += ghost.rgb * tint * ghostWeight;
+
+        // Chroma shift on ghosts
+        float chroma = 0.04 * offset;
+        vec2 rUv = ghostUv + dir * chroma * 0.5;
+        vec2 bUv = ghostUv - dir * chroma * 0.3;
+        float rSample = texture2D(tDiffuse, rUv).r;
+        float bSample = texture2D(tDiffuse, bUv).b;
+        flare.r += rSample * ghostWeight * 0.3;
+        flare.b += bSample * ghostWeight * 0.3;
+      }
+
+      // ── Halo ring ──
+      float haloDist = length(uv - center);
+      float halo = smoothstep(0.07, 0.35, haloDist) * (1.0 - smoothstep(0.35, 0.55, haloDist));
+      vec2 haloUv = uv - dir * 0.12;
+      vec4 haloColor = texture2D(tDiffuse, haloUv);
+      float haloBright = dot(haloColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+      flare.rgb += haloColor.rgb * vec3(0.6, 0.3, 0.8) * halo * haloBright * 0.15;
+
+      // ── Anamorphic streak (Horizontal flare lines) ──
+      vec2 texel = 1.0 / resolution;
+      vec3 streak = vec3(0.0);
+      for (float i = -15.0; i <= 15.0; i += 1.0) {
+        float t = i / 15.0;
+        vec2 offset = vec2(t * texel.x * 4.0, t * texel.y * 1.0); // Streaks horizontally
+        vec4 s = texture2D(tDiffuse, uv + offset);
+        float b = dot(s.rgb, vec3(0.2126, 0.7152, 0.0722));
+        float w = exp(-abs(t) * 2.5);
+        streak += s.rgb * b * w * 0.10;
+      }
+
+      // ── Composite ──
+      vec3 result = color.rgb + flare.rgb * intensity + streak * intensity * 0.6;
+
+      // Subtle tone map to prevent blowout
+      result = result / (result + 1.0);
+
+      gl_FragColor = vec4(result, color.a);
+    }
+  `
+};
 
 (async function() {
   const canvas = document.getElementById('heroCrystalCanvas');
@@ -8,158 +109,81 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
   const container = document.getElementById('home');
   if (!container) return;
 
-  let scene, camera, renderer;
+  let scene, camera, renderer, composer;
+  let bloomPass, lensFlarePass;
   let crystalGroup = new THREE.Group();
   let crystalMesh = null;
   let fitScale = 1;
-
-  // Parallax elements
-  let starsParticle = null;
-  let backGlowMesh = null;
 
   let mouseX = 0, mouseY = 0;
   let targetMouseX = 0, targetMouseY = 0;
   let scrollY = 0, targetScrollY = 0;
 
-  // 1. Generate high-contrast gradient envMap for sharp crystal reflections
-  function createCrystalEnvMap() {
-    const size = 128;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, size, size);
-    grad.addColorStop(0, '#ffffff');      // Bright sky reflection
-    grad.addColorStop(0.28, '#d6ff3e');   // Accent tone (Lime)
-    grad.addColorStop(0.48, '#0b0c10');   // Horizon dark gap
-    grad.addColorStop(0.75, '#1756fd');   // Secondary tone (Blue)
-    grad.addColorStop(1, '#1a1f2e');      // Warm ambient base
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    return texture;
-  }
-
-  // 2. Generate a custom gradient texture for the background glow
-  function createGlowTexture() {
-    const size = 256;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    const grad = ctx.createRadialGradient(size / 2, size / 2, 5, size / 2, size / 2, size / 2);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');     // Central pure white hot spot
-    grad.addColorStop(0.25, 'rgba(214, 255, 62, 0.95)');   // Lime green core
-    grad.addColorStop(0.55, 'rgba(23, 86, 253, 0.75)');    // Intense blue ring
-    grad.addColorStop(0.80, 'rgba(15, 20, 35, 0.28)');     // Dark purple border
-    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');              // Transparent fade out
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
-    const texture = new THREE.CanvasTexture(canvas);
-    return texture;
-  }
-
-  // 3. Create bright background stars to pass through and scatter inside the crystal
-  function addBackgroundStars() {
-    const count = 350;
-    const geo = new THREE.BufferGeometry();
-    const pos = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-
-    // Color definitions matching the presets
-    const colorLime = new THREE.Color(0xd6ff3e);
-    const colorBlue = new THREE.Color(0x1756fd);
-    const colorWhite = new THREE.Color(0xffffff);
-
-    for (let i = 0; i < count; i++) {
-      // Scatter in a cylindrical column directly behind the crystal (Z offset is -4 to -0.5)
-      const theta = Math.random() * Math.PI * 2;
-      const radius = Math.random() * 2.0;
-      pos[i * 3]     = Math.cos(theta) * radius;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 3.5;
-      pos[i * 3 + 2] = -4.0 + Math.random() * 3.5;
-
-      // Distribute colors: 45% Lime, 45% Blue, 10% White
-      const rand = Math.random();
-      let chosenColor = colorWhite;
-      if (rand < 0.45) {
-        chosenColor = colorLime;
-      } else if (rand < 0.90) {
-        chosenColor = colorBlue;
-      }
-
-      colors[i * 3]     = chosenColor.r;
-      colors[i * 3 + 1] = chosenColor.g;
-      colors[i * 3 + 2] = chosenColor.b;
-    }
-
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    // Custom textured points to prevent square particle borders
-    const mat = new THREE.PointsMaterial({
-      size: 0.08,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.75,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-
-    starsParticle = new THREE.Points(geo, mat);
-    crystalGroup.add(starsParticle);
-  }
-
   function init() {
     scene = new THREE.Scene();
 
-    // Perspective camera Setup
     camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 50);
     camera.position.set(0, 0, 8);
 
     renderer = new THREE.WebGLRenderer({
       canvas: canvas,
-      alpha: true,
+      alpha: true,              // Keep canvas transparent to see HTML background
       antialias: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
+      premultipliedAlpha: false // Prevent black fringe around glowing transparent edges
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight, false);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.35; // Brighten overall tone mapping for crystal luminosity
+    renderer.toneMappingExposure = 1.35;
 
     scene.add(crystalGroup);
 
-    // Setup background stars first so they sit behind the model in rendering
-    addBackgroundStars();
-
-    // Setup background gradient nebula plane at z = -2.5
-    const glowTex = createGlowTexture();
-    const glowGeom = new THREE.PlaneGeometry(3.5, 3.5);
-    const glowMat = new THREE.MeshBasicMaterial({
-      map: glowTex,
-      transparent: true,
-      opacity: 0.85,
-      blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide,
-      depthWrite: false
+    // ═══ Post Processing with Transparency Support ═══
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    
+    // HalfFloatType RenderTarget to store high intensity HDR highlights for Bloom, while keeping RGBA format for alpha transparency
+    const renderTarget = new THREE.WebGLRenderTarget(w, h, {
+      type: THREE.HalfFloatType,
+      format: THREE.RGBAFormat,
+      colorSpace: THREE.SRGBColorSpace
     });
-    backGlowMesh = new THREE.Mesh(glowGeom, glowMat);
-    backGlowMesh.position.set(0, 0, -2.5);
-    crystalGroup.add(backGlowMesh);
+    
+    composer = new EffectComposer(renderer, renderTarget);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
 
-    // Lighting
+    bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(w, h),
+      0.35,  // strength
+      0.25,  // radius
+      0.45   // threshold
+    );
+    composer.addPass(bloomPass);
+
+    lensFlarePass = new ShaderPass(LensFlareShader);
+    lensFlarePass.uniforms['resolution'].value.set(w, h);
+    lensFlarePass.uniforms['intensity'].value = 1.4;
+    lensFlarePass.renderToScreen = true;
+    composer.addPass(lensFlarePass);
+
+    // Lighting Setup
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.8);
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.0);
     dirLight1.position.set(6, 10, 4);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0xd6ff3e, 0.8);
+    const dirLight2 = new THREE.DirectionalLight(0xd6ff3e, 1.2);
     dirLight2.position.set(-6, -4, 2);
     scene.add(dirLight2);
+
+    // Subtle blue point light for glass refraction color depth
+    const ptLight = new THREE.PointLight(0x1756fd, 3.5, 12);
+    ptLight.position.set(-2, 1, 2);
+    scene.add(ptLight);
   }
 
   // Handle responsiveness and layout offsets
@@ -168,6 +192,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
     if (w === 0 || h === 0) return;
 
     renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+    bloomPass.setSize(w, h);
+    lensFlarePass.uniforms['resolution'].value.set(w, h);
+    
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
 
@@ -186,10 +214,30 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
     }
   }
 
-  // Load GLTF Model
-  async function loadModel() {
-    const envMap = createCrystalEnvMap();
+  // Load GLTF Model & EXR Environment
+  async function loadAssets() {
+    // 1. Load EXR Environment Map for refraction source
+    const pmremGen = new THREE.PMREMGenerator(renderer);
+    pmremGen.compileCubemapShader();
 
+    const exrLoader = new EXRLoader();
+    const envTexture = await new Promise((resolve, reject) => {
+      exrLoader.load('images/exr/field_02k.exr', (tex) => {
+        tex.mapping = THREE.EquirectangularReflectionMapping;
+        tex.colorSpace = THREE.LinearSRGBColorSpace;
+        const env = pmremGen.fromEquirectangular(tex).texture;
+        resolve(env);
+      }, undefined, reject);
+    }).catch(err => {
+      console.warn("Failed to load EXR env map:", err);
+      return null;
+    });
+
+    if (envTexture) {
+      scene.environment = envTexture;
+    }
+
+    // 2. Load Model
     try {
       const loader = new GLTFLoader();
       const gltf = await new Promise((resolve, reject) => {
@@ -219,13 +267,13 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
           metalness: 0.02,
           roughness: 0.02,              // Highly polished glass
           ior: 1.58,                    // High-refractive-index flint glass
-          transmission: 0.96,           // Maximum transparency
-          thickness: 2.8,               // Generous physical thickness for refractive warping
-          envMap: envMap,
+          transmission: 0.98,           // Maximum physical transparency
+          thickness: 3.0,               // Generous physical thickness for refractive warping
+          envMap: envTexture,
           envMapIntensity: 3.8,         // Exaggerated environment highlight
           specularIntensity: 1.0,
           specularColor: new THREE.Color(0xffffff),
-          dispersion: 0.85,             // Extreme Abbe chromatic dispersion (彩虹阿贝分色)
+          dispersion: 0.85,             // Extreme Abbe chromatic dispersion (物理彩虹阿贝色散)
           side: THREE.DoubleSide,
           transparent: true
         });
@@ -278,28 +326,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
     mouseY += (targetMouseY - mouseY) * 0.06;
     scrollY += (targetScrollY - scrollY) * 0.08;
 
-    // Animate background elements
-    if (starsParticle) {
-      starsParticle.rotation.z += dt * 0.04;
-      starsParticle.rotation.y += dt * 0.02;
-      
-      // Foreground-Background multi-layer parallax shift
-      starsParticle.position.x = -mouseX * 0.12;
-      starsParticle.position.y = mouseY * 0.12 - scrollY * 0.0055;
-    }
-
-    if (backGlowMesh) {
-      backGlowMesh.rotation.z -= dt * 0.025;
-      
-      // Nebular radial scale pulse
-      const pulse = 1.0 + Math.sin(ts * 0.0012) * 0.05;
-      backGlowMesh.scale.set(pulse, pulse, 1);
-      
-      // Mid-layer parallax shift
-      backGlowMesh.position.x = -mouseX * 0.18;
-      backGlowMesh.position.y = mouseY * 0.18 - scrollY * 0.0055;
-    }
-
     if (crystalMesh) {
       // 1. Slow, high-end automatic spin
       crystalMesh.rotation.y += dt * 0.16;
@@ -313,11 +339,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
       crystalGroup.rotation.y = mouseX * 0.16;
     }
 
-    renderer.render(scene, camera);
+    composer.render();
   }
 
   init();
-  await loadModel();
+  await loadAssets();
   window.addEventListener('resize', resize);
   requestAnimationFrame(animate);
 })();
