@@ -738,17 +738,21 @@ import * as THREE from 'three';
         uv.needsUpdate = true;
 
         const vinylMat = new THREE.MeshPhysicalMaterial({
-          color: 0xe0f7fa,              // Elegant light cyan crystal base color
+          color: 0xffffff,
           transparent: true,
-          opacity: 0.38,                // Semi-transparent body (prevents disc from being invisible)
-          roughness: 0.04,              // Ultra smooth glossy surface
-          metalness: 0.15,              // Mix slightly metallic highlight reflectivity
-          clearcoat: 1.0,               // Smooth clearcoat shine
+          opacity: 0.08,                // Almost fully transparent body
+          roughness: 0.04,              // Sleek glossy surface
+          metalness: 0.05,
+          transmission: 0.98,           // Refractive transmission
+          ior: 1.52,                    // Refractive index for glass
+          thickness: 12.0,              // Depth thickness for refraction refraction warp
+          dispersion: 0.15,             // Spectral dispersion (Abbe color splitting)
+          clearcoat: 1.0,
           clearcoatRoughness: 0.02,
-          envMap: envMap,               // Custom gradient sky/horizon reflection
-          envMapIntensity: 4.5,         // Highly boosted environment reflectivity (makes reflections popping)
+          envMap: envMap,
+          envMapIntensity: 3.5,
           bumpMap: bumpTexture,
-          bumpScale: 0.008,             // Extremely subtle grooving to avoid breaking specular highlights
+          bumpScale: 0.005,             // Minimize bump to retain clean light transmission
           side: THREE.DoubleSide
         });
         const vinylMesh = new THREE.Mesh(vinylGeom, vinylMat);
@@ -779,9 +783,21 @@ import * as THREE from 'three';
           side: THREE.DoubleSide
         });
         const labelMesh = new THREE.Mesh(labelGeom, labelMat);
-        labelMesh.position.z = 0.9; // sit slightly in front
+        labelMesh.position.z = -1.8; // Move to the back-face of the glass disc (thickness is 3.5, so -1.8 is the back)
         discGroup.add(labelMesh);
         
+        // 4. Create Neon Backlight Ring behind the glass disc (slightly wider than label to peek out)
+        const ringBackGeom = new THREE.RingGeometry(t.dispW * 0.28, t.dispW * 0.38, 48, 1);
+        const ringBackMat = new THREE.MeshBasicMaterial({
+          color: knobColors[i],        // Match the disc's individual theme color
+          transparent: true,
+          opacity: 0.65,
+          side: THREE.DoubleSide
+        });
+        const ringBackMesh = new THREE.Mesh(ringBackGeom, ringBackMat);
+        ringBackMesh.position.z = -2.2; // Sit immediately behind the paper label
+        discGroup.add(ringBackMesh);
+
         scene.add(discGroup);
         discs.push({
           group: discGroup,
