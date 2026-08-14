@@ -1,12 +1,5 @@
 [
   {
-    "step": 181,
-    "timestamp": "2026-06-17 01:40:06",
-    "description": "style keep nav and hero spacing adjustments on mobile only and revert desktop/tablet",
-    "folder": "step_181_style_keep_nav_and_hero_spacing_adjustments_on_mobile_only_and_revert_desktop_tablet",
-    "is_auto": false
-  },
-  {
     "step": 182,
     "timestamp": "2026-06-17 01:40:18",
     "description": "docs update walkthrough with desktop tablet restoration",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:43:37",
     "description": "title char reveal ease to expo.out",
     "folder": "step_200_title_char_reveal_ease_to_expo.out",
+    "is_auto": false
+  },
+  {
+    "step": 201,
+    "timestamp": "2026-08-14 21:48:12",
+    "description": "custom slow-fast-slow bezier easing for title reveal",
+    "folder": "step_201_custom_slow-fast-slow_bezier_easing_for_title_reveal",
     "is_auto": false
   }
 ]

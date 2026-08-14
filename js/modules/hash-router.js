@@ -359,7 +359,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: 'power3.out', stagger: 0.03, delay: 0.3 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: 'expo.out', stagger: 0.03, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }

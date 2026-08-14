@@ -78,9 +78,24 @@ function buildGalleryHTML(gallery) {
   return html;
 }
 
+function escapeHtml(s) {
+  return s.replace(/[&<>"]/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+
+// Split the title into masked character spans for a staggered bottom-to-top reveal
+function setTitleChars(titleEl, text) {
+  titleEl.innerHTML = Array.from(text).map(function(ch) {
+    const safe = ch === ' ' ? '&nbsp;' : escapeHtml(ch);
+    return '<span class="tchar-mask" style="display:inline-block;overflow:hidden;vertical-align:bottom">' +
+           '<span class="tchar" style="display:inline-block;will-change:transform">' + safe + '</span></span>';
+  }).join('');
+}
+
 function renderDetailContent(data, heroImg) {
   document.getElementById('detailTag').textContent = data.tag;
-  document.getElementById('detailTitle').textContent = data.name;
+  setTitleChars(document.getElementById('detailTitle'), data.name);
   document.getElementById('detailSubtitle').textContent = data.subtitle;
   // Hero with skeleton
   const heroEl = document.getElementById('detailHeroImg');
@@ -298,7 +313,10 @@ function openDetail(data, heroImg, pushState) {
   gsap.set(detailBody, { opacity: 0, y: 30 });
   gsap.set(detailClose, { opacity: 1, y: 0 });
   gsap.set(detailHeroContent, { opacity: 1, y: 0 });
-  gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
+  gsap.set([detailTag, detailSubtitle], { opacity: 0, y: 30 });
+  gsap.set(detailTitle, { opacity: 1, y: 0 });
+  const titleChars = detailTitle.querySelectorAll('.tchar');
+  gsap.set(titleChars, { yPercent: 110 });
 
   // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
@@ -341,7 +359,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.35 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: 'expo.out', stagger: 0.03, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }
@@ -415,19 +433,20 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         resetDetailState();
+
+        // Clear flags BEFORE dispatchWakeupEvents so that onListEnter's guard
+        // (checks __isRouteTransitioning && __isDetailClosing) passes and the
+        // hover loop wakes up correctly when the mouse is already over a card.
+        window.__isDetailClosing = false;
+        isRouteTransitioning = false;
+
         dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-
-        window.__isDetailClosing = false;
-        isRouteTransitioning = false;
       }
     });
-  } else {
-    window.__isDetailClosing = false;
-    isRouteTransitioning = false;
   }
 }
 
