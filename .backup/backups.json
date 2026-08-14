@@ -1,12 +1,5 @@
 [
   {
-    "step": 184,
-    "timestamp": "2026-06-17 01:43:20",
-    "description": "docs update walkthrough with theme observer fix",
-    "folder": "step_184_docs_update_walkthrough_with_theme_observer_fix",
-    "is_auto": false
-  },
-  {
     "step": 185,
     "timestamp": "2026-06-17 01:45:21",
     "description": "style shift mobile nav logo and soundwaves further right",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:52:17",
     "description": "double title reveal total duration",
     "folder": "step_203_double_title_reveal_total_duration",
+    "is_auto": false
+  },
+  {
+    "step": 204,
+    "timestamp": "2026-08-14 21:55:20",
+    "description": "title duration 0.8s with piecewise slow-fast-slow easing",
+    "folder": "step_204_title_duration_0.8s_with_piecewise_slow-fast-slow_easing",
     "is_auto": false
   }
 ]
