@@ -128,7 +128,7 @@ const LensFlareShader = {
   const scene = new THREE.Scene();
 
   const camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 60);
-  camera.position.set(0, -5, 8);
+  camera.position.set(0, -5, 8).multiplyScalar(1.5 / Math.sqrt(89));
   camera.lookAt(0, 0, 0);
 
   // ═══ Post Processing ═══
