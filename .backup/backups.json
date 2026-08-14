@@ -1,12 +1,5 @@
 [
   {
-    "step": 179,
-    "timestamp": "2026-06-17 01:37:34",
-    "description": "style further increase mobile nav padding and shift hero title block down",
-    "folder": "step_179_style_further_increase_mobile_nav_padding_and_shift_hero_title_block_down",
-    "is_auto": false
-  },
-  {
     "step": 180,
     "timestamp": "2026-06-17 01:37:47",
     "description": "docs update walkthrough with mobile nav and hero padding adjustment",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:32:49",
     "description": "staggered char-by-char title reveal for detail card",
     "folder": "step_198_staggered_char-by-char_title_reveal_for_detail_card",
+    "is_auto": false
+  },
+  {
+    "step": 199,
+    "timestamp": "2026-08-14 21:40:33",
+    "description": "make title char reveal robust with inline styles",
+    "folder": "step_199_make_title_char_reveal_robust_with_inline_styles",
     "is_auto": false
   }
 ]

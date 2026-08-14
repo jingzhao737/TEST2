@@ -2216,6 +2216,15 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   margin: 0;
   font-weight: 700;
 }
+.detail-hero-content h1 .tchar-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.detail-hero-content h1 .tchar {
+  display: inline-block;
+  will-change: transform;
+}
 #detailTag,
 #detailSubtitle {
   display: none !important;
