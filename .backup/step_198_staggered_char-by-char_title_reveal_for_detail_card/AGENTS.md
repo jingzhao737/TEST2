@@ -63,6 +63,40 @@ portfolio-v2/
 4. **GSAP**: Loaded via CDN (`https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm`) — do NOT use npm imports
 5. **`.gitignore`** excludes: `node_modules/`, `dist/`, `*.py`, debug files
 
+## ✦ Token 节省规则（所有 Agent 必须遵守）
+
+> **Token 是有限资源。每一次工具调用、每一行输出都有成本。以下规则旨在最大限度减少不必要的 token 消耗。**
+
+### 1. 精确读取，禁止全量读文件
+- `view_file` 必须指定 `StartLine`/`EndLine`，每次限制在 **20-50 行**
+- 禁止一次读取 200+ 行。如果不确定目标在哪，先用 `findstr`（Windows）或 `grep_search` 定位行号，再精确读取
+
+### 2. 简单任务直接做，不走 plan 流程
+- **改颜色、改数值、修 bug** 等简单任务：直接编辑，不需要写 `implementation_plan.md`
+- **架构变更、新功能** 等复杂任务：才需要写 plan 并等用户审批
+- 判断标准：如果改动涉及 ≤3 个文件且逻辑清晰，就是简单任务
+
+### 3. 不维护冗余文档
+- `task.md`、`walkthrough.md`、`implementation_plan.md` 只在复杂任务中创建和维护
+- 简单任务完成后，在回复中用 1-3 句话总结即可，**不要更新 artifact 文件**
+
+### 4. Git 搜索要节制
+- 用 `git log --oneline -n 10` 而不是 `git log -p`（后者输出巨量 diff）
+- 需要看某个 commit 的改动时，用 `git show <hash> -- <file>` 并限定文件
+- 需要在历史中搜索关键字时，用 `git log -S "keyword" --oneline` 而不是 `-p`
+
+### 5. 命令输出要精简
+- 避免运行会产生大量输出的命令（如不加 `-n` 的 `git log`）
+- `findstr` 比 `git grep` 在 Windows 上更可靠，优先使用
+
+### 6. 重型研究任务交给 Subagent
+- 需要大量搜索代码库、阅读多个文件的调研任务，委派给 `research` subagent
+- 主 agent 保持上下文窗口干净
+
+### 7. 语言规则
+- 与用户沟通统一使用**中文**
+- 代码注释可以用英文
+
 ---
 
 ## Gemini-Specific Instructions

@@ -1,12 +1,5 @@
 [
   {
-    "step": 178,
-    "timestamp": "2026-06-17 01:35:00",
-    "description": "docs update walkthrough with mobile nav padding calibration",
-    "folder": "step_178_docs_update_walkthrough_with_mobile_nav_padding_calibration",
-    "is_auto": false
-  },
-  {
     "step": 179,
     "timestamp": "2026-06-17 01:37:34",
     "description": "style further increase mobile nav padding and shift hero title block down",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:19:55",
     "description": "gate detail close button snap until open animation completes",
     "folder": "step_197_gate_detail_close_button_snap_until_open_animation_completes",
+    "is_auto": false
+  },
+  {
+    "step": 198,
+    "timestamp": "2026-08-14 21:32:49",
+    "description": "staggered char-by-char title reveal for detail card",
+    "folder": "step_198_staggered_char-by-char_title_reveal_for_detail_card",
     "is_auto": false
   }
 ]

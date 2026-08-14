@@ -96,6 +96,9 @@
 
   // Helper to check if an element is actually visible to the user (including ancestors)
   function isElementVisible(el) {
+    // Detail close button snap is enabled only after its pop-in animation completes
+    if (el.classList.contains('detail-close') && window.__isRouteTransitioning) return false;
+
     // 1. Overlay Snapping Hierarchy: if an overlay is open, only allow snapping inside it
     const lightbox = document.getElementById('galleryLightbox');
     if (lightbox && lightbox.classList.contains('open')) {
