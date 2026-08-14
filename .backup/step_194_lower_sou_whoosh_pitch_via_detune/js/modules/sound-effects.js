@@ -2,24 +2,73 @@
 (function() {
   let audioCtx = null;
   let cardClickBuffer = null;
+  let bassDropBuffer = null;
+  let piaBuffer = null;
+  let souBuffer = null;
   
-  // Download the audio file immediately on load
+  // Download the audio files immediately on load
   const arrayBufferPromise = fetch('sound/sound1/click1.mp3')
     .then(r => r.arrayBuffer())
     .catch(e => console.error('Failed to fetch card click sound:', e));
 
+  const arrayBufferBassDropPromise = fetch('sound/123682__langdonrry__808-bass-drop-d.wav')
+    .then(r => r.arrayBuffer())
+    .catch(e => console.error('Failed to fetch bass drop sound:', e));
+
+  const arrayBufferPiaPromise = fetch('sound/pia.wav')
+    .then(r => r.arrayBuffer())
+    .catch(e => console.error('Failed to fetch card hover sound:', e));
+
+  const arrayBufferSouPromise = fetch('sound/sou.wav')
+    .then(r => r.arrayBuffer())
+    .catch(e => console.error('Failed to fetch sou whoosh sound:', e));
+
   function decodeCardSound() {
     const ctx = getAudioContext();
-    if (!ctx || cardClickBuffer) return;
-    if (arrayBufferPromise) {
+    if (!ctx) return;
+    
+    if (arrayBufferPromise && !cardClickBuffer) {
       arrayBufferPromise
         .then(ab => {
-          if (ab) return ctx.decodeAudioData(ab);
+          if (ab) return ctx.decodeAudioData(ab.slice(0)); // Use slice(0) to avoid Detached Buffer errors on multiple calls
         })
         .then(buffer => {
           if (buffer) cardClickBuffer = buffer;
         })
         .catch(e => console.error('Error decoding card click sound:', e));
+    }
+
+    if (arrayBufferBassDropPromise && !bassDropBuffer) {
+      arrayBufferBassDropPromise
+        .then(ab => {
+          if (ab) return ctx.decodeAudioData(ab.slice(0));
+        })
+        .then(buffer => {
+          if (buffer) bassDropBuffer = buffer;
+        })
+        .catch(e => console.error('Error decoding bass drop sound:', e));
+    }
+
+    if (arrayBufferPiaPromise && !piaBuffer) {
+      arrayBufferPiaPromise
+        .then(ab => {
+          if (ab) return ctx.decodeAudioData(ab.slice(0));
+        })
+        .then(buffer => {
+          if (buffer) piaBuffer = buffer;
+        })
+        .catch(e => console.error('Error decoding card hover sound:', e));
+    }
+
+    if (arrayBufferSouPromise && !souBuffer) {
+      arrayBufferSouPromise
+        .then(ab => {
+          if (ab) return ctx.decodeAudioData(ab.slice(0));
+        })
+        .then(buffer => {
+          if (buffer) souBuffer = buffer;
+        })
+        .catch(e => console.error('Error decoding sou whoosh sound:', e));
     }
   }
 
@@ -28,22 +77,59 @@
     if (!ctx) return;
     if (ctx.state === 'suspended') ctx.resume();
 
-    if (!cardClickBuffer) {
-      // Fallback if not decoded yet
-      playClickSound();
-      return;
-    }
+    // Make sure we trigger decoding if not done already
+    decodeCardSound();
 
     const now = ctx.currentTime;
-    const source = ctx.createBufferSource();
-    source.buffer = cardClickBuffer;
 
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(0.5, now); // Set custom card click volume
+    // 1. Play the "sou.wav" whoosh sound IMMEDIATELY (no delay)
+    if (souBuffer) {
+      const souSource = ctx.createBufferSource();
+      souSource.buffer = souBuffer;
+      const souGain = ctx.createGain();
+      souGain.gain.setValueAtTime(0.12, now); // Lowered volume for the whoosh
+      
+      // 2.6x speed (playbackRate raises speed and pitch)
+      souSource.playbackRate.setValueAtTime(2.6, now);
+      
+      souSource.connect(souGain);
+      souGain.connect(window.__masterGainNode || ctx.destination);
+      souSource.start(now);
+    }
 
-    source.connect(gainNode);
-    gainNode.connect(window.__masterGainNode || ctx.destination);
-    source.start(now);
+    // 2. Play original card click sound delayed by 100ms
+    if (cardClickBuffer) {
+      const source = ctx.createBufferSource();
+      source.buffer = cardClickBuffer;
+      const gainNode = ctx.createGain();
+      gainNode.gain.setValueAtTime(0.5, now + 0.10); // Volume at 100ms
+      source.connect(gainNode);
+      gainNode.connect(window.__masterGainNode || ctx.destination);
+      source.start(now + 0.10); // Start after 100ms (0.10s)
+    } else {
+      // Fallback if not decoded yet (trigger synthesiser with 100ms delay)
+      setTimeout(() => {
+        playClickSound();
+      }, 100);
+    }
+
+    // 3. Play the 808 bass drop sound delayed by 150ms (original 50ms delay + 100ms click delay) with 40ms fade-in
+    if (bassDropBuffer) {
+      const bassSource = ctx.createBufferSource();
+      bassSource.buffer = bassDropBuffer;
+      const bassGain = ctx.createGain();
+      
+      const bassStartTime = now + 0.15; // 150ms delay
+      const fadeInDuration = 0.04; // 40ms fade-in duration
+      
+      bassGain.gain.setValueAtTime(0, now);
+      bassGain.gain.setValueAtTime(0, bassStartTime);
+      bassGain.gain.linearRampToValueAtTime(0.48, bassStartTime + fadeInDuration);
+      
+      bassSource.connect(bassGain);
+      bassGain.connect(window.__masterGainNode || ctx.destination);
+      bassSource.start(bassStartTime);
+    }
   }
 
   function getAudioContext() {
@@ -142,13 +228,19 @@
     // Interactive element selector — clicking these uses the heavier click sound
     const interactiveSelector = 'a, button, [role="button"], .work-card, .footer-cta, .detail-close, .gal-item, .motion-slide, .nav-menu-btn, .theme-toggle, .logo-wrapper, .lightbox-nav, .lightbox-close, .nav-waveform, .nav-next-btn, .hdr-ring, .ice-container, .zoom-slider-track, .zoom-slider-knob, .back-to-top, .scroll-dot-marker, .theme-pull-wrapper, .motion-hero, .scroll-thumb, .scroll-bubble, #framesCanvas';
 
-    // Global mousedown — fires instantly on press (not on release like 'click')
-    document.addEventListener('mousedown', (e) => {
+    function handlePress(e) {
       const target = e.target;
       if (!target) return;
 
-      // Check if clicking a works card
-      const isWorkCard = typeof target.closest === 'function' && target.closest('.work-card');
+      // Check if clicking a works card (directly or via fallback 3D click areas)
+      let isWorkCard = typeof target.closest === 'function' && target.closest('.work-card');
+      if (!isWorkCard) {
+        const isWorksSection = typeof target.closest === 'function' && target.closest('.works');
+        if (isWorksSection && window.__hoveredCardIndex !== undefined && window.__hoveredCardIndex >= 0) {
+          isWorkCard = true;
+        }
+      }
+
       if (isWorkCard) {
         playCardClickSound();
         return;
@@ -162,7 +254,14 @@
         // Lighter, shorter "tap" sound for blank/non-interactive areas
         playHoverSound();
       }
-    });
+    }
+
+    const isMobileDevice = ('ontouchstart' in window) || (window.innerWidth <= 768);
+    if (isMobileDevice) {
+      document.addEventListener('click', handlePress);
+    } else {
+      document.addEventListener('mousedown', handlePress);
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -259,11 +358,37 @@
       ctx.resume().catch(function(e) { console.warn('Failed to resume AudioContext:', e); });
     }
   }
-  window.addEventListener('mousedown', resumeGlobalContext, { passive: true });
-  window.addEventListener('touchstart', resumeGlobalContext, { passive: true });
-  window.addEventListener('keydown', resumeGlobalContext, { passive: true });
+  window.addEventListener('mousedown', resumeGlobalContext, { capture: true, passive: true });
+  window.addEventListener('touchstart', resumeGlobalContext, { capture: true, passive: true });
+  window.addEventListener('keydown', resumeGlobalContext, { capture: true, passive: true });
+
+  function playCardHoverSound() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    // Ensure decoding is triggered
+    decodeCardSound();
+
+    if (!piaBuffer) return;
+
+    const now = ctx.currentTime;
+    const source = ctx.createBufferSource();
+    source.buffer = piaBuffer;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0.32, now); // Set custom volume for hover selector
+
+    const pitch = 0.96 + Math.random() * 0.08;
+    source.playbackRate.setValueAtTime(pitch, now);
+
+    source.connect(gainNode);
+    gainNode.connect(window.__masterGainNode || ctx.destination);
+    source.start(now);
+  }
 
   window.__playHoverSound = playHoverSound;
   window.__playClickSound = playClickSound;
   window.__playForgeClangSound = playForgeClangSound;
+  window.__playCardHoverSound = playCardHoverSound;
 })();

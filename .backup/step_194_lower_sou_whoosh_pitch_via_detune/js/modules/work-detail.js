@@ -29,6 +29,11 @@ document.querySelectorAll('.work-card').forEach(function(card) {
     ripple.style.top = y + 'px';
     card.appendChild(ripple);
 
+    // Trigger preview image and color block Z-axis compress animation if available
+    if (window.triggerPreviewPinchAnimation) {
+      window.triggerPreviewPinchAnimation();
+    }
+
     // Tactile 3D press - compress quickly and spring back up with a premium back.out ease (wobble overshoot)
     let tl = gsap.timeline();
     tl.to(card, {

@@ -89,8 +89,8 @@
       const souGain = ctx.createGain();
       souGain.gain.setValueAtTime(0.12, now); // Lowered volume for the whoosh
       
-      // 2.2x speed (playbackRate raises speed and pitch)
-      souSource.playbackRate.setValueAtTime(2.2, now);
+      // 2.6x speed (playbackRate raises speed and pitch)
+      souSource.playbackRate.setValueAtTime(2.6, now);
       
       souSource.connect(souGain);
       souGain.connect(window.__masterGainNode || ctx.destination);

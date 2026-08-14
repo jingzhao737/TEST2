@@ -1,12 +1,5 @@
 [
   {
-    "step": 174,
-    "timestamp": "2026-06-17 01:24:58",
-    "description": "Update walkthrough.md with ReferenceError hotfix details",
-    "folder": "step_174_Update_walkthrough.md_with_ReferenceError_hotfix_details",
-    "is_auto": false
-  },
-  {
     "step": 175,
     "timestamp": "2026-06-17 01:30:10",
     "description": "Fix delay hover wakeup to prevent PC preview flash on exit",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:10:58",
     "description": "speed up sou whoosh further",
     "folder": "step_193_speed_up_sou_whoosh_further",
+    "is_auto": false
+  },
+  {
+    "step": 194,
+    "timestamp": "2026-08-14 21:12:33",
+    "description": "lower sou whoosh pitch via detune",
+    "folder": "step_194_lower_sou_whoosh_pitch_via_detune",
     "is_auto": false
   }
 ]
