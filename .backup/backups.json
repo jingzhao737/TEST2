@@ -1,12 +1,5 @@
 [
   {
-    "step": 170,
-    "timestamp": "2026-06-17 01:20:14",
-    "description": "Update walkthrough.md with transition durations softening details",
-    "folder": "step_170_Update_walkthrough.md_with_transition_durations_softening_details",
-    "is_auto": false
-  },
-  {
     "step": 171,
     "timestamp": "2026-06-17 01:22:41",
     "description": "Optimize works details mobile layout and disable scale transitions on mobile viewports",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:07:53",
     "description": "reduce custom cursor follow delay",
     "folder": "step_189_reduce_custom_cursor_follow_delay",
+    "is_auto": false
+  },
+  {
+    "step": 190,
+    "timestamp": "2026-08-14 21:08:54",
+    "description": "speed up sou.wav whoosh 2x",
+    "folder": "step_190_speed_up_sou.wav_whoosh_2x",
     "is_auto": false
   }
 ]
