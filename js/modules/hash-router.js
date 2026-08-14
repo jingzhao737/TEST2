@@ -84,6 +84,29 @@ function escapeHtml(s) {
   });
 }
 
+// Custom cubic-bezier easing (GSAP accepts a function). Returns progress for a given time.
+// Controls points tuned for a "slow 30% -> fast 20% -> slow 50%" feel.
+function cubicBezierEase(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sampleX = t => ((ax * t + bx) * t + cx) * t;
+  const sampleY = t => ((ay * t + by) * t + cy) * t;
+  const derivX = t => (3 * ax * t + 2 * bx) * t + cx;
+  return function(p) {
+    if (p <= 0) return 0;
+    if (p >= 1) return 1;
+    let t = p;
+    for (let i = 0; i < 8; i++) {
+      const err = sampleX(t) - p;
+      if (Math.abs(err) < 1e-6) break;
+      const d = derivX(t);
+      if (Math.abs(d) < 1e-6) break;
+      t -= err / d;
+    }
+    return sampleY(t);
+  };
+}
+
 // Split the title into masked character spans for a staggered bottom-to-top reveal
 function setTitleChars(titleEl, text) {
   titleEl.innerHTML = Array.from(text).map(function(ch) {
@@ -359,7 +382,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: 'expo.out', stagger: 0.03, delay: 0.3 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: cubicBezierEase(0.3, 0.05, 0.5, 0.95), stagger: 0.03, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }

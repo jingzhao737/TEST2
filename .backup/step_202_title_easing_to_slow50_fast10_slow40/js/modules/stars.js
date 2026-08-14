@@ -1104,16 +1104,17 @@ import * as THREE from 'three';
               textCtx.textAlign = item.textAlign;
               textCtx.textBaseline = 'middle';
 
+              const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#F3834C';
               let color = item.color;
               if (isLight) {
                 if (item.isSectionTag) {
-                  color = '#e87c50';
+                  color = accentColor;
                 } else {
                   color = '#000000';
                 }
               } else {
                 if (item.isSectionTag) {
-                  color = '#e87c50';
+                  color = accentColor;
                 } else {
                   color = '#ffffff';
                 }

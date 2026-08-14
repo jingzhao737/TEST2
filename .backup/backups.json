@@ -1,12 +1,5 @@
 [
   {
-    "step": 182,
-    "timestamp": "2026-06-17 01:40:18",
-    "description": "docs update walkthrough with desktop tablet restoration",
-    "folder": "step_182_docs_update_walkthrough_with_desktop_tablet_restoration",
-    "is_auto": false
-  },
-  {
     "step": 183,
     "timestamp": "2026-06-17 01:43:07",
     "description": "fix add ResizeObserver and load listener to ensure mobile theme toggle aligns correctly",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:48:12",
     "description": "custom slow-fast-slow bezier easing for title reveal",
     "folder": "step_201_custom_slow-fast-slow_bezier_easing_for_title_reveal",
+    "is_auto": false
+  },
+  {
+    "step": 202,
+    "timestamp": "2026-08-14 21:49:33",
+    "description": "title easing to slow50 fast10 slow40",
+    "folder": "step_202_title_easing_to_slow50_fast10_slow40",
     "is_auto": false
   }
 ]
