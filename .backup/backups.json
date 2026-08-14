@@ -1,12 +1,5 @@
 [
   {
-    "step": 180,
-    "timestamp": "2026-06-17 01:37:47",
-    "description": "docs update walkthrough with mobile nav and hero padding adjustment",
-    "folder": "step_180_docs_update_walkthrough_with_mobile_nav_and_hero_padding_adjustment",
-    "is_auto": false
-  },
-  {
     "step": 181,
     "timestamp": "2026-06-17 01:40:06",
     "description": "style keep nav and hero spacing adjustments on mobile only and revert desktop/tablet",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:40:33",
     "description": "make title char reveal robust with inline styles",
     "folder": "step_199_make_title_char_reveal_robust_with_inline_styles",
+    "is_auto": false
+  },
+  {
+    "step": 200,
+    "timestamp": "2026-08-14 21:43:37",
+    "description": "title char reveal ease to expo.out",
+    "folder": "step_200_title_char_reveal_ease_to_expo.out",
     "is_auto": false
   }
 ]

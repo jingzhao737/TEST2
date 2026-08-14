@@ -88,7 +88,8 @@ function escapeHtml(s) {
 function setTitleChars(titleEl, text) {
   titleEl.innerHTML = Array.from(text).map(function(ch) {
     const safe = ch === ' ' ? '&nbsp;' : escapeHtml(ch);
-    return '<span class="tchar-mask"><span class="tchar">' + safe + '</span></span>';
+    return '<span class="tchar-mask" style="display:inline-block;overflow:hidden;vertical-align:bottom">' +
+           '<span class="tchar" style="display:inline-block;will-change:transform">' + safe + '</span></span>';
   }).join('');
 }
 
