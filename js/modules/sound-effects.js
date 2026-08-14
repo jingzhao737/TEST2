@@ -95,7 +95,8 @@
       
       souSource.connect(souGain);
       souGain.connect(window.__masterGainNode || ctx.destination);
-      souSource.start(now);
+      // Skip the first 30% of the buffer (offset in seconds)
+      souSource.start(now, souBuffer.duration * 0.30);
     }
 
     // 2. Play original card click sound delayed by 100ms

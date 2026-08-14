@@ -1,12 +1,5 @@
 [
   {
-    "step": 176,
-    "timestamp": "2026-06-17 01:30:32",
-    "description": "docs update walkthrough with transition isolation fix",
-    "folder": "step_176_docs_update_walkthrough_with_transition_isolation_fix",
-    "is_auto": false
-  },
-  {
     "step": 177,
     "timestamp": "2026-06-17 01:34:49",
     "description": "style increase mobile nav padding to move logo and menu button inward",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:13:32",
     "description": "trim first 30 percent of sou whoosh",
     "folder": "step_195_trim_first_30_percent_of_sou_whoosh",
+    "is_auto": false
+  },
+  {
+    "step": 196,
+    "timestamp": "2026-08-14 21:14:51",
+    "description": "lower volume and speed up sou whoosh",
+    "folder": "step_196_lower_volume_and_speed_up_sou_whoosh",
     "is_auto": false
   }
 ]
