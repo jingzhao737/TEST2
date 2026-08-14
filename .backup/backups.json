@@ -1,12 +1,5 @@
 [
   {
-    "step": 183,
-    "timestamp": "2026-06-17 01:43:07",
-    "description": "fix add ResizeObserver and load listener to ensure mobile theme toggle aligns correctly",
-    "folder": "step_183_fix_add_ResizeObserver_and_load_listener_to_ensure_mobile_theme_toggle_aligns_correctly",
-    "is_auto": false
-  },
-  {
     "step": 184,
     "timestamp": "2026-06-17 01:43:20",
     "description": "docs update walkthrough with theme observer fix",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:49:33",
     "description": "title easing to slow50 fast10 slow40",
     "folder": "step_202_title_easing_to_slow50_fast10_slow40",
+    "is_auto": false
+  },
+  {
+    "step": 203,
+    "timestamp": "2026-08-14 21:52:17",
+    "description": "double title reveal total duration",
+    "folder": "step_203_double_title_reveal_total_duration",
     "is_auto": false
   }
 ]

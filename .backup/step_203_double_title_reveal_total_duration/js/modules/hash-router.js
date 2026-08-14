@@ -78,9 +78,47 @@ function buildGalleryHTML(gallery) {
   return html;
 }
 
+function escapeHtml(s) {
+  return s.replace(/[&<>"]/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+
+// Custom cubic-bezier easing (GSAP accepts a function). Returns progress for a given time.
+// Controls points tuned for a "slow 50% -> fast 10% -> slow 40%" feel.
+function cubicBezierEase(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sampleX = t => ((ax * t + bx) * t + cx) * t;
+  const sampleY = t => ((ay * t + by) * t + cy) * t;
+  const derivX = t => (3 * ax * t + 2 * bx) * t + cx;
+  return function(p) {
+    if (p <= 0) return 0;
+    if (p >= 1) return 1;
+    let t = p;
+    for (let i = 0; i < 8; i++) {
+      const err = sampleX(t) - p;
+      if (Math.abs(err) < 1e-6) break;
+      const d = derivX(t);
+      if (Math.abs(d) < 1e-6) break;
+      t -= err / d;
+    }
+    return sampleY(t);
+  };
+}
+
+// Split the title into masked character spans for a staggered bottom-to-top reveal
+function setTitleChars(titleEl, text) {
+  titleEl.innerHTML = Array.from(text).map(function(ch) {
+    const safe = ch === ' ' ? '&nbsp;' : escapeHtml(ch);
+    return '<span class="tchar-mask" style="display:inline-block;overflow:hidden;vertical-align:bottom">' +
+           '<span class="tchar" style="display:inline-block;will-change:transform">' + safe + '</span></span>';
+  }).join('');
+}
+
 function renderDetailContent(data, heroImg) {
   document.getElementById('detailTag').textContent = data.tag;
-  document.getElementById('detailTitle').textContent = data.name;
+  setTitleChars(document.getElementById('detailTitle'), data.name);
   document.getElementById('detailSubtitle').textContent = data.subtitle;
   // Hero with skeleton
   const heroEl = document.getElementById('detailHeroImg');
@@ -298,7 +336,10 @@ function openDetail(data, heroImg, pushState) {
   gsap.set(detailBody, { opacity: 0, y: 30 });
   gsap.set(detailClose, { opacity: 1, y: 0 });
   gsap.set(detailHeroContent, { opacity: 1, y: 0 });
-  gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
+  gsap.set([detailTag, detailSubtitle], { opacity: 0, y: 30 });
+  gsap.set(detailTitle, { opacity: 1, y: 0 });
+  const titleChars = detailTitle.querySelectorAll('.tchar');
+  gsap.set(titleChars, { yPercent: 110 });
 
   // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
@@ -341,7 +382,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.35 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: cubicBezierEase(0.5, 0.05, 0.6, 0.95), stagger: 0.03, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }
@@ -415,19 +456,20 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         resetDetailState();
+
+        // Clear flags BEFORE dispatchWakeupEvents so that onListEnter's guard
+        // (checks __isRouteTransitioning && __isDetailClosing) passes and the
+        // hover loop wakes up correctly when the mouse is already over a card.
+        window.__isDetailClosing = false;
+        isRouteTransitioning = false;
+
         dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-
-        window.__isDetailClosing = false;
-        isRouteTransitioning = false;
       }
     });
-  } else {
-    window.__isDetailClosing = false;
-    isRouteTransitioning = false;
   }
 }
 

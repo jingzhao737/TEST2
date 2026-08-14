@@ -85,7 +85,7 @@ function escapeHtml(s) {
 }
 
 // Custom cubic-bezier easing (GSAP accepts a function). Returns progress for a given time.
-// Controls points tuned for a "slow 30% -> fast 20% -> slow 50%" feel.
+// Controls points tuned for a "slow 50% -> fast 10% -> slow 40%" feel.
 function cubicBezierEase(x1, y1, x2, y2) {
   const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
   const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
@@ -382,7 +382,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: cubicBezierEase(0.3, 0.05, 0.5, 0.95), stagger: 0.03, delay: 0.3 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.5, ease: cubicBezierEase(0.5, 0.05, 0.6, 0.95), stagger: 0.03, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }

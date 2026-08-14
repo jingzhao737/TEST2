@@ -243,7 +243,8 @@ import gsap from 'gsap';
 
       // Emissive shadow glow (soft neon blur)
       if (f > 0.1) {
-        const glowColor = isLightMode ? 'rgba(155, 142, 126, ' + (f * 0.25).toFixed(2) + ')' : 'rgba(232, 124, 80, ' + (f * 0.45).toFixed(2) + ')';
+        const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '243, 131, 76';
+        const glowColor = isLightMode ? 'rgba(155, 142, 126, ' + (f * 0.25).toFixed(2) + ')' : 'rgba(' + accentRgb + ', ' + (f * 0.45).toFixed(2) + ')';
         line.style.textShadow = '0 0 ' + (f * 16).toFixed(1) + 'px ' + glowColor;
       } else {
         line.style.textShadow = '';

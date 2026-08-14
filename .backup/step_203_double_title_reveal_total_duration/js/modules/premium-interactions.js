@@ -16,6 +16,7 @@ if (!isMobileDevice) {
     let isVisible = false;
     let activeCardIndex = -1;
     let activeTimeline = null;
+    let orangeSwitchTimeline = null;
 
     // Animation state object driven by GSAP tweens for the staggered entrance & overshoot rebound
     const previewAnim = {
@@ -99,6 +100,7 @@ if (!isMobileDevice) {
       isPreviewActive = true;
       
       if (activeTimeline) activeTimeline.kill();
+      if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
       gsap.killTweensOf([wrapper, previewAnim]);
       
       // Instantly make the wrapper visible and set opacity to 1.0 to prevent 3D flattening
@@ -110,7 +112,7 @@ if (!isMobileDevice) {
       activeTimeline.to(previewAnim, {
         imgOpacity: 1,
         imgScale: 1.0,
-        imgZ: 15,
+        imgZ: 52, // Float 24px ABOVE the hovered card (Z=28px)
         duration: 0.8,
         ease: 'elastic.out(1.1, 0.55)' // Elegant, fluid overshoot and single gentle bounce-back
       }, 0);
@@ -119,7 +121,7 @@ if (!isMobileDevice) {
       activeTimeline.to(previewAnim, {
         orangeOpacity: 1,
         orangeScale: 1.0,
-        orangeZ: 5,
+        orangeZ: -25, // Float safely BEHIND all cards (Z=-25px, max tilt edge Z is -3px)
         duration: 0.7,
         ease: 'elastic.out(1.0, 0.6)'
       }, 0.08); // Staggered by 0.08s for a tight, high-end feel
@@ -131,6 +133,7 @@ if (!isMobileDevice) {
       activeCardIndex = -1;
       
       if (activeTimeline) activeTimeline.kill();
+      if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
       gsap.killTweensOf([wrapper, previewAnim]);
       
       activeTimeline = gsap.timeline();
@@ -196,7 +199,25 @@ if (!isMobileDevice) {
 
       // Restore the 3D transform
       workList.style.transform = oldTransform;
+
+      // Sync the chroma blob position to match exactly where it originally was (top: 50%, left: 60% of .works)
+      syncChromaBlobPosition();
     }
+
+    const chromaBlob = document.querySelector('.works-chroma-blob');
+    function syncChromaBlobPosition() {
+      if (!chromaBlob || !worksEl) return;
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      const pRect = worksEl.getBoundingClientRect();
+      const left = pRect.left + scrollX + pRect.width * 0.6;
+      const top = pRect.top + scrollY + pRect.height * 0.5;
+      chromaBlob.style.left = left + 'px';
+      chromaBlob.style.top = top + 'px';
+    }
+
+    // Expose globally so that works-entrance.js can trigger it once card flight animations complete
+    window.__recalculateWorksCoordinates = updateFlatPageCoordinates;
 
     // Initialize flat page layout bounds
     updateFlatPageCoordinates();
@@ -282,8 +303,29 @@ if (!isMobileDevice) {
       });
       card.classList.add('hovered');
 
+      // Play hover sound for card selection
+      if (window.__playCardHoverSound) window.__playCardHoverSound();
+
       const src = card.dataset.image;
       if (!src || index === activeCardIndex) return;
+
+      // Trigger diving spring animation for the orange shadow block when switching cards
+      if (isPreviewActive) {
+        if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
+        gsap.killTweensOf(previewAnim, 'orangeZ');
+        orangeSwitchTimeline = gsap.timeline()
+          .to(previewAnim, {
+            orangeZ: -45, // Dive down deep behind the glass card (Z=-45) to completely clear sinking cards
+            duration: 0.16,
+            ease: 'power2.in'
+          })
+          .to(previewAnim, {
+            orangeZ: -25, // Spring back up to the active background depth (Z=-25)
+            duration: 0.6,
+            ease: 'elastic.out(1.0, 0.6)'
+          });
+      }
+
       activeCardIndex = index;
       hoveredCardIndex = index;
       window.__hoveredCardIndex = index;
@@ -505,7 +547,7 @@ if (!isMobileDevice) {
       // ── STEP 4: Animate preview thumbnail follow and scale ──
       if (isVisible || gsap.getProperty(wrapper, 'opacity') > 0.01) {
         if (firstMove) {
-          const initOffset = (previewAnim.orangeZ / 5) * 12;
+          const initOffset = (Math.abs(previewAnim.orangeZ) / 25) * 18;
           currentX = targetX;
           currentY = targetY;
           currentOrangeX = targetX + initOffset;
@@ -526,7 +568,7 @@ if (!isMobileDevice) {
         currentY += dy * 0.055;
 
         // 2. LERP orange layer (more delay: 0.035 LERP factor, dynamic offset proportional to orange layer elevation)
-        const currentOffset = (previewAnim.orangeZ / 5) * 12;
+        const currentOffset = (Math.abs(previewAnim.orangeZ) / 25) * 18;
         const targetOrangeX = targetX + currentOffset;
         const targetOrangeY = targetY + currentOffset;
         const dxOrange = targetOrangeX - currentOrangeX;
@@ -601,6 +643,27 @@ if (!isMobileDevice) {
       }
     }
     
+     window.triggerPreviewPinchAnimation = function() {
+      if (!isPreviewActive) return;
+
+      if (orangeSwitchTimeline) orangeSwitchTimeline.kill();
+      gsap.killTweensOf(previewAnim, 'imgZ,orangeZ');
+
+      orangeSwitchTimeline = gsap.timeline()
+        .to(previewAnim, {
+          imgZ: 18,        // Squeeze down closer to the pressed card (normally Z=52px)
+          orangeZ: -10,    // Pull up closer to the pressed card (normally Z=-25px)
+          duration: 0.08,
+          ease: 'power2.out'
+        })
+        .to(previewAnim, {
+          imgZ: 52,        // Rebound back to 52px
+          orangeZ: -25,    // Rebound back to -25px
+          duration: 0.32,
+          ease: 'back.out(2.5)' // snappy spring rebound overshoot matching the card
+        });
+    };
+
     // Start initial animation frame (will auto-sleep once settled)
     hoverLoopId = requestAnimationFrame(animateHover);
   }
@@ -664,6 +727,10 @@ if (!isMobileDevice) {
         const src = closestCard.dataset.image;
         if (src && src !== activeSrc) {
           activeSrc = src;
+          
+          // Play hover sound when scrolling to a new active card in mobile view
+          if (window.__playCardHoverSound) window.__playCardHoverSound();
+
           const newImg = document.createElement('img');
           newImg.className = 'work-preview-img';
           newImg.src = src;
