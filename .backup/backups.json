@@ -1,12 +1,5 @@
 [
   {
-    "step": 172,
-    "timestamp": "2026-06-17 01:22:56",
-    "description": "Update walkthrough.md with mobile responsive tuning details",
-    "folder": "step_172_Update_walkthrough.md_with_mobile_responsive_tuning_details",
-    "is_auto": false
-  },
-  {
     "step": 173,
     "timestamp": "2026-06-17 01:24:43",
     "description": "Fix isMobile reference error in closeDetail transition function",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:09:57",
     "description": "halve sou whoosh volume and slightly faster",
     "folder": "step_191_halve_sou_whoosh_volume_and_slightly_faster",
+    "is_auto": false
+  },
+  {
+    "step": 192,
+    "timestamp": "2026-08-14 21:10:31",
+    "description": "lower sou whoosh volume further",
+    "folder": "step_192_lower_sou_whoosh_volume_further",
     "is_auto": false
   }
 ]

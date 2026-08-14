@@ -616,9 +616,9 @@
         snapPullDist = Math.sqrt(snapPullX * snapPullX + snapPullY * snapPullY);
       }
       
-      // Glides and snaps to the target coordinate (0.15 LERP) for responsive and soft magnetization
-      cX += (targetX - cX) * 0.15;
-      cY += (targetY - cY) * 0.15;
+      // Glides and snaps to the target coordinate (0.20 LERP) for responsive and soft magnetization
+      cX += (targetX - cX) * 0.20;
+      cY += (targetY - cY) * 0.20;
       
       // Track current snap offset relative to the physical mouse
       snapOffsetX = cX - mouseX;
@@ -636,9 +636,9 @@
       const targetX = mouseX + snapOffsetX;
       const targetY = mouseY + snapOffsetY;
       
-      // Main triangle follows mouse plus decaying offset with responsive LERP factor (0.15)
-      cX += (targetX - cX) * 0.15;
-      cY += (targetY - cY) * 0.15;
+      // Main triangle follows mouse plus decaying offset with responsive LERP factor (0.20)
+      cX += (targetX - cX) * 0.20;
+      cY += (targetY - cY) * 0.20;
     }
 
     
@@ -856,7 +856,7 @@
 
     // LERP translateY to smoothly shift center point when morphing between triangle (top center tip) and circle (geometric center)
     const targetTranslateY = (isGrabState || isActuallyHovered) ? -50 : -10;
-    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.15; // Smoothly slide center point (matches coordinates LERP speed)
+    currentTranslateY += (targetTranslateY - currentTranslateY) * 0.20; // Smoothly slide center point (matches coordinates LERP speed)
 
     // Apply translations using GPU translate3d (keeps hotspot exact and rounded to nearest pixel to prevent subpixel jitter)
     cursorDot.style.transform = `translate3d(${Math.round(cX)}px, ${Math.round(cY)}px, 0) translate(-50%, ${currentTranslateY}%)`;

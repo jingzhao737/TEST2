@@ -359,7 +359,6 @@ function closeDetail(popState) {
   window.__isDetailClosing = true;
   workDetail.classList.remove('open');
   workDetail.style.pointerEvents = 'none';
-  dispatchWakeupEvents();
 
   const previewContainer = getActivePreviewContainer();
   const detailBg = document.getElementById('workDetailBg');
@@ -406,6 +405,7 @@ function closeDetail(popState) {
 
   // Slide down and shrink the card panel horizontally
   if (detailCard) {
+    const isMobile = ('ontouchstart' in window) || (window.innerWidth <= 768);
     const endScaleX = isMobile ? 1.0 : 0.4;
     gsap.to(detailCard, {
       y: '100%',
@@ -415,19 +415,20 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         resetDetailState();
+
+        // Clear flags BEFORE dispatchWakeupEvents so that onListEnter's guard
+        // (checks __isRouteTransitioning && __isDetailClosing) passes and the
+        // hover loop wakes up correctly when the mouse is already over a card.
+        window.__isDetailClosing = false;
+        isRouteTransitioning = false;
+
         dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-
-        window.__isDetailClosing = false;
-        isRouteTransitioning = false;
       }
     });
-  } else {
-    window.__isDetailClosing = false;
-    isRouteTransitioning = false;
   }
 }
 
