@@ -87,10 +87,10 @@
       const souSource = ctx.createBufferSource();
       souSource.buffer = souBuffer;
       const souGain = ctx.createGain();
-      souGain.gain.setValueAtTime(0.12, now); // Lowered volume for the whoosh
+      souGain.gain.setValueAtTime(0.08, now); // Lowered volume for the whoosh
       
-      // 2.6x speed; detune lowers pitch one octave while keeping the fast speed
-      souSource.playbackRate.setValueAtTime(2.6, now);
+      // 3.0x speed; detune lowers pitch one octave while keeping the fast speed
+      souSource.playbackRate.setValueAtTime(3.0, now);
       souSource.detune.setValueAtTime(-1200, now);
       
       souSource.connect(souGain);

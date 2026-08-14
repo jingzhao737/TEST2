@@ -1,12 +1,5 @@
 [
   {
-    "step": 177,
-    "timestamp": "2026-06-17 01:34:49",
-    "description": "style increase mobile nav padding to move logo and menu button inward",
-    "folder": "step_177_style_increase_mobile_nav_padding_to_move_logo_and_menu_button_inward",
-    "is_auto": false
-  },
-  {
     "step": 178,
     "timestamp": "2026-06-17 01:35:00",
     "description": "docs update walkthrough with mobile nav padding calibration",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:14:51",
     "description": "lower volume and speed up sou whoosh",
     "folder": "step_196_lower_volume_and_speed_up_sou_whoosh",
+    "is_auto": false
+  },
+  {
+    "step": 197,
+    "timestamp": "2026-08-14 21:19:55",
+    "description": "gate detail close button snap until open animation completes",
+    "folder": "step_197_gate_detail_close_button_snap_until_open_animation_completes",
     "is_auto": false
   }
 ]

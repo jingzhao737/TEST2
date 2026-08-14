@@ -31,6 +31,138 @@ import * as THREE from 'three';
   let ringLoaded = [false, false, false, false];
   const textureLoader = new THREE.TextureLoader();
 
+  let swordsAudioBuffer = null;
+  let isSwordsLoading = false;
+  const swordsArrayBufferPromise = fetch('sound/wu_swords.wav')
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch wu_swords.wav");
+      return res.arrayBuffer();
+    })
+    .catch(err => {
+      console.warn("Swords sound fetch error:", err);
+      return null;
+    });
+
+  // Web Audio API Synthesizer for record collisions (soft plastic clack) with physical variation
+  let collisionCtx = null;
+
+  function initCollisionCtxAndDecodeSwords() {
+    if (!collisionCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        collisionCtx = window.__audioCtx || (window.__audioCtx = new AudioContextClass());
+      }
+    }
+    if (collisionCtx && collisionCtx.state === 'suspended') {
+      collisionCtx.resume();
+    }
+    if (collisionCtx && !swordsAudioBuffer && !isSwordsLoading && swordsArrayBufferPromise) {
+      isSwordsLoading = true;
+      swordsArrayBufferPromise.then(arrayBuffer => {
+        if (!arrayBuffer) {
+          isSwordsLoading = false;
+          return;
+        }
+        collisionCtx.decodeAudioData(arrayBuffer.slice(0), (decoded) => {
+          swordsAudioBuffer = decoded;
+          isSwordsLoading = false;
+        }, (err) => {
+          console.error("decodeAudioData error for swords:", err);
+          isSwordsLoading = false;
+        });
+      });
+    }
+  }
+
+  function playCollisionSound(intensity, idx1 = 0, idx2 = 1) {
+    try {
+      initCollisionCtxAndDecodeSwords();
+      if (!collisionCtx) return;
+
+      const now = collisionCtx.currentTime;
+      // Increased overall volume factor (intensity * 0.08, capped at 0.38 for comfort)
+      const volume = Math.min(0.38, intensity * 0.08);
+      if (volume < 0.012) return; // ignore tiny touches
+
+      // Pitch variation: index-based variation + micro random variation on each collision
+      let indexPitch = 1.0 + (idx1 + idx2 - 3) * 0.08; // left-most records lower pitch, right-most higher
+      let randPitch = 0.94 + Math.random() * 0.12;     // micro-random variation (no two hits sound identical)
+      let pitch = indexPitch * randPitch;
+
+      // Durations randomizer
+      let popDuration = 0.06 * (0.9 + Math.random() * 0.2);
+      let clickDuration = 0.012 * (0.9 + Math.random() * 0.2);
+
+      // 1. Hollow body pop resonance (Sine wave pitch slide 250Hz -> 80Hz)
+      const osc = collisionCtx.createOscillator();
+      const gainNode = collisionCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(250 * pitch, now);
+      osc.frequency.exponentialRampToValueAtTime(80 * pitch, now + popDuration);
+
+      gainNode.gain.setValueAtTime(volume, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + popDuration);
+
+      osc.connect(gainNode);
+      gainNode.connect(collisionCtx.destination);
+      osc.start(now);
+      osc.stop(now + popDuration);
+
+      // 2. High-frequency plastic click transient (Triangle wave pitch slide 1100Hz -> 350Hz)
+      const clickOsc = collisionCtx.createOscillator();
+      const clickGain = collisionCtx.createGain();
+      clickOsc.type = 'triangle';
+      clickOsc.frequency.setValueAtTime(1100 * pitch, now);
+      clickOsc.frequency.exponentialRampToValueAtTime(350 * pitch, now + clickDuration);
+
+      clickGain.gain.setValueAtTime(volume * 0.78, now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, now + clickDuration);
+
+      clickOsc.connect(clickGain);
+      clickGain.connect(collisionCtx.destination);
+      clickOsc.start(now);
+      clickOsc.stop(now + clickDuration);
+
+      // 3. Play a slice of the cloned swords wav file
+      if (swordsAudioBuffer) {
+        // Calculate collision slice duration based on collision intensity (e.g. 150ms ~ 300ms) with random variation
+        const playDuration = Math.max(0.15, Math.min(0.30, 0.12 + intensity * 0.06)) * (0.9 + Math.random() * 0.2);
+        
+        // Random start time offset in the audio buffer
+        const maxOffset = Math.max(0, swordsAudioBuffer.duration - playDuration);
+        const offset = Math.random() * maxOffset;
+
+        const swordsSource = collisionCtx.createBufferSource();
+        swordsSource.buffer = swordsAudioBuffer;
+
+        // Apply a small playback rate variation to make each sword hit sound unique
+        const swordsPitch = 0.94 + Math.random() * 0.12;
+        swordsSource.playbackRate.setValueAtTime(swordsPitch, now);
+
+        const swordsGain = collisionCtx.createGain();
+        const swordsVol = Math.min(0.24, intensity * 0.05); // Balance swords volume (capped at 0.24)
+        
+        // Fade-in envelope (20ms) and Fade-out envelope (80ms)
+        const fadeIn = 0.02;
+        const fadeOut = 0.08;
+        
+        swordsGain.gain.setValueAtTime(0, now);
+        swordsGain.gain.linearRampToValueAtTime(swordsVol, now + fadeIn);
+        swordsGain.gain.setValueAtTime(swordsVol, now + playDuration - fadeOut);
+        swordsGain.gain.linearRampToValueAtTime(0.001, now + playDuration);
+
+        swordsSource.connect(swordsGain);
+        swordsGain.connect(collisionCtx.destination);
+
+        swordsSource.start(now, offset, playDuration);
+        swordsSource.stop(now + playDuration);
+      }
+
+    } catch (e) {
+      console.warn("Failed to play collision sound:", e);
+    }
+  }
+
   function drawArchText(ctx, text, centerX, centerY, radius, startAngle, isUpward) {
     ctx.save();
     ctx.translate(centerX, centerY);
@@ -115,7 +247,7 @@ import * as THREE from 'three';
     // Inner shadow ring overlay on cover image for depth
     const shadowGrad = ctx.createRadialGradient(256, 256, 140, 256, 256, 168);
     shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');
+    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0.15)'); // Softened from 0.45 to 0.15 for a much brighter, cleaner edge
     ctx.fillStyle = shadowGrad;
     ctx.beginPath();
     ctx.arc(256, 256, 168, 0, Math.PI * 2);
@@ -616,7 +748,7 @@ import * as THREE from 'three';
         const labelMat = new THREE.MeshPhysicalMaterial({
           map: ringTextures[i] || null,
           emissiveMap: ringTextures[i] || null,
-          emissive: 0x777777,
+          emissive: 0xbbbbbb, // Brightened from 0x777777 to 0xbbbbbb so thumbnails look vivid and clear
           roughness: 0.55,
           metalness: 0.02,
           clearcoat: 0.12,
@@ -920,7 +1052,7 @@ import * as THREE from 'three';
     }
 
     // 2. Multi-body physics solver iterations (resolves circle-circle collisions and rope length constraints)
-    for (let iter = 0; iter < 3; iter++) {
+    for (let iter = 0; iter < 8; iter++) { // Increased iterations to 8 to completely resolve constraints and prevent overlapping clumping
       // A. Circle-circle collisions
       for (let i = 0; i < thumbs.length; i++) {
         let t1 = thumbs[i];
@@ -954,14 +1086,16 @@ import * as THREE from 'three';
             let invM2 = (isDragged2 || isLatched2) ? 0 : 1;
             
             if (invM1 + invM2 > 0) {
-              // Positional correction: push them apart along normal
+              // Positional correction: push them apart along normal (Baumgarte correction to prevent instant snap jitters)
               let ratio1 = invM1 / (invM1 + invM2);
               let ratio2 = invM2 / (invM1 + invM2);
+              let percent = 0.85;
+              let correction = overlap * percent;
               
-              t1.x -= nx * overlap * ratio1;
-              t1.y -= ny * overlap * ratio1;
-              t2.x += nx * overlap * ratio2;
-              t2.y += ny * overlap * ratio2;
+              t1.x -= nx * correction * ratio1;
+              t1.y -= ny * correction * ratio1;
+              t2.x += nx * correction * ratio2;
+              t2.y += ny * correction * ratio2;
               
               // Velocity reflection (elastic impulse response)
               let rvx = t2.vx - t1.vx;
@@ -969,7 +1103,7 @@ import * as THREE from 'three';
               let velAlongNormal = rvx * nx + rvy * ny;
               
               if (velAlongNormal < 0) {
-                let restitution = 0.55; // springy vinyl bounce bounciness
+                let restitution = 0.90; // Highly elastic collisions (restitution 0.90) to conserve momentum and enable clean Newton's Cradle swing propagates
                 let impulse = -(1 + restitution) * velAlongNormal / (invM1 + invM2);
                 
                 t1.vx -= nx * impulse * invM1;
@@ -980,6 +1114,15 @@ import * as THREE from 'three';
                 // Add physical reaction sway to rope curve
                 if (invM1 > 0) t1._swayV += (Math.random() - 0.5) * 0.06;
                 if (invM2 > 0) t2._swayV += (Math.random() - 0.5) * 0.06;
+
+                // Add 3D rotation wobble/vibration on collision
+                t1.wobbleX = (t1.wobbleX || 0) + (Math.random() - 0.5) * impulse * 0.055;
+                t1.wobbleY = (t1.wobbleY || 0) + (Math.random() - 0.5) * impulse * 0.055;
+                t2.wobbleX = (t2.wobbleX || 0) + (Math.random() - 0.5) * impulse * 0.055;
+                t2.wobbleY = (t2.wobbleY || 0) + (Math.random() - 0.5) * impulse * 0.055;
+
+                // Play collision clack sound based on impulse force and indices
+                playCollisionSound(impulse, i, j);
               }
             }
           }
@@ -1105,7 +1248,7 @@ import * as THREE from 'three';
       ctx.shadowOffsetY = 3.5;
 
       pathHalfLoop(ctx, i);
-      let mainColor = window.__accentRGB || '232, 124, 80';
+      let mainColor = window.__accentRGB || '243, 131, 76';
       ctx.strokeStyle = 'rgba(' + mainColor + ', 0.95)';
       ctx.lineWidth = baseLineWidth;
       ctx.stroke();
@@ -1123,6 +1266,40 @@ import * as THREE from 'three';
     if (t.y + t.dispH < -20) return;
 
     let r = t.dispW / 2;
+    let ha = t.hoverAlpha || 0;
+    let eased = 1 - Math.pow(1 - ha, 3);
+    
+    let pulse = 0;
+    if (idx === latchedIdx) {
+      let t_sec = Date.now() / 1000;
+      pulse = (Math.sin(t_sec * Math.PI * 0.75) * 0.5 + 0.5) * 0.15;
+    }
+    
+    // Constant slight outer glow (white ambient halo)
+    let softGlow = ctx.createRadialGradient(t.x, t.y, r * 0.8, t.x, t.y, r * 1.8);
+    let baseAlpha = 0.08 + pulse * 0.4;
+    softGlow.addColorStop(0, `rgba(255, 255, 255, ${baseAlpha})`);
+    softGlow.addColorStop(0.5, `rgba(255, 255, 255, ${baseAlpha * 0.35})`);
+    softGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.save();
+    ctx.fillStyle = softGlow;
+    ctx.fillRect(t.x - r * 3, t.y - r * 3, r * 6, r * 6);
+    ctx.restore();
+
+    // Hover or Latched enhanced outer glow (stronger white halo)
+    if (ha > 0.01 || pulse > 0) {
+      let glowR = r * 3;
+      let grad = ctx.createRadialGradient(t.x, t.y, r * 0.3, t.x, t.y, glowR);
+      let strongAlpha = (eased * 0.22) + (pulse * 0.55);
+      grad.addColorStop(0, `rgba(255, 255, 255, ${strongAlpha})`);
+      grad.addColorStop(0.5, `rgba(255, 255, 255, ${strongAlpha * 0.3})`);
+      grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.save();
+      ctx.fillStyle = grad;
+      ctx.fillRect(t.x - glowR, t.y - glowR, glowR * 2, glowR * 2);
+      ctx.restore();
+    }
+
     // Draw rope from anchor, stopping short of disc edge
     let rdx = t.x - t.anchorX, rdy = t.y - t.anchorY;
     let rDist = Math.sqrt(rdx * rdx + rdy * rdy);
@@ -1214,9 +1391,24 @@ import * as THREE from 'three';
         t.tiltY = t.tiltY || 0;
         t.tiltX += (targetTiltX - t.tiltX) * 0.08;
         t.tiltY += (targetTiltY - t.tiltY) * 0.08;
+
+        // Wobble physics (damped spring towards 0, simulating pvc vibration/wobble on impact)
+        t.wobbleX = t.wobbleX || 0;
+        t.wobbleY = t.wobbleY || 0;
+        t.wobbleXV = t.wobbleXV || 0;
+        t.wobbleYV = t.wobbleYV || 0;
+
+        let springK = 0.35; // spring constant
+        let dampingConstant = 0.88; // decay
+        t.wobbleXV += -t.wobbleX * springK;
+        t.wobbleYV += -t.wobbleY * springK;
+        t.wobbleXV *= dampingConstant;
+        t.wobbleYV *= dampingConstant;
+        t.wobbleX += t.wobbleXV;
+        t.wobbleY += t.wobbleYV;
         
-        d.group.rotation.x = t.tiltX;
-        d.group.rotation.y = t.tiltY;
+        d.group.rotation.x = t.tiltX + t.wobbleX;
+        d.group.rotation.y = t.tiltY + t.wobbleY;
         
         // Spin the child meshes
         if (i === latchedIdx && window.__audioPlaying === true) {
@@ -1269,6 +1461,9 @@ import * as THREE from 'three';
   }
 
   canvas.addEventListener('mousedown', function(e) {
+    // Proactively initialize AudioContext and decode swords sound on first interaction
+    initCollisionCtxAndDecodeSwords();
+
     let rect = canvas.getBoundingClientRect();
     let mx = e.clientX - rect.left;
     let my = e.clientY - rect.top;
