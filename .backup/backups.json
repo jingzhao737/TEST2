@@ -1,12 +1,5 @@
 [
   {
-    "step": 175,
-    "timestamp": "2026-06-17 01:30:10",
-    "description": "Fix delay hover wakeup to prevent PC preview flash on exit",
-    "folder": "step_175_Fix_delay_hover_wakeup_to_prevent_PC_preview_flash_on_exit",
-    "is_auto": false
-  },
-  {
     "step": 176,
     "timestamp": "2026-06-17 01:30:32",
     "description": "docs update walkthrough with transition isolation fix",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:12:33",
     "description": "lower sou whoosh pitch via detune",
     "folder": "step_194_lower_sou_whoosh_pitch_via_detune",
+    "is_auto": false
+  },
+  {
+    "step": 195,
+    "timestamp": "2026-08-14 21:13:32",
+    "description": "trim first 30 percent of sou whoosh",
+    "folder": "step_195_trim_first_30_percent_of_sou_whoosh",
     "is_auto": false
   }
 ]
