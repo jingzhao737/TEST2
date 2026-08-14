@@ -89,9 +89,8 @@
       const souGain = ctx.createGain();
       souGain.gain.setValueAtTime(0.42, now); // Set comfortable volume for the whoosh
       
-      // Add a slight speed/pitch variation to whoosh sound for variety
-      const whooshPitch = 0.95 + Math.random() * 0.1;
-      souSource.playbackRate.setValueAtTime(whooshPitch, now);
+      // 2x speed (playbackRate doubles speed; pitch also rises by an octave)
+      souSource.playbackRate.setValueAtTime(2.0, now);
       
       souSource.connect(souGain);
       souGain.connect(window.__masterGainNode || ctx.destination);

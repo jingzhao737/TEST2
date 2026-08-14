@@ -1,12 +1,5 @@
 [
   {
-    "step": 171,
-    "timestamp": "2026-06-17 01:22:41",
-    "description": "Optimize works details mobile layout and disable scale transitions on mobile viewports",
-    "folder": "step_171_Optimize_works_details_mobile_layout_and_disable_scale_transitions_on_mobile_viewports",
-    "is_auto": false
-  },
-  {
     "step": 172,
     "timestamp": "2026-06-17 01:22:56",
     "description": "Update walkthrough.md with mobile responsive tuning details",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:08:54",
     "description": "speed up sou.wav whoosh 2x",
     "folder": "step_190_speed_up_sou.wav_whoosh_2x",
+    "is_auto": false
+  },
+  {
+    "step": 191,
+    "timestamp": "2026-08-14 21:09:57",
+    "description": "halve sou whoosh volume and slightly faster",
+    "folder": "step_191_halve_sou_whoosh_volume_and_slightly_faster",
     "is_auto": false
   }
 ]
