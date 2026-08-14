@@ -1,12 +1,5 @@
 [
   {
-    "step": 185,
-    "timestamp": "2026-06-17 01:45:21",
-    "description": "style shift mobile nav logo and soundwaves further right",
-    "folder": "step_185_style_shift_mobile_nav_logo_and_soundwaves_further_right",
-    "is_auto": false
-  },
-  {
     "step": 186,
     "timestamp": "2026-06-17 01:45:35",
     "description": "docs update walkthrough with mobile nav shift details",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:55:20",
     "description": "title duration 0.8s with piecewise slow-fast-slow easing",
     "folder": "step_204_title_duration_0.8s_with_piecewise_slow-fast-slow_easing",
+    "is_auto": false
+  },
+  {
+    "step": 205,
+    "timestamp": "2026-08-14 21:57:55",
+    "description": "match title reveal easing to detail card expo.out",
+    "folder": "step_205_match_title_reveal_easing_to_detail_card_expo.out",
     "is_auto": false
   }
 ]

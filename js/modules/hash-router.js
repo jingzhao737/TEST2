@@ -84,27 +84,26 @@ function escapeHtml(s) {
   });
 }
 
-// Custom cubic-bezier easing (GSAP accepts a function). Returns progress for a given time.
-// Controls points tuned for a "slow 50% -> fast 10% -> slow 40%" feel.
-function cubicBezierEase(x1, y1, x2, y2) {
-  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
-  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-  const sampleX = t => ((ax * t + bx) * t + cx) * t;
-  const sampleY = t => ((ay * t + by) * t + cy) * t;
-  const derivX = t => (3 * ax * t + 2 * bx) * t + cx;
-  return function(p) {
-    if (p <= 0) return 0;
-    if (p >= 1) return 1;
-    let t = p;
-    for (let i = 0; i < 8; i++) {
-      const err = sampleX(t) - p;
-      if (Math.abs(err) < 1e-6) break;
-      const d = derivX(t);
-      if (Math.abs(d) < 1e-6) break;
-      t -= err / d;
+// Custom easing: maps time -> progress with explicit per-segment time allocation.
+// Keyframes (time, progress): (0,0) -> (0.5,0.2) -> (0.65,0.8) -> (1,1)
+// i.e. first 20% of progress takes 50% of time, middle 60% takes 15%, last 20% takes 35%.
+function titleRevealEase(p) {
+  if (p <= 0) return 0;
+  if (p >= 1) return 1;
+  const keyframes = [
+    [0, 0],
+    [0.5, 0.2],
+    [0.65, 0.8],
+    [1, 1]
+  ];
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const t0 = keyframes[i][0], v0 = keyframes[i][1];
+    const t1 = keyframes[i + 1][0], v1 = keyframes[i + 1][1];
+    if (p <= t1) {
+      return v0 + (v1 - v0) * ((p - t0) / (t1 - t0));
     }
-    return sampleY(t);
-  };
+  }
+  return 1;
 }
 
 // Split the title into masked character spans for a staggered bottom-to-top reveal
@@ -382,7 +381,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(titleChars, { yPercent: 0, duration: 1.0, ease: cubicBezierEase(0.5, 0.05, 0.6, 0.95), stagger: 0.06, delay: 0.3 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.8, ease: titleRevealEase, stagger: 0.06, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }

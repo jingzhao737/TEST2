@@ -78,9 +78,46 @@ function buildGalleryHTML(gallery) {
   return html;
 }
 
+function escapeHtml(s) {
+  return s.replace(/[&<>"]/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+
+// Custom easing: maps time -> progress with explicit per-segment time allocation.
+// Keyframes (time, progress): (0,0) -> (0.5,0.2) -> (0.65,0.8) -> (1,1)
+// i.e. first 20% of progress takes 50% of time, middle 60% takes 15%, last 20% takes 35%.
+function titleRevealEase(p) {
+  if (p <= 0) return 0;
+  if (p >= 1) return 1;
+  const keyframes = [
+    [0, 0],
+    [0.5, 0.2],
+    [0.65, 0.8],
+    [1, 1]
+  ];
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const t0 = keyframes[i][0], v0 = keyframes[i][1];
+    const t1 = keyframes[i + 1][0], v1 = keyframes[i + 1][1];
+    if (p <= t1) {
+      return v0 + (v1 - v0) * ((p - t0) / (t1 - t0));
+    }
+  }
+  return 1;
+}
+
+// Split the title into masked character spans for a staggered bottom-to-top reveal
+function setTitleChars(titleEl, text) {
+  titleEl.innerHTML = Array.from(text).map(function(ch) {
+    const safe = ch === ' ' ? '&nbsp;' : escapeHtml(ch);
+    return '<span class="tchar-mask" style="display:inline-block;overflow:hidden;vertical-align:bottom">' +
+           '<span class="tchar" style="display:inline-block;will-change:transform">' + safe + '</span></span>';
+  }).join('');
+}
+
 function renderDetailContent(data, heroImg) {
   document.getElementById('detailTag').textContent = data.tag;
-  document.getElementById('detailTitle').textContent = data.name;
+  setTitleChars(document.getElementById('detailTitle'), data.name);
   document.getElementById('detailSubtitle').textContent = data.subtitle;
   // Hero with skeleton
   const heroEl = document.getElementById('detailHeroImg');
@@ -298,7 +335,10 @@ function openDetail(data, heroImg, pushState) {
   gsap.set(detailBody, { opacity: 0, y: 30 });
   gsap.set(detailClose, { opacity: 1, y: 0 });
   gsap.set(detailHeroContent, { opacity: 1, y: 0 });
-  gsap.set([detailTag, detailTitle, detailSubtitle], { opacity: 0, y: 30 });
+  gsap.set([detailTag, detailSubtitle], { opacity: 0, y: 30 });
+  gsap.set(detailTitle, { opacity: 1, y: 0 });
+  const titleChars = detailTitle.querySelectorAll('.tchar');
+  gsap.set(titleChars, { yPercent: 110 });
 
   // ── 5. Slide up the card panel from the bottom with a narrow-to-wide expansion ──
   if (detailCard) {
@@ -341,7 +381,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(detailTitle, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.35 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.8, ease: titleRevealEase, stagger: 0.06, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }
@@ -415,19 +455,20 @@ function closeDetail(popState) {
       ease: 'power3.inOut',
       onComplete: function() {
         resetDetailState();
+
+        // Clear flags BEFORE dispatchWakeupEvents so that onListEnter's guard
+        // (checks __isRouteTransitioning && __isDetailClosing) passes and the
+        // hover loop wakes up correctly when the mouse is already over a card.
+        window.__isDetailClosing = false;
+        isRouteTransitioning = false;
+
         dispatchWakeupEvents();
 
         if (popState) {
           history.replaceState(null, '', ' ' + window.location.pathname + location.hash.replace(ROUTE_PREFIX, '#work'));
         }
-
-        window.__isDetailClosing = false;
-        isRouteTransitioning = false;
       }
     });
-  } else {
-    window.__isDetailClosing = false;
-    isRouteTransitioning = false;
   }
 }
 
