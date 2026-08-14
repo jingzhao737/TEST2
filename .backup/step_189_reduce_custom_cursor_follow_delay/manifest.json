@@ -1,15 +1,15 @@
 {
   "AGENTS.md": {
     "type": "code",
-    "hash": "cfdfe25e9878e08964f73580a31843053a632fce439a953b7924bfdac3f6ef12"
+    "hash": "9e6138e0ea5691b2fdd0b864d0316646f0bd400b2663523d2de46a07242c4f9a"
   },
   "check_console.js": {
     "type": "code",
-    "hash": "e268d58b1be7376686bc1db1ea62be1bd8b199a0eae6dec51c1068fb5225a6c7"
+    "hash": "36bd1162ad2fa54edea839042f384a6adf0dbbbee49a8828d216b9d9dfde7811"
   },
   "ice.js": {
     "type": "code",
-    "hash": "036b459c7bbdfa6fe78d44e9504907ce37bedbe8b1baa95c0e0be37a485edfce"
+    "hash": "660d3662144cc395e7ee43be5ce955b095e84250d869bb6dcc95554cb73e8b89"
   },
   "implementation_plan.md": {
     "type": "code",
@@ -17,11 +17,11 @@
   },
   "index.html": {
     "type": "code",
-    "hash": "4917d89f3193cd51ef2a533d6fee1da9aa44bbbf391b198f6c0cd964c1ce4381"
+    "hash": "8de78a6696b61514de666ed9a9e20f7081d76c72bb00ac6924f8f1919d1f3408"
   },
   "package-lock.json": {
     "type": "code",
-    "hash": "7da198046be2aa07ab6ee69af2522e4667e48d6b3cd0ca0f40d8f11ab5b2497b"
+    "hash": "9eb75a59f561a6d6e8bd7b70f8694986ec4f4e753e22b02fe4a248fef1a35714"
   },
   "package.json": {
     "type": "code",
@@ -33,11 +33,11 @@
   },
   "styles.css": {
     "type": "code",
-    "hash": "ed6294b02520ec94451166a5cf8886cdba4f481d93cca222052663a0953b8389"
+    "hash": "2ab1cd07a7534f2f4c1f54e512c1b63bb2b63ab379c34c51681e2ea723ba2ad5"
   },
   "task.md": {
     "type": "code",
-    "hash": "331b1722da1760df0deb6b9d0792500cebfb4961444155a32b7330ad5aa28305"
+    "hash": "67acd28e5d1af89aaa0fcd3f8c5a82a659952e8382b3b8b3ae857a3bd9db95a8"
   },
   "vite.config.js": {
     "type": "code",
@@ -45,7 +45,7 @@
   },
   "walkthrough.md": {
     "type": "code",
-    "hash": "4815bde8e30a4cba32775d7b2affaa1b00b0842c7dc572ed4dc240787bad2e47"
+    "hash": "84c97b3e9c5283b188bd42099ba287fb3b46f07ea3494718f3232de2c7c4a44c"
   },
   ".agents\\skills\\llms.txt": {
     "type": "code",
@@ -87,18 +87,6 @@
     "type": "code",
     "hash": "45ebf48998563a9c8e14f93988123759a8525d00673f087bb96773ca645d4651"
   },
-  "dist\\index.html": {
-    "type": "code",
-    "hash": "4300d44a026eb2077cb43749a78e7b0b10898e91e3a447678573e1f1f8598f6e"
-  },
-  "dist\\assets\\index-CognX_5X.css": {
-    "type": "code",
-    "hash": "70f8e3cd006fee8150dab910e5bd5cd682bf9885dd03a0e823dbb502326a6cb9"
-  },
-  "dist\\assets\\index-Dm_wED8w.js": {
-    "type": "code",
-    "hash": "3196d3247b07b4dc4569062f912822018b3131ca6dbea4fdcb587af32aa995a7"
-  },
   "images\\index.txt": {
     "type": "code",
     "hash": "cd65f62c1f01e155e245bb8a731024666df852430e8071a1e111705097536949"
@@ -125,7 +113,7 @@
   },
   "js\\modules\\color-console.js": {
     "type": "code",
-    "hash": "9adb6c8d5f280e37ff856695ad02ab2af7f20ee568b941775e92a02fbc833ce4"
+    "hash": "0827c68300afa8e7b79770e03b3fd772797f062b71ae2a4e7d2adb5ad27ef55e"
   },
   "js\\modules\\counter.js": {
     "type": "code",
@@ -145,15 +133,15 @@
   },
   "js\\modules\\hanging-circles.js": {
     "type": "code",
-    "hash": "df184b5bca0feb8e8089e5b85b85b3591318e3520cb587b2166c95fe156180a4"
+    "hash": "5d0f555e8b1b5f19cfee63feb92ef37877960d3df5a5e678d2ca094d6b005059"
   },
   "js\\modules\\hash-router.js": {
     "type": "code",
-    "hash": "4a2ca177f097641ac65a5dcf0b9f9da5537c435284b2aea301f09ed701b91945"
+    "hash": "dff0c7cc39de25f89f87d42f7c6848a20a39c4be0d8f6a3be2fa640bb11d7338"
   },
   "js\\modules\\laser-lines.js": {
     "type": "code",
-    "hash": "419686998c44c054888f1b4d77a5383332e1e86678a57935e24b43483de02595"
+    "hash": "87d6f2a203c1928fd7569a7e52fe0cfe215e2af0269f1f2c696ad40151ea79e4"
   },
   "js\\modules\\loader.js": {
     "type": "code",
@@ -163,21 +151,25 @@
     "type": "code",
     "hash": "e132a0aabca3f1a01b9acb42b6c72b5057bab1d78a7fe3b0015492cf4a3b5bf4"
   },
+  "js\\modules\\motion-debugger.js": {
+    "type": "code",
+    "hash": "92658c1a55e3f489f565a4fe8ee5af2f9e2af3ab6ee6f4e7229fa99ad3c4789a"
+  },
   "js\\modules\\nav-waveform.js": {
     "type": "code",
-    "hash": "f005fdb4dcc213fe502dd4066d8d06388d79a7802b5a8989a7561c3d2fd045da"
+    "hash": "7fef98c964bf89143765c017ab7713557e6aa5a633384297a592e09a04ad8e02"
   },
   "js\\modules\\nav.js": {
     "type": "code",
-    "hash": "e0bf5a147082d4898c00e1f92ea9fb2461432f568f2f73da7e4fb042a6bd4756"
+    "hash": "a30ec577cf0947b0ea99cb56e55a661a56fb33b7349db656ab9e32c26eab99fa"
   },
   "js\\modules\\poetry.js": {
     "type": "code",
-    "hash": "330ecc64dab0c043d4ffde0ac7d17eb7b918935dac121d8c3f5296a3151a32be"
+    "hash": "c528c34583e7147b7927f950b709c5e189af79910743adb38bd36ac4c11fd0fe"
   },
   "js\\modules\\premium-interactions.js": {
     "type": "code",
-    "hash": "d981cf3b7c6357d03e5c9b297219574a74448855227279246538e77a28360d86"
+    "hash": "e6757eebc21f092d3071659dab89a5a609f0e36d2cae996b5b26c400308fccbf"
   },
   "js\\modules\\scroll-reveal.js": {
     "type": "code",
@@ -189,15 +181,19 @@
   },
   "js\\modules\\sound-effects.js": {
     "type": "code",
-    "hash": "4536bfb03202e992d55bffaecd82b879940a9d1a285d99301e6ad2951fdf6890"
+    "hash": "5e5399bf1da65c31b0681ae984c95c12a81ea4549fde3c16e951de0c43e1cf5a"
   },
   "js\\modules\\stars.js": {
     "type": "code",
-    "hash": "514d9f061d292aa70ed9aca6ec79ce1b4128266b0b0e91e0390eef4841b7becc"
+    "hash": "103d2015cc7125d293fdb57fa69113276bdfc70348e55569bcabaf5925d0e2b7"
   },
   "js\\modules\\theme.js": {
     "type": "code",
-    "hash": "e405ff8ad4fdf00b115261f0d0d8280796c990a1e0acf8ae5e9578cade1b0a30"
+    "hash": "e9c44883574b627272eed7f7adac4bc52f3ebde6601d29ddeac1e9c1c0bf3f3c"
+  },
+  "js\\modules\\title-cinema.js": {
+    "type": "code",
+    "hash": "1c07d7ce40ff64125f07cc342b51496903a2227873a6a4fba3430c720d5b2d62"
   },
   "js\\modules\\webgl-preview.js": {
     "type": "code",
@@ -205,7 +201,11 @@
   },
   "js\\modules\\work-detail.js": {
     "type": "code",
-    "hash": "f7a25e742961801e952d6d8efdc1097292f0eb1bc191b4ae5b4da63863fdc9ba"
+    "hash": "c258e2c785864fbabe86d6f3c892994787fd78a03171a84e61fa258eec689309"
+  },
+  "js\\modules\\works-entrance.js": {
+    "type": "code",
+    "hash": "28992fdc2b7157c473341b82fd8b67028ae942e9fb9f79a5b5af9b7449c4c4db"
   },
   "scratch\\capture_showcase_steps.js": {
     "type": "code",
@@ -217,11 +217,11 @@
   },
   "scratch\\check_canvas_visibility.js": {
     "type": "code",
-    "hash": "3b15f18469a1e978ef93a77f368568720b2a0a0666ffc3506d6f2edc2a6ccaa8"
+    "hash": "04babb5b6ef3b3beb5ac94915ff121faee3af2cdc927fe5a2bdd9551d01c7bc8"
   },
   "scratch\\check_console.js": {
     "type": "code",
-    "hash": "8907b0fe0c2f6d035f230e6b0b5dd6e0d73af2a94a89ceb99728956f514b3eb6"
+    "hash": "1cc1a4804b83023bed8444be045e1ee62f9b1d7c3dd9aafd2395593eeb877e4d"
   },
   "scratch\\check_coords.js": {
     "type": "code",
@@ -229,11 +229,11 @@
   },
   "scratch\\check_cursor_visibility.js": {
     "type": "code",
-    "hash": "e27614955440e951808c0d13d0c1ea0cbb0ca1d075ba36d3cb494d9a0ff1f3c0"
+    "hash": "60a2df7e958b7ed27de632987e859d5fedd974d26709a58acad651d6841218b1"
   },
   "scratch\\check_fixes.js": {
     "type": "code",
-    "hash": "3a506d121cd7fe7ae01e91f78897133cfe36590609c7711252475a20db471096"
+    "hash": "3b11ab824ada02a4ce6b078ca9f9189a324d2b57d0f7b28b6ea7c880e0ba4d30"
   },
   "scratch\\check_layout.js": {
     "type": "code",
@@ -242,6 +242,10 @@
   "scratch\\check_opacity.js": {
     "type": "code",
     "hash": "c330832e9686db85275dbdcfdf7ef0924cca172ae6629595ea9ac3f94b03832d"
+  },
+  "scratch\\check_rects.js": {
+    "type": "code",
+    "hash": "20a6a1ef96c89e9f309ea7846ed1a35d95641527b90ca09b705261a309a73445"
   },
   "scratch\\cleanup_css.js": {
     "type": "code",
@@ -285,7 +289,7 @@
   },
   "scratch\\debug_waveform.js": {
     "type": "code",
-    "hash": "736e19ded70a8ed5658e2e0e6a70add21aad1e5fdf0c24f15b8cfb178ddbc663"
+    "hash": "cab4f7e9ac438e2dc6896867ae628229c3ab9d5b0de00101d33ac5824ce6a942"
   },
   "scratch\\debug_zindex.js": {
     "type": "code",
