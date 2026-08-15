@@ -84,28 +84,6 @@ function escapeHtml(s) {
   });
 }
 
-// Custom easing: maps time -> progress with explicit per-segment time allocation.
-// Keyframes (time, progress): (0,0) -> (0.5,0.2) -> (0.65,0.8) -> (1,1)
-// i.e. first 20% of progress takes 50% of time, middle 60% takes 15%, last 20% takes 35%.
-function titleRevealEase(p) {
-  if (p <= 0) return 0;
-  if (p >= 1) return 1;
-  const keyframes = [
-    [0, 0],
-    [0.5, 0.2],
-    [0.65, 0.8],
-    [1, 1]
-  ];
-  for (let i = 0; i < keyframes.length - 1; i++) {
-    const t0 = keyframes[i][0], v0 = keyframes[i][1];
-    const t1 = keyframes[i + 1][0], v1 = keyframes[i + 1][1];
-    if (p <= t1) {
-      return v0 + (v1 - v0) * ((p - t0) / (t1 - t0));
-    }
-  }
-  return 1;
-}
-
 // Split the title into masked character spans for a staggered bottom-to-top reveal
 function setTitleChars(titleEl, text) {
   titleEl.innerHTML = Array.from(text).map(function(ch) {
@@ -381,7 +359,7 @@ function openDetail(data, heroImg, pushState) {
 
   // ── 7. Stagger text content animations ──
   gsap.to(detailTag, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.3 });
-  gsap.to(titleChars, { yPercent: 0, duration: 0.8, ease: titleRevealEase, stagger: 0.06, delay: 0.3 });
+  gsap.to(titleChars, { yPercent: 0, duration: 0.8, ease: 'expo.out', stagger: 0.06, delay: 0.3 });
   gsap.to(detailSubtitle, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', delay: 0.45 });
   gsap.to(detailBody, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.38 });
 }

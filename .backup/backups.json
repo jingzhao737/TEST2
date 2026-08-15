@@ -1,12 +1,5 @@
 [
   {
-    "step": 186,
-    "timestamp": "2026-06-17 01:45:35",
-    "description": "docs update walkthrough with mobile nav shift details",
-    "folder": "step_186_docs_update_walkthrough_with_mobile_nav_shift_details",
-    "is_auto": false
-  },
-  {
     "step": 187,
     "timestamp": "2026-06-17 01:50:23",
     "description": "fix play card click sound on fallback 3D clicks and resolve mobile audio context suspension",
@@ -137,6 +130,13 @@
     "timestamp": "2026-08-14 21:57:55",
     "description": "match title reveal easing to detail card expo.out",
     "folder": "step_205_match_title_reveal_easing_to_detail_card_expo.out",
+    "is_auto": false
+  },
+  {
+    "step": 206,
+    "timestamp": "2026-08-15 20:24:57",
+    "description": "title char reveal + sou whoosh tuning + cursor snap gating + vite watch ignore",
+    "folder": "step_206_title_char_reveal_+_sou_whoosh_tuning_+_cursor_snap_gating_+_vite_watch_ignore",
     "is_auto": false
   }
 ]

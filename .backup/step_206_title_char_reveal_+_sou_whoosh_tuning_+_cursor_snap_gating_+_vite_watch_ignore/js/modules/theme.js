@@ -101,7 +101,8 @@
       playClick();
       dragging = false;
       springBack();
-      setTimeout(_removeOverlay, 150);
+      // Do NOT schedule overlay removal here — the user may still be holding the mouse.
+      // onEnd (mouseup) is responsible for removing the overlay after release.
     }
   }
 
@@ -159,14 +160,13 @@
     _dragOverlay.style.cssText = [
       'position:fixed',
       'inset:0',
-      'z-index:150',
+      'z-index:9999', // Must exceed 3D-transformed work cards which can visually protrude above a z-index:150 plane in CSS 3D space
       'pointer-events:auto',
       'cursor:grabbing',
       'user-select:none',
       '-webkit-user-select:none'
     ].join(';');
     document.body.appendChild(_dragOverlay);
-    // navThemeAnchor is z-index:202 (above overlay at 150) — no change needed
   }
 
   function _removeOverlay() {
@@ -201,7 +201,10 @@
   }
 
   function onEnd(e) {
-    if (!dragging) return;
+    // Guard: exit only if there's truly no active drag session.
+    // When threshold fires during mousemove, dragging becomes false but the
+    // overlay is still live — we must schedule its removal here on mouseup.
+    if (!dragging && !_dragOverlay) return;
     dragging = false;
     if (pullY > 0 && !toggled) {
       bounceBack();
